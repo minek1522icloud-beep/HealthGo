@@ -465,6 +465,14 @@ function setupAutoUpdater() {
     return;
   }
 
+  // Ustawiamy źródło aktualizacji jawnie, żeby zainstalowane
+  // HealthGo nie zależało wyłącznie od wygenerowanego app-update.yml.
+  autoUpdater.setFeedURL({
+    provider: "github",
+    owner: "minek1522icloud-beep",
+    repo: "HealthGo"
+  });
+
   autoUpdater.autoDownload =
     true;
 
