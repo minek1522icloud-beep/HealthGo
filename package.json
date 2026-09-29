@@ -6,25 +6,23 @@
   "author": "HealthGo",
   "license": "ISC",
   "type": "commonjs",
-
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win portable"
+    "dist": "electron-builder --win nsis"
   },
-
   "devDependencies": {
     "electron": "^44.4.5",
     "electron-builder": "^26.15.3"
   },
-
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  },
   "build": {
     "appId": "com.healthgo.app",
     "productName": "HealthGo",
-
     "directories": {
       "output": "dist"
     },
-
     "files": [
       "main.cjs",
       "healthgo-ai-server.mjs",
@@ -33,21 +31,29 @@
       "icon.ico",
       "package.json"
     ],
-
     "win": {
       "icon": "icon.ico",
       "target": [
         {
-          "target": "portable",
+          "target": "nsis",
           "arch": [
             "x64"
           ]
         }
       ]
     },
-
-    "portable": {
-      "artifactName": "HealthGo.exe"
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "HealthGo",
+      "artifactName": "HealthGo-Setup-${version}.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "minek1522icloud-beep",
+      "repo": "HealthGo"
     }
   }
 }
