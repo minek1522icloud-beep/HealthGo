@@ -33,7 +33,7 @@ jobs:
           "HEALTHGO_VERSION=$version" >> $env:GITHUB_ENV
 
       - name: Zbuduj instalator HealthGo
-        run: npm run dist
+        run: npm run dist -- --publish never
 
       - name: Opublikuj aktualizacje
         shell: pwsh
