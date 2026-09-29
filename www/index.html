@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthGo</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#3b82f6;--primary2:#6366f1;--border:#e5e7eb;--green:#22c55e;--shadow:0 10px 30px rgba(20,35,70,.08)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}button{cursor:pointer;border:0}
+.app{display:flex;min-height:100vh}.sidebar{width:250px;background:#101827;color:white;padding:22px 14px;position:fixed;inset:0 auto 0 0;overflow:auto}
+.logo{font-size:25px;font-weight:900;padding:8px 12px 24px}.logo span{color:#60a5fa}
+.nav button{width:100%;background:transparent;color:#d8e0ed;text-align:left;padding:12px 14px;border-radius:12px;margin:3px 0}.nav button:hover,.nav button.active{background:#1e2b42;color:#fff}
+.main{margin-left:250px;width:calc(100% - 250px);padding:25px;max-width:1600px}.top{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:22px}.top h1{margin:0;font-size:28px}.profile-mini{background:var(--card);padding:10px 14px;border-radius:14px;box-shadow:var(--shadow)}
+.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow)}.card h2,.card h3{margin-top:0}
+.hero{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border-radius:22px;padding:26px;margin-bottom:18px}.hero h2{font-size:30px;margin:0 0 8px}.hero p{opacity:.9}
+.btn{background:var(--primary);color:white;padding:11px 15px;border-radius:11px;font-weight:700}.btn.secondary{background:#eef2ff;color:#3730a3}.btn.green{background:var(--green)}.btn.gray{background:#eef1f5;color:#263246}
+input,select{width:100%;padding:12px;border:1px solid var(--border);border-radius:11px;background:white;margin:6px 0 10px}
+.tags{display:flex;flex-wrap:wrap;gap:8px}.tag{padding:8px 10px;background:#eef2ff;border-radius:999px;font-size:13px}
+.food,.game,.restaurant,.challenge{border:1px solid var(--border);border-radius:15px;padding:14px;background:#fff}.emoji{font-size:34px}.muted{color:var(--muted);font-size:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.between{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.list{display:grid;gap:10px}.progress{height:10px;background:#e8edf5;border-radius:20px;overflow:hidden}.progress>div{height:100%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);width:82%}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:120000}.modal.show{display:flex}.modalbox{background:white;max-width:600px;width:100%;border-radius:20px;padding:24px}.step-target{position:relative!important;z-index:1002!important;outline:5px solid #facc15!important;outline-offset:5px!important;border-radius:14px!important;box-shadow:0 0 0 9999px rgba(5,10,20,.72),0 0 0 9px rgba(250,204,21,.22)!important;animation:tutPulse 1.6s ease-in-out infinite;transition:outline-offset .25s ease,box-shadow .25s ease}.tutorial-bubble{position:fixed;z-index:1003;width:min(390px,calc(100vw - 28px));background:#fff;color:#172033;border-radius:18px;padding:18px;box-shadow:0 18px 60px rgba(0,0,0,.35);display:block;opacity:0;visibility:hidden;transform:translateY(8px) scale(.985);pointer-events:none;transition:opacity .22s ease,transform .22s ease,visibility .22s}.tutorial-bubble.show{opacity:1;visibility:visible;transform:translateY(0) scale(1);pointer-events:auto}.tutorial-bubble h3{margin:0 0 8px;font-size:18px}.tutorial-bubble p{margin:0;line-height:1.5}.tutorial-bubble .tut-progress{font-size:12px;color:#64748b;margin-bottom:7px}.tutorial-bubble .tut-hint{margin-top:12px;font-weight:800;color:#1d4ed8}.tutorial-bubble .tut-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}.tutorial-bubble button{border:0;border-radius:10px;padding:9px 12px;font-weight:800;cursor:pointer}.tutorial-bubble .skip{background:#e5e7eb}.tutorial-bubble .next{background:#2563eb;color:#fff}@keyframes tutPulse{50%{outline-color:#fff;outline-offset:9px}}
+.mobile-nav{display:none}
+.small{font-size:12px}.success{color:#15803d}.danger{color:#b91c1c}
+.dashboard-hero{background:linear-gradient(135deg,#0f172a,#1d4ed8);color:#fff;border-radius:24px;padding:28px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:18px}.dashboard-hero h2{font-size:30px;margin:0 0 8px}.dashboard-hero p{margin:0;color:#dbeafe}.date-pill{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);padding:10px 14px;border-radius:999px;white-space:nowrap}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}.stat{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow)}.stat-icon{width:42px;height:42px;border-radius:13px;background:#eff6ff;display:grid;place-items:center;font-size:21px;margin-bottom:16px}.stat-value{font-size:29px;font-weight:900;letter-spacing:-.5px}.stat-label{color:var(--muted);font-size:13px;margin-top:4px}.start-layout{display:grid;grid-template-columns:1.35fr .65fr;gap:16px}.timeline{display:grid;gap:0}.timeline-item{display:grid;grid-template-columns:64px 16px 1fr;gap:10px;min-height:66px}.timeline-time{font-weight:800;font-size:13px}.timeline-line{position:relative}.timeline-line:before{content:"";position:absolute;left:7px;top:15px;bottom:-12px;width:2px;background:#dbe4f0}.timeline-item:last-child .timeline-line:before{display:none}.timeline-dot{position:absolute;left:2px;top:5px;width:12px;height:12px;background:#3b82f6;border:3px solid #dbeafe;border-radius:50%}.quick-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.quick{padding:14px;border-radius:14px;background:#f8fafc;border:1px solid var(--border);text-align:left}.quick b{display:block;margin-top:7px}.health-note{padding:13px 14px;border-radius:14px;background:#f0fdf4;color:#166534;font-size:13px;margin-top:14px}.device-health-note{display:none;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:16px;padding:14px 16px;margin-bottom:18px;font-size:14px}.desktop-hide-health{display:none!important}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(2,1fr)}.start-layout{grid-template-columns:1fr}}@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}.dashboard-hero{align-items:flex-start;flex-direction:column}.quick-row{grid-template-columns:1fr}}
+@media(max-width:900px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:15px;padding-bottom:82px}.grid{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.mobile-nav{display:flex;position:fixed;z-index:10;bottom:0;left:0;right:0;background:#101827;padding:7px;gap:4px;justify-content:space-around}.mobile-nav button{background:transparent;color:#d8e0ed;font-size:12px}.top h1{font-size:22px}}
+@media(min-width:901px) and (max-width:1200px){.grid{grid-template-columns:repeat(2,1fr)}}
+
+/* HealthGo cinematic splash */
+.splash-screen{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 35%,#2563eb 0,#132d72 28%,#071226 66%,#030712 100%);color:#fff;transition:opacity .45s ease,visibility .45s ease;animation:splashAutoHide .45s ease 2.55s forwards}
+.splash-screen.hide{opacity:0;visibility:hidden;pointer-events:none}.splash-glow{position:absolute;width:420px;height:420px;border-radius:50%;background:rgba(59,130,246,.22);filter:blur(45px);animation:splashGlow 2s ease-in-out infinite}.splash-content{position:relative;text-align:center;animation:splashIn .8s cubic-bezier(.2,.8,.2,1) both}.splash-mark{width:104px;height:104px;margin:0 auto 22px;border-radius:30px;display:grid;place-items:center;font-size:52px;background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.22);box-shadow:0 24px 70px rgba(0,0,0,.35),inset 0 1px rgba(255,255,255,.3);backdrop-filter:blur(14px)}.splash-title{font-size:44px;font-weight:950;letter-spacing:-1.8px}.splash-title span{color:#7dd3fc}.splash-sub{margin-top:8px;color:#cbd5e1;font-size:14px;letter-spacing:.5px}.splash-loader{width:150px;height:4px;margin:28px auto 0;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}.splash-loader:after{content:"";display:block;height:100%;width:45%;border-radius:99px;background:#fff;animation:splashLoad 1.45s ease-in-out infinite}
+@keyframes splashAutoHide{to{opacity:0;visibility:hidden;pointer-events:none}}@keyframes splashIn{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}@keyframes splashGlow{50%{transform:scale(1.12);opacity:.65}}@keyframes splashLoad{0%{transform:translateX(-120%)}100%{transform:translateX(330%)}}
+
+/* Separate full-screen authentication */
+.auth-screen{position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 20% 10%,rgba(59,130,246,.22),transparent 35%),linear-gradient(145deg,#07111f,#0b1730 55%,#0d2146);color:#fff;overflow:auto}.auth-screen.show{display:flex}.auth-shell{width:min(100%,980px);display:grid;grid-template-columns:1.05fr .95fr;border:1px solid rgba(255,255,255,.13);border-radius:32px;overflow:hidden;background:rgba(10,20,40,.78);box-shadow:0 35px 100px rgba(0,0,0,.45);backdrop-filter:blur(20px)}.auth-brand{padding:56px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(145deg,rgba(37,99,235,.30),rgba(14,165,233,.08))}.auth-logo{font-size:34px;font-weight:950;letter-spacing:-1px}.auth-logo span{color:#7dd3fc}.auth-brand h2{font-size:38px;line-height:1.05;margin:34px 0 14px}.auth-brand p{color:#cbd5e1;line-height:1.65}.auth-panel{padding:48px;background:rgba(255,255,255,.97);color:#111827}.auth-panel h2{font-size:28px;margin:0 0 8px}.auth-panel>p{color:#64748b;margin:0 0 26px}.auth-panel input{width:100%;box-sizing:border-box;margin:0 0 12px;padding:15px 16px;border:1px solid #dbe3ef;border-radius:14px;font:inherit;background:#fff}.auth-main-btn,.auth-google-btn,.auth-create-btn{width:100%;padding:14px 16px;border:0;border-radius:14px;font-weight:800;cursor:pointer}.auth-main-btn{background:#2563eb;color:#fff}.auth-google-btn{background:#fff;color:#111827;border:1px solid #dbe3ef}.auth-create-btn{background:#e8eef8;color:#172033}.auth-divider{display:flex;align-items:center;gap:12px;color:#94a3b8;font-size:12px;margin:18px 0}.auth-divider:before,.auth-divider:after{content:"";height:1px;background:#e2e8f0;flex:1}.auth-note{font-size:12px;color:#94a3b8;text-align:center;margin-top:18px}.app.auth-hidden,.mobile-nav.auth-hidden{display:none!important}@media(max-width:760px){.auth-screen{padding:0;align-items:stretch;background:linear-gradient(180deg,#07111f 0,#0b1730 30%,#f8fafc 30%,#f8fafc 100%)}.auth-shell{width:100%;min-height:100dvh;grid-template-columns:1fr;border:0;border-radius:0;background:#fff;box-shadow:none}.auth-brand{padding:34px 24px 26px;min-height:25vh}.auth-brand h2{font-size:27px;margin:18px 0 8px}.auth-brand p{font-size:14px;margin:0}.auth-panel{padding:30px 22px 42px;border-radius:28px 28px 0 0;margin-top:-18px;position:relative}.auth-panel input{font-size:16px;min-height:52px}.auth-main-btn,.auth-google-btn,.auth-create-btn{min-height:52px;font-size:15px}.splash-title{font-size:38px}.splash-mark{width:88px;height:88px;font-size:44px}}
+
+.google-g{display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;margin-right:10px;vertical-align:middle}.auth-google-btn{display:flex!important;align-items:center;justify-content:center;gap:0}.auth-main-btn,.auth-google-btn,.auth-create-btn{cursor:pointer;touch-action:manipulation}
+.google-g{display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;margin-right:10px;vertical-align:middle}.auth-google-btn{display:flex!important;align-items:center;justify-content:center;gap:0}.auth-main-btn,.auth-google-btn,.auth-create-btn{cursor:pointer;touch-action:manipulation;pointer-events:auto!important}.auth-panel,.auth-shell{pointer-events:auto!important}
+
+/* HealthGo AI workspace */
+.ai-hero{position:relative;overflow:hidden;display:flex;justify-content:space-between;gap:24px;align-items:center;background:linear-gradient(135deg,#111d3b 0%,#173b82 52%,#5b35b5 100%);color:#fff;border-radius:26px;padding:28px 30px;margin-bottom:18px;box-shadow:0 18px 45px rgba(31,55,120,.18)}
+.ai-hero:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-70px;top:-110px;background:rgba(255,255,255,.09);filter:blur(2px)}
+.ai-hero>div{position:relative;z-index:1}.ai-kicker{font-size:12px;font-weight:900;letter-spacing:1.6px;color:#bfdbfe;margin-bottom:8px}.ai-hero h2{font-size:30px;margin:0 0 8px;letter-spacing:-.5px}.ai-hero p{max-width:760px;margin:0;color:#dbeafe;line-height:1.55}.ai-hero-badge{white-space:nowrap;padding:10px 14px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.1);font-size:13px;font-weight:800}.ai-hero-badge span{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:7px;box-shadow:0 0 0 5px rgba(74,222,128,.14)}
+.ai-workspace{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:650px;background:#fff;border:1px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}
+.ai-tools{background:#f8fafc;border-right:1px solid #e5e7eb;padding:18px;display:flex;flex-direction:column}.ai-tools-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}.ai-tools-head small{display:block;color:#64748b;margin-top:2px}.ai-orb{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);box-shadow:0 8px 20px rgba(79,70,229,.22)}
+.ai-new{width:100%;padding:11px 12px;border-radius:12px;background:#172554;color:#fff;font-weight:800;text-align:left}.ai-tools-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:900;color:#94a3b8;margin:20px 4px 8px}.ai-mode-list,.ai-shortcuts{display:grid;gap:5px}.ai-mode,.ai-shortcuts button{width:100%;padding:10px 11px;border-radius:11px;background:transparent;color:#334155;text-align:left;font-weight:700}.ai-mode:hover,.ai-shortcuts button:hover{background:#eef2ff}.ai-mode.active{background:#e0e7ff;color:#3730a3}.ai-shortcuts button{display:flex;gap:8px;align-items:center;font-size:13px}.ai-safety{margin-top:auto;background:#ecfdf5;border:1px solid #d1fae5;color:#166534;border-radius:14px;padding:12px;font-size:12px;line-height:1.45}.ai-safety span{color:#3f6b50}
+.ai-chat-panel{min-width:0;display:flex;flex-direction:column;background:linear-gradient(#fff,#fbfdff)}.ai-chat-top{height:68px;border-bottom:1px solid #eef2f7;padding:13px 18px;display:flex;justify-content:space-between;align-items:center}.ai-chat-top b{display:block;font-size:16px}.ai-chat-top span{display:block;color:#64748b;font-size:12px;margin-top:2px}.ai-chat-actions button{width:38px;height:38px;border-radius:11px;background:#f1f5f9}.ai-messages{flex:1;height:490px;overflow-y:auto;padding:24px 22px 18px;scroll-behavior:smooth}.ai-msg{display:flex;gap:10px;margin:0 0 18px;align-items:flex-start}.ai-msg.user{justify-content:flex-end}.ai-avatar{flex:0 0 34px;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;font-weight:900}.ai-bubble{max-width:min(720px,82%);border-radius:18px 18px 18px 5px;padding:13px 15px;background:#f1f5f9;color:#1e293b;line-height:1.55;box-shadow:0 2px 8px rgba(15,23,42,.04)}.ai-msg.user .ai-bubble{background:#2563eb;color:#fff;border-radius:18px 18px 5px 18px}.ai-bubble p{margin:6px 0}.ai-bubble ul{margin:8px 0 2px;padding-left:20px}.ai-bubble li{margin:5px 0}.ai-inline-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.ai-inline-actions button{padding:7px 10px;border-radius:9px;background:#fff;border:1px solid #dbe3ef;color:#334155;font-size:12px;font-weight:800}.ai-inline-actions button:hover{background:#eef2ff}.ai-typing{display:flex;gap:5px;align-items:center;height:18px}.ai-typing i{display:block;width:7px;height:7px;border-radius:50%;background:#94a3b8;animation:aiDot 1s infinite ease-in-out}.ai-typing i:nth-child(2){animation-delay:.14s}.ai-typing i:nth-child(3){animation-delay:.28s}@keyframes aiDot{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-4px);opacity:1}}
+.ai-attachment-preview{display:none;margin:0 18px 8px;padding:8px 10px;background:#eff6ff;border:1px solid #dbeafe;border-radius:12px;color:#1e40af;font-size:12px}.ai-attachment-preview.show{display:flex;align-items:center;gap:9px}.ai-attachment-preview img{width:42px;height:42px;object-fit:cover;border-radius:9px}.ai-composer{margin:0 18px 8px;border:1px solid #dbe3ef;border-radius:18px;background:#fff;display:flex;align-items:flex-end;padding:8px;box-shadow:0 8px 24px rgba(15,23,42,.06)}.ai-composer:focus-within{border-color:#93c5fd;box-shadow:0 0 0 3px #dbeafe,0 8px 24px rgba(15,23,42,.06)}.ai-composer-tools{display:flex;gap:3px}.ai-composer-tools button{width:38px;height:38px;border-radius:10px;background:transparent}.ai-composer-tools button:hover{background:#f1f5f9}.ai-composer textarea{flex:1;resize:none;max-height:120px;min-height:38px;border:0;outline:0;padding:9px 10px;margin:0;background:transparent;font:inherit;line-height:1.35}.ai-send{width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:linear-gradient(135deg,#2563eb,#6366f1);color:#fff;font-size:18px;font-weight:900}.ai-send:disabled{opacity:.55;cursor:default}.ai-footnote{text-align:center;color:#94a3b8;font-size:11px;padding:0 16px 12px}
+@media(max-width:900px){.ai-workspace{grid-template-columns:1fr}.ai-tools{border-right:0;border-bottom:1px solid #e5e7eb}.ai-tools-head,.ai-tools-title,.ai-mode-list,.ai-safety{display:none}.ai-new{width:auto;align-self:flex-start}.ai-shortcuts{display:flex;overflow-x:auto;padding-bottom:2px}.ai-shortcuts button{min-width:max-content;background:#f1f5f9}.ai-hero{align-items:flex-start}.ai-hero-badge{display:none}.ai-messages{height:52vh;min-height:390px}}
+@media(max-width:600px){.ai-hero{padding:22px 20px;border-radius:20px}.ai-hero h2{font-size:24px}.ai-hero p{font-size:14px}.ai-workspace{border-radius:18px;min-height:0}.ai-tools{padding:12px}.ai-new{padding:9px 11px}.ai-messages{padding:18px 12px;height:50vh;min-height:350px}.ai-bubble{max-width:88%;font-size:14px}.ai-composer{margin:0 10px 7px}.ai-composer-tools button:nth-child(2){display:none}.ai-chat-top{padding:12px}.ai-footnote{font-size:10px}.ai-avatar{width:30px;height:30px;flex-basis:30px}}
+
+
+.ai-history{display:flex;flex-direction:column;gap:4px;margin-top:10px;overflow:auto;max-height:calc(100vh - 230px)}
+.ai-history-item{width:100%;border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:9px;cursor:pointer;font:inherit;color:#263244;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-history-item:hover,.ai-history-item.active{background:#e9edf3}
+.ai-history-empty{font-size:11px;color:#9aa3b2;padding:8px 10px}
+
+
+/* HealthGo AI — pełny, prosty widok rozmowy */
+#ai{height:calc(100vh - 105px);overflow:hidden}
+#ai .ai-workspace{height:100%;min-height:0;border-radius:18px;grid-template-columns:230px minmax(0,1fr);box-shadow:none}
+#ai .ai-tools{padding:14px 10px;background:#f7f8fa}
+#ai .ai-new{background:#fff;color:#111827;border:1px solid #dfe3e8;border-radius:10px;padding:11px 12px;font-weight:750}
+#ai .ai-new:hover{background:#eef1f5}
+#ai .ai-history{max-height:none;flex:1;margin-top:10px}
+#ai .ai-chat-panel{height:100%;min-height:0;background:#fff}
+#ai .ai-chat-top{height:56px;padding:10px 18px}
+#ai .ai-messages{height:auto;min-height:0;flex:1;padding:24px max(22px,calc((100% - 820px)/2)) 18px}
+#ai .ai-composer{width:min(820px,calc(100% - 32px));margin:0 auto 8px;border-radius:24px;padding:7px 8px}
+#ai .ai-footnote{padding-bottom:9px}
+#ai .ai-bubble{max-width:min(760px,85%)}
+@media(max-width:900px){#ai{height:auto;overflow:visible}#ai .ai-workspace{height:auto;grid-template-columns:1fr}#ai .ai-tools{max-height:170px;border-bottom:1px solid #e5e7eb}#ai .ai-history{max-height:105px}#ai .ai-messages{height:55vh;min-height:360px;padding:18px 12px}}
+
+/* HealthGo AI — szeroki, neutralny interfejs w stylu nowoczesnego czatu */
+body:has(#ai.active) .main{max-width:none;padding-right:12px;padding-left:12px;padding-bottom:12px}
+body:has(#ai.active) .top{margin-bottom:8px}
+#ai{height:calc(100vh - 88px);overflow:hidden}
+#ai .ai-workspace{width:100%;height:100%;border:0;border-radius:12px;grid-template-columns:260px minmax(0,1fr);background:#fff}
+#ai .ai-tools{background:#f7f7f8;border-right:1px solid #e5e7eb;padding:10px 9px}
+#ai .ai-new{background:transparent;border:0;border-radius:9px;padding:11px 10px;color:#202123;font-weight:600}
+#ai .ai-new:hover{background:#ececf1}
+#ai .ai-history-item{border-radius:9px;color:#202123;padding:10px;font-size:14px}
+#ai .ai-history-item:hover,#ai .ai-history-item.active{background:#ececf1}
+#ai .ai-chat-panel{background:#fff}
+#ai .ai-chat-top{height:48px;border:0;padding:8px 18px}
+#ai .ai-chat-top span{display:none}
+#ai .ai-chat-top b{font-size:14px;font-weight:600;color:#343541}
+#ai .ai-chat-actions button{background:transparent;border-radius:8px;color:#6b7280}
+#ai .ai-chat-actions button:hover{background:#f3f4f6}
+#ai .ai-messages{padding:28px max(24px,calc((100% - 780px)/2)) 24px}
+#ai .ai-msg{gap:14px;margin-bottom:24px}
+#ai .ai-avatar{display:none!important}
+#ai .ai-bubble{max-width:760px;background:transparent;box-shadow:none;border-radius:0;padding:6px 0;color:#202123;line-height:1.65}
+#ai .ai-msg.user .ai-bubble{background:#f4f4f4;color:#202123;border-radius:20px;padding:10px 16px;max-width:min(680px,78%)}
+#ai .ai-inline-actions button{border:1px solid #e5e7eb;border-radius:18px;background:#fff;color:#374151;font-weight:600}
+#ai .ai-inline-actions button:hover{background:#f7f7f8}
+#ai .ai-composer{width:min(780px,calc(100% - 32px));margin:0 auto 8px;border:1px solid #d9d9e3;border-radius:26px;padding:7px 9px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+#ai .ai-composer:focus-within{border-color:#c5c5d2;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+#ai .ai-composer-tools button{color:#4b5563;font-size:0;background:transparent}
+#ai .ai-composer-tools button:first-child:after{content:"+";font-size:24px;font-weight:400}
+#ai .ai-composer-tools button:nth-child(2){display:none}
+#ai .ai-send{background:#111827;border-radius:50%;width:36px;height:36px;flex-basis:36px;font-size:0}
+#ai .ai-send:after{content:"↑";font-size:20px;font-weight:700;color:#fff}
+#ai .ai-footnote{color:#9ca3af;font-size:10px}
+@media(max-width:900px){body:has(#ai.active) .main{padding:8px 8px 76px}#ai{height:auto}#ai .ai-workspace{grid-template-columns:1fr}#ai .ai-tools{max-height:150px}#ai .ai-messages{padding:20px 14px;height:58vh}#ai .ai-chat-top{display:none}}
+
+</style>
+</head>
+<body style="background:#07111f">
+<div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
+  <div class="splash-glow"></div>
+  <div class="splash-content">
+    <div class="splash-mark">❤️</div>
+    <div class="splash-title">Health<span>Go</span></div>
+    <div class="splash-sub">Twoje zdrowie. Twój dzień. W jednym miejscu.</div>
+    <div class="splash-loader"></div>
+  </div>
+</div>
+<div id="authScreen" class="auth-screen" aria-label="Logowanie do HealthGo">
+  <div class="auth-shell">
+    <div class="auth-brand">
+      <div class="auth-logo">❤️ Health<span>Go</span></div>
+      <h2>Witaj w swoim HealthGo.</h2>
+      <p>Zaloguj się, aby przejść do swojego planu dnia, aktywności, mapy, gier i pozostałych funkcji aplikacji.</p>
+    </div>
+    <div class="auth-panel">
+      <h2>Zaloguj się</h2>
+      <p>Wejdź na swoje konto HealthGo.</p>
+      <input id="loginEmail" type="email" autocomplete="email" placeholder="E-mail">
+      <input id="loginPass" type="password" autocomplete="current-password" placeholder="Hasło">
+      <button id="emailLoginBtn" type="button" class="auth-main-btn" onclick="loginDemo()">Zaloguj się</button>
+      <div class="auth-divider">LUB</div>
+      <button id="googleLoginBtn" type="button" class="auth-google-btn" onclick="loginProvider('Google')" aria-label="Kontynuuj z Google"><span class="google-g" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path fill="#4285F4" d="M17.64 9.205c0-.638-.057-1.252-.164-1.841H9v3.482h4.844a4.14 4.14 0 0 1-1.797 2.715v2.258h2.909c1.702-1.567 2.684-3.875 2.684-6.614Z"/><path fill="#34A853" d="M9 18c2.43 0 4.468-.806 5.956-2.181l-2.909-2.258c-.806.54-1.835.859-3.047.859-2.344 0-4.328-1.585-5.037-3.714H.956v2.332A9 9 0 0 0 9 18Z"/><path fill="#FBBC05" d="M3.963 10.706A5.41 5.41 0 0 1 3.682 9c0-.592.102-1.168.281-1.706V4.962H.956A9 9 0 0 0 0 9c0 1.45.347 2.823.956 4.038l3.007-2.332Z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.507.454 3.441 1.346l2.581-2.581C13.464.892 11.426 0 9 0A9 9 0 0 0 .956 4.962l3.007 2.332C4.672 5.165 6.656 3.58 9 3.58Z"/></svg></span><span class="google-label">Kontynuuj z Google</span></button>
+      <div style="height:10px"></div>
+      <button id="createAccountBtn" type="button" class="auth-create-btn" onclick="createAccount()">Utwórz konto HealthGo</button>
+      <div id="authStatus" role="status" aria-live="polite" style="display:none;margin-top:14px;padding:11px 12px;border-radius:12px;background:#eff6ff;color:#1e40af;font-size:13px;text-align:left"></div><div class="auth-note">Konto HealthGo jest obsługiwane przez Firebase Authentication.</div>
+    </div>
+  </div>
+</div>
+<div class="app auth-hidden">
+<aside class="sidebar">
+  <div class="logo">❤️ Health<span>Go</span></div>
+  <div class="nav">
+    <button class="active" data-page="start">🏠 Start</button>
+    <button data-page="ai">🤖 HealthGo AI</button>
+    <button data-page="food">🍽️ Jedzenie</button>
+    <button data-page="map">🗺️ Mapa</button>
+    <button data-page="games">🎮 Gry</button>
+    <button data-page="plan">📅 Plan Dnia</button>
+    <button data-page="challenges">🎯 Wyzwania</button>
+    <button data-page="xp">🏆 XP i Nagrody</button>
+    <button data-page="activity">👣 Aktywność</button>
+    <button data-page="profile">👤 Profil</button>
+    <button data-page="settings">⚙️ Ustawienia</button>
+  </div>
+</aside>
+
+<main class="main">
+<header class="top">
+  <h1 id="title">Start</h1>
+  <div class="row"><button class="btn secondary" onclick="logoutHealthGo()">🚪 Wyloguj</button><div class="profile-mini">🧒 Konto demonstracyjne · <b>Poziom 7</b></div></div>
+</header>
+
+<section id="start" class="page active">
+  <div class="dashboard-hero">
+    <div><h2>Dzień dobry 👋</h2><p>Twój dzisiejszy przegląd zdrowia i aktywności w HealthGo.</p></div>
+    <div class="date-pill" id="todayDate">Dzisiaj</div>
+  </div>
+
+  <div id="deviceHealthNote" class="device-health-note">📱 Kroki, dystans i czas aktywności są dostępne tylko na telefonie lub zegarku. Na komputerze i tablecie te dane nie są wyświetlane.</div>
+
+  <div class="stats" id="healthStats">
+    <div class="stat motion-stat"><div class="stat-icon">👣</div><div class="stat-value" id="stepsValue">0</div><div class="stat-label">Kroki dzisiaj</div></div>
+    <div class="stat motion-stat"><div class="stat-icon">📍</div><div class="stat-value" id="distanceValue">0,0 km</div><div class="stat-label">Dystans</div></div>
+    <div class="stat motion-stat"><div class="stat-icon">⏱️</div><div class="stat-value" id="activeValue">0 min</div><div class="stat-label">Czas aktywności</div></div>
+    <div class="stat"><div class="stat-icon">😴</div><div class="stat-value" id="sleepValue">—</div><div class="stat-label">Sen · brak danych z urządzenia</div></div>
+  </div>
+
+  <div class="start-layout">
+    <div class="card">
+      <div class="between"><div><h3>📅 Dzisiaj</h3><p class="muted">Najbliższe punkty Twojego planu</p></div><button class="btn secondary" onclick="go('plan')">Pełny plan</button></div>
+      <div class="timeline">
+        <div class="timeline-item"><div class="timeline-time">15:30</div><div class="timeline-line"><span class="timeline-dot"></span></div><div><b>Czas wolny</b><div class="muted">Odpoczynek i własne zajęcia</div></div></div>
+        <div class="timeline-item"><div class="timeline-time">17:00</div><div class="timeline-line"><span class="timeline-dot"></span></div><div><b>Spacer</b><div class="muted">Aktywność na świeżym powietrzu</div></div></div>
+        <div class="timeline-item"><div class="timeline-time">18:00</div><div class="timeline-line"><span class="timeline-dot"></span></div><div><b>Kolacja</b><div class="muted">Pozycja z planu dnia</div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>⚡ Szybki dostęp</h3><p class="muted">Najczęściej używane funkcje</p>
+      <div class="quick-row">
+        <button class="quick" onclick="go('activity')">👣<b>Aktywność</b></button>
+        <button class="quick" onclick="go('plan')">📅<b>Plan dnia</b></button>
+        <button class="quick" onclick="go('food')">🍽️<b>Jedzenie</b></button>
+      </div>
+      <div class="health-note">Dane o krokach i aktywności pojawią się tutaj po podłączeniu obsługi czujników urządzenia. HealthGo nie udaje danych, których urządzenie jeszcze nie przekazuje.</div>
+    </div>
+  </div>
+</section>
+
+<section id="ai" class="page">
+  <div class="ai-workspace" id="aiChatShell">
+    <aside class="ai-tools">
+      <button class="ai-new" type="button" onclick="aiNewChat()">＋ Nowa rozmowa</button>
+      <div id="aiHistory" class="ai-history"></div>
+
+      </aside>
+
+    <div class="ai-chat-panel">
+      <div class="ai-chat-top">
+        <div><b id="aiModeTitle">HealthGo AI</b><span id="aiModeSub">Zapytaj o wszystko — nie tylko o HealthGo</span></div>
+        <div class="ai-chat-actions">
+          <button type="button" title="Wyczyść rozmowę" onclick="aiClearChat()">🗑️</button>
+        </div>
+      </div>
+
+      <div id="aiMessages" class="ai-messages" aria-live="polite">
+        <div class="ai-msg assistant">
+          
+          <div class="ai-bubble">
+            <b>Cześć! Jak mogę Ci pomóc?</b>
+            <p>Mogę pomóc Ci zaplanować dzień, znaleźć pomysł na posiłek, wymyślić grę lub wyzwanie, podpowiedzieć aktywność i przejść z Tobą do odpowiedniej części HealthGo.</p>
+            <div class="ai-inline-actions">
+              <button onclick="aiQuick('Ułóż mi plan dnia')">📅 Plan dnia</button>
+              <button onclick="aiQuick('Wymyśl mi grę')">🎮 Gra</button>
+              <button onclick="aiQuick('Podaj pomysł na posiłek')">🍽️ Jedzenie</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="aiAttachmentPreview" class="ai-attachment-preview"></div>
+      <div class="ai-composer">
+        <div class="ai-composer-tools">
+          <button type="button" onclick="document.getElementById('aiPhotoInput').click()" title="Dodaj zdjęcie">📷</button>
+          <button type="button" onclick="aiQuick('Co możesz dla mnie zrobić w HealthGo?')" title="Pokaż możliwości">✨</button>
+          <input id="aiPhotoInput" type="file" accept="image/*" hidden onchange="aiPhotoSelected(this)">
+        </div>
+        <textarea id="aiInput" rows="1" placeholder="Napisz wiadomość…" oninput="aiGrowInput(this)" onkeydown="aiInputKey(event)"></textarea>
+        <button id="aiSendBtn" class="ai-send" type="button" onclick="askAI()" aria-label="Wyślij wiadomość">➤</button>
+      </div>
+      <div class="ai-footnote">HealthGo AI może się mylić. W ważnych sprawach zdrowotnych zapytaj rodzica/opiekuna lub specjalistę.</div>
+    </div>
+  </div>
+</section>
+
+<section id="food" class="page">
+  <div class="hero"><h2>🍽️ Jedzenie</h2><p>Wybierz rodzaj jedzenia, żeby zobaczyć potrawy.</p></div>
+  <div class="grid">
+    <div class="card"><div class="emoji">🇵🇱</div><h3>Polskie</h3><button class="btn" onclick="foodCategory('Polskie')">Zobacz</button></div>
+    <div class="card"><div class="emoji">🇮🇹</div><h3>Włoskie</h3><button class="btn" onclick="foodCategory('Włoskie')">Zobacz</button></div>
+    <div class="card"><div class="emoji">🇺🇸</div><h3>Amerykańskie</h3><button class="btn" onclick="foodCategory('Amerykańskie')">Zobacz</button></div>
+    <div class="card"><div class="emoji">🇲🇽</div><h3>Meksykańskie</h3><button class="btn" onclick="foodCategory('Meksykańskie')">Zobacz</button></div>
+    <div class="card"><div class="emoji">🇯🇵</div><h3>Japońskie</h3><button class="btn" onclick="foodCategory('Japońskie')">Zobacz</button></div>
+    <div class="card"><div class="emoji">🇨🇳</div><h3>Chińskie</h3><button class="btn" onclick="foodCategory('Chińskie')">Zobacz</button></div>
+    <div class="card"><div class="emoji">🥗</div><h3>Zdrowe i lekkie</h3><button class="btn" onclick="foodCategory('Zdrowe')">Zobacz</button></div>
+    <div class="card"><div class="emoji">🍰</div><h3>Desery</h3><button class="btn" onclick="foodCategory('Desery')">Zobacz</button></div>
+    <div class="card"><div class="emoji">🥞</div><h3>Śniadania</h3><button class="btn" onclick="foodCategory('Śniadania')">Zobacz</button></div>
+    <div class="card"><div class="emoji">🥣</div><h3>Zupy</h3><button class="btn" onclick="foodCategory('Zupy')">Zobacz</button></div>
+  </div>
+  <br>
+  <div class="card"><h3 id="foodCategoryTitle">🍴 Wybierz kategorię</h3><div id="foodResults" class="grid"></div></div>
+  <br>
+  <div class="grid2">
+    <div class="card"><h3>🤖 AI Food</h3><input id="foodSearch" placeholder="Np. mam jajka i chleb"><button class="btn" onclick="searchFood()">🔎 Szukaj</button></div>
+    <div class="card"><h3>🛒 Lista zakupów</h3><input id="shop" placeholder="Dodaj produkt"><button class="btn" onclick="addShop()">Dodaj</button><div id="shopList"></div></div>
+  </div>
+</section>
+
+<section id="map" class="page">
+  <div class="hero"><h2>🗺️ Mapa</h2><p>Znajdź restauracje, apteki, szpitale, sklepy, parki i atrakcje.</p></div>
+  <div class="grid">
+    <div class="card"><div class="emoji">🍴</div><h3>Restauracje</h3><p>Wybierz rodzaj kuchni.</p><button class="btn" onclick="showRestaurants()">🍴 Restauracje</button></div>
+    <div class="card"><div class="emoji">💊</div><h3>Apteki</h3><button class="btn secondary" onclick="mapCategory('Apteki')">Pokaż</button></div>
+    <div class="card"><div class="emoji">🏥</div><h3>Szpitale i przychodnie</h3><button class="btn secondary" onclick="mapCategory('Szpitale')">Pokaż</button></div>
+    <div class="card"><div class="emoji">🌳</div><h3>Parki</h3><button class="btn secondary" onclick="mapCategory('Parki')">Pokaż</button></div>
+  </div>
+  <br>
+  <div id="restaurantPanel" class="card" style="display:none">
+    <h3>🍴 Restauracje — wybierz kuchnię</h3>
+    <div class="tags">
+      <button class="tag" onclick="restaurantCuisine('Włoskie')">🍕 Włoskie</button>
+      <button class="tag" onclick="restaurantCuisine('Azjatyckie')">🍣 Azjatyckie</button>
+      <button class="tag" onclick="restaurantCuisine('Polskie')">🍽️ Polskie</button>
+      <button class="tag" onclick="restaurantCuisine('Amerykańskie')">🍔 Amerykańskie</button>
+      <button class="tag" onclick="restaurantCuisine('Meksykańskie')">🌮 Meksykańskie</button>
+      <button class="tag" onclick="restaurantCuisine('Chińskie')">🍜 Chińskie</button>
+      <button class="tag" onclick="restaurantCuisine('Japońskie')">🍱 Japońskie</button>
+      <button class="tag" onclick="restaurantCuisine('Tureckie')">🥙 Tureckie</button>
+      <button class="tag" onclick="restaurantCuisine('Indyjskie')">🍛 Indyjskie</button>
+      <button class="tag" onclick="restaurantCuisine('Steakhouse')">🥩 Steakhouse</button>
+      <button class="tag" onclick="restaurantCuisine('Fast food')">🍗 Fast food</button>
+      <button class="tag" onclick="restaurantCuisine('Kawiarnie')">🍰 Kawiarnie</button>
+    </div>
+    <div id="restaurants" class="grid" style="margin-top:16px"></div>
+  </div>
+  <br>
+  <div id="mapInfo" class="card"><h3>📍 Mapa</h3><p>W tej wersji pokazujemy interfejs mapy. Prawdziwe wyniki miejsc i mapa zostaną podłączone przez API map.</p><button class="btn" onclick="alert('Tutaj zostanie podłączona prawdziwa mapa.')">Otwórz mapę</button></div>
+</section>
+
+<section id="games" class="page">
+  <div class="hero"><h2>🎮 Gry</h2><p>Gry terenowe, rodzinne, quizy i misje odkrywcy.</p></div>
+  <div class="grid">
+    <div class="game"><div class="emoji">🗺️</div><h3>Podchody</h3><p><b>2–10 osób · 30–60 min · park</b></p><p>Jedna drużyna zostawia bezpieczne wskazówki, druga podąża ich śladem.</p><button class="btn" onclick="game('Podchody')">▶️ Rozpocznij grę</button></div>
+    <div class="game"><div class="emoji">🔎</div><h3>Poszukiwanie skarbów</h3><p><b>2–8 osób · 30 min · park/dom</b></p><p>Rozwiązuj zagadki i szukaj kolejnych wskazówek.</p><button class="btn" onclick="game('Poszukiwanie skarbów')">▶️ Rozpocznij grę</button></div>
+    <div class="game"><div class="emoji">📸</div><h3>Foto Quest</h3><p><b>2–8 osób · 30 min · miasto/park</b></p><p>Zrób bezpieczne zdjęcia rzeczy z listy.</p><button class="btn" onclick="game('Foto Quest')">▶️ Rozpocznij grę</button></div>
+    <div class="game"><div class="emoji">🧭</div><h3>Misja odkrywcy</h3><p><b>2–6 osób · 45 min · okolica</b></p><p>Wykonuj zadania i zdobywaj XP za kolejne etapy.</p><button class="btn" onclick="game('Misja odkrywcy')">▶️ Rozpocznij grę</button></div>
+    <div class="game"><div class="emoji">🧠</div><h3>Quiz terenowy</h3><p><b>2–10 osób · 20 min</b></p><p>Odpowiadaj na pytania przygotowane przez organizatora.</p><button class="btn" onclick="game('Quiz terenowy')">▶️ Rozpocznij grę</button></div>
+    <div class="game"><div class="emoji">🤖</div><h3>Gra stworzona przez AI</h3><p>Wybierz liczbę osób, czas i miejsce.</p><button class="btn" onclick="game('Gra AI')">✨ Wygeneruj</button></div>
+  </div>
+</section>
+
+<section id="plan" class="page">
+  <div class="hero"><h2>📅 Plan Dnia</h2><p>Prawdziwy harmonogram dnia — godziny, wydarzenia i przypomnienia.</p></div>
+  <div class="card">
+    <div class="between"><h3>Dzisiejszy harmonogram</h3><button class="btn" onclick="addPlan()">＋ Dodaj</button></div>
+    <div id="planList" class="list">
+      <div class="card"><b>15:30</b> 🎮 Czas wolny</div>
+      <div class="card"><b>17:00</b> 🚶 Spacer</div>
+      <div class="card"><b>18:00</b> 🍽️ Kolacja</div>
+    </div>
+  </div><br>
+  <div class="card"><h3>⭐ Plan+</h3><p>20 zł/miesiąc lub 220 zł/rok. W przyszłej wersji: AI planowanie dnia i tygodnia, automatyczna przebudowa planu i przypomnienia.</p><button class="btn secondary" onclick="alert('Zakup będzie dostępny dopiero po dodaniu kont i bezpiecznych płatności.')">Zobacz Plan+</button></div>
+</section>
+
+<section id="challenges" class="page">
+  <div class="hero"><h2>🎯 Wyzwania</h2><p>Małe zadania dające XP. Bezpieczne i dobrowolne.</p></div>
+  <div class="grid">
+    <div class="challenge"><h3>🔍 Odkrywca</h3><p>Znajdź nowe miejsce w swojej okolicy.</p><button class="btn green" onclick="complete(this,50)">+50 XP</button></div>
+    <div class="challenge"><h3>🍽️ Kucharz</h3><p>Otwórz nowy przepis i zapisz go.</p><button class="btn green" onclick="complete(this,30)">+30 XP</button></div>
+    <div class="challenge"><h3>🧩 Zagadka</h3><p>Rozwiąż quiz w zakładce Gry.</p><button class="btn green" onclick="complete(this,40)">+40 XP</button></div>
+  </div>
+</section>
+
+<section id="xp" class="page">
+  <div class="hero"><h2>🏆 XP i Nagrody</h2><p>Poziom 7 · 820 / 1000 XP</p><div class="progress"><div id="xpbar"></div></div></div>
+  <div class="grid">
+    <div class="card"><h3>🥇 Odznaki</h3><p>First Steps · Explorer · Collector</p></div>
+    <div class="card"><h3>🎒 HealthGo Backpack</h3><p>Zbieraj odznaki, osiągnięcia i kolekcje.</p></div>
+    <div class="card"><h3>🔥 Streak</h3><p>3 dni z rzędu korzystania z HealthGo.</p></div>
+  </div>
+</section>
+
+<section id="activity" class="page">
+  <div class="hero"><h2>👣 Aktywność</h2><p>Sprawdzaj aktywności z urządzenia i zapisuj własne.</p></div>
+  <div class="grid">
+    <div class="card"><h3>👣 Kroki</h3><div style="font-size:35px;font-weight:900">4 820</div><p class="muted">Dane demonstracyjne.</p></div>
+    <div class="card"><h3>🚲 Rower</h3><button class="btn" onclick="timer()">▶️ Start</button><p id="timer">00:00</p></div>
+    <div class="card"><h3>💃 Taniec</h3><button class="btn secondary" onclick="alert('Aktywność zapisana w prototypie!')">Zapisz aktywność</button></div>
+  </div>
+</section>
+
+<section id="profile" class="page">
+  <div class="hero"><h2>👤 Profil</h2><p>Twoja przygoda w HealthGo</p></div>
+  <div class="grid">
+    <div class="card"><h3>🧒 Konto dziecka</h3><p>W prototypie aktywny jest bezpieczny tryb demonstracyjny.</p></div>
+    <div class="card"><h3>🏆 Poziom 7</h3><p>820 XP · 6 odznak · 12 zapisanych miejsc</p></div>
+    <div class="card"><h3>🎨 Personalizacja</h3><button class="btn secondary" onclick="alert('W pełnej wersji: awatary, tła, ramki i ikony.')">Zmień wygląd</button></div>
+  </div>
+</section>
+
+<section id="settings" class="page">
+  <div class="hero"><h2>⚙️ Ustawienia</h2><p>Personalizacja, prywatność i diagnostyka.</p></div>
+  <div class="grid2">
+    <div class="card"><h3>🎨 Wygląd</h3><button class="btn" onclick="toggleDark()">Przełącz jasny/ciemny</button></div>
+    <div class="card"><h3>🔔 Powiadomienia</h3><button class="btn secondary" onclick="alert('Powiadomienia demonstracyjne włączone.')">Włącz</button></div>
+    <div class="card"><h3>🧭 Diagnostyka</h3><p>Internet: ✅<br>GPS: ⚠️ wymaga urządzenia<br>Mapa: ⚠️ API później<br>AI: ⚠️ backend później</p></div>
+    <div class="card"><h3>🔐 Prywatność</h3><p>Dokładna lokalizacja dziecka nie jest publiczna. Kontrola rodzicielska będzie dodana razem z kontami.</p></div>
+    <div class="card"><h3>❓ Pomoc</h3><button class="btn secondary" onclick="startTutorial()">Uruchom tutorial ponownie</button></div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<div class="mobile-nav auth-hidden">
+<button onclick="go('start')">🏠<br>Start</button>
+<button onclick="go('ai')">🤖<br>AI</button>
+<button onclick="go('food')">🍽️<br>Jedzenie</button>
+<button onclick="go('games')">🎮<br>Gry</button>
+<button onclick="go('plan')">📅<br>Plan</button>
+</div>
+
+<div id="modal" class="modal">
+  <div class="modalbox">
+    <h2 id="modalTitle">HealthGo</h2><p id="modalText"></p>
+    <div class="row"><button class="btn gray" onclick="closeModal()">Zamknij</button><button id="modalAction" class="btn" onclick="closeModal()">OK</button></div>
+  </div>
+</div>
+
+<div id="tutorialBubble" class="tutorial-bubble" role="dialog" aria-live="polite">
+  <div id="tutProgress" class="tut-progress"></div>
+  <h3 id="tutTitle">Samouczek HealthGo</h3>
+  <p id="tutText"></p>
+  <div id="tutHint" class="tut-hint">👆 Kliknij podświetlony element</div>
+  <div class="tut-actions"><button class="skip" onclick="endTutorial()">Pomiń</button><button id="tutNext" class="next" onclick="advanceTutorial()">Dalej →</button></div>
+</div>
+
+<script>
+const titles={start:'Start',ai:'HealthGo AI',food:'Jedzenie',map:'Mapa',games:'Gry',plan:'Plan Dnia',challenges:'Wyzwania',xp:'XP i Nagrody',activity:'Aktywność',profile:'Profil',settings:'Ustawienia',login:'Logowanie'};
+let xp=820, timerSec=0, timerInt=null;
+
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+function go(page){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(page).classList.add('active');
+ document.getElementById('title').textContent=titles[page]||'HealthGo';
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function modal(title,text,action='OK'){
+ document.getElementById('modalTitle').textContent=title;
+ document.getElementById('modalText').innerHTML=text;
+ document.getElementById('modalAction').textContent=action;
+ document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+let aiMode='assistant';
+let aiPendingPhoto=null;
+function aiEscape(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fillAI(t){const el=document.getElementById('aiInput');if(!el)return;el.value=t;aiGrowInput(el);el.focus()}
+function aiGrowInput(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
+function aiInputKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askAI()}}
+function aiScroll(){const box=document.getElementById('aiMessages');if(box)box.scrollTop=box.scrollHeight}
+function aiAddMessage(role,html,actions=[]){
+ const box=document.getElementById('aiMessages');if(!box)return;
+ const row=document.createElement('div');row.className='ai-msg '+role;
+ const actionHtml=actions.length?'<div class="ai-inline-actions">'+actions.map(a=>'<button type="button" onclick="'+a.onclick+'">'+aiEscape(a.label)+'</button>').join('')+'</div>':'';
+ row.innerHTML=(role==='assistant'?'':'')+'<div class="ai-bubble">'+html+actionHtml+'</div>';
+ box.appendChild(row);aiScroll();return row;
+}
+function aiShowTyping(){return aiAddMessage('assistant','<div class="ai-typing"><i></i><i></i><i></i></div>')}
+function aiSetMode(mode,btn){
+ aiMode=mode;
+ document.querySelectorAll('.ai-mode').forEach(b=>b.classList.toggle('active',b.dataset.aiMode===mode));
+ const data={assistant:['HealthGo AI','Zapytaj o wszystko — szkołę, technologię, gry, planowanie i HealthGo','Napisz dowolne pytanie…'],plan:['Plan dnia','Pomogę uporządkować Twój dzień','Np. ułóż mi plan po szkole…'],food:['Jedzenie','Pomysły na posiłki i przepisy','Np. co mogę zrobić z jajek i pieczywa?'],activity:['Aktywność','Pomysły na bezpieczny ruch i zabawę','Np. co mogę zrobić dziś na dworze?'],explore:['Odkrywaj','Pomysły na miejsca i wyjścia','Np. gdzie warto pójść z rodziną?']};
+ const d=data[mode]||data.assistant;document.getElementById('aiModeTitle').textContent=d[0];document.getElementById('aiModeSub').textContent=d[1];document.getElementById('aiInput').placeholder=d[2];document.getElementById('aiInput').focus();
+}
+function aiQuick(text){fillAI(text);askAI()}
+function aiNewChat(){aiClearChat();document.getElementById('aiInput').focus()}
+function aiClearChat(){
+ const box=document.getElementById('aiMessages');if(!box)return;
+ box.innerHTML='<div class="ai-msg assistant"><div class="ai-bubble"><b>Nowa rozmowa ✨</b><p>Co chcesz teraz zrobić w HealthGo?</p><div class="ai-inline-actions"><button onclick="aiQuick(\'Ułóż mi plan dnia\')">📅 Plan dnia</button><button onclick="aiQuick(\'Wymyśl mi grę\')">🎮 Gra</button><button onclick="aiQuick(\'Podaj pomysł na posiłek\')">🍽️ Jedzenie</button></div></div></div>';
+ aiPendingPhoto=null;aiHistory=[];const p=document.getElementById('aiAttachmentPreview');p.classList.remove('show');p.innerHTML='';aiScroll();
+}
+function aiPhotoSelected(input){
+ const file=input.files&&input.files[0];if(!file)return;aiPendingPhoto=file;
+ const prev=document.getElementById('aiAttachmentPreview');const reader=new FileReader();reader.onload=()=>{prev.innerHTML='<img src="'+reader.result+'" alt="Podgląd zdjęcia"><div><b>Zdjęcie dodane</b><br>'+aiEscape(file.name)+'</div><button type="button" style="margin-left:auto;background:transparent;font-size:18px" onclick="aiRemovePhoto()">×</button>';prev.classList.add('show')};reader.readAsDataURL(file);
+}
+function aiRemovePhoto(){aiPendingPhoto=null;const i=document.getElementById('aiPhotoInput');if(i)i.value='';const p=document.getElementById('aiAttachmentPreview');p.classList.remove('show');p.innerHTML=''}
+function aiAction(page){go(page)}
+function aiLocalAnswer(q){
+ const t=q.toLowerCase();
+ if(/lek|tablet(k|e)|dawk|chorob|diagno|bardzo boli|ból|gorącz/.test(t)) return {html:'<b>Mogę podać tylko ogólne informacje zdrowotne.</b><p>Nie będę ustalać diagnozy ani dawki leku. Jeśli coś Cię boli, źle się czujesz albo chodzi o lek, powiedz rodzicowi lub opiekunowi i w razie potrzeby zapytajcie lekarza albo farmaceutę.</p>',actions:[]};
+ if(/plan dnia|ułóż.*plan|zaplanuj/.test(t)||aiMode==='plan') return {html:'<b>Jasne — przykładowy plan po szkole:</b><ul><li><b>15:30</b> odpoczynek i coś do jedzenia</li><li><b>16:15</b> nauka lub zadania</li><li><b>17:00</b> czas na świeżym powietrzu</li><li><b>18:00</b> kolacja</li><li><b>19:00</b> hobby, gra albo czas z rodziną</li><li><b>20:00</b> spokojniejsza część wieczoru</li></ul><p>Możesz zmienić godziny w zakładce Plan Dnia.</p>',actions:[{label:'📅 Otwórz Plan Dnia',onclick:"aiAction('plan')"}]};
+ if(/jedz|posił|obiad|kolac|śniad|przepis|jaj|chleb/.test(t)||aiMode==='food') return {html:'<b>Pomysł:</b> kolorowe kanapki lub wrap 🌯<p>Możesz użyć pieczywa lub tortilli, warzyw, sera albo jajka i ulubionych dodatków. Jeśli podasz mi składniki, które masz, dopasuję pomysł.</p>',actions:[{label:'🍽️ Otwórz Jedzenie',onclick:"aiAction('food')"}]};
+ if(/gra|zabaw|park/.test(t)) return {html:'<b>Gra: Misja Odkrywcy 🔎</b><p>Każdy dostaje listę bezpiecznych rzeczy do znalezienia, np. coś okrągłego, trzy różne liście i ciekawy znak. Za każde odkrycie jest punkt. Gracie tylko w bezpiecznym miejscu, z dala od jezdni i terenów prywatnych.</p>',actions:[{label:'🎮 Otwórz Gry',onclick:"aiAction('games')"}]};
+ if(/wyzwan/.test(t)) return {html:'<b>Wyzwanie dnia: Mały Odkrywca 🌿</b><p>Znajdź podczas spaceru trzy ciekawe rzeczy w otoczeniu i zapisz, co zauważyłeś. To ma być zabawa, bez obowiązkowego wyniku ani limitu aktywności.</p>',actions:[{label:'🎯 Otwórz Wyzwania',onclick:"aiAction('challenges')"}]};
+ if(/miejsce|map|restaur|park|gdzie/.test(t)||aiMode==='explore') return {html:'<b>Mogę pomóc w odkrywaniu miejsc.</b><p>W zakładce Mapa możesz wyszukać restauracje, parki, apteki i inne miejsca. HealthGo powinien korzystać z lokalizacji tylko po Twojej zgodzie.</p>',actions:[{label:'🗺️ Otwórz Mapę',onclick:"aiAction('map')"}]};
+ if(/aktyw|dwor|spacer|ruch|rower/.test(t)||aiMode==='activity') return {html:'<b>Pomysł na dziś:</b> wybierz coś, co sprawia Ci frajdę — spacer, jazdę na rowerze, zabawę z piłką albo grę terenową.<p>Nie musisz osiągać konkretnej liczby minut ani kroków. HealthGo może po prostu zapisać aktywność, jeśli chcesz.</p>',actions:[{label:'👣 Otwórz Aktywność',onclick:"aiAction('activity')"}]};
+ if(/co możesz|możliwoś|pomóc/.test(t)) return {html:'<b>W HealthGo mogę pomagać w:</b><ul><li>📅 układaniu planu dnia,</li><li>🍽️ pomysłach na jedzenie i przepisy,</li><li>🎮 grach i zabawach,</li><li>🎯 wyzwaniach,</li><li>🌳 pomysłach na aktywność,</li><li>🗺️ przechodzeniu do wyszukiwania miejsc.</li></ul><p>Zdjęcia można już dodawać do czatu, a ich prawdziwa analiza będzie działała po podłączeniu bezpiecznego backendu AI.</p>',actions:[]};
+ return {html:'<b>Łączenie z pełnym HealthGo AI…</b><p>Do odpowiedzi na pytania ogólne potrzebne jest połączenie z serwerem AI.</p>',actions:[]};
+}
+let aiHistory=[];
+async function aiFileToDataUrl(file){
+ return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
+}
+function aiTextToHtml(text){
+ let safe=aiEscape(text||'');
+ safe=safe.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+ safe=safe.replace(/^###\s+(.+)$/gm,'<b style="font-size:15px">$1</b>');
+ safe=safe.replace(/^[-•]\s+(.+)$/gm,'• $1');
+ return '<p>'+safe.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')+'</p>';
+}
+function aiEndpoint(){
+ const host=(location.hostname&&location.hostname!=='localhost')?location.hostname:'127.0.0.1';
+ return 'http://'+host+':8787/api/ai';
+}
+function aiSetConnection(ok,label){
+ const badge=document.getElementById('aiConnectionBadge');
+ if(!badge)return;
+ badge.innerHTML='<span style="background:'+(ok?'#4ade80':'#fbbf24')+'"></span> '+aiEscape(label|| (ok?'AI online':'AI offline'));
+}
+async function askAI(){
+ const input=document.getElementById('aiInput');if(!input)return;
+ const q=input.value.trim();const photo=aiPendingPhoto;
+ if(!q&&!photo)return;
+ if(q)aiAddMessage('user','<p>'+aiEscape(q)+'</p>');
+ let imageData=null;
+ if(photo){
+   aiAddMessage('user','<p>📷 Dodałem zdjęcie: <b>'+aiEscape(photo.name)+'</b></p>');
+   try{imageData=await aiFileToDataUrl(photo)}catch(_){imageData=null}
+   aiRemovePhoto();
+ }
+ input.value='';aiGrowInput(input);
+ const btn=document.getElementById('aiSendBtn');btn.disabled=true;
+ const typing=aiShowTyping();
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),90000);
+ try{
+   const payload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,history:aiHistory.slice(-20)};
+   if(imageData)payload.image=imageData;
+   const res=await fetch(aiEndpoint(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
+   const data=await res.json().catch(()=>({}));
+   if(!res.ok||!data.answer)throw new Error(data.error||'AI_BACKEND_UNAVAILABLE');
+   if(typing)typing.remove();
+   aiAddMessage('assistant',aiTextToHtml(data.answer));
+   aiHistory.push({role:'user',content:q||'[zdjęcie]'},{role:'assistant',content:data.answer});
+   if(aiHistory.length>40)aiHistory=aiHistory.slice(-40);
+   aiSetConnection(true,'AI online');
+ }catch(err){
+   console.warn('HealthGo AI backend:',err);
+   if(typing)typing.remove();
+   aiSetConnection(false,'Serwer AI offline');
+   let detail='Uruchom plik <b>healthgo-ai-server.mjs</b> na komputerze. Wtedy HealthGo AI będzie korzystał z prawdziwego modelu zamiast gotowych odpowiedzi.';
+   if(err&&err.name==='AbortError')detail='Serwer AI nie odpowiedział na czas. Spróbuj ponownie za chwilę.';
+   aiAddMessage('assistant','<b>Nie mam teraz połączenia z prawdziwym AI.</b><p>'+detail+'</p>');
+ }finally{
+   clearTimeout(timeout);btn.disabled=false;input.focus();
+ }
+}
+function searchFood(){
+ const q=document.getElementById('foodSearch').value.toLowerCase();
+ const cards=[...document.querySelectorAll('#foodGrid .food')];
+ cards.forEach(c=>c.style.display=(!q||c.innerText.toLowerCase().includes(q)||q.includes('jaj')&&c.innerText.includes('Naleśniki'))?'block':'none');
+}
+function recipe(name){modal('🍽️ '+name,'Przepis demonstracyjny.<br><br><b>Składniki:</b> przykładowe składniki<br><b>Przygotowanie:</b> wykonaj kolejne kroki według pełnej receptury w przyszłej wersji.')}
+function addShop(){
+ const v=document.getElementById('shop').value.trim();if(!v)return;
+ const d=document.createElement('div');d.className='card';d.style.marginTop='8px';d.textContent='🛒 '+v;
+ document.getElementById('shopList').appendChild(d);document.getElementById('shop').value='';
+}
+function filterRestaurants(type){
+ document.querySelectorAll('#restaurants .restaurant').forEach(c=>c.style.display=c.innerText.includes(type)?'block':'none');
+ if(![...document.querySelectorAll('#restaurants .restaurant')].some(c=>c.style.display!=='none')) modal('Brak danych','W prototypie nie ma jeszcze prawdziwej bazy restauracji. Po podłączeniu API pojawią się realne miejsca.');
+}
+function restaurant(name,type){modal(name,'Kuchnia: '+type+'<br>📍 przykładowa lokalizacja<br>🕐 godziny będą pobierane z bazy miejsc<br><br>W pełnej wersji: zdjęcia, odległość, mapa, godziny i ulubione.')}
+function game(name){modal('🎮 '+name,'Gra rozpoczęta!<br><br><b>Zasady bezpieczeństwa:</b> graj w bezpiecznym miejscu, nie wbiegaj na jezdnię, nie wchodź na prywatny teren i stosuj się do zasad opiekuna.')}
+function addPlan(){const time=prompt('Podaj godzinę, np. 19:30');if(!time)return;const what=prompt('Co planujesz?');if(!what)return;const d=document.createElement('div');d.className='card';d.innerHTML='<b>'+time+'</b> '+what;document.getElementById('planList').appendChild(d)}
+function complete(btn,amount){btn.disabled=true;btn.textContent='✓ Ukończone';xp=Math.min(1000,xp+amount);document.getElementById('xpbar').style.width=xp/10+'%';modal('🎉 Wyzwanie ukończone','Zdobywasz <b>+'+amount+' XP</b>!');}
+function timer(){
+ if(timerInt){clearInterval(timerInt);timerInt=null;return}
+ timerInt=setInterval(()=>{timerSec++;let m=String(Math.floor(timerSec/60)).padStart(2,'0'),s=String(timerSec%60).padStart(2,'0');document.getElementById('timer').textContent=m+':'+s},1000)
+}
+function toggleDark(){
+ const dark=document.body.dataset.dark==='1';
+ if(!dark){document.body.dataset.dark='1';document.documentElement.style.setProperty('--bg','#0b1220');document.documentElement.style.setProperty('--card','#111827');document.documentElement.style.setProperty('--text','#f3f4f6');document.documentElement.style.setProperty('--border','#263244');}
+ else{document.body.dataset.dark='0';document.documentElement.style.setProperty('--bg','#f4f7fb');document.documentElement.style.setProperty('--card','#fff');document.documentElement.style.setProperty('--text','#172033');document.documentElement.style.setProperty('--border','#e5e7eb');}
+}
+function healthDeviceMode(){
+ const ua=navigator.userAgent||'';
+ const isTablet=/iPad|Tablet|PlayBook|Silk/i.test(ua)||(/Android/i.test(ua)&&!/Mobile/i.test(ua));
+ const isPhone=/iPhone|iPod|Android.*Mobile|Windows Phone/i.test(ua);
+ const isWatch=/Watch|watchOS|Wear OS/i.test(ua)||Math.min(screen.width||9999,screen.height||9999)<=260;
+ return (isPhone||isWatch)&&!isTablet;
+}
+function applyHealthDeviceMode(){
+ const allowed=healthDeviceMode();
+ document.querySelectorAll('.motion-stat').forEach(el=>el.classList.toggle('desktop-hide-health',!allowed));
+ const note=document.getElementById('deviceHealthNote'); if(note) note.style.display=allowed?'none':'block';
+ const stats=document.getElementById('healthStats'); if(stats) stats.style.gridTemplateColumns=allowed?'repeat(4,minmax(0,1fr))':'minmax(0,1fr)';
+}
+applyHealthDeviceMode();
+window.addEventListener('resize',applyHealthDeviceMode);
+
+let tutStep=0, tutActive=false, tutCleanup=null, tutTimer=null;
+const tut=[
+ {page:'start',sel:'#start .stats .stat:nth-child(1)',title:'Kroki',text:'Na telefonie lub zegarku HealthGo może tutaj pokazywać kroki z czujników urządzenia. Na komputerze i tablecie ta karta jest ukryta.'},
+ {page:'start',sel:'#start .stats .stat:nth-child(2)',title:'Dystans',text:'Na telefonie lub zegarku zobaczysz tutaj dystans obliczony z danych urządzenia. Na komputerze i tablecie ta karta jest ukryta.'},
+ {page:'start',sel:'#start .stats .stat:nth-child(3)',title:'Czas aktywności',text:'Na telefonie lub zegarku ta karta pokazuje czas aktywności, jeśli urządzenie udostępnia takie dane. Na komputerze i tablecie jest ukryta.'},
+ {page:'start',sel:'#start .stats .stat:nth-child(4)',title:'Sen',text:'Tutaj mogą pojawić się informacje o śnie, jeśli zostanie podłączone zgodne urządzenie lub usługa. Brak danych jest wyświetlany jako brak danych.'},
+ {page:'start',sel:'#start .start-layout .card:nth-child(1)',title:'Dzisiejszy plan',text:'To skrót najbliższych punktów dnia. Widzisz godziny i zaplanowane zajęcia. Przycisk „Pełny plan” prowadzi do całego harmonogramu.'},
+ {page:'start',sel:'#start .start-layout .card:nth-child(2)',title:'Szybki dostęp',text:'Te przyciski pozwalają szybko przejść do najczęściej używanych części HealthGo: Aktywności, Planu dnia i Jedzenia.'},
+ {page:'start',sel:'.nav button[data-page="ai"]',title:'HealthGo AI',text:'Kliknij tę zakładkę. HealthGo AI będzie miejscem do zadawania pytań, tworzenia planów i korzystania z funkcji asystenta.'},
+ {page:'ai',sel:'#aiChatShell',title:'Rozmowa z HealthGo AI',text:'To jest centrum HealthGo AI. Po lewej wybierasz tryb i szybkie funkcje, na środku masz dużą rozmowę, a na dole możesz pisać wiadomości lub dodać zdjęcie.'},
+ {page:'ai',sel:'.nav button[data-page="food"]',title:'Jedzenie',text:'Kliknij „Jedzenie”, aby przejść do kategorii potraw, przepisów i funkcji związanych z jedzeniem.'},
+ {page:'food',sel:'#food .grid',title:'Kategorie jedzenia',text:'Tutaj wybierasz rodzaj kuchni lub potraw. Po kliknięciu „Zobacz” HealthGo pokazuje dania z wybranej kategorii.'},
+ {page:'food',sel:'.nav button[data-page="map"]',title:'Mapa',text:'Kliknij „Mapa”. Ta część HealthGo służy do odkrywania miejsc i restauracji na mapie.'},
+ {page:'map',sel:'#map',title:'Mapa i miejsca',text:'Na mapie możesz wyszukiwać miejsca i przeglądać dostępne kategorie. Docelowo będą tu prawdziwe dane lokalizacyjne po udzieleniu odpowiedniej zgody.'},
+ {page:'map',sel:'.nav button[data-page="games"]',title:'Gry',text:'Kliknij „Gry”, aby zobaczyć bezpieczne gry, misje i zabawy HealthGo.'},
+ {page:'games',sel:'#games',title:'Gry i misje',text:'Tutaj znajdują się gry i misje. Każda gra może mieć opis, zasady, przebieg oraz informacje bezpieczeństwa.'},
+ {page:'games',sel:'.nav button[data-page="plan"]',title:'Plan Dnia',text:'Kliknij „Plan Dnia”. Tutaj zarządzasz swoim harmonogramem.'},
+ {page:'plan',sel:'#plan',title:'Plan Dnia',text:'Plan dnia pokazuje wydarzenia według godzin. Możesz dodawać kolejne pozycje i później będziemy rozwijać edycję, przypomnienia oraz powtarzanie wydarzeń.'},
+ {page:'plan',sel:'.nav button[data-page="challenges"]',title:'Wyzwania',text:'Kliknij „Wyzwania”, aby przejść do zadań i misji.'},
+ {page:'challenges',sel:'#challenges',title:'Wyzwania',text:'Wyzwania to zadania w HealthGo. Za ukończenie wybranych zadań można zdobywać XP i odznaki w aplikacji.'},
+ {page:'challenges',sel:'.nav button[data-page="xp"]',title:'XP i Nagrody',text:'Kliknij tutaj, aby zobaczyć postęp, poziom i zdobyte nagrody w HealthGo.'},
+ {page:'xp',sel:'#xp',title:'XP i Nagrody',text:'Tutaj znajduje się postęp konta: punkty XP, poziomy, odznaki i inne elementy nagród aplikacji.'},
+ {page:'xp',sel:'.nav button[data-page="activity"]',title:'Aktywność',text:'Kliknij „Aktywność”, aby przejść do rejestrowania aktywności.'},
+ {page:'activity',sel:'#activity',title:'Aktywność',text:'Ta część służy do aktywności takich jak spacer, bieg czy rower. Docelowo może korzystać z czujników urządzenia i historii aktywności.'},
+ {page:'activity',sel:'.nav button[data-page="profile"]',title:'Profil',text:'Kliknij „Profil”, aby zobaczyć informacje i personalizację konta.'},
+ {page:'profile',sel:'#profile',title:'Profil',text:'Profil to miejsce na ustawienia użytkownika, osiągnięcia i dane konta, które użytkownik zdecyduje się zapisać.'},
+ {page:'profile',sel:'.nav button[data-page="settings"]',title:'Ustawienia',text:'Kliknij „Ustawienia”. Tutaj znajdują się opcje aplikacji i możliwość ponownego uruchomienia tego samouczka.'},
+ {page:'settings',sel:'#settings',title:'Ustawienia',text:'Tutaj zmieniasz ustawienia HealthGo. Z tego miejsca możesz też ponownie uruchomić cały samouczek.'},
+ {page:'settings',sel:'.nav button[data-page="login"]',title:'Konto i logowanie',text:'Ostatnia zakładka to logowanie. Kliknij ją, aby zobaczyć konto HealthGo.'},
+ {page:'login',sel:'#login',title:'Logowanie',text:'Tutaj możesz zalogować się e-mailem i hasłem albo kontem Google. Dane logowania obsługuje Firebase Authentication.'}
+];
+function startTutorial(){tutStep=0;tutActive=true;showTutorialStep()}
+function positionTutorialBubble(el){
+ const b=document.getElementById('tutorialBubble'),r=el.getBoundingClientRect();
+ const bw=Math.min(390,window.innerWidth-28), bh=b.offsetHeight||260;
+ let left=Math.max(14,Math.min(window.innerWidth-bw-14,r.left+r.width/2-bw/2));
+ let top=r.bottom+18;
+ if(top+bh>window.innerHeight-12) top=Math.max(12,r.top-bh-18);
+ b.style.left=left+'px';b.style.top=top+'px';
+ requestAnimationFrame(()=>b.classList.add('show'));
+}
+function clearTutorialTarget(){
+ if(tutTimer){clearTimeout(tutTimer);tutTimer=null}
+ if(tutCleanup){tutCleanup();tutCleanup=null}
+ document.querySelectorAll('.step-target').forEach(x=>x.classList.remove('step-target'));
+}
+function isVisibleTutorialTarget(el){
+ if(!el)return false; const cs=getComputedStyle(el); const r=el.getBoundingClientRect();
+ return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
+}
+function showTutorialStep(){
+ if(!tutActive)return;
+ clearTutorialTarget();
+ const bubble=document.getElementById('tutorialBubble'); bubble.classList.remove('show');
+ if(tutStep>=tut.length){endTutorial(true);return}
+ const st=tut[tutStep]; go(st.page);
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  const el=document.querySelector(st.sel);
+  if(!isVisibleTutorialTarget(el)){tutStep++;showTutorialStep();return}
+  document.getElementById('tutProgress').textContent='Krok '+(tutStep+1)+' z '+tut.length;
+  document.getElementById('tutTitle').textContent=st.title;
+  document.getElementById('tutText').textContent=st.text;
+  document.getElementById('tutHint').textContent='👆 Kliknij podświetlony element albo wybierz „Dalej →”';
+  el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});
+  tutTimer=setTimeout(()=>{
+   if(!tutActive)return;
+   el.classList.add('step-target');
+   const handler=(e)=>{e.stopPropagation();advanceTutorial()};
+   el.addEventListener('click',handler,{once:true});
+   tutCleanup=()=>el.removeEventListener('click',handler);
+   positionTutorialBubble(el);
+  },260);
+ }));
+}
+function advanceTutorial(){if(!tutActive)return;tutStep++;showTutorialStep()}
+function endTutorial(done=false){
+ tutActive=false;clearTutorialTarget();document.getElementById('tutorialBubble').classList.remove('show');
+ if(done)modal('🎉 Gratulacje!','Poznałeś najważniejsze funkcje HealthGo. Samouczek możesz uruchomić ponownie w Ustawieniach.');
+}
+window.addEventListener('resize',()=>{if(tutActive){const st=tut[tutStep],el=st&&document.querySelector(st.sel);if(isVisibleTutorialTarget(el))positionTutorialBubble(el)}});
+
+function foodCategory(cat){
+ const data={
+  'Polskie':['🥟 Pierogi ruskie','🥔 Placki ziemniaczane','🍲 Rosół','🥬 Gołąbki','🍖 Schabowy'],
+  'Włoskie':['🍝 Spaghetti bolognese','🍕 Pizza margherita','🥘 Lasagne','🥔 Gnocchi','🍚 Risotto'],
+  'Amerykańskie':['🍔 Burger','🥞 Pancakes','🌭 Hot dog','🧀 Mac and cheese','🥪 Grilled cheese'],
+  'Meksykańskie':['🌮 Tacos','🌯 Burrito','🧀 Quesadilla','🌶️ Fajitas','🧀 Nachos'],
+  'Japońskie':['🍣 Sushi','🍜 Ramen','🥟 Gyoza','🍱 Teriyaki','🍜 Udon'],
+  'Chińskie':['🍚 Fried rice','🥟 Dumplings','🍜 Chow mein','🥡 Sweet & sour','🍜 Chińska zupa'],
+  'Zdrowe':['🥗 Sałatka grecka','🥗 Sałatka z kurczakiem','🥦 Warzywa pieczone','🍚 Ryż z warzywami','🥪 Kanapka warzywna'],
+  'Desery':['🍎 Szarlotka','🍫 Brownie','🍰 Sernik','🧁 Muffinki','🧇 Gofry'],
+  'Śniadania':['🍳 Jajecznica','🥚 Jajka sadzone','🥞 Naleśniki','🥣 Owsianka','🍞 Tosty'],
+  'Zupy':['🍲 Rosół','🍅 Pomidorowa','🥒 Ogórkowa','🥣 Żurek','🎃 Krem z dyni']
+ };
+ document.getElementById('foodCategoryTitle').textContent='🍴 '+cat;
+ document.getElementById('foodResults').innerHTML=(data[cat]||[]).map(x=>`<div class="food"><div class="emoji">${x.split(' ')[0]}</div><h3>${x.substring(x.indexOf(' ')+1)}</h3><p class="muted">Przykładowe danie</p><button class="btn secondary" onclick="recipe('${x.substring(x.indexOf(' ')+1)}')">Przepis</button></div>`).join('');
+}
+function showRestaurants(){
+ document.getElementById('restaurantPanel').style.display='block';
+ document.getElementById('restaurantPanel').scrollIntoView({behavior:'smooth'});
+}
+function restaurantCuisine(cuisine){
+ const names={
+  'Włoskie':['Pizza House','Pasta Corner','Italiano'],
+  'Azjatyckie':['Asia Bowl','Wok House','Asian Garden'],
+  'Polskie':['Polska Chata','Domowy Smak','Pierogarnia'],
+  'Amerykańskie':['Burger Spot','American Grill','Big Burger'],
+  'Meksykańskie':['Taco Bar','Mexico Food','Burrito House'],
+  'Chińskie':['China Wok','Smok','Chinese Garden'],
+  'Japońskie':['Sushi Bar','Tokyo Sushi','Ramen House'],
+  'Tureckie':['Kebab House','Istanbul Grill','Anatolia'],
+  'Indyjskie':['Curry House','India Taste','Masala'],
+  'Steakhouse':['Steak House','Grill House','Prime Steak'],
+  'Fast food':['Burger Spot','Chicken Box','Fast Food'],
+  'Kawiarnie':['Cafe Go','Sweet Cafe','Coffee Place']
+ };
+ document.getElementById('restaurants').innerHTML=(names[cuisine]||['Przykładowa restauracja']).map(n=>`<div class="restaurant"><div class="emoji">🍴</div><h3>${n}</h3><p>${cuisine} · dane demonstracyjne</p><button class="btn secondary" onclick="restaurant('${n}','${cuisine}')">Szczegóły</button></div>`).join('');
+}
+function mapCategory(cat){modal('🗺️ '+cat,'Tutaj pojawią się prawdziwe miejsca po podłączeniu mapy i wyszukiwarki miejsc.')}
+function loginDemoLegacy(){
+ const e=document.getElementById('loginEmail').value.trim(), p=document.getElementById('loginPass').value;
+ if(!e||!p){modal('🔐 Logowanie','Wpisz e-mail i hasło.');return}
+ modal('✅ Zalogowano','To jest logowanie demonstracyjne. Prawdziwe konto będzie bezpiecznie obsługiwane przez backend.');
+}
+function createAccountLegacy(){modal('👤 Załóż konto','W następnym etapie dodamy prawdziwą rejestrację, weryfikację e-maila i bezpieczne przechowywanie kont.')}
+function loginProviderLegacy(name){modal('⚡ '+name,'W prototypie to przycisk demonstracyjny. Prawdziwe Google/Apple Sign-In wymaga konfiguracji usług logowania i backendu.')}
+function chooseAccount(type){modal('👤 '+type,'Wybrano '+type+'. Ustawienia konta i połączenie dziecko–opiekun dodamy do prawdziwego systemu kont.')}
+</script>
+
+<script>
+// HealthGo: ekran logowania jest interaktywny od razu.
+window.addEventListener('DOMContentLoaded', function () {
+  var d = document.getElementById('todayDate');
+  if (d) d.textContent = new Intl.DateTimeFormat('pl-PL', {weekday:'long',day:'numeric',month:'long'}).format(new Date());
+  var authScreen = document.getElementById('authScreen');
+  var appShell = document.querySelector('.app');
+  var mobileNav = document.querySelector('.mobile-nav');
+  setTimeout(function () {
+    var splash = document.getElementById('splashScreen');
+    if (splash) { splash.classList.add('hide'); splash.style.pointerEvents='none'; }
+  }, 3000);
+});
+</script>
+
+<!-- Firebase Compat: zwykłe skrypty, bez importów ES Modules. -->
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var firebaseConfig = {
+    apiKey: "AIzaSyC841XoWIJ1AANTuIJ88s_mUIPa0MgrJZM",
+    authDomain: "healthgo-e45be.firebaseapp.com",
+    projectId: "healthgo-e45be",
+    storageBucket: "healthgo-e45be.firebasestorage.app",
+    messagingSenderId: "924242915977",
+    appId: "1:924242915977:web:bed648007802203cf28c58"
+  };
+
+  var API_KEY = firebaseConfig.apiKey;
+  var statusBox = document.getElementById('authStatus');
+  var emailInput = document.getElementById('loginEmail');
+  var passInput = document.getElementById('loginPass');
+  var emailBtn = document.getElementById('emailLoginBtn');
+  var googleBtn = document.getElementById('googleLoginBtn');
+  var createBtn = document.getElementById('createAccountBtn');
+  var auth = null;
+
+  function status(message, type) {
+    type = type || 'info';
+    if (!statusBox) return;
+    statusBox.style.display = 'block';
+    statusBox.textContent = message;
+    statusBox.style.background = type === 'error' ? '#fef2f2' : type === 'ok' ? '#f0fdf4' : '#eff6ff';
+    statusBox.style.color = type === 'error' ? '#991b1b' : type === 'ok' ? '#166534' : '#1e40af';
+  }
+
+  function cleanRestError(code) {
+    code = String(code || '').split(' : ')[0];
+    var map = {
+      'INVALID_EMAIL': 'Wpisz poprawny adres e-mail.',
+      'MISSING_EMAIL': 'Wpisz adres e-mail.',
+      'MISSING_PASSWORD': 'Wpisz hasło.',
+      'INVALID_LOGIN_CREDENTIALS': 'Nieprawidłowy e-mail lub hasło.',
+      'EMAIL_NOT_FOUND': 'Nie ma takiego konta. Możesz utworzyć nowe konto.',
+      'INVALID_PASSWORD': 'Nieprawidłowy e-mail lub hasło.',
+      'EMAIL_EXISTS': 'Konto z tym adresem e-mail już istnieje.',
+      'WEAK_PASSWORD': 'Hasło musi mieć co najmniej 6 znaków.',
+      'USER_DISABLED': 'To konto jest wyłączone.',
+      'TOO_MANY_ATTEMPTS_TRY_LATER': 'Za dużo prób. Poczekaj chwilę i spróbuj ponownie.',
+      'OPERATION_NOT_ALLOWED': 'Ta metoda logowania nie jest włączona w Firebase.'
+    };
+    return map[code] || 'Nie udało się zalogować. Spróbuj ponownie.';
+  }
+
+  function cleanFirebaseError(error) {
+    var code = error && error.code ? error.code : '';
+    var map = {
+      'auth/invalid-email': 'Wpisz poprawny adres e-mail.',
+      'auth/invalid-credential': 'Nieprawidłowy e-mail lub hasło.',
+      'auth/wrong-password': 'Nieprawidłowy e-mail lub hasło.',
+      'auth/user-not-found': 'Nie ma takiego konta.',
+      'auth/email-already-in-use': 'Konto z tym adresem e-mail już istnieje.',
+      'auth/weak-password': 'Hasło musi mieć co najmniej 6 znaków.',
+      'auth/popup-closed-by-user': 'Okno Google zostało zamknięte.',
+      'auth/popup-blocked': 'Przeglądarka zablokowała okno Google. Zezwól na wyskakujące okna.',
+      'auth/unauthorized-domain': 'Ten adres strony nie jest dodany do Autoryzowanych domen Firebase.',
+      'auth/network-request-failed': 'Brak połączenia z Firebase. Sprawdź internet.',
+      'auth/operation-not-allowed': 'Logowanie Google nie jest włączone w Firebase.',
+      'auth/account-exists-with-different-credential': 'Ten e-mail jest już używany przez inną metodę logowania.'
+    };
+    return map[code] || 'Logowanie Google nie powiodło się. Spróbuj ponownie.';
+  }
+
+  function setBusy(button, busy, busyText, normalText) {
+    if (!button) return;
+    button.disabled = !!busy;
+    button.style.opacity = busy ? '.7' : '1';
+    if (button === googleBtn) {
+      var label = button.querySelector('.google-label');
+      if (label) label.textContent = busy ? busyText : normalText;
+    } else {
+      button.textContent = busy ? busyText : normalText;
+    }
+  }
+
+  function showAuthScreen() {
+    var splash = document.getElementById('splashScreen');
+    var authScreen = document.getElementById('authScreen');
+    var appShell = document.querySelector('.app');
+    var mobileNav = document.querySelector('.mobile-nav');
+    if (splash) { splash.classList.add('hide'); splash.style.pointerEvents='none'; }
+    if (authScreen) authScreen.classList.add('show');
+    if (appShell) appShell.classList.add('auth-hidden');
+    if (mobileNav) mobileNav.classList.add('auth-hidden');
+  }
+
+  function showMainApp(user) {
+    var splash = document.getElementById('splashScreen');
+    var authScreen = document.getElementById('authScreen');
+    var appShell = document.querySelector('.app');
+    var mobileNav = document.querySelector('.mobile-nav');
+    if (splash) { splash.classList.add('hide'); splash.style.pointerEvents='none'; }
+    if (authScreen) authScreen.classList.remove('show');
+    if (appShell) appShell.classList.remove('auth-hidden');
+    if (mobileNav) mobileNav.classList.remove('auth-hidden');
+    var mini = document.querySelector('.profile-mini');
+    if (mini && user) mini.textContent = '👤 ' + (user.displayName || user.email || 'Zalogowany');
+    if (typeof window.go === 'function' && !document.querySelector('.page.active')) window.go('start');
+  }
+
+  async function restAuth(path, email, password) {
+    var response = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:' + path + '?key=' + encodeURIComponent(API_KEY), {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email:email, password:password, returnSecureToken:true})
+    });
+    var data = await response.json().catch(function(){ return {}; });
+    if (!response.ok) {
+      var err = new Error((data.error && data.error.message) || 'AUTH_ERROR');
+      err.restCode = (data.error && data.error.message) || 'AUTH_ERROR';
+      throw err;
+    }
+    return data;
+  }
+
+  function saveRestSession(data) {
+    try {
+      localStorage.setItem('healthgo_rest_session', JSON.stringify({
+        idToken:data.idToken || '', refreshToken:data.refreshToken || '', email:data.email || '', localId:data.localId || ''
+      }));
+    } catch (_) {}
+  }
+
+  // E-mail i hasło działają bez zależności od załadowania Firebase SDK.
+  window.loginDemo = async function () {
+    var email = emailInput ? emailInput.value.trim() : '';
+    var password = passInput ? passInput.value : '';
+    if (!email || !password) return status('Wpisz e-mail i hasło.', 'error');
+    setBusy(emailBtn, true, 'Logowanie…', 'Zaloguj się');
+    status('Logowanie…');
+    try {
+      var data = await restAuth('signInWithPassword', email, password);
+      saveRestSession(data);
+      status('Zalogowano.', 'ok');
+      showMainApp({email:data.email});
+    } catch (error) {
+      console.error('HealthGo e-mail login:', error);
+      status(cleanRestError(error.restCode), 'error');
+    } finally {
+      setBusy(emailBtn, false, 'Logowanie…', 'Zaloguj się');
+    }
+  };
+
+  window.createAccount = async function () {
+    var email = emailInput ? emailInput.value.trim() : '';
+    var password = passInput ? passInput.value : '';
+    if (!email || !password) return status('Wpisz e-mail i hasło.', 'error');
+    if (password.length < 6) return status('Hasło musi mieć co najmniej 6 znaków.', 'error');
+    setBusy(createBtn, true, 'Tworzenie…', 'Utwórz konto HealthGo');
+    status('Tworzenie konta…');
+    try {
+      var data = await restAuth('signUp', email, password);
+      saveRestSession(data);
+      status('Konto utworzone.', 'ok');
+      showMainApp({email:data.email});
+    } catch (error) {
+      console.error('HealthGo create account:', error);
+      status(cleanRestError(error.restCode), 'error');
+    } finally {
+      setBusy(createBtn, false, 'Tworzenie…', 'Utwórz konto HealthGo');
+    }
+  };
+
+  // Google korzysta z oficjalnego Firebase Auth SDK. Compat nie wymaga importów type=module.
+  window.loginProvider = async function (name) {
+    if (name !== 'Google') return;
+    if (!auth || !window.firebase) {
+      status('Logowanie Google jeszcze się ładuje. Odśwież stronę i spróbuj ponownie.', 'error');
+      return;
+    }
+    setBusy(googleBtn, true, 'Otwieram Google…', 'Kontynuuj z Google');
+    status('Otwieram Google…');
+    try {
+      var provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({prompt:'select_account'});
+      var result = await auth.signInWithPopup(provider);
+      status('Zalogowano przez Google.', 'ok');
+      showMainApp(result.user);
+    } catch (error) {
+      console.error('HealthGo Google login:', error);
+      status(cleanFirebaseError(error), 'error');
+    } finally {
+      setBusy(googleBtn, false, 'Otwieram Google…', 'Kontynuuj z Google');
+    }
+  };
+
+  window.logoutHealthGo = async function () {
+    try { localStorage.removeItem('healthgo_rest_session'); } catch (_) {}
+    try { if (auth) await auth.signOut(); } catch (_) {}
+    showAuthScreen();
+  };
+
+  if (passInput) passInput.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') window.loginDemo();
+  });
+
+  // Firebase SDK jest potrzebny tylko do Google. Awaria CDN nie blokuje e-mail/hasło.
+  try {
+    if (window.firebase && firebase.initializeApp) {
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+      auth.languageCode = 'pl';
+      auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+      auth.onAuthStateChanged(function(user) {
+        if (user) showMainApp(user);
+      });
+    } else {
+      console.warn('Firebase Compat SDK nie załadował się; e-mail/hasło nadal działa przez REST.');
+    }
+  } catch (error) {
+    console.error('Firebase Compat init:', error);
+  }
+
+  // Przy odświeżeniu zachowaj prostą sesję e-mailową.
+  try {
+    var saved = JSON.parse(localStorage.getItem('healthgo_rest_session') || 'null');
+    if (saved && saved.idToken && saved.email) showMainApp({email:saved.email});
+    else showAuthScreen();
+  } catch (_) { showAuthScreen(); }
+})();
+</script>
+
+
+<script>
+(function(){
+  const KEY='healthgo_ai_conversations_v1';
+  let currentId=null;
+
+  function all(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}}
+  function put(list){localStorage.setItem(KEY,JSON.stringify(list))}
+  function msgs(){return document.getElementById('aiMessages')}
+
+  function titleFromChat(){
+    const root=msgs(); if(!root)return 'Nowa rozmowa';
+    const u=root.querySelector('.ai-msg.user .ai-bubble');
+    if(!u)return 'Nowa rozmowa';
+    let t=(u.innerText||u.textContent||'').trim().replace(/\s+/g,' ');
+    return t.length>32?t.slice(0,32)+'…':(t||'Nowa rozmowa');
+  }
+  function save(){
+    const root=msgs(); if(!root||!currentId)return;
+    let list=all(), item=list.find(x=>x.id===currentId);
+    if(!item){item={id:currentId,title:'Nowa rozmowa',html:'',updated:Date.now()};list.unshift(item)}
+    item.title=titleFromChat(); item.html=root.innerHTML; item.updated=Date.now();
+    list.sort((a,b)=>b.updated-a.updated); put(list); render();
+  }
+  function render(){
+    const box=document.getElementById('aiHistory'); if(!box)return;
+    const list=all();
+    box.innerHTML=list.length?'':'<div class="ai-history-empty">Brak zapisanych rozmów</div>';
+    list.forEach(c=>{
+      const b=document.createElement('button');
+      b.className='ai-history-item'+(c.id===currentId?' active':'');
+      b.textContent=c.title||'Nowa rozmowa';
+      b.title=c.title||'Nowa rozmowa';
+      b.onclick=()=>load(c.id);
+      box.appendChild(b);
+    });
+  }
+  function load(id){
+    const c=all().find(x=>x.id===id); if(!c)return;
+    currentId=id;
+    const root=msgs(); if(root)root.innerHTML=c.html||'';
+    render();
+    if(root)root.scrollTop=root.scrollHeight;
+  }
+  function fresh(){
+    currentId='chat_'+Date.now();
+    const root=msgs();
+    if(root)root.innerHTML='';
+    let list=all();
+    list.unshift({id:currentId,title:'Nowa rozmowa',html:'',updated:Date.now()});
+    put(list); render();
+  }
+
+  // Override New conversation, but preserve a clean empty chat.
+  window.aiNewChat=function(){ save(); fresh(); };
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    const list=all();
+    if(list.length) load(list[0].id); else fresh();
+
+    const root=msgs();
+    if(root){
+      const obs=new MutationObserver(()=>setTimeout(save,80));
+      obs.observe(root,{childList:true,subtree:true,characterData:true});
+    }
+    const input=document.getElementById('aiInput');
+    if(input) input.addEventListener('keydown',()=>setTimeout(save,250));
+    window.addEventListener('beforeunload',save);
+  });
+})();
+</script>
+
+</body>
+</html>
