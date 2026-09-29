@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HealthGo</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
 :root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#3b82f6;--primary2:#6366f1;--border:#e5e7eb;--green:#22c55e;--shadow:0 10px 30px rgba(20,35,70,.08)}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -107,6 +109,27 @@ body:has(#ai.active) .top{margin-bottom:8px}
 #ai .ai-footnote{color:#9ca3af;font-size:10px}
 @media(max-width:900px){body:has(#ai.active) .main{padding:8px 8px 76px}#ai{height:auto}#ai .ai-workspace{grid-template-columns:1fr}#ai .ai-tools{max-height:150px}#ai .ai-messages{padding:20px 14px;height:58vh}#ai .ai-chat-top{display:none}}
 
+
+/* HealthGo Mapa — prawdziwe restauracje */
+#map{height:calc(100vh - 105px);overflow:hidden}
+.map-workspace{display:grid;grid-template-columns:260px minmax(0,1fr);height:100%;min-height:620px;background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.map-tools{background:#f7f8fa;border-right:1px solid #e5e7eb;padding:16px 12px;display:flex;flex-direction:column;min-height:0}
+.map-tools-head{display:flex;align-items:center;gap:10px;padding:2px 4px 12px}.map-tools-head b{display:block}.map-tools-head small{display:block;color:#64748b;margin-top:2px}
+.map-orb{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);box-shadow:0 8px 20px rgba(79,70,229,.22)}
+.map-tools-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:900;color:#94a3b8;margin:14px 5px 8px}
+.map-cuisines{display:grid;gap:5px;overflow:auto;padding-right:2px}.map-cuisine{width:100%;padding:10px 11px;border-radius:11px;background:transparent;color:#334155;text-align:left;font-weight:750}.map-cuisine:hover{background:#eef2ff}.map-cuisine.active{background:#e0e7ff;color:#3730a3}
+.map-search-area{margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb}.map-search-btn{width:100%;padding:11px 12px;border-radius:12px;background:#172554;color:#fff;font-weight:850;text-align:left}.map-search-btn:disabled{opacity:.55;cursor:default}
+.map-note{margin-top:auto;background:#eff6ff;border:1px solid #dbeafe;color:#1e40af;border-radius:14px;padding:11px;font-size:11px;line-height:1.45}
+.map-main{min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 340px;background:#fff}
+#healthgoMap{width:100%;height:100%;min-height:620px;background:#e5e7eb}
+.map-results-panel{min-width:0;border-left:1px solid #e5e7eb;display:flex;flex-direction:column;min-height:0;background:#fff}
+.map-results-head{padding:16px;border-bottom:1px solid #eef2f7}.map-results-head b{display:block;font-size:16px}.map-results-head span{display:block;color:#64748b;font-size:12px;margin-top:3px}
+.map-results{overflow:auto;padding:12px;display:grid;gap:9px;align-content:start}.map-empty{padding:20px 14px;text-align:center;color:#64748b;font-size:13px;line-height:1.5}
+.map-place{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#fff}.map-place:hover{border-color:#bfdbfe;background:#fbfdff}.map-place h3{font-size:14px;margin:0 0 5px}.map-place p{font-size:12px;color:#64748b;margin:3px 0;line-height:1.4}.map-place-actions{display:flex;gap:7px;margin-top:9px}.map-place-actions button{padding:7px 9px;border-radius:9px;background:#eef2ff;color:#3730a3;font-size:11px;font-weight:800}
+.map-status{font-size:11px;color:#64748b;margin-top:8px;min-height:16px}
+@media(max-width:1150px){.map-main{grid-template-columns:minmax(0,1fr) 300px}}
+@media(max-width:900px){#map{height:auto;overflow:visible}.map-workspace{grid-template-columns:1fr;height:auto;min-height:0}.map-tools{border-right:0;border-bottom:1px solid #e5e7eb}.map-cuisines{display:flex;overflow-x:auto}.map-cuisine{min-width:max-content;background:#f1f5f9}.map-note{margin-top:12px}.map-main{grid-template-columns:1fr}.map-results-panel{border-left:0;border-top:1px solid #e5e7eb}.map-results{max-height:320px}#healthgoMap{height:52vh;min-height:390px}}
+
 </style>
 </head>
 <body style="background:#07111f">
@@ -146,7 +169,6 @@ body:has(#ai.active) .top{margin-bottom:8px}
   <div class="nav">
     <button class="active" data-page="start">🏠 Start</button>
     <button data-page="ai">🤖 HealthGo AI</button>
-    <button data-page="food">🍽️ Jedzenie</button>
     <button data-page="map">🗺️ Mapa</button>
     <button data-page="games">🎮 Gry</button>
     <button data-page="plan">📅 Plan Dnia</button>
@@ -193,7 +215,7 @@ body:has(#ai.active) .top{margin-bottom:8px}
       <div class="quick-row">
         <button class="quick" onclick="go('activity')">👣<b>Aktywność</b></button>
         <button class="quick" onclick="go('plan')">📅<b>Plan dnia</b></button>
-        <button class="quick" onclick="go('food')">🍽️<b>Jedzenie</b></button>
+        <button class="quick" onclick="go('map')">🗺️<b>Mapa i restauracje</b></button>
       </div>
       <div class="health-note">Dane o krokach i aktywności pojawią się tutaj po podłączeniu obsługi czujników urządzenia. HealthGo nie udaje danych, których urządzenie jeszcze nie przekazuje.</div>
     </div>
@@ -246,58 +268,38 @@ body:has(#ai.active) .top{margin-bottom:8px}
   </div>
 </section>
 
-<section id="food" class="page">
-  <div class="hero"><h2>🍽️ Jedzenie</h2><p>Wybierz rodzaj jedzenia, żeby zobaczyć potrawy.</p></div>
-  <div class="grid">
-    <div class="card"><div class="emoji">🇵🇱</div><h3>Polskie</h3><button class="btn" onclick="foodCategory('Polskie')">Zobacz</button></div>
-    <div class="card"><div class="emoji">🇮🇹</div><h3>Włoskie</h3><button class="btn" onclick="foodCategory('Włoskie')">Zobacz</button></div>
-    <div class="card"><div class="emoji">🇺🇸</div><h3>Amerykańskie</h3><button class="btn" onclick="foodCategory('Amerykańskie')">Zobacz</button></div>
-    <div class="card"><div class="emoji">🇲🇽</div><h3>Meksykańskie</h3><button class="btn" onclick="foodCategory('Meksykańskie')">Zobacz</button></div>
-    <div class="card"><div class="emoji">🇯🇵</div><h3>Japońskie</h3><button class="btn" onclick="foodCategory('Japońskie')">Zobacz</button></div>
-    <div class="card"><div class="emoji">🇨🇳</div><h3>Chińskie</h3><button class="btn" onclick="foodCategory('Chińskie')">Zobacz</button></div>
-    <div class="card"><div class="emoji">🥗</div><h3>Zdrowe i lekkie</h3><button class="btn" onclick="foodCategory('Zdrowe')">Zobacz</button></div>
-    <div class="card"><div class="emoji">🍰</div><h3>Desery</h3><button class="btn" onclick="foodCategory('Desery')">Zobacz</button></div>
-    <div class="card"><div class="emoji">🥞</div><h3>Śniadania</h3><button class="btn" onclick="foodCategory('Śniadania')">Zobacz</button></div>
-    <div class="card"><div class="emoji">🥣</div><h3>Zupy</h3><button class="btn" onclick="foodCategory('Zupy')">Zobacz</button></div>
-  </div>
-  <br>
-  <div class="card"><h3 id="foodCategoryTitle">🍴 Wybierz kategorię</h3><div id="foodResults" class="grid"></div></div>
-  <br>
-  <div class="grid2">
-    <div class="card"><h3>🤖 AI Food</h3><input id="foodSearch" placeholder="Np. mam jajka i chleb"><button class="btn" onclick="searchFood()">🔎 Szukaj</button></div>
-    <div class="card"><h3>🛒 Lista zakupów</h3><input id="shop" placeholder="Dodaj produkt"><button class="btn" onclick="addShop()">Dodaj</button><div id="shopList"></div></div>
-  </div>
-</section>
-
 <section id="map" class="page">
-  <div class="hero"><h2>🗺️ Mapa</h2><p>Znajdź restauracje, apteki, szpitale, sklepy, parki i atrakcje.</p></div>
-  <div class="grid">
-    <div class="card"><div class="emoji">🍴</div><h3>Restauracje</h3><p>Wybierz rodzaj kuchni.</p><button class="btn" onclick="showRestaurants()">🍴 Restauracje</button></div>
-    <div class="card"><div class="emoji">💊</div><h3>Apteki</h3><button class="btn secondary" onclick="mapCategory('Apteki')">Pokaż</button></div>
-    <div class="card"><div class="emoji">🏥</div><h3>Szpitale i przychodnie</h3><button class="btn secondary" onclick="mapCategory('Szpitale')">Pokaż</button></div>
-    <div class="card"><div class="emoji">🌳</div><h3>Parki</h3><button class="btn secondary" onclick="mapCategory('Parki')">Pokaż</button></div>
-  </div>
-  <br>
-  <div id="restaurantPanel" class="card" style="display:none">
-    <h3>🍴 Restauracje — wybierz kuchnię</h3>
-    <div class="tags">
-      <button class="tag" onclick="restaurantCuisine('Włoskie')">🍕 Włoskie</button>
-      <button class="tag" onclick="restaurantCuisine('Azjatyckie')">🍣 Azjatyckie</button>
-      <button class="tag" onclick="restaurantCuisine('Polskie')">🍽️ Polskie</button>
-      <button class="tag" onclick="restaurantCuisine('Amerykańskie')">🍔 Amerykańskie</button>
-      <button class="tag" onclick="restaurantCuisine('Meksykańskie')">🌮 Meksykańskie</button>
-      <button class="tag" onclick="restaurantCuisine('Chińskie')">🍜 Chińskie</button>
-      <button class="tag" onclick="restaurantCuisine('Japońskie')">🍱 Japońskie</button>
-      <button class="tag" onclick="restaurantCuisine('Tureckie')">🥙 Tureckie</button>
-      <button class="tag" onclick="restaurantCuisine('Indyjskie')">🍛 Indyjskie</button>
-      <button class="tag" onclick="restaurantCuisine('Steakhouse')">🥩 Steakhouse</button>
-      <button class="tag" onclick="restaurantCuisine('Fast food')">🍗 Fast food</button>
-      <button class="tag" onclick="restaurantCuisine('Kawiarnie')">🍰 Kawiarnie</button>
+  <div class="map-workspace" id="mapWorkspace">
+    <aside class="map-tools">
+      <div class="map-tools-head"><div class="map-orb">🗺️</div><div><b>Mapa HealthGo</b><small>Prawdziwe restauracje</small></div></div>
+      <div class="map-tools-title">Rodzaj kuchni</div>
+      <div class="map-cuisines">
+        <button class="map-cuisine active" onclick="selectMapCuisine('all',this)">🍴 Wszystkie</button>
+        <button class="map-cuisine" onclick="selectMapCuisine('asian',this)">🍣 Azjatycka</button>
+        <button class="map-cuisine" onclick="selectMapCuisine('italian',this)">🍕 Włoska</button>
+        <button class="map-cuisine" onclick="selectMapCuisine('polish',this)">🥟 Polska</button>
+        <button class="map-cuisine" onclick="selectMapCuisine('japanese',this)">🍱 Japońska</button>
+        <button class="map-cuisine" onclick="selectMapCuisine('chinese',this)">🥡 Chińska</button>
+        <button class="map-cuisine" onclick="selectMapCuisine('mexican',this)">🌮 Meksykańska</button>
+        <button class="map-cuisine" onclick="selectMapCuisine('american',this)">🍔 Amerykańska</button>
+        <button class="map-cuisine" onclick="selectMapCuisine('indian',this)">🍛 Indyjska</button>
+        <button class="map-cuisine" onclick="selectMapCuisine('turkish',this)">🥙 Turecka</button>
+        <button class="map-cuisine" onclick="selectMapCuisine('fast_food',this)">🍟 Fast food</button>
+      </div>
+      <div class="map-search-area">
+        <button id="mapSearchBtn" class="map-search-btn" type="button" onclick="searchRestaurants()">🔎 Szukaj w tym obszarze</button>
+        <div id="mapSearchStatus" class="map-status">Przesuń mapę na wybraną okolicę i wybierz kuchnię.</div>
+      </div>
+      <div class="map-note">Dane miejsc: OpenStreetMap. Wyniki mogą być niepełne. Wyszukiwanie uruchamia się tylko po kliknięciu. GPS konta dziecięcego dodamy osobno, z ustawieniami prywatności.</div>
+    </aside>
+    <div class="map-main">
+      <div id="healthgoMap" aria-label="Mapa restauracji"></div>
+      <section class="map-results-panel">
+        <div class="map-results-head"><b id="mapResultsTitle">Restauracje</b><span id="mapResultsCount">Wybierz obszar na mapie.</span></div>
+        <div id="mapResults" class="map-results"><div class="map-empty">Przesuń i przybliż mapę do miasta lub okolicy, wybierz np. „Azjatycka”, a potem kliknij „Szukaj w tym obszarze”.</div></div>
+      </section>
     </div>
-    <div id="restaurants" class="grid" style="margin-top:16px"></div>
   </div>
-  <br>
-  <div id="mapInfo" class="card"><h3>📍 Mapa</h3><p>W tej wersji pokazujemy interfejs mapy. Prawdziwe wyniki miejsc i mapa zostaną podłączone przez API map.</p><button class="btn" onclick="alert('Tutaj zostanie podłączona prawdziwa mapa.')">Otwórz mapę</button></div>
 </section>
 
 <section id="games" class="page">
@@ -378,7 +380,7 @@ body:has(#ai.active) .top{margin-bottom:8px}
 <div class="mobile-nav auth-hidden">
 <button onclick="go('start')">🏠<br>Start</button>
 <button onclick="go('ai')">🤖<br>AI</button>
-<button onclick="go('food')">🍽️<br>Jedzenie</button>
+<button onclick="go('map')">🗺️<br>Mapa</button>
 <button onclick="go('games')">🎮<br>Gry</button>
 <button onclick="go('plan')">📅<br>Plan</button>
 </div>
@@ -399,7 +401,7 @@ body:has(#ai.active) .top{margin-bottom:8px}
 </div>
 
 <script>
-const titles={start:'Start',ai:'HealthGo AI',food:'Jedzenie',map:'Mapa',games:'Gry',plan:'Plan Dnia',challenges:'Wyzwania',xp:'XP i Nagrody',activity:'Aktywność',profile:'Profil',settings:'Ustawienia',login:'Logowanie'};
+const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Gry',plan:'Plan Dnia',challenges:'Wyzwania',xp:'XP i Nagrody',activity:'Aktywność',profile:'Profil',settings:'Ustawienia',login:'Logowanie'};
 let xp=820, timerSec=0, timerInt=null;
 
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
@@ -409,6 +411,7 @@ function go(page){
  document.getElementById('title').textContent=titles[page]||'HealthGo';
  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
  window.scrollTo({top:0,behavior:'smooth'});
+ if(page==='map')setTimeout(initHealthGoMap,60);
 }
 function modal(title,text,action='OK'){
  document.getElementById('modalTitle').textContent=title;
@@ -455,7 +458,7 @@ function aiLocalAnswer(q){
  const t=q.toLowerCase();
  if(/lek|tablet(k|e)|dawk|chorob|diagno|bardzo boli|ból|gorącz/.test(t)) return {html:'<b>Mogę podać tylko ogólne informacje zdrowotne.</b><p>Nie będę ustalać diagnozy ani dawki leku. Jeśli coś Cię boli, źle się czujesz albo chodzi o lek, powiedz rodzicowi lub opiekunowi i w razie potrzeby zapytajcie lekarza albo farmaceutę.</p>',actions:[]};
  if(/plan dnia|ułóż.*plan|zaplanuj/.test(t)||aiMode==='plan') return {html:'<b>Jasne — przykładowy plan po szkole:</b><ul><li><b>15:30</b> odpoczynek i coś do jedzenia</li><li><b>16:15</b> nauka lub zadania</li><li><b>17:00</b> czas na świeżym powietrzu</li><li><b>18:00</b> kolacja</li><li><b>19:00</b> hobby, gra albo czas z rodziną</li><li><b>20:00</b> spokojniejsza część wieczoru</li></ul><p>Możesz zmienić godziny w zakładce Plan Dnia.</p>',actions:[{label:'📅 Otwórz Plan Dnia',onclick:"aiAction('plan')"}]};
- if(/jedz|posił|obiad|kolac|śniad|przepis|jaj|chleb/.test(t)||aiMode==='food') return {html:'<b>Pomysł:</b> kolorowe kanapki lub wrap 🌯<p>Możesz użyć pieczywa lub tortilli, warzyw, sera albo jajka i ulubionych dodatków. Jeśli podasz mi składniki, które masz, dopasuję pomysł.</p>',actions:[{label:'🍽️ Otwórz Jedzenie',onclick:"aiAction('food')"}]};
+ if(/jedz|posił|obiad|kolac|śniad|przepis|jaj|chleb/.test(t)||aiMode==='food') return {html:'<b>Pomysł:</b> kolorowe kanapki lub wrap 🌯<p>Możesz użyć pieczywa lub tortilli, warzyw, sera albo jajka i ulubionych dodatków. Jeśli podasz mi składniki, które masz, dopasuję pomysł.</p>',actions:[]};
  if(/gra|zabaw|park/.test(t)) return {html:'<b>Gra: Misja Odkrywcy 🔎</b><p>Każdy dostaje listę bezpiecznych rzeczy do znalezienia, np. coś okrągłego, trzy różne liście i ciekawy znak. Za każde odkrycie jest punkt. Gracie tylko w bezpiecznym miejscu, z dala od jezdni i terenów prywatnych.</p>',actions:[{label:'🎮 Otwórz Gry',onclick:"aiAction('games')"}]};
  if(/wyzwan/.test(t)) return {html:'<b>Wyzwanie dnia: Mały Odkrywca 🌿</b><p>Znajdź podczas spaceru trzy ciekawe rzeczy w otoczeniu i zapisz, co zauważyłeś. To ma być zabawa, bez obowiązkowego wyniku ani limitu aktywności.</p>',actions:[{label:'🎯 Otwórz Wyzwania',onclick:"aiAction('challenges')"}]};
  if(/miejsce|map|restaur|park|gdzie/.test(t)||aiMode==='explore') return {html:'<b>Mogę pomóc w odkrywaniu miejsc.</b><p>W zakładce Mapa możesz wyszukać restauracje, parki, apteki i inne miejsca. HealthGo powinien korzystać z lokalizacji tylko po Twojej zgodzie.</p>',actions:[{label:'🗺️ Otwórz Mapę',onclick:"aiAction('map')"}]};
@@ -521,22 +524,45 @@ async function askAI(){
    clearTimeout(timeout);btn.disabled=false;input.focus();
  }
 }
-function searchFood(){
- const q=document.getElementById('foodSearch').value.toLowerCase();
- const cards=[...document.querySelectorAll('#foodGrid .food')];
- cards.forEach(c=>c.style.display=(!q||c.innerText.toLowerCase().includes(q)||q.includes('jaj')&&c.innerText.includes('Naleśniki'))?'block':'none');
+let healthGoMap=null,healthGoRestaurantLayer=null,healthGoCuisine='all',healthGoMapBusy=false;
+const healthGoCuisineLabels={all:'Wszystkie restauracje',asian:'Azjatycka',italian:'Włoska',polish:'Polska',japanese:'Japońska',chinese:'Chińska',mexican:'Meksykańska',american:'Amerykańska',indian:'Indyjska',turkish:'Turecka',fast_food:'Fast food'};
+const healthGoCuisinePatterns={asian:'asian|chinese|japanese|sushi|thai|korean|vietnamese|indian|ramen|noodle',italian:'italian|pizza|pasta',polish:'polish',japanese:'japanese|sushi|ramen',chinese:'chinese',mexican:'mexican|taco|tex-mex',american:'american|burger|steak_house',indian:'indian',turkish:'turkish|kebab'};
+function initHealthGoMap(){
+ const el=document.getElementById('healthgoMap');if(!el||healthGoMap)return;
+ if(typeof L==='undefined'){document.getElementById('mapResults').innerHTML='<div class="map-empty">Nie udało się załadować mapy. Sprawdź internet i uruchom HealthGo ponownie.</div>';return}
+ healthGoMap=L.map('healthgoMap',{zoomControl:true}).setView([51.9194,19.1451],6);
+ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(healthGoMap);
+ healthGoRestaurantLayer=L.layerGroup().addTo(healthGoMap);setTimeout(function(){healthGoMap.invalidateSize()},100);
 }
-function recipe(name){modal('🍽️ '+name,'Przepis demonstracyjny.<br><br><b>Składniki:</b> przykładowe składniki<br><b>Przygotowanie:</b> wykonaj kolejne kroki według pełnej receptury w przyszłej wersji.')}
-function addShop(){
- const v=document.getElementById('shop').value.trim();if(!v)return;
- const d=document.createElement('div');d.className='card';d.style.marginTop='8px';d.textContent='🛒 '+v;
- document.getElementById('shopList').appendChild(d);document.getElementById('shop').value='';
+function selectMapCuisine(cuisine,btn){healthGoCuisine=cuisine;document.querySelectorAll('.map-cuisine').forEach(function(b){b.classList.toggle('active',b===btn)});const t=document.getElementById('mapResultsTitle');if(t)t.textContent=healthGoCuisineLabels[cuisine]||'Restauracje'}
+function healthGoEscape(v){return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+function healthGoDistance(a,b,c,d){const R=6371,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,z=Math.sin(x/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)**2;return R*2*Math.atan2(Math.sqrt(z),Math.sqrt(1-z))}
+function healthGoPlacePoint(e){if(typeof e.lat==='number'&&typeof e.lon==='number')return {lat:e.lat,lon:e.lon};if(e.center&&typeof e.center.lat==='number'&&typeof e.center.lon==='number')return {lat:e.center.lat,lon:e.center.lon};return null}
+function healthGoAddress(t){const l=[t['addr:street'],t['addr:housenumber']].filter(Boolean).join(' '),city=t['addr:city']||t['addr:place']||'';return [l,city].filter(Boolean).join(', ')||'Brak pełnego adresu w danych mapy'}
+function focusRestaurant(lat,lon){if(healthGoMap)healthGoMap.setView([lat,lon],17,{animate:true})}
+async function searchRestaurants(){
+ initHealthGoMap();if(!healthGoMap||healthGoMapBusy)return;
+ const btn=document.getElementById('mapSearchBtn'),status=document.getElementById('mapSearchStatus'),root=document.getElementById('mapResults'),count=document.getElementById('mapResultsCount'),center=healthGoMap.getCenter(),radius=5000;
+ let filter=healthGoCuisine==='fast_food'?'["amenity"="fast_food"]':healthGoCuisine==='all'?'["amenity"~"^(restaurant|fast_food)$"]':'["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"'+healthGoCuisinePatterns[healthGoCuisine]+'",i]';
+ const query='[out:json][timeout:15];nwr'+filter+'(around:'+radius+','+center.lat.toFixed(6)+','+center.lng.toFixed(6)+');out center 60;';
+ healthGoMapBusy=true;btn.disabled=true;btn.textContent='⏳ Szukam restauracji…';status.textContent='Pobieram prawdziwe miejsca z OpenStreetMap…';root.innerHTML='<div class="map-empty">Wyszukiwanie…</div>';
+ try{
+  const res=await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query));if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json(),seen=new Set();
+  const places=(data.elements||[]).map(function(e){const p=healthGoPlacePoint(e);if(!p)return null;const k=e.type+':'+e.id;if(seen.has(k))return null;seen.add(k);return {lat:p.lat,lon:p.lon,tags:e.tags||{},distance:healthGoDistance(center.lat,center.lng,p.lat,p.lon)}}).filter(Boolean).sort(function(a,b){return a.distance-b.distance});
+  renderRestaurantResults(places);status.textContent='Gotowe. Szukam około 5 km od środka mapy.';count.textContent=places.length?'Znaleziono: '+places.length:'Brak wyników w tym obszarze.';
+ }catch(e){console.warn('HealthGo Map:',e);root.innerHTML='<div class="map-empty"><b>Nie udało się pobrać miejsc.</b><br>Publiczny serwer map może być chwilowo zajęty. Odczekaj chwilę i spróbuj ponownie.</div>';count.textContent='Błąd pobierania danych.';status.textContent='Nie udało się połączyć z wyszukiwarką miejsc.'}
+ finally{healthGoMapBusy=false;btn.disabled=false;btn.textContent='🔎 Szukaj w tym obszarze'}
 }
-function filterRestaurants(type){
- document.querySelectorAll('#restaurants .restaurant').forEach(c=>c.style.display=c.innerText.includes(type)?'block':'none');
- if(![...document.querySelectorAll('#restaurants .restaurant')].some(c=>c.style.display!=='none')) modal('Brak danych','W prototypie nie ma jeszcze prawdziwej bazy restauracji. Po podłączeniu API pojawią się realne miejsca.');
+function renderRestaurantResults(places){
+ const root=document.getElementById('mapResults');if(healthGoRestaurantLayer)healthGoRestaurantLayer.clearLayers();
+ if(!places.length){root.innerHTML='<div class="map-empty">Nie znaleziono pasujących restauracji. Przesuń mapę albo wybierz inną kuchnię.</div>';return}
+ root.innerHTML='';
+ places.forEach(function(p,i){const t=p.tags||{},name=t.name||t.brand||'Restauracja bez nazwy',cuisine=(t.cuisine||'kuchnia nieopisana').replaceAll(';',', '),address=healthGoAddress(t),dist=p.distance<1?Math.round(p.distance*1000)+' m':p.distance.toFixed(1)+' km';
+  if(healthGoRestaurantLayer){const m=L.marker([p.lat,p.lon]).addTo(healthGoRestaurantLayer);m.bindPopup('<b>'+healthGoEscape(name)+'</b><br>'+healthGoEscape(cuisine)+'<br>'+healthGoEscape(address))}
+  const card=document.createElement('article');card.className='map-place';card.innerHTML='<h3>'+(i+1)+'. '+healthGoEscape(name)+'</h3><p>🍽️ '+healthGoEscape(cuisine)+'</p><p>📍 '+healthGoEscape(address)+'</p><p>↔️ około '+healthGoEscape(dist)+' od środka mapy</p><div class="map-place-actions"><button type="button">Pokaż na mapie</button></div>';card.querySelector('button').addEventListener('click',function(){focusRestaurant(p.lat,p.lon)});root.appendChild(card);
+ });
 }
-function restaurant(name,type){modal(name,'Kuchnia: '+type+'<br>📍 przykładowa lokalizacja<br>🕐 godziny będą pobierane z bazy miejsc<br><br>W pełnej wersji: zdjęcia, odległość, mapa, godziny i ulubione.')}
+
 function game(name){modal('🎮 '+name,'Gra rozpoczęta!<br><br><b>Zasady bezpieczeństwa:</b> graj w bezpiecznym miejscu, nie wbiegaj na jezdnię, nie wchodź na prywatny teren i stosuj się do zasad opiekuna.')}
 function addPlan(){const time=prompt('Podaj godzinę, np. 19:30');if(!time)return;const what=prompt('Co planujesz?');if(!what)return;const d=document.createElement('div');d.className='card';d.innerHTML='<b>'+time+'</b> '+what;document.getElementById('planList').appendChild(d)}
 function complete(btn,amount){btn.disabled=true;btn.textContent='✓ Ukończone';xp=Math.min(1000,xp+amount);document.getElementById('xpbar').style.width=xp/10+'%';modal('🎉 Wyzwanie ukończone','Zdobywasz <b>+'+amount+' XP</b>!');}
@@ -572,13 +598,10 @@ const tut=[
  {page:'start',sel:'#start .stats .stat:nth-child(3)',title:'Czas aktywności',text:'Na telefonie lub zegarku ta karta pokazuje czas aktywności, jeśli urządzenie udostępnia takie dane. Na komputerze i tablecie jest ukryta.'},
  {page:'start',sel:'#start .stats .stat:nth-child(4)',title:'Sen',text:'Tutaj mogą pojawić się informacje o śnie, jeśli zostanie podłączone zgodne urządzenie lub usługa. Brak danych jest wyświetlany jako brak danych.'},
  {page:'start',sel:'#start .start-layout .card:nth-child(1)',title:'Dzisiejszy plan',text:'To skrót najbliższych punktów dnia. Widzisz godziny i zaplanowane zajęcia. Przycisk „Pełny plan” prowadzi do całego harmonogramu.'},
- {page:'start',sel:'#start .start-layout .card:nth-child(2)',title:'Szybki dostęp',text:'Te przyciski pozwalają szybko przejść do najczęściej używanych części HealthGo: Aktywności, Planu dnia i Jedzenia.'},
+ {page:'start',sel:'#start .start-layout .card:nth-child(2)',title:'Szybki dostęp',text:'Te przyciski pozwalają szybko przejść do najczęściej używanych części HealthGo: Aktywności, Planu dnia i Mapy.'},
  {page:'start',sel:'.nav button[data-page="ai"]',title:'HealthGo AI',text:'Kliknij tę zakładkę. HealthGo AI będzie miejscem do zadawania pytań, tworzenia planów i korzystania z funkcji asystenta.'},
  {page:'ai',sel:'#aiChatShell',title:'Rozmowa z HealthGo AI',text:'To jest centrum HealthGo AI. Po lewej wybierasz tryb i szybkie funkcje, na środku masz dużą rozmowę, a na dole możesz pisać wiadomości lub dodać zdjęcie.'},
- {page:'ai',sel:'.nav button[data-page="food"]',title:'Jedzenie',text:'Kliknij „Jedzenie”, aby przejść do kategorii potraw, przepisów i funkcji związanych z jedzeniem.'},
- {page:'food',sel:'#food .grid',title:'Kategorie jedzenia',text:'Tutaj wybierasz rodzaj kuchni lub potraw. Po kliknięciu „Zobacz” HealthGo pokazuje dania z wybranej kategorii.'},
- {page:'food',sel:'.nav button[data-page="map"]',title:'Mapa',text:'Kliknij „Mapa”. Ta część HealthGo służy do odkrywania miejsc i restauracji na mapie.'},
- {page:'map',sel:'#map',title:'Mapa i miejsca',text:'Na mapie możesz wyszukiwać miejsca i przeglądać dostępne kategorie. Docelowo będą tu prawdziwe dane lokalizacyjne po udzieleniu odpowiedniej zgody.'},
+  {page:'map',sel:'#mapWorkspace',title:'Mapa i restauracje',text:'Przesuń mapę na wybraną okolicę, wybierz rodzaj kuchni, np. azjatycką, i kliknij „Szukaj w tym obszarze”. HealthGo pobierze prawdziwe miejsca z OpenStreetMap.'},
  {page:'map',sel:'.nav button[data-page="games"]',title:'Gry',text:'Kliknij „Gry”, aby zobaczyć bezpieczne gry, misje i zabawy HealthGo.'},
  {page:'games',sel:'#games',title:'Gry i misje',text:'Tutaj znajdują się gry i misje. Każda gra może mieć opis, zasady, przebieg oraz informacje bezpieczeństwa.'},
  {page:'games',sel:'.nav button[data-page="plan"]',title:'Plan Dnia',text:'Kliknij „Plan Dnia”. Tutaj zarządzasz swoim harmonogramem.'},
@@ -646,44 +669,6 @@ function endTutorial(done=false){
 }
 window.addEventListener('resize',()=>{if(tutActive){const st=tut[tutStep],el=st&&document.querySelector(st.sel);if(isVisibleTutorialTarget(el))positionTutorialBubble(el)}});
 
-function foodCategory(cat){
- const data={
-  'Polskie':['🥟 Pierogi ruskie','🥔 Placki ziemniaczane','🍲 Rosół','🥬 Gołąbki','🍖 Schabowy'],
-  'Włoskie':['🍝 Spaghetti bolognese','🍕 Pizza margherita','🥘 Lasagne','🥔 Gnocchi','🍚 Risotto'],
-  'Amerykańskie':['🍔 Burger','🥞 Pancakes','🌭 Hot dog','🧀 Mac and cheese','🥪 Grilled cheese'],
-  'Meksykańskie':['🌮 Tacos','🌯 Burrito','🧀 Quesadilla','🌶️ Fajitas','🧀 Nachos'],
-  'Japońskie':['🍣 Sushi','🍜 Ramen','🥟 Gyoza','🍱 Teriyaki','🍜 Udon'],
-  'Chińskie':['🍚 Fried rice','🥟 Dumplings','🍜 Chow mein','🥡 Sweet & sour','🍜 Chińska zupa'],
-  'Zdrowe':['🥗 Sałatka grecka','🥗 Sałatka z kurczakiem','🥦 Warzywa pieczone','🍚 Ryż z warzywami','🥪 Kanapka warzywna'],
-  'Desery':['🍎 Szarlotka','🍫 Brownie','🍰 Sernik','🧁 Muffinki','🧇 Gofry'],
-  'Śniadania':['🍳 Jajecznica','🥚 Jajka sadzone','🥞 Naleśniki','🥣 Owsianka','🍞 Tosty'],
-  'Zupy':['🍲 Rosół','🍅 Pomidorowa','🥒 Ogórkowa','🥣 Żurek','🎃 Krem z dyni']
- };
- document.getElementById('foodCategoryTitle').textContent='🍴 '+cat;
- document.getElementById('foodResults').innerHTML=(data[cat]||[]).map(x=>`<div class="food"><div class="emoji">${x.split(' ')[0]}</div><h3>${x.substring(x.indexOf(' ')+1)}</h3><p class="muted">Przykładowe danie</p><button class="btn secondary" onclick="recipe('${x.substring(x.indexOf(' ')+1)}')">Przepis</button></div>`).join('');
-}
-function showRestaurants(){
- document.getElementById('restaurantPanel').style.display='block';
- document.getElementById('restaurantPanel').scrollIntoView({behavior:'smooth'});
-}
-function restaurantCuisine(cuisine){
- const names={
-  'Włoskie':['Pizza House','Pasta Corner','Italiano'],
-  'Azjatyckie':['Asia Bowl','Wok House','Asian Garden'],
-  'Polskie':['Polska Chata','Domowy Smak','Pierogarnia'],
-  'Amerykańskie':['Burger Spot','American Grill','Big Burger'],
-  'Meksykańskie':['Taco Bar','Mexico Food','Burrito House'],
-  'Chińskie':['China Wok','Smok','Chinese Garden'],
-  'Japońskie':['Sushi Bar','Tokyo Sushi','Ramen House'],
-  'Tureckie':['Kebab House','Istanbul Grill','Anatolia'],
-  'Indyjskie':['Curry House','India Taste','Masala'],
-  'Steakhouse':['Steak House','Grill House','Prime Steak'],
-  'Fast food':['Burger Spot','Chicken Box','Fast Food'],
-  'Kawiarnie':['Cafe Go','Sweet Cafe','Coffee Place']
- };
- document.getElementById('restaurants').innerHTML=(names[cuisine]||['Przykładowa restauracja']).map(n=>`<div class="restaurant"><div class="emoji">🍴</div><h3>${n}</h3><p>${cuisine} · dane demonstracyjne</p><button class="btn secondary" onclick="restaurant('${n}','${cuisine}')">Szczegóły</button></div>`).join('');
-}
-function mapCategory(cat){modal('🗺️ '+cat,'Tutaj pojawią się prawdziwe miejsca po podłączeniu mapy i wyszukiwarki miejsc.')}
 function loginDemoLegacy(){
  const e=document.getElementById('loginEmail').value.trim(), p=document.getElementById('loginPass').value;
  if(!e||!p){modal('🔐 Logowanie','Wpisz e-mail i hasło.');return}
