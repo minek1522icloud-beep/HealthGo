@@ -130,6 +130,7 @@ body:has(#ai.active) .top{margin-bottom:8px}
 @media(max-width:1150px){.map-main{grid-template-columns:minmax(0,1fr) 300px}}
 @media(max-width:900px){#map{height:auto;overflow:visible}.map-workspace{grid-template-columns:1fr;height:auto;min-height:0}.map-tools{border-right:0;border-bottom:1px solid #e5e7eb}.map-cuisines{display:flex;overflow-x:auto}.map-cuisine{min-width:max-content;background:#f1f5f9}.map-note{margin-top:12px}.map-main{grid-template-columns:1fr}.map-results-panel{border-left:0;border-top:1px solid #e5e7eb}.map-results{max-height:320px}#healthgoMap{height:52vh;min-height:390px}}
 
+.update-test-banner{display:flex;align-items:center;gap:10px;background:#ecfdf5;border:1px solid #86efac;color:#166534;border-radius:16px;padding:13px 16px;margin-bottom:16px;font-weight:800;box-shadow:0 6px 18px rgba(22,101,52,.08)}
 </style>
 </head>
 <body style="background:#07111f">
@@ -186,7 +187,7 @@ body:has(#ai.active) .top{margin-bottom:8px}
   <div class="row"><button class="btn secondary" onclick="logoutHealthGo()">🚪 Wyloguj</button><div class="profile-mini">🧒 Konto demonstracyjne · <b>Poziom 7</b></div></div>
 </header>
 
-<section id="start" class="page active">
+<section id="start" class="page active">\n  <div class="update-test-banner">✅ TEST AKTUALIZACJI DZIAŁA — widzisz nową wersję HealthGo.</div>
   <div class="dashboard-hero">
     <div><h2>Dzień dobry 👋</h2><p>Twój dzisiejszy przegląd zdrowia i aktywności w HealthGo.</p></div>
     <div class="date-pill" id="todayDate">Dzisiaj</div>
