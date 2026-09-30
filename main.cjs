@@ -22,6 +22,7 @@ let mainWindow = null;
 let webServer = null;
 let aiServer = null;
 let ollamaProcess = null;
+let ollamaStartingPromise = null;
 let updateIsInstalling = false;
 
 const PORT = 5500;
@@ -405,14 +406,29 @@ function startWebServer() {
 // HEALTHGO AI
 // ========================================
 
+const AI_PORT = 8787;
+const OLLAMA_BASE_URL = "http://127.0.0.1:11434";
+const OLLAMA_MODEL = "qwen3:4b";
+
+function sleep(ms) {
+  return new Promise(
+    (resolve) => setTimeout(resolve, ms)
+  );
+}
+
 async function isOllamaRunning() {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 1500);
+  const timer = setTimeout(
+    () => controller.abort(),
+    1800
+  );
 
   try {
     const response = await fetch(
-      "http://127.0.0.1:11434/api/tags",
-      { signal: controller.signal }
+      OLLAMA_BASE_URL + "/api/tags",
+      {
+        signal: controller.signal
+      }
     );
 
     return response.ok;
@@ -426,77 +442,148 @@ async function isOllamaRunning() {
 function findOllamaExecutable() {
   const candidates = [
     process.env.LOCALAPPDATA
-      ? path.join(process.env.LOCALAPPDATA, "Programs", "Ollama", "ollama.exe")
+      ? path.join(
+          process.env.LOCALAPPDATA,
+          "Programs",
+          "Ollama",
+          "ollama.exe"
+        )
       : null,
+
     process.env.LOCALAPPDATA
-      ? path.join(process.env.LOCALAPPDATA, "Ollama", "ollama.exe")
+      ? path.join(
+          process.env.LOCALAPPDATA,
+          "Ollama",
+          "ollama.exe"
+        )
       : null,
+
+    process.env.USERPROFILE
+      ? path.join(
+          process.env.USERPROFILE,
+          "AppData",
+          "Local",
+          "Programs",
+          "Ollama",
+          "ollama.exe"
+        )
+      : null,
+
     process.env.ProgramFiles
-      ? path.join(process.env.ProgramFiles, "Ollama", "ollama.exe")
+      ? path.join(
+          process.env.ProgramFiles,
+          "Ollama",
+          "ollama.exe"
+        )
       : null
   ].filter(Boolean);
 
   for (const candidate of candidates) {
     if (fs.existsSync(candidate)) {
+      console.log(
+        "HealthGo AI: znaleziono Ollamę:",
+        candidate
+      );
+
       return candidate;
     }
   }
 
+  console.log(
+    "HealthGo AI: nie znaleziono stałej ścieżki Ollamy, próbuję PATH."
+  );
+
   return "ollama";
 }
 
-async function ensureOllamaRunning() {
+async function startOllamaOnce() {
   if (await isOllamaRunning()) {
-    console.log("HealthGo AI: Ollama już działa.");
     return true;
   }
 
-  const executable = findOllamaExecutable();
+  const executable =
+    findOllamaExecutable();
 
   try {
-    ollamaProcess = spawn(
+    const child = spawn(
       executable,
       ["serve"],
       {
         windowsHide: true,
-        stdio: "ignore"
+        stdio: "ignore",
+        detached: false
       }
     );
 
-    ollamaProcess.on(
+    ollamaProcess = child;
+
+    child.on(
       "error",
       (error) => {
         console.error(
-          "HealthGo AI - nie udało się uruchomić Ollamy:",
+          "HealthGo AI - błąd procesu Ollama:",
           error
         );
       }
     );
+
+    child.on(
+      "exit",
+      (code) => {
+        console.log(
+          "HealthGo AI: proces Ollama zakończył się kodem:",
+          code
+        );
+
+        if (ollamaProcess === child) {
+          ollamaProcess = null;
+        }
+      }
+    );
   } catch (error) {
     console.error(
-      "HealthGo AI - błąd uruchamiania Ollamy:",
+      "HealthGo AI - nie udało się uruchomić Ollamy:",
       error
     );
 
     return false;
   }
 
-  for (let i = 0; i < 30; i += 1) {
-    await new Promise(
-      (resolve) => setTimeout(resolve, 500)
-    );
+  for (let i = 0; i < 40; i += 1) {
+    await sleep(500);
 
     if (await isOllamaRunning()) {
-      console.log("HealthGo AI: Ollama uruchomiona automatycznie.");
+      console.log(
+        "HealthGo AI: Ollama działa."
+      );
+
       return true;
     }
   }
 
   console.warn(
-    "HealthGo AI: Ollama nie odpowiedziała po uruchomieniu."
+    "HealthGo AI: Ollama nie uruchomiła API w wymaganym czasie."
   );
 
   return false;
+}
+
+async function ensureOllamaRunning() {
+  if (await isOllamaRunning()) {
+    return true;
+  }
+
+  if (!ollamaStartingPromise) {
+    ollamaStartingPromise =
+      startOllamaOnce()
+        .finally(
+          () => {
+            ollamaStartingPromise = null;
+          }
+        );
+  }
+
+  return await ollamaStartingPromise;
 }
 
 function configureHealthGoPermissions() {
@@ -535,48 +622,405 @@ function configureHealthGoPermissions() {
   );
 }
 
-function startAIServer() {
-  const serverFile =
-    path.join(
-      getAppRoot(),
-      "healthgo-ai-server.mjs"
-    );
-
+function aiWriteJson(
+  res,
+  status,
+  data,
+  origin
+) {
   if (
-    !fs.existsSync(
-      serverFile
-    )
+    origin === "http://127.0.0.1:5500" ||
+    origin === "http://localhost:5500"
   ) {
-    console.warn(
-      "Nie znaleziono healthgo-ai-server.mjs"
+    res.setHeader(
+      "Access-Control-Allow-Origin",
+      origin
     );
-
-    return;
   }
 
-  aiServer = spawn(
-    process.execPath,
-    [serverFile],
+  res.setHeader(
+    "Vary",
+    "Origin"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type"
+  );
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS"
+  );
+
+  res.writeHead(
+    status,
     {
-      cwd: getAppRoot(),
+      "Content-Type":
+        "application/json; charset=utf-8",
 
-      windowsHide: true,
-
-      env: {
-        ...process.env,
-
-        ELECTRON_RUN_AS_NODE:
-          "1"
-      }
+      "Cache-Control":
+        "no-store"
     }
   );
 
-  aiServer.on(
-    "error",
-    (error) => {
-      console.error(
-        "HealthGo AI:",
-        error
+  res.end(
+    JSON.stringify(data)
+  );
+}
+
+async function readAiBody(req) {
+  let body = "";
+
+  for await (const chunk of req) {
+    body += chunk;
+
+    if (body.length > 12_000_000) {
+      throw new Error(
+        "BODY_TOO_LARGE"
+      );
+    }
+  }
+
+  return JSON.parse(
+    body || "{}"
+  );
+}
+
+async function askLocalOllama(data) {
+  const ready =
+    await ensureOllamaRunning();
+
+  if (!ready) {
+    throw new Error(
+      "OLLAMA_NOT_RUNNING"
+    );
+  }
+
+  const message =
+    String(
+      data.message || ""
+    ).trim();
+
+  if (!message) {
+    throw new Error(
+      "EMPTY_MESSAGE"
+    );
+  }
+
+  const history =
+    Array.isArray(data.history)
+      ? data.history
+          .slice(-12)
+          .filter(
+            (item) =>
+              item &&
+              (
+                item.role === "user" ||
+                item.role === "assistant"
+              ) &&
+              typeof item.content === "string"
+          )
+          .map(
+            (item) => ({
+              role: item.role,
+              content:
+                item.content.slice(
+                  0,
+                  4000
+                )
+            })
+          )
+      : [];
+
+  const imageNote =
+    data.image
+      ? "\n\nUżytkownik dołączył obraz. Ten model tekstowy nie widzi obrazu. Powiedz to wprost i nie zgaduj, co jest na zdjęciu."
+      : "";
+
+  const controller =
+    new AbortController();
+
+  const timeout =
+    setTimeout(
+      () => controller.abort(),
+      120000
+    );
+
+  try {
+    const response =
+      await fetch(
+        OLLAMA_BASE_URL +
+          "/api/chat",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          signal:
+            controller.signal,
+
+          body:
+            JSON.stringify(
+              {
+                model:
+                  OLLAMA_MODEL,
+
+                stream:
+                  false,
+
+                messages: [
+                  {
+                    role:
+                      "system",
+
+                    content:
+                      "Jesteś HealthGo AI. " +
+                      "Odpowiadaj jasno i po polsku, chyba że użytkownik poprosi o inny język. " +
+                      "Pomagasz w nauce, technologii, programowaniu, grach, planowaniu i funkcjach HealthGo. " +
+                      "Nie udawaj, że widzisz dane lub obrazy, których model nie otrzymał. " +
+                      "W sprawach zdrowotnych podawaj wyłącznie ogólne, ostrożne informacje."
+                  },
+
+                  ...history,
+
+                  {
+                    role:
+                      "user",
+
+                    content:
+                      message +
+                      imageNote
+                  }
+                ]
+              }
+            )
+        }
+      );
+
+    const result =
+      await response
+        .json()
+        .catch(
+          () => ({})
+        );
+
+    if (!response.ok) {
+      const error =
+        new Error(
+          result?.error ||
+          "OLLAMA_REQUEST_FAILED"
+        );
+
+      error.status =
+        response.status;
+
+      throw error;
+    }
+
+    const answer =
+      result?.message?.content?.trim();
+
+    if (!answer) {
+      throw new Error(
+        "EMPTY_OLLAMA_ANSWER"
+      );
+    }
+
+    return answer;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function startAIServer() {
+  return new Promise(
+    (resolve, reject) => {
+      aiServer =
+        http.createServer(
+          async (req, res) => {
+            const origin =
+              String(
+                req.headers.origin ||
+                ""
+              );
+
+            if (
+              origin ===
+                "http://127.0.0.1:5500" ||
+              origin ===
+                "http://localhost:5500"
+            ) {
+              res.setHeader(
+                "Access-Control-Allow-Origin",
+                origin
+              );
+            }
+
+            res.setHeader(
+              "Vary",
+              "Origin"
+            );
+
+            res.setHeader(
+              "Access-Control-Allow-Headers",
+              "Content-Type"
+            );
+
+            res.setHeader(
+              "Access-Control-Allow-Methods",
+              "GET, POST, OPTIONS"
+            );
+
+            if (
+              req.method ===
+              "OPTIONS"
+            ) {
+              res.writeHead(204);
+              res.end();
+              return;
+            }
+
+            if (
+              req.method ===
+                "GET" &&
+              req.url ===
+                "/api/health"
+            ) {
+              const ollama =
+                await isOllamaRunning();
+
+              aiWriteJson(
+                res,
+                200,
+                {
+                  ok: true,
+                  bridge: true,
+                  ollama,
+                  model:
+                    OLLAMA_MODEL
+                },
+                origin
+              );
+
+              return;
+            }
+
+            if (
+              req.method !==
+                "POST" ||
+              req.url !==
+                "/api/ai"
+            ) {
+              aiWriteJson(
+                res,
+                404,
+                {
+                  error:
+                    "Nie znaleziono endpointu."
+                },
+                origin
+              );
+
+              return;
+            }
+
+            try {
+              const data =
+                await readAiBody(
+                  req
+                );
+
+              const answer =
+                await askLocalOllama(
+                  data
+                );
+
+              aiWriteJson(
+                res,
+                200,
+                {
+                  answer
+                },
+                origin
+              );
+            } catch (error) {
+              console.error(
+                "HealthGo AI request:",
+                error
+              );
+
+              let status = 503;
+              let message =
+                "Nie udało się połączyć z lokalnym HealthGo AI.";
+
+              if (
+                error?.message ===
+                "EMPTY_MESSAGE"
+              ) {
+                status = 400;
+                message =
+                  "Napisz wiadomość.";
+              } else if (
+                error?.message ===
+                "BODY_TOO_LARGE"
+              ) {
+                status = 413;
+                message =
+                  "Wiadomość jest za duża.";
+              } else if (
+                error?.name ===
+                "AbortError"
+              ) {
+                status = 504;
+                message =
+                  "Model AI nie odpowiedział na czas.";
+              } else if (
+                error?.status ===
+                404
+              ) {
+                message =
+                  "Model qwen3:4b nie jest dostępny w Ollamie.";
+              }
+
+              aiWriteJson(
+                res,
+                status,
+                {
+                  error: message
+                },
+                origin
+              );
+            }
+          }
+        );
+
+      aiServer.once(
+        "error",
+        (error) => {
+          console.error(
+            "HealthGo AI server:",
+            error
+          );
+
+          reject(error);
+        }
+      );
+
+      aiServer.listen(
+        AI_PORT,
+        "127.0.0.1",
+        () => {
+          console.log(
+            "HealthGo AI bridge działa: http://127.0.0.1:" +
+            AI_PORT
+          );
+
+          resolve();
+        }
       );
     }
   );
@@ -930,9 +1374,17 @@ app.whenReady().then(
 
       configureHealthGoPermissions();
 
-      await ensureOllamaRunning();
+      await startAIServer();
 
-      startAIServer();
+      ensureOllamaRunning()
+        .catch(
+          (error) => {
+            console.error(
+              "HealthGo AI - uruchamianie Ollamy w tle:",
+              error
+            );
+          }
+        );
 
       createWindow(
         showUpdatedMessage
@@ -959,7 +1411,7 @@ app.on(
   () => {
     if (aiServer) {
       try {
-        aiServer.kill();
+        aiServer.close();
       } catch (_) {}
     }
 
