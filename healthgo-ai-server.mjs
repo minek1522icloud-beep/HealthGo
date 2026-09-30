@@ -1,145 +1,181 @@
 import http from "node:http";
 
 const PORT = 8787;
-
-// Ollama działa lokalnie na komputerze
 const OLLAMA_URL = "http://127.0.0.1:11434/api/chat";
 const MODEL = "qwen3:4b";
 
-const server = http.createServer(async (req, res) => {
+function json(res, status, body, origin = "") {
+  if (
+    origin === "http://127.0.0.1:5500" ||
+    origin === "http://localhost:5500"
+  ) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
 
-  // Pozwala HealthGo połączyć się z serwerem
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8"
+  });
+  res.end(JSON.stringify(body));
+}
+
+const server = http.createServer(async (req, res) => {
+  const origin = String(req.headers.origin || "");
+
+  if (
+    origin === "http://127.0.0.1:5500" ||
+    origin === "http://localhost:5500"
+  ) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
 
   if (req.method === "OPTIONS") {
     res.writeHead(204);
     return res.end();
   }
 
-  // HealthGo wysyła pytania tutaj
-  if (req.method !== "POST" || req.url !== "/api/ai") {
-    res.writeHead(404, {
-      "Content-Type": "application/json; charset=utf-8"
-    });
+  if (req.method === "GET" && req.url === "/api/health") {
+    return json(res, 200, {
+      ok: true,
+      model: MODEL
+    }, origin);
+  }
 
-    return res.end(JSON.stringify({
+  if (req.method !== "POST" || req.url !== "/api/ai") {
+    return json(res, 404, {
       error: "Nie znaleziono endpointu."
-    }));
+    }, origin);
   }
 
   try {
-
     let body = "";
 
     for await (const chunk of req) {
       body += chunk;
+
+      if (body.length > 12_000_000) {
+        return json(res, 413, {
+          error: "Wiadomość jest za duża."
+        }, origin);
+      }
     }
 
     const data = JSON.parse(body || "{}");
     const message = String(data.message || "").trim();
 
     if (!message) {
-      res.writeHead(400, {
-        "Content-Type": "application/json; charset=utf-8"
-      });
-
-      return res.end(JSON.stringify({
+      return json(res, 400, {
         error: "Napisz wiadomość."
-      }));
+      }, origin);
     }
 
-    // Wysyłamy pytanie do lokalnej Ollamy
-    const response = await fetch(OLLAMA_URL, {
-      method: "POST",
+    const history = Array.isArray(data.history)
+      ? data.history
+          .slice(-12)
+          .filter(
+            (item) =>
+              item &&
+              (item.role === "user" || item.role === "assistant") &&
+              typeof item.content === "string"
+          )
+          .map((item) => ({
+            role: item.role,
+            content: item.content.slice(0, 4000)
+          }))
+      : [];
 
-      headers: {
-        "Content-Type": "application/json"
-      },
+    const imageNote = data.image
+      ? "\n\nUżytkownik dołączył obraz. Ten lokalny model tekstowy nie widzi obrazu, więc powiedz to wprost i poproś o opis zdjęcia zamiast zgadywać."
+      : "";
 
-      body: JSON.stringify({
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      120000
+    );
 
-        model: MODEL,
+    let response;
 
-        stream: false,
+    try {
+      response = await fetch(OLLAMA_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: MODEL,
+          stream: false,
+          messages: [
+            {
+              role: "system",
+              content:
+                "Jesteś HealthGo AI. " +
+                "Odpowiadaj jasno i po polsku, chyba że użytkownik poprosi o inny język. " +
+                "Pomagasz w nauce, technologii, programowaniu, grach, planowaniu i funkcjach HealthGo. " +
+                "Nie udawaj, że widzisz dane lub obrazy, których model nie otrzymał. " +
+                "W sprawach zdrowotnych podawaj wyłącznie ogólne, ostrożne informacje i zachęcaj do kontaktu z zaufaną osobą dorosłą lub specjalistą, gdy sytuacja tego wymaga."
+            },
+            ...history,
+            {
+              role: "user",
+              content: message + imageNote
+            }
+          ]
+        })
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
-        messages: [
-
-          {
-            role: "system",
-
-            content:
-              "Jesteś HealthGo AI. " +
-              "Odpowiadaj jasno i po polsku, chyba że użytkownik poprosi o inny język. " +
-              "Pomagasz w nauce, technologii, programowaniu, grach, " +
-              "planowaniu, jedzeniu oraz funkcjach aplikacji HealthGo. " +
-              "W sprawach zdrowotnych podawaj tylko ogólne i ostrożne informacje."
-          },
-
-          {
-            role: "user",
-            content: message
-          }
-
-        ]
-
-      })
-
-    });
-
-    const result = await response.json();
+    const result = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-
       console.error("Ollama:", result);
 
-      res.writeHead(500, {
-        "Content-Type": "application/json; charset=utf-8"
-      });
-
-      return res.end(JSON.stringify({
-        error: "Lokalne HealthGo AI chwilowo nie może odpowiedzieć."
-      }));
-
+      return json(res, 502, {
+        error:
+          "Lokalne HealthGo AI chwilowo nie może odpowiedzieć."
+      }, origin);
     }
 
-    const answer = result?.message?.content?.trim();
+    const answer =
+      result?.message?.content?.trim();
 
-    res.writeHead(200, {
-      "Content-Type": "application/json; charset=utf-8"
-    });
-
-    return res.end(JSON.stringify({
+    return json(res, 200, {
       answer:
         answer ||
         "Nie udało mi się przygotować odpowiedzi."
-    }));
-
+    }, origin);
   } catch (error) {
-
     console.error("Błąd HealthGo AI:", error);
 
-    res.writeHead(500, {
-      "Content-Type": "application/json; charset=utf-8"
-    });
+    const message =
+      error?.name === "AbortError"
+        ? "Lokalny model AI nie odpowiedział na czas."
+        : "Nie udało się połączyć z lokalnym AI.";
 
-    return res.end(JSON.stringify({
-      error:
-        "Nie udało się połączyć z lokalnym AI. Sprawdź, czy Ollama jest uruchomiona."
-    }));
-
+    return json(res, 503, {
+      error: message
+    }, origin);
   }
+});
 
+server.on("error", (error) => {
+  console.error("HealthGo AI server:", error);
 });
 
 server.listen(PORT, "127.0.0.1", () => {
-
   console.log("");
-  console.log("💙 HealthGo AI uruchomione lokalnie!");
-  console.log("🤖 Model: qwen3:4b");
-  console.log(`🌐 Serwer: http://127.0.0.1:${PORT}`);
+  console.log("❤️ HealthGo AI uruchomione lokalnie!");
+  console.log("🤖 Model:", MODEL);
+  console.log("🌐 Serwer: http://127.0.0.1:" + PORT);
   console.log("🔒 AI działa lokalnie przez Ollama.");
   console.log("");
-
 });
