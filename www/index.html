@@ -110,6 +110,26 @@ body:has(#ai.active) .top{margin-bottom:8px}
 @media(max-width:900px){body:has(#ai.active) .main{padding:8px 8px 76px}#ai{height:auto}#ai .ai-workspace{grid-template-columns:1fr}#ai .ai-tools{max-height:150px}#ai .ai-messages{padding:20px 14px;height:58vh}#ai .ai-chat-top{display:none}}
 
 
+/* HealthGo Plan Dnia — prawdziwy harmonogram */
+.plan-shell{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
+.plan-board,.plan-editor{background:var(--card);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow)}
+.plan-board{overflow:hidden}.plan-board-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.plan-board-title h2{margin:0;font-size:21px}.plan-board-title p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.plan-day-control{display:flex;gap:8px;align-items:center}.plan-day-control input{width:auto;min-width:160px;margin:0}
+.plan-list{padding:14px;display:grid;gap:10px}.plan-empty{padding:64px 20px;text-align:center;color:var(--muted)}
+.plan-empty .plan-empty-icon{font-size:44px;margin-bottom:12px}.plan-empty b{display:block;color:var(--text);font-size:18px;margin-bottom:6px}
+.plan-item{display:grid;grid-template-columns:78px 1fr auto;gap:14px;align-items:center;padding:15px 16px;border:1px solid var(--border);border-radius:16px;background:var(--card)}
+.plan-item-time{font-size:20px;font-weight:900;letter-spacing:-.4px;color:#1d4ed8}
+.plan-item-main b{display:block;font-size:15px}.plan-item-main p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.45}
+.plan-item-place{color:#334155!important}.plan-item-actions{display:flex;gap:6px}.plan-icon-btn{width:36px;height:36px;border-radius:10px;background:#f1f5f9;color:#334155}.plan-icon-btn:hover{background:#e2e8f0}.plan-icon-btn.danger{color:#b91c1c;background:#fef2f2}
+.plan-editor{padding:20px;position:sticky;top:10px}.plan-editor h3{margin:0 0 5px;font-size:18px}.plan-editor>p{margin:0 0 16px;color:var(--muted);font-size:13px}
+.plan-field{margin-bottom:12px}.plan-field label{display:block;font-size:12px;font-weight:850;color:#475569;margin-bottom:5px}.plan-field input,.plan-field textarea{width:100%;margin:0;border:1px solid var(--border);border-radius:12px;padding:11px 12px;background:#fff;color:#111827;font:inherit}
+.plan-field textarea{resize:vertical;min-height:82px}.plan-editor-actions{display:flex;gap:8px;margin-top:14px}.plan-editor-actions .btn{flex:1}
+.plan-editor-status{min-height:18px;margin-top:10px;font-size:12px;color:var(--muted)}
+.plan-empty-mini{padding:18px;border-radius:14px;background:#f8fafc;border:1px dashed #cbd5e1;color:#64748b;text-align:center;font-size:13px}
+@media(max-width:1000px){.plan-shell{grid-template-columns:1fr}.plan-editor{position:static}}
+@media(max-width:620px){.plan-board-head{align-items:flex-start;flex-direction:column}.plan-day-control{width:100%}.plan-day-control input{width:100%}.plan-item{grid-template-columns:64px 1fr}.plan-item-actions{grid-column:1/-1;justify-content:flex-end}.plan-item-time{font-size:17px}}
+
 /* HealthGo Mapa — pełnoekranowa mapa prawdziwych miejsc */
 body:has(#map.active) .main{max-width:none;padding:10px 10px 12px}
 body:has(#map.active) .top{margin-bottom:8px}
@@ -229,11 +249,7 @@ body:has(#map.active) .top{margin-bottom:8px}
   <div class="start-layout">
     <div class="card">
       <div class="between"><div><h3>📅 Dzisiaj</h3><p class="muted">Najbliższe punkty Twojego planu</p></div><button class="btn secondary" onclick="go('plan')">Pełny plan</button></div>
-      <div class="timeline">
-        <div class="timeline-item"><div class="timeline-time">15:30</div><div class="timeline-line"><span class="timeline-dot"></span></div><div><b>Czas wolny</b><div class="muted">Odpoczynek i własne zajęcia</div></div></div>
-        <div class="timeline-item"><div class="timeline-time">17:00</div><div class="timeline-line"><span class="timeline-dot"></span></div><div><b>Spacer</b><div class="muted">Aktywność na świeżym powietrzu</div></div></div>
-        <div class="timeline-item"><div class="timeline-time">18:00</div><div class="timeline-line"><span class="timeline-dot"></span></div><div><b>Kolacja</b><div class="muted">Pozycja z planu dnia</div></div></div>
-      </div>
+      <div class="timeline" id="todayPlanPreview"><div class="plan-empty-mini">Brak planu na dzisiaj.</div></div>
     </div>
     <div class="card">
       <h3>⚡ Szybki dostęp</h3><p class="muted">Najczęściej używane funkcje</p>
@@ -345,16 +361,63 @@ body:has(#map.active) .top{margin-bottom:8px}
 </section>
 
 <section id="plan" class="page">
-  <div class="hero"><h2>📅 Plan Dnia</h2><p>Prawdziwy harmonogram dnia — godziny, wydarzenia i przypomnienia.</p></div>
-  <div class="card">
-    <div class="between"><h3>Dzisiejszy harmonogram</h3><button class="btn" onclick="addPlan()">＋ Dodaj</button></div>
-    <div id="planList" class="list">
-      <div class="card"><b>15:30</b> 🎮 Czas wolny</div>
-      <div class="card"><b>17:00</b> 🚶 Spacer</div>
-      <div class="card"><b>18:00</b> 🍽️ Kolacja</div>
-    </div>
-  </div><br>
-  <div class="card"><h3>⭐ Plan+</h3><p>20 zł/miesiąc lub 220 zł/rok. W przyszłej wersji: AI planowanie dnia i tygodnia, automatyczna przebudowa planu i przypomnienia.</p><button class="btn secondary" onclick="alert('Zakup będzie dostępny dopiero po dodaniu kont i bezpiecznych płatności.')">Zobacz Plan+</button></div>
+  <div class="hero">
+    <h2>📅 Plan Dnia</h2>
+    <p>Twój prawdziwy harmonogram. Dodajesz tylko własne godziny, miejsca i plany — bez przykładowych wpisów.</p>
+  </div>
+
+  <div class="plan-shell">
+    <section class="plan-board">
+      <div class="plan-board-head">
+        <div class="plan-board-title">
+          <h2 id="planDayTitle">Plan dnia</h2>
+          <p id="planDaySubtitle">Wybierz dzień i dodaj własne punkty.</p>
+        </div>
+        <div class="plan-day-control">
+          <input id="planDate" type="date" aria-label="Dzień planu" onchange="renderPlanDay()">
+        </div>
+      </div>
+
+      <div id="planList" class="plan-list">
+        <div class="plan-empty">
+          <div class="plan-empty-icon">📭</div>
+          <b>Brak planu</b>
+          <span>Dodaj pierwszy punkt po prawej stronie.</span>
+        </div>
+      </div>
+    </section>
+
+    <aside class="plan-editor">
+      <h3 id="planEditorTitle">＋ Dodaj punkt planu</h3>
+      <p>Wpisz godzinę oraz dokąd chcesz iść lub co chcesz zrobić.</p>
+
+      <div class="plan-field">
+        <label for="planTime">Godzina</label>
+        <input id="planTime" type="time">
+      </div>
+
+      <div class="plan-field">
+        <label for="planTitleInput">Co planujesz?</label>
+        <input id="planTitleInput" type="text" maxlength="80" placeholder="np. trening, kino, lekarz">
+      </div>
+
+      <div class="plan-field">
+        <label for="planPlace">Gdzie chcesz iść?</label>
+        <input id="planPlace" type="text" maxlength="120" placeholder="np. Park Lisiniec, kino, dom babci">
+      </div>
+
+      <div class="plan-field">
+        <label for="planNote">Notatka (opcjonalnie)</label>
+        <textarea id="planNote" maxlength="300" placeholder="Dodatkowe informacje…"></textarea>
+      </div>
+
+      <div class="plan-editor-actions">
+        <button id="planSaveBtn" class="btn" type="button" onclick="savePlanItem()">Dodaj do planu</button>
+        <button id="planCancelBtn" class="btn gray" type="button" onclick="cancelPlanEdit()" style="display:none">Anuluj</button>
+      </div>
+      <div id="planEditorStatus" class="plan-editor-status"></div>
+    </aside>
+  </div>
 </section>
 
 <section id="challenges" class="page">
@@ -442,6 +505,8 @@ function go(page){
  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
  window.scrollTo({top:0,behavior:'smooth'});
  if(page==='map')setTimeout(initHealthGoMap,60);
+ if(page==='plan')setTimeout(renderPlanDay,20);
+ if(page==='start')setTimeout(renderTodayPlanPreview,20);
 }
 function modal(title,text,action='OK'){
  document.getElementById('modalTitle').textContent=title;
@@ -745,7 +810,139 @@ function renderMapPlaces(places){
 
 
 function game(name){modal('🎮 '+name,'Gra rozpoczęta!<br><br><b>Zasady bezpieczeństwa:</b> graj w bezpiecznym miejscu, nie wbiegaj na jezdnię, nie wchodź na prywatny teren i stosuj się do zasad opiekuna.')}
-function addPlan(){const time=prompt('Podaj godzinę, np. 19:30');if(!time)return;const what=prompt('Co planujesz?');if(!what)return;const d=document.createElement('div');d.className='card';d.innerHTML='<b>'+time+'</b> '+what;document.getElementById('planList').appendChild(d)}
+const HEALTHGO_PLAN_KEY='healthgo_plan_v2';
+let planEditingId=null;
+
+function planTodayKey(){
+ const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+ return y+'-'+m+'-'+day;
+}
+function loadHealthGoPlan(){
+ try{
+   const data=JSON.parse(localStorage.getItem(HEALTHGO_PLAN_KEY)||'[]');
+   return Array.isArray(data)?data:[];
+ }catch(_){return []}
+}
+function saveHealthGoPlan(data){
+ localStorage.setItem(HEALTHGO_PLAN_KEY,JSON.stringify(data));
+}
+function planDateLabel(value){
+ if(!value)return 'Plan dnia';
+ const d=new Date(value+'T12:00:00');
+ return new Intl.DateTimeFormat('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(d);
+}
+function initPlanDay(){
+ const date=document.getElementById('planDate');
+ if(date&&!date.value)date.value=planTodayKey();
+ renderPlanDay();
+ renderTodayPlanPreview();
+}
+function planEscape(v){
+ return String(v==null?'':v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function currentPlanDate(){
+ const date=document.getElementById('planDate');
+ return date&&date.value?date.value:planTodayKey();
+}
+function renderPlanDay(){
+ const root=document.getElementById('planList');if(!root)return;
+ const date=currentPlanDate();
+ const title=document.getElementById('planDayTitle');
+ const sub=document.getElementById('planDaySubtitle');
+ if(title)title.textContent=planDateLabel(date);
+ const items=loadHealthGoPlan().filter(x=>x.date===date).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+ if(sub)sub.textContent=items.length?items.length+' '+(items.length===1?'punkt':'punkty')+' w tym dniu.':'Nie masz jeszcze planu na ten dzień.';
+ if(!items.length){
+   root.innerHTML='<div class="plan-empty"><div class="plan-empty-icon">📭</div><b>Brak planu</b><span>Dodaj pierwszą godzinę i miejsce w formularzu obok.</span></div>';
+   return;
+ }
+ root.innerHTML='';
+ items.forEach(item=>{
+   const row=document.createElement('article');
+   row.className='plan-item';
+   const details=[];
+   if(item.place)details.push('📍 '+planEscape(item.place));
+   if(item.note)details.push(planEscape(item.note));
+   row.innerHTML='<div class="plan-item-time">'+planEscape(item.time)+'</div><div class="plan-item-main"><b>'+planEscape(item.title)+'</b>'+(details.length?'<p class="plan-item-place">'+details.join('<br>')+'</p>':'')+'</div><div class="plan-item-actions"><button class="plan-icon-btn" type="button" title="Edytuj">✏️</button><button class="plan-icon-btn danger" type="button" title="Usuń">🗑️</button></div>';
+   const buttons=row.querySelectorAll('button');
+   buttons[0].onclick=()=>editPlanItem(item.id);
+   buttons[1].onclick=()=>deletePlanItem(item.id);
+   root.appendChild(row);
+ });
+}
+function savePlanItem(){
+ const date=currentPlanDate();
+ const time=(document.getElementById('planTime')?.value||'').trim();
+ const title=(document.getElementById('planTitleInput')?.value||'').trim();
+ const place=(document.getElementById('planPlace')?.value||'').trim();
+ const note=(document.getElementById('planNote')?.value||'').trim();
+ const status=document.getElementById('planEditorStatus');
+ if(!time||!title){
+   if(status){status.textContent='Wpisz godzinę i nazwę planu.';status.style.color='#b91c1c'}
+   return;
+ }
+ let data=loadHealthGoPlan();
+ if(planEditingId){
+   const idx=data.findIndex(x=>x.id===planEditingId);
+   if(idx>=0)data[idx]={...data[idx],date,time,title,place,note};
+ }else{
+   data.push({id:'plan_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),date,time,title,place,note});
+ }
+ saveHealthGoPlan(data);
+ const wasEdit=!!planEditingId;
+ cancelPlanEdit();
+ renderPlanDay();
+ renderTodayPlanPreview();
+ if(status){status.textContent=wasEdit?'Zapisano zmiany.':'Dodano do planu.';status.style.color='#15803d'}
+}
+function editPlanItem(id){
+ const item=loadHealthGoPlan().find(x=>x.id===id);if(!item)return;
+ planEditingId=id;
+ const date=document.getElementById('planDate');if(date)date.value=item.date;
+ document.getElementById('planTime').value=item.time||'';
+ document.getElementById('planTitleInput').value=item.title||'';
+ document.getElementById('planPlace').value=item.place||'';
+ document.getElementById('planNote').value=item.note||'';
+ document.getElementById('planEditorTitle').textContent='✏️ Edytuj punkt planu';
+ document.getElementById('planSaveBtn').textContent='Zapisz zmiany';
+ document.getElementById('planCancelBtn').style.display='';
+ document.getElementById('planEditorStatus').textContent='';
+ renderPlanDay();
+}
+function cancelPlanEdit(){
+ planEditingId=null;
+ ['planTime','planTitleInput','planPlace','planNote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+ const title=document.getElementById('planEditorTitle');if(title)title.textContent='＋ Dodaj punkt planu';
+ const save=document.getElementById('planSaveBtn');if(save)save.textContent='Dodaj do planu';
+ const cancel=document.getElementById('planCancelBtn');if(cancel)cancel.style.display='none';
+}
+function deletePlanItem(id){
+ const data=loadHealthGoPlan().filter(x=>x.id!==id);
+ saveHealthGoPlan(data);
+ if(planEditingId===id)cancelPlanEdit();
+ renderPlanDay();
+ renderTodayPlanPreview();
+}
+function renderTodayPlanPreview(){
+ const root=document.getElementById('todayPlanPreview');if(!root)return;
+ const items=loadHealthGoPlan().filter(x=>x.date===planTodayKey()).sort((a,b)=>(a.time||'').localeCompare(b.time||'')).slice(0,4);
+ if(!items.length){
+   root.innerHTML='<div class="plan-empty-mini">Brak planu na dzisiaj.</div>';
+   return;
+ }
+ root.innerHTML='';
+ items.forEach(item=>{
+   const row=document.createElement('div');
+   row.className='timeline-item';
+   row.innerHTML='<div class="timeline-time">'+planEscape(item.time)+'</div><div class="timeline-line"><span class="timeline-dot"></span></div><div><b>'+planEscape(item.title)+'</b><div class="muted">'+(item.place?'📍 '+planEscape(item.place):'Własny punkt planu')+'</div></div>';
+   root.appendChild(row);
+ });
+}
+function addPlan(){
+ go('plan');
+ setTimeout(()=>document.getElementById('planTime')?.focus(),50);
+}
+
 function complete(btn,amount){btn.disabled=true;btn.textContent='✓ Ukończone';xp=Math.min(1000,xp+amount);document.getElementById('xpbar').style.width=xp/10+'%';modal('🎉 Wyzwanie ukończone','Zdobywasz <b>+'+amount+' XP</b>!');}
 function timer(){
  if(timerInt){clearInterval(timerInt);timerInt=null;return}
@@ -786,7 +983,7 @@ const tut=[
  {page:'map',sel:'.nav button[data-page="games"]',title:'Gry',text:'Kliknij „Gry”, aby zobaczyć bezpieczne gry, misje i zabawy HealthGo.'},
  {page:'games',sel:'#games',title:'Gry i misje',text:'Tutaj znajdują się gry i misje. Każda gra może mieć opis, zasady, przebieg oraz informacje bezpieczeństwa.'},
  {page:'games',sel:'.nav button[data-page="plan"]',title:'Plan Dnia',text:'Kliknij „Plan Dnia”. Tutaj zarządzasz swoim harmonogramem.'},
- {page:'plan',sel:'#plan',title:'Plan Dnia',text:'Plan dnia pokazuje wydarzenia według godzin. Możesz dodawać kolejne pozycje i później będziemy rozwijać edycję, przypomnienia oraz powtarzanie wydarzeń.'},
+ {page:'plan',sel:'#plan',title:'Plan Dnia',text:'Plan dnia pokazuje tylko Twoje własne wpisy. Jeśli nic nie dodasz, zobaczysz „Brak planu”. Możesz ustawić dzień, godzinę, miejsce, opis, a potem edytować lub usuwać punkty.'},
  {page:'plan',sel:'.nav button[data-page="challenges"]',title:'Wyzwania',text:'Kliknij „Wyzwania”, aby przejść do zadań i misji.'},
  {page:'challenges',sel:'#challenges',title:'Wyzwania',text:'Wyzwania to zadania w HealthGo. Za ukończenie wybranych zadań można zdobywać XP i odznaki w aplikacji.'},
  {page:'challenges',sel:'.nav button[data-page="xp"]',title:'XP i Nagrody',text:'Kliknij tutaj, aby zobaczyć postęp, poziom i zdobyte nagrody w HealthGo.'},
@@ -865,6 +1062,7 @@ function chooseAccount(type){modal('👤 '+type,'Wybrano '+type+'. Ustawienia ko
 window.addEventListener('DOMContentLoaded', function () {
   var d = document.getElementById('todayDate');
   if (d) d.textContent = new Intl.DateTimeFormat('pl-PL', {weekday:'long',day:'numeric',month:'long'}).format(new Date());
+  if (typeof initPlanDay === 'function') initPlanDay();
   var authScreen = document.getElementById('authScreen');
   var appShell = document.querySelector('.app');
   var mobileNav = document.querySelector('.mobile-nav');
