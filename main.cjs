@@ -549,75 +549,32 @@ function setupAutoUpdater() {
         info.version
       );
 
-      if (
-        mainWindow &&
-        !mainWindow.isDestroyed()
-      ) {
-        dialog
-          .showMessageBox(
-            mainWindow,
-            {
-              type: "info",
-
-              title:
-                "HealthGo",
-
-              message:
-                "Aktualizacja została pobrana",
-
-              detail:
-                "HealthGo uruchomi się ponownie, aby dokończyć aktualizację.",
-
-              buttons: [
-                "OK"
-              ],
-
-              defaultId: 0,
-
-              noLink: true
-            }
-          )
-          .finally(
-            () => {
-              setTimeout(
-                () => {
-                  autoUpdater
-                    .quitAndInstall(
-                      false,
-                      true
-                    );
-                },
-                500
-              );
-            }
-          );
-      } else {
-        autoUpdater
-          .quitAndInstall(
-            false,
-            true
-          );
-      }
+      // Bez pytania użytkownika: po pobraniu instalujemy
+      // aktualizację od razu i ponownie uruchamiamy HealthGo.
+      setTimeout(
+        () => {
+          autoUpdater
+            .quitAndInstall(
+              false,
+              true
+            );
+        },
+        300
+      );
     }
   );
 
-  // Dajemy aplikacji chwilę
-  // na pełne uruchomienie.
-  setTimeout(
-    () => {
-      autoUpdater
-        .checkForUpdates()
-        .catch(
-          (error) => {
-            console.error(
-              "HealthGo Update - nie udało się sprawdzić aktualizacji:",
-              error
-            );
-          }
+  // Sprawdzamy aktualizację od razu po uruchomieniu aplikacji.
+  autoUpdater
+    .checkForUpdates()
+    .catch(
+      (error) => {
+        console.error(
+          "HealthGo Update - nie udało się sprawdzić aktualizacji:",
+          error
         );
-    },
-    4000
-  );
+      }
+    );
 }
 
 // ========================================
