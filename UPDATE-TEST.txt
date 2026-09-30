@@ -1,0 +1,2 @@
+Test automatycznej aktualizacji HealthGo.
+Aktualizacja testowa uruchomiona po instalacji 1.0.5.
