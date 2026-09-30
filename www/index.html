@@ -1141,6 +1141,26 @@ function hgSafeKey(v){return btoa(unescape(encodeURIComponent(v))).replace(/[^a-
 function hgProfileKey(){return 'healthgo_profile_v2_'+hgSafeKey(hgUserKey())}
 function hgProgressKey(){return 'healthgo_progress_v2_'+hgSafeKey(hgUserKey())}
 function hgActivityKey(){return 'healthgo_activity_v1_'+hgSafeKey(hgUserKey())}
+function hgUid(){return String(window.healthGoCurrentUid||'')}
+async function syncHealthGoCloudState(partial){
+ const db=window.healthGoDb,uid=hgUid();if(!db||!uid)return false;
+ const payload={updatedAt:new Date().toISOString(),...partial};
+ await db.collection('users').doc(uid).set(payload,{merge:true});
+ return true;
+}
+async function loadHealthGoCloudState(){
+ const db=window.healthGoDb,uid=hgUid();if(!db||!uid)return;
+ try{
+   const snap=await db.collection('users').doc(uid).get();
+   if(!snap.exists)return;
+   const data=snap.data()||{};
+   if(data.profile&&typeof data.profile==='object')localStorage.setItem(hgProfileKey(),JSON.stringify({...defaultHealthGoProfile(),...data.profile}));
+   if(data.progress&&typeof data.progress==='object')localStorage.setItem(hgProgressKey(),JSON.stringify(data.progress));
+   if(Array.isArray(data.manualActivities))localStorage.setItem(hgActivityKey(),JSON.stringify(data.manualActivities));
+   renderHealthGoProfile();renderProgressUI();renderManualActivityLog();
+ }catch(e){console.warn('HealthGo cloud profile:',e)}
+}
+
 function defaultHealthGoProfile(){
  const email=hgUserKey(),raw=email.includes('@')?email.split('@')[0]:'HealthGo';
  return {nickname:(raw.replace(/[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ_.-]/g,'').slice(0,20)||'HealthGo'),accountType:'standard',configured:false};
@@ -1148,11 +1168,17 @@ function defaultHealthGoProfile(){
 function loadHealthGoProfile(){
  try{return {...defaultHealthGoProfile(),...JSON.parse(localStorage.getItem(hgProfileKey())||'{}')}}catch(_){return defaultHealthGoProfile()}
 }
-function putHealthGoProfile(p){localStorage.setItem(hgProfileKey(),JSON.stringify(p))}
+function putHealthGoProfile(p){
+ localStorage.setItem(hgProfileKey(),JSON.stringify(p));
+ syncHealthGoCloudState({profile:p}).catch(()=>{});
+}
 function loadProgress(){
  try{return {level:1,xp:0,totalXp:0,badges:[],completed:[],topPrompted:false,...JSON.parse(localStorage.getItem(hgProgressKey())||'{}')}}catch(_){return {level:1,xp:0,totalXp:0,badges:[],completed:[],topPrompted:false}}
 }
-function putProgress(p){localStorage.setItem(hgProgressKey(),JSON.stringify(p))}
+function putProgress(p){
+ localStorage.setItem(hgProgressKey(),JSON.stringify(p));
+ syncHealthGoCloudState({progress:p}).catch(()=>{});
+}
 function xpNeeded(level){return 400+Math.min(1600,Math.floor((level-1)*12))}
 function profanityNick(v){
  const n=String(v||'').toLowerCase().replace(/[._ -]/g,'');
@@ -1182,6 +1208,7 @@ function saveHealthGoProfile(){
  const nick=(document.getElementById('settingsNickname')?.value||'').trim(),type=document.getElementById('settingsAccountType')?.value||'standard',status=document.getElementById('nicknameStatus');
  if(!validNickname(nick)){if(status){status.textContent='Nick musi mieć 3–20 znaków i nie może zawierać wulgaryzmów.';status.style.color='#b91c1c'};return}
  putHealthGoProfile({...loadHealthGoProfile(),nickname:nick,accountType:type,configured:true});
+ syncHealthGoCloudState({accountType:type,nickname:nick}).catch(()=>{});
  if(status){status.textContent='Zapisano.';status.style.color='#087f5b'}
  renderHealthGoProfile();renderProgressUI();
 }
@@ -1201,6 +1228,7 @@ function finishHealthGoAccountSetup(){
  const nick=(document.getElementById('setupNickname')?.value||'').trim(),s=document.getElementById('setupProfileStatus');
  if(!validNickname(nick)){if(s){s.textContent='Wpisz nick 3–20 znaków bez wulgaryzmów.';s.style.color='#b91c1c'};return}
  putHealthGoProfile({nickname:nick,accountType:setupAccountType,configured:true});
+ syncHealthGoCloudState({accountType:setupAccountType,nickname:nick}).catch(()=>{});
  document.getElementById('accountSetup')?.classList.remove('show');
  renderHealthGoProfile();ensureHealthBadge(true);
 }
@@ -1272,7 +1300,10 @@ function renderProgressUI(){
 }
 
 function loadManualActivities(){try{const x=JSON.parse(localStorage.getItem(hgActivityKey())||'[]');return Array.isArray(x)?x:[]}catch(_){return []}}
-function putManualActivities(x){localStorage.setItem(hgActivityKey(),JSON.stringify(x))}
+function putManualActivities(x){
+ localStorage.setItem(hgActivityKey(),JSON.stringify(x));
+ syncHealthGoCloudState({manualActivities:x.slice(0,30)}).catch(()=>{});
+}
 function formatActivityDuration(sec){const m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
 function toggleManualActivity(){
  const btn=document.getElementById('manualActivityBtn');
@@ -1398,6 +1429,7 @@ window.addEventListener('DOMContentLoaded', function () {
 <!-- Firebase Compat: zwykłe skrypty, bez importów ES Modules. -->
 <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
 <script>
 (function () {
   'use strict';
@@ -1499,8 +1531,10 @@ window.addEventListener('DOMContentLoaded', function () {
     if (appShell) appShell.classList.remove('auth-hidden');
     if (mobileNav) mobileNav.classList.remove('auth-hidden');
     window.healthGoCurrentEmail = (user && user.email) || window.healthGoCurrentEmail || '';
+    window.healthGoCurrentUid = (user && (user.uid || user.localId)) || window.healthGoCurrentUid || '';
     if (typeof renderHealthGoProfile === 'function') renderHealthGoProfile();
-    if (typeof maybeShowAccountSetup === 'function') setTimeout(maybeShowAccountSetup, 250);
+    if (typeof loadHealthGoCloudState === 'function') loadHealthGoCloudState().finally(function(){ if (typeof maybeShowAccountSetup === 'function') setTimeout(maybeShowAccountSetup, 250); });
+    else if (typeof maybeShowAccountSetup === 'function') setTimeout(maybeShowAccountSetup, 250);
     if (typeof renderProgressUI === 'function') renderProgressUI();
     if (typeof window.go === 'function' && !document.querySelector('.page.active')) window.go('start');
   }
@@ -1539,7 +1573,7 @@ window.addEventListener('DOMContentLoaded', function () {
       var data = await restAuth('signInWithPassword', email, password);
       saveRestSession(data);
       status('Zalogowano.', 'ok');
-      showMainApp({email:data.email});
+      showMainApp({email:data.email,uid:data.localId,localId:data.localId});
     } catch (error) {
       console.error('HealthGo e-mail login:', error);
       status(cleanRestError(error.restCode), 'error');
@@ -1607,6 +1641,7 @@ window.addEventListener('DOMContentLoaded', function () {
     if (window.firebase && firebase.initializeApp) {
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
+      try { window.healthGoDb = firebase.firestore(); } catch (_) {}
       auth.languageCode = 'pl';
       auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
       auth.onAuthStateChanged(function(user) {
@@ -1622,7 +1657,7 @@ window.addEventListener('DOMContentLoaded', function () {
   // Przy odświeżeniu zachowaj prostą sesję e-mailową.
   try {
     var saved = JSON.parse(localStorage.getItem('healthgo_rest_session') || 'null');
-    if (saved && saved.idToken && saved.email) showMainApp({email:saved.email});
+    if (saved && saved.idToken && saved.email) showMainApp({email:saved.email,uid:saved.localId||'',localId:saved.localId||''});
     else showAuthScreen();
   } catch (_) { showAuthScreen(); }
 })();
