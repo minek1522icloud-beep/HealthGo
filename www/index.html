@@ -110,27 +110,51 @@ body:has(#ai.active) .top{margin-bottom:8px}
 @media(max-width:900px){body:has(#ai.active) .main{padding:8px 8px 76px}#ai{height:auto}#ai .ai-workspace{grid-template-columns:1fr}#ai .ai-tools{max-height:150px}#ai .ai-messages{padding:20px 14px;height:58vh}#ai .ai-chat-top{display:none}}
 
 
-/* HealthGo Mapa — prawdziwe restauracje */
-#map{height:calc(100vh - 105px);overflow:hidden}
-.map-workspace{display:grid;grid-template-columns:260px minmax(0,1fr);height:100%;min-height:620px;background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden}
-.map-tools{background:#f7f8fa;border-right:1px solid #e5e7eb;padding:16px 12px;display:flex;flex-direction:column;min-height:0}
-.map-tools-head{display:flex;align-items:center;gap:10px;padding:2px 4px 12px}.map-tools-head b{display:block}.map-tools-head small{display:block;color:#64748b;margin-top:2px}
-.map-orb{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);box-shadow:0 8px 20px rgba(79,70,229,.22)}
-.map-tools-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;font-weight:900;color:#94a3b8;margin:14px 5px 8px}
-.map-cuisines{display:grid;gap:5px;overflow:auto;padding-right:2px}.map-cuisine{width:100%;padding:10px 11px;border-radius:11px;background:transparent;color:#334155;text-align:left;font-weight:750}.map-cuisine:hover{background:#eef2ff}.map-cuisine.active{background:#e0e7ff;color:#3730a3}
-.map-search-area{margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb}.map-search-btn{width:100%;padding:11px 12px;border-radius:12px;background:#172554;color:#fff;font-weight:850;text-align:left}.map-search-btn:disabled{opacity:.55;cursor:default}
-.map-note{margin-top:auto;background:#eff6ff;border:1px solid #dbeafe;color:#1e40af;border-radius:14px;padding:11px;font-size:11px;line-height:1.45}
-.map-main{min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 340px;background:#fff}
-#healthgoMap{width:100%;height:100%;min-height:620px;background:#e5e7eb}
-.map-results-panel{min-width:0;border-left:1px solid #e5e7eb;display:flex;flex-direction:column;min-height:0;background:#fff}
-.map-results-head{padding:16px;border-bottom:1px solid #eef2f7}.map-results-head b{display:block;font-size:16px}.map-results-head span{display:block;color:#64748b;font-size:12px;margin-top:3px}
-.map-results{overflow:auto;padding:12px;display:grid;gap:9px;align-content:start}.map-empty{padding:20px 14px;text-align:center;color:#64748b;font-size:13px;line-height:1.5}
-.map-place{border:1px solid #e5e7eb;border-radius:14px;padding:12px;background:#fff}.map-place:hover{border-color:#bfdbfe;background:#fbfdff}.map-place h3{font-size:14px;margin:0 0 5px}.map-place p{font-size:12px;color:#64748b;margin:3px 0;line-height:1.4}.map-place-actions{display:flex;gap:7px;margin-top:9px}.map-place-actions button{padding:7px 9px;border-radius:9px;background:#eef2ff;color:#3730a3;font-size:11px;font-weight:800}
-.map-status{font-size:11px;color:#64748b;margin-top:8px;min-height:16px}
-@media(max-width:1150px){.map-main{grid-template-columns:minmax(0,1fr) 300px}}
-@media(max-width:900px){#map{height:auto;overflow:visible}.map-workspace{grid-template-columns:1fr;height:auto;min-height:0}.map-tools{border-right:0;border-bottom:1px solid #e5e7eb}.map-cuisines{display:flex;overflow-x:auto}.map-cuisine{min-width:max-content;background:#f1f5f9}.map-note{margin-top:12px}.map-main{grid-template-columns:1fr}.map-results-panel{border-left:0;border-top:1px solid #e5e7eb}.map-results{max-height:320px}#healthgoMap{height:52vh;min-height:390px}}
+/* HealthGo Mapa — pełnoekranowa mapa prawdziwych miejsc */
+body:has(#map.active) .main{max-width:none;padding:10px 10px 12px}
+body:has(#map.active) .top{margin-bottom:8px}
+#map{height:calc(100vh - 88px);overflow:hidden}
+.map-workspace{height:100%;min-height:560px;display:flex;flex-direction:column;background:#fff;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.map-toolbar{flex:0 0 auto;background:#fff;border-bottom:1px solid #e5e7eb;padding:9px 10px;display:grid;gap:8px;z-index:500}
+.map-toolbar-row{display:flex;align-items:center;gap:8px;min-width:0}
+.map-address-wrap{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;background:#f7f7f8;border:1px solid #e5e7eb;border-radius:12px;padding:0 10px}
+.map-address-icon{flex:0 0 auto;color:#64748b}
+#mapAddressInput{margin:0!important;padding:10px 2px;border:0;background:transparent;outline:0;min-width:0}
+.map-bar-btn{flex:0 0 auto;padding:10px 12px;border-radius:11px;background:#f1f5f9;color:#1f2937;font-weight:800;white-space:nowrap}
+.map-bar-btn:hover{background:#e2e8f0}
+.map-bar-btn.primary{background:#172554;color:#fff}
+.map-bar-btn.primary:hover{background:#1e3a8a}
+.map-bar-btn:disabled{opacity:.55;cursor:default}
+.map-categories{display:flex;gap:6px;overflow-x:auto;padding-bottom:1px;scrollbar-width:thin}
+.map-category{flex:0 0 auto;padding:8px 11px;border-radius:999px;background:#f1f5f9;color:#334155;font-weight:800;font-size:12px;white-space:nowrap}
+.map-category:hover{background:#e2e8f0}
+.map-category.active{background:#dbeafe;color:#1d4ed8;box-shadow:inset 0 0 0 1px #bfdbfe}
+.map-canvas-wrap{position:relative;flex:1;min-height:0;background:#e5e7eb}
+#healthgoMap{position:absolute;inset:0;width:100%;height:100%;min-height:0;background:#e5e7eb}
+.map-status-pill{position:absolute;left:12px;bottom:12px;z-index:550;max-width:min(620px,calc(100% - 24px));padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.95);border:1px solid #e5e7eb;color:#475569;font-size:12px;box-shadow:0 8px 28px rgba(15,23,42,.15);backdrop-filter:blur(8px)}
+.map-results-panel{display:none;position:absolute;z-index:560;right:12px;top:12px;width:min(360px,calc(100% - 24px));max-height:min(58vh,540px);background:rgba(255,255,255,.97);border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 16px 45px rgba(15,23,42,.20);overflow:hidden;backdrop-filter:blur(10px)}
+.map-results-panel.show{display:flex;flex-direction:column}
+.map-results-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:13px 14px;border-bottom:1px solid #eef2f7;background:#fff}
+.map-results-head b{display:block;font-size:14px}.map-results-head span{display:block;color:#64748b;font-size:11px;margin-top:3px}
+.map-results-close{width:30px;height:30px;border-radius:9px;background:#f1f5f9;color:#475569;font-size:18px}
+.map-results{overflow:auto;padding:9px;display:grid;gap:8px;align-content:start}
+.map-empty{padding:18px 12px;text-align:center;color:#64748b;font-size:12px;line-height:1.5}
+.map-place{border:1px solid #e5e7eb;border-radius:13px;padding:11px;background:#fff}
+.map-place:hover{border-color:#bfdbfe;background:#fbfdff}
+.map-place h3{font-size:13px;margin:0 0 5px;color:#111827}.map-place p{font-size:11px;color:#64748b;margin:3px 0;line-height:1.4}
+.map-place-actions{display:flex;gap:7px;margin-top:8px}.map-place-actions button{padding:7px 9px;border-radius:9px;background:#eef2ff;color:#3730a3;font-size:11px;font-weight:800}
+.map-user-dot{width:18px;height:18px;border-radius:50%;background:#2563eb;border:4px solid #fff;box-shadow:0 0 0 2px rgba(37,99,235,.35)}
+@media(max-width:900px){
+ body:has(#map.active) .main{padding:8px 8px 76px}
+ #map{height:calc(100dvh - 122px)}
+ .map-workspace{min-height:480px;border-radius:12px}
+ .map-toolbar-row{flex-wrap:wrap}
+ .map-address-wrap{order:0;flex-basis:100%}
+ .map-bar-btn{flex:1 1 auto;font-size:12px;padding:9px 10px}
+ .map-results-panel{top:8px;right:8px;width:calc(100% - 16px);max-height:48vh}
+ .map-status-pill{left:8px;bottom:8px;max-width:calc(100% - 16px)}
+}
 
-.update-test-banner{display:flex;align-items:center;gap:10px;background:#ecfdf5;border:1px solid #86efac;color:#166534;border-radius:16px;padding:13px 16px;margin-bottom:16px;font-weight:800;box-shadow:0 6px 18px rgba(22,101,52,.08)}
 </style>
 </head>
 <body style="background:#07111f">
@@ -187,7 +211,7 @@ body:has(#ai.active) .top{margin-bottom:8px}
   <div class="row"><button class="btn secondary" onclick="logoutHealthGo()">🚪 Wyloguj</button><div class="profile-mini">🧒 Konto demonstracyjne · <b>Poziom 7</b></div></div>
 </header>
 
-<section id="start" class="page active">\n  <div class="update-test-banner">✅ TEST AKTUALIZACJI DZIAŁA — widzisz nową wersję HealthGo.</div>
+<section id="start" class="page active">\n
   <div class="dashboard-hero">
     <div><h2>Dzień dobry 👋</h2><p>Twój dzisiejszy przegląd zdrowia i aktywności w HealthGo.</p></div>
     <div class="date-pill" id="todayDate">Dzisiaj</div>
@@ -271,33 +295,38 @@ body:has(#ai.active) .top{margin-bottom:8px}
 
 <section id="map" class="page">
   <div class="map-workspace" id="mapWorkspace">
-    <aside class="map-tools">
-      <div class="map-tools-head"><div class="map-orb">🗺️</div><div><b>Mapa HealthGo</b><small>Prawdziwe restauracje</small></div></div>
-      <div class="map-tools-title">Rodzaj kuchni</div>
-      <div class="map-cuisines">
-        <button class="map-cuisine active" onclick="selectMapCuisine('all',this)">🍴 Wszystkie</button>
-        <button class="map-cuisine" onclick="selectMapCuisine('asian',this)">🍣 Azjatycka</button>
-        <button class="map-cuisine" onclick="selectMapCuisine('italian',this)">🍕 Włoska</button>
-        <button class="map-cuisine" onclick="selectMapCuisine('polish',this)">🥟 Polska</button>
-        <button class="map-cuisine" onclick="selectMapCuisine('japanese',this)">🍱 Japońska</button>
-        <button class="map-cuisine" onclick="selectMapCuisine('chinese',this)">🥡 Chińska</button>
-        <button class="map-cuisine" onclick="selectMapCuisine('mexican',this)">🌮 Meksykańska</button>
-        <button class="map-cuisine" onclick="selectMapCuisine('american',this)">🍔 Amerykańska</button>
-        <button class="map-cuisine" onclick="selectMapCuisine('indian',this)">🍛 Indyjska</button>
-        <button class="map-cuisine" onclick="selectMapCuisine('turkish',this)">🥙 Turecka</button>
-        <button class="map-cuisine" onclick="selectMapCuisine('fast_food',this)">🍟 Fast food</button>
+    <div class="map-toolbar">
+      <div class="map-toolbar-row">
+        <div class="map-address-wrap">
+          <span class="map-address-icon">🔎</span>
+          <input id="mapAddressInput" type="search" autocomplete="street-address" placeholder="Wpisz adres, ulicę lub miasto…">
+        </div>
+        <button class="map-bar-btn" type="button" onclick="searchMapAddress()">Szukaj adresu</button>
+        <button class="map-bar-btn" type="button" onclick="useMyLocation()">📍 Moje położenie</button>
+        <button id="mapSearchBtn" class="map-bar-btn primary" type="button" onclick="searchMapPlaces()">🔎 Szukaj w tym obszarze</button>
       </div>
-      <div class="map-search-area">
-        <button id="mapSearchBtn" class="map-search-btn" type="button" onclick="searchRestaurants()">🔎 Szukaj w tym obszarze</button>
-        <div id="mapSearchStatus" class="map-status">Przesuń mapę na wybraną okolicę i wybierz kuchnię.</div>
+      <div class="map-categories" aria-label="Kategorie miejsc">
+        <button class="map-category active" type="button" onclick="selectMapCategory('all',this)">✨ Wszystko</button>
+        <button class="map-category" type="button" onclick="selectMapCategory('restaurants',this)">🍽️ Restauracje</button>
+        <button class="map-category" type="button" onclick="selectMapCategory('shops',this)">🛒 Sklepy</button>
+        <button class="map-category" type="button" onclick="selectMapCategory('gyms',this)">🏋️ Siłownie</button>
+        <button class="map-category" type="button" onclick="selectMapCategory('pharmacies',this)">💊 Apteki</button>
+        <button class="map-category" type="button" onclick="selectMapCategory('cafes',this)">☕ Kawiarnie</button>
+        <button class="map-category" type="button" onclick="selectMapCategory('parks',this)">🌳 Parki</button>
+        <button class="map-category" type="button" onclick="selectMapCategory('other',this)">📚 Inne miejsca</button>
       </div>
-      <div class="map-note">Dane miejsc: OpenStreetMap. Wyniki mogą być niepełne. Wyszukiwanie uruchamia się tylko po kliknięciu. GPS konta dziecięcego dodamy osobno, z ustawieniami prywatności.</div>
-    </aside>
-    <div class="map-main">
-      <div id="healthgoMap" aria-label="Mapa restauracji"></div>
-      <section class="map-results-panel">
-        <div class="map-results-head"><b id="mapResultsTitle">Restauracje</b><span id="mapResultsCount">Wybierz obszar na mapie.</span></div>
-        <div id="mapResults" class="map-results"><div class="map-empty">Przesuń i przybliż mapę do miasta lub okolicy, wybierz np. „Azjatycka”, a potem kliknij „Szukaj w tym obszarze”.</div></div>
+    </div>
+
+    <div class="map-canvas-wrap">
+      <div id="healthgoMap" aria-label="Mapa prawdziwych miejsc"></div>
+      <div id="mapSearchStatus" class="map-status-pill">Przybliż mapę do wybranej okolicy albo użyj „Moje położenie”. Lokalizacja jest pobierana tylko po Twoim kliknięciu i zgodzie.</div>
+
+      <section id="mapResultsPanel" class="map-results-panel" aria-label="Wyniki wyszukiwania miejsc">
+        <div class="map-results-head">
+          <div><b id="mapResultsTitle">Prawdziwe miejsca</b><span id="mapResultsCount">Brak wyszukiwania.</span></div>
+          <button class="map-results-close" type="button" onclick="toggleMapResults(false)" aria-label="Zamknij wyniki">×</button>
+        </div>
+        <div id="mapResults" class="map-results"></div>
       </section>
     </div>
   </div>
@@ -369,7 +398,7 @@ body:has(#ai.active) .top{margin-bottom:8px}
   <div class="grid2">
     <div class="card"><h3>🎨 Wygląd</h3><button class="btn" onclick="toggleDark()">Przełącz jasny/ciemny</button></div>
     <div class="card"><h3>🔔 Powiadomienia</h3><button class="btn secondary" onclick="alert('Powiadomienia demonstracyjne włączone.')">Włącz</button></div>
-    <div class="card"><h3>🧭 Diagnostyka</h3><p>Internet: ✅<br>GPS: ⚠️ wymaga urządzenia<br>Mapa: ⚠️ API później<br>AI: ⚠️ backend później</p></div>
+    <div class="card"><h3>🧭 Diagnostyka</h3><p>Internet: ✅<br>GPS: ⚠️ wymaga urządzenia<br>Mapa: ✅ OpenStreetMap / Overpass<br>AI: ✅ lokalny model przez Ollama</p></div>
     <div class="card"><h3>🔐 Prywatność</h3><p>Dokładna lokalizacja dziecka nie jest publiczna. Kontrola rodzicielska będzie dodana razem z kontami.</p></div>
     <div class="card"><h3>❓ Pomoc</h3><button class="btn secondary" onclick="startTutorial()">Uruchom tutorial ponownie</button></div>
   </div>
@@ -518,51 +547,202 @@ async function askAI(){
    console.warn('HealthGo AI backend:',err);
    if(typing)typing.remove();
    aiSetConnection(false,'Serwer AI offline');
-   let detail='Uruchom plik <b>healthgo-ai-server.mjs</b> na komputerze. Wtedy HealthGo AI będzie korzystał z prawdziwego modelu zamiast gotowych odpowiedzi.';
+   let detail='HealthGo nie połączył się z lokalnym modelem AI. Aplikacja próbuje uruchomić Ollamę automatycznie — spróbuj ponownie za chwilę.';
    if(err&&err.name==='AbortError')detail='Serwer AI nie odpowiedział na czas. Spróbuj ponownie za chwilę.';
    aiAddMessage('assistant','<b>Nie mam teraz połączenia z prawdziwym AI.</b><p>'+detail+'</p>');
  }finally{
    clearTimeout(timeout);btn.disabled=false;input.focus();
  }
 }
-let healthGoMap=null,healthGoRestaurantLayer=null,healthGoCuisine='all',healthGoMapBusy=false;
-const healthGoCuisineLabels={all:'Wszystkie restauracje',asian:'Azjatycka',italian:'Włoska',polish:'Polska',japanese:'Japońska',chinese:'Chińska',mexican:'Meksykańska',american:'Amerykańska',indian:'Indyjska',turkish:'Turecka',fast_food:'Fast food'};
-const healthGoCuisinePatterns={asian:'asian|chinese|japanese|sushi|thai|korean|vietnamese|indian|ramen|noodle',italian:'italian|pizza|pasta',polish:'polish',japanese:'japanese|sushi|ramen',chinese:'chinese',mexican:'mexican|taco|tex-mex',american:'american|burger|steak_house',indian:'indian',turkish:'turkish|kebab'};
+let healthGoMap=null,healthGoPlacesLayer=null,healthGoLocationLayer=null,healthGoCategory='all',healthGoMapBusy=false;
+const healthGoCategoryLabels={all:'Wszystkie miejsca',restaurants:'Restauracje',shops:'Sklepy',gyms:'Siłownie',pharmacies:'Apteki',cafes:'Kawiarnie',parks:'Parki',other:'Inne miejsca'};
+
+function mapStatus(text){const el=document.getElementById('mapSearchStatus');if(el)el.textContent=text}
+function toggleMapResults(show){const p=document.getElementById('mapResultsPanel');if(p)p.classList.toggle('show',!!show)}
+
 function initHealthGoMap(){
- const el=document.getElementById('healthgoMap');if(!el||healthGoMap)return;
- if(typeof L==='undefined'){document.getElementById('mapResults').innerHTML='<div class="map-empty">Nie udało się załadować mapy. Sprawdź internet i uruchom HealthGo ponownie.</div>';return}
+ const el=document.getElementById('healthgoMap');if(!el)return;
+ if(healthGoMap){setTimeout(()=>healthGoMap.invalidateSize(),50);return}
+ if(typeof L==='undefined'){mapStatus('Nie udało się załadować mapy. Sprawdź internet i uruchom HealthGo ponownie.');return}
+
  healthGoMap=L.map('healthgoMap',{zoomControl:true}).setView([51.9194,19.1451],6);
- L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(healthGoMap);
- healthGoRestaurantLayer=L.layerGroup().addTo(healthGoMap);setTimeout(function(){healthGoMap.invalidateSize()},100);
+ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+   maxZoom:19,
+   attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+ }).addTo(healthGoMap);
+
+ healthGoPlacesLayer=L.layerGroup().addTo(healthGoMap);
+ healthGoLocationLayer=L.layerGroup().addTo(healthGoMap);
+
+ const address=document.getElementById('mapAddressInput');
+ if(address)address.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();searchMapAddress()}});
+
+ setTimeout(()=>healthGoMap.invalidateSize(),100);
 }
-function selectMapCuisine(cuisine,btn){healthGoCuisine=cuisine;document.querySelectorAll('.map-cuisine').forEach(function(b){b.classList.toggle('active',b===btn)});const t=document.getElementById('mapResultsTitle');if(t)t.textContent=healthGoCuisineLabels[cuisine]||'Restauracje'}
-function healthGoEscape(v){return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+
+function selectMapCategory(category,btn){
+ healthGoCategory=category;
+ document.querySelectorAll('.map-category').forEach(b=>b.classList.toggle('active',b===btn));
+ const title=document.getElementById('mapResultsTitle');
+ if(title)title.textContent=healthGoCategoryLabels[category]||'Prawdziwe miejsca';
+ mapStatus('Wybrano: '+(healthGoCategoryLabels[category]||'miejsca')+'. Kliknij „Szukaj w tym obszarze”.');
+}
+
+function healthGoEscape(v){return String(v==null?'':v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
 function healthGoDistance(a,b,c,d){const R=6371,r=Math.PI/180,x=(c-a)*r,y=(d-b)*r,z=Math.sin(x/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin(y/2)**2;return R*2*Math.atan2(Math.sqrt(z),Math.sqrt(1-z))}
 function healthGoPlacePoint(e){if(typeof e.lat==='number'&&typeof e.lon==='number')return {lat:e.lat,lon:e.lon};if(e.center&&typeof e.center.lat==='number'&&typeof e.center.lon==='number')return {lat:e.center.lat,lon:e.center.lon};return null}
-function healthGoAddress(t){const l=[t['addr:street'],t['addr:housenumber']].filter(Boolean).join(' '),city=t['addr:city']||t['addr:place']||'';return [l,city].filter(Boolean).join(', ')||'Brak pełnego adresu w danych mapy'}
-function focusRestaurant(lat,lon){if(healthGoMap)healthGoMap.setView([lat,lon],17,{animate:true})}
-async function searchRestaurants(){
- initHealthGoMap();if(!healthGoMap||healthGoMapBusy)return;
- const btn=document.getElementById('mapSearchBtn'),status=document.getElementById('mapSearchStatus'),root=document.getElementById('mapResults'),count=document.getElementById('mapResultsCount'),center=healthGoMap.getCenter(),radius=5000;
- let filter=healthGoCuisine==='fast_food'?'["amenity"="fast_food"]':healthGoCuisine==='all'?'["amenity"~"^(restaurant|fast_food)$"]':'["amenity"~"^(restaurant|fast_food)$"]["cuisine"~"'+healthGoCuisinePatterns[healthGoCuisine]+'",i]';
- const query='[out:json][timeout:15];nwr'+filter+'(around:'+radius+','+center.lat.toFixed(6)+','+center.lng.toFixed(6)+');out center 60;';
- healthGoMapBusy=true;btn.disabled=true;btn.textContent='⏳ Szukam restauracji…';status.textContent='Pobieram prawdziwe miejsca z OpenStreetMap…';root.innerHTML='<div class="map-empty">Wyszukiwanie…</div>';
- try{
-  const res=await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(query));if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json(),seen=new Set();
-  const places=(data.elements||[]).map(function(e){const p=healthGoPlacePoint(e);if(!p)return null;const k=e.type+':'+e.id;if(seen.has(k))return null;seen.add(k);return {lat:p.lat,lon:p.lon,tags:e.tags||{},distance:healthGoDistance(center.lat,center.lng,p.lat,p.lon)}}).filter(Boolean).sort(function(a,b){return a.distance-b.distance});
-  renderRestaurantResults(places);status.textContent='Gotowe. Szukam około 5 km od środka mapy.';count.textContent=places.length?'Znaleziono: '+places.length:'Brak wyników w tym obszarze.';
- }catch(e){console.warn('HealthGo Map:',e);root.innerHTML='<div class="map-empty"><b>Nie udało się pobrać miejsc.</b><br>Publiczny serwer map może być chwilowo zajęty. Odczekaj chwilę i spróbuj ponownie.</div>';count.textContent='Błąd pobierania danych.';status.textContent='Nie udało się połączyć z wyszukiwarką miejsc.'}
- finally{healthGoMapBusy=false;btn.disabled=false;btn.textContent='🔎 Szukaj w tym obszarze'}
+function healthGoAddress(t){const street=[t['addr:street'],t['addr:housenumber']].filter(Boolean).join(' '),city=t['addr:city']||t['addr:town']||t['addr:village']||t['addr:place']||'';return [street,city].filter(Boolean).join(', ')||'Brak pełnego adresu w OpenStreetMap'}
+
+function healthGoPlaceMeta(t){
+ const amenity=t.amenity||'',leisure=t.leisure||'',shop=t.shop||'';
+ if(amenity==='restaurant'||amenity==='fast_food')return {icon:'🍽️',label:amenity==='fast_food'?'Fast food':'Restauracja'};
+ if(amenity==='cafe')return {icon:'☕',label:'Kawiarnia'};
+ if(amenity==='pharmacy')return {icon:'💊',label:'Apteka'};
+ if(shop)return {icon:'🛒',label:shop==='supermarket'?'Supermarket':shop==='convenience'?'Sklep spożywczy':'Sklep'};
+ if(leisure==='fitness_centre'||leisure==='sports_centre'||t.sport==='fitness')return {icon:'🏋️',label:'Siłownia / centrum sportowe'};
+ if(leisure==='park')return {icon:'🌳',label:'Park'};
+ if(leisure==='playground')return {icon:'🛝',label:'Plac zabaw'};
+ if(amenity==='library')return {icon:'📚',label:'Biblioteka'};
+ if(amenity==='clinic'||amenity==='doctors')return {icon:'🩺',label:'Placówka medyczna'};
+ if(amenity==='hospital')return {icon:'🏥',label:'Szpital'};
+ return {icon:'📍',label:'Miejsce'};
 }
-function renderRestaurantResults(places){
- const root=document.getElementById('mapResults');if(healthGoRestaurantLayer)healthGoRestaurantLayer.clearLayers();
- if(!places.length){root.innerHTML='<div class="map-empty">Nie znaleziono pasujących restauracji. Przesuń mapę albo wybierz inną kuchnię.</div>';return}
+
+function healthGoOverpassClauses(category,bbox){
+ const b='('+bbox+')';
+ const groups={
+   restaurants:['nwr["amenity"~"^(restaurant|fast_food)$"]'+b+';'],
+   shops:['nwr["shop"]'+b+';'],
+   gyms:['nwr["leisure"~"^(fitness_centre|sports_centre)$"]'+b+';','nwr["sport"="fitness"]'+b+';'],
+   pharmacies:['nwr["amenity"="pharmacy"]'+b+';'],
+   cafes:['nwr["amenity"="cafe"]'+b+';'],
+   parks:['nwr["leisure"="park"]'+b+';'],
+   other:[
+     'nwr["amenity"~"^(library|clinic|doctors|hospital)$"]'+b+';',
+     'nwr["leisure"="playground"]'+b+';'
+   ]
+ };
+ if(category==='all'){
+   return [].concat(groups.restaurants,groups.shops,groups.gyms,groups.pharmacies,groups.cafes,groups.parks,groups.other);
+ }
+ return groups[category]||groups.restaurants;
+}
+
+async function searchMapAddress(){
+ initHealthGoMap();if(!healthGoMap)return;
+ const input=document.getElementById('mapAddressInput'),q=(input&&input.value||'').trim();
+ if(!q){mapStatus('Wpisz adres, ulicę albo miasto.');return}
+ mapStatus('Szukam adresu…');
+ try{
+   const url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(q);
+   const res=await fetch(url,{headers:{'Accept':'application/json'}});
+   if(!res.ok)throw new Error('HTTP '+res.status);
+   const data=await res.json();
+   if(!data.length){mapStatus('Nie znalazłem tego adresu. Spróbuj wpisać więcej szczegółów.');return}
+   const lat=Number(data[0].lat),lon=Number(data[0].lon);
+   healthGoMap.setView([lat,lon],16,{animate:true});
+   mapStatus('Znaleziono: '+(data[0].display_name||q)+'. Możesz teraz kliknąć „Szukaj w tym obszarze”.');
+ }catch(e){
+   console.warn('HealthGo geocoding:',e);
+   mapStatus('Nie udało się wyszukać adresu. Sprawdź internet i spróbuj ponownie.');
+ }
+}
+
+function useMyLocation(){
+ initHealthGoMap();if(!healthGoMap)return;
+ if(!navigator.geolocation){mapStatus('To urządzenie nie udostępnia lokalizacji.');return}
+ mapStatus('Czekam na zgodę na lokalizację…');
+ navigator.geolocation.getCurrentPosition(
+   function(pos){
+     const lat=pos.coords.latitude,lon=pos.coords.longitude,acc=Math.max(10,pos.coords.accuracy||30);
+     if(healthGoLocationLayer)healthGoLocationLayer.clearLayers();
+     const marker=L.marker([lat,lon]).addTo(healthGoLocationLayer);
+     marker.bindPopup('<b>📍 Twoje położenie</b><br>Dokładność około '+Math.round(acc)+' m').openPopup();
+     L.circle([lat,lon],{radius:acc,weight:1,fillOpacity:.08}).addTo(healthGoLocationLayer);
+     healthGoMap.setView([lat,lon],16,{animate:true});
+     mapStatus('Pokazuję Twoje położenie. Lokalizacja została użyta po Twojej zgodzie.');
+   },
+   function(err){
+     const msg=err&&err.code===1?'Nie udzielono zgody na lokalizację.':err&&err.code===2?'Nie udało się ustalić położenia urządzenia.':'Lokalizacja nie odpowiedziała na czas.';
+     mapStatus(msg);
+   },
+   {enableHighAccuracy:true,timeout:12000,maximumAge:30000}
+ );
+}
+
+async function searchMapPlaces(){
+ initHealthGoMap();if(!healthGoMap||healthGoMapBusy)return;
+ if(healthGoMap.getZoom()<12){
+   mapStatus('Przybliż mapę bardziej (co najmniej do poziomu ulic), żeby wyszukać miejsca w tym obszarze.');
+   return;
+ }
+ const btn=document.getElementById('mapSearchBtn'),root=document.getElementById('mapResults'),count=document.getElementById('mapResultsCount');
+ const center=healthGoMap.getCenter(),bounds=healthGoMap.getBounds();
+ const bbox=[bounds.getSouth(),bounds.getWest(),bounds.getNorth(),bounds.getEast()].map(v=>Number(v).toFixed(6)).join(',');
+ const clauses=healthGoOverpassClauses(healthGoCategory,bbox);
+ const query='[out:json][timeout:22];('+clauses.join('')+');out center 160;';
+
+ healthGoMapBusy=true;
+ if(btn){btn.disabled=true;btn.textContent='⏳ Szukam…'}
+ mapStatus('Pobieram prawdziwe miejsca z OpenStreetMap…');
+ if(root)root.innerHTML='<div class="map-empty">Wyszukiwanie…</div>';
+ toggleMapResults(true);
+
+ try{
+   const res=await fetch('https://overpass-api.de/api/interpreter',{
+     method:'POST',
+     headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
+     body:'data='+encodeURIComponent(query)
+   });
+   if(!res.ok)throw new Error('HTTP '+res.status);
+   const data=await res.json(),seen=new Set();
+   const places=(data.elements||[]).map(function(e){
+     const p=healthGoPlacePoint(e);if(!p)return null;
+     const key=e.type+':'+e.id;if(seen.has(key))return null;seen.add(key);
+     return {lat:p.lat,lon:p.lon,tags:e.tags||{},distance:healthGoDistance(center.lat,center.lng,p.lat,p.lon)};
+   }).filter(Boolean).sort((a,b)=>a.distance-b.distance);
+
+   renderMapPlaces(places);
+   if(count)count.textContent=places.length?'Znaleziono: '+places.length:'Brak wyników w widocznym obszarze.';
+   mapStatus(places.length?'Gotowe — znaleziono '+places.length+' prawdziwych miejsc w aktualnie widocznym obszarze.':'Nie znaleziono pasujących miejsc. Przesuń mapę albo wybierz inną kategorię.');
+ }catch(e){
+   console.warn('HealthGo Map:',e);
+   if(root)root.innerHTML='<div class="map-empty"><b>Nie udało się pobrać miejsc.</b><br>Publiczny serwer OpenStreetMap/Overpass może być chwilowo zajęty. Spróbuj ponownie za moment.</div>';
+   if(count)count.textContent='Błąd pobierania danych.';
+   mapStatus('Nie udało się połączyć z wyszukiwarką miejsc.');
+ }finally{
+   healthGoMapBusy=false;
+   if(btn){btn.disabled=false;btn.textContent='🔎 Szukaj w tym obszarze'}
+ }
+}
+
+function renderMapPlaces(places){
+ const root=document.getElementById('mapResults');
+ if(healthGoPlacesLayer)healthGoPlacesLayer.clearLayers();
+ if(!root)return;
+ if(!places.length){root.innerHTML='<div class="map-empty">Brak wyników. Spróbuj przesunąć mapę, przybliżyć ją albo wybrać inną kategorię.</div>';return}
+
  root.innerHTML='';
- places.forEach(function(p,i){const t=p.tags||{},name=t.name||t.brand||'Restauracja bez nazwy',cuisine=(t.cuisine||'kuchnia nieopisana').replaceAll(';',', '),address=healthGoAddress(t),dist=p.distance<1?Math.round(p.distance*1000)+' m':p.distance.toFixed(1)+' km';
-  if(healthGoRestaurantLayer){const m=L.marker([p.lat,p.lon]).addTo(healthGoRestaurantLayer);m.bindPopup('<b>'+healthGoEscape(name)+'</b><br>'+healthGoEscape(cuisine)+'<br>'+healthGoEscape(address))}
-  const card=document.createElement('article');card.className='map-place';card.innerHTML='<h3>'+(i+1)+'. '+healthGoEscape(name)+'</h3><p>🍽️ '+healthGoEscape(cuisine)+'</p><p>📍 '+healthGoEscape(address)+'</p><p>↔️ około '+healthGoEscape(dist)+' od środka mapy</p><div class="map-place-actions"><button type="button">Pokaż na mapie</button></div>';card.querySelector('button').addEventListener('click',function(){focusRestaurant(p.lat,p.lon)});root.appendChild(card);
+ places.forEach(function(p,i){
+   const t=p.tags||{},meta=healthGoPlaceMeta(t),name=t.name||t.brand||meta.label,address=healthGoAddress(t);
+   const dist=p.distance<1?Math.round(p.distance*1000)+' m':p.distance.toFixed(1)+' km';
+   const extra=[];
+   if(t.cuisine)extra.push('🍴 '+String(t.cuisine).replaceAll(';',', '));
+   if(t.opening_hours)extra.push('🕒 '+t.opening_hours);
+   if(t.phone||t['contact:phone'])extra.push('☎️ '+(t.phone||t['contact:phone']));
+
+   if(healthGoPlacesLayer){
+     const m=L.marker([p.lat,p.lon]).addTo(healthGoPlacesLayer);
+     m.bindPopup('<b>'+healthGoEscape(meta.icon+' '+name)+'</b><br>'+healthGoEscape(meta.label)+'<br>'+healthGoEscape(address)+(extra.length?'<br>'+healthGoEscape(extra.join(' · ')):''));
+   }
+
+   const card=document.createElement('article');card.className='map-place';
+   card.innerHTML='<h3>'+(i+1)+'. '+healthGoEscape(meta.icon+' '+name)+'</h3><p>'+healthGoEscape(meta.label)+'</p><p>📍 '+healthGoEscape(address)+'</p><p>↔️ około '+healthGoEscape(dist)+' od środka mapy</p>'+(extra.length?'<p>'+healthGoEscape(extra.join(' · '))+'</p>':'')+'<div class="map-place-actions"><button type="button">Pokaż na mapie</button></div>';
+   card.querySelector('button').addEventListener('click',function(){healthGoMap.setView([p.lat,p.lon],17,{animate:true})});
+   root.appendChild(card);
  });
 }
+
 
 function game(name){modal('🎮 '+name,'Gra rozpoczęta!<br><br><b>Zasady bezpieczeństwa:</b> graj w bezpiecznym miejscu, nie wbiegaj na jezdnię, nie wchodź na prywatny teren i stosuj się do zasad opiekuna.')}
 function addPlan(){const time=prompt('Podaj godzinę, np. 19:30');if(!time)return;const what=prompt('Co planujesz?');if(!what)return;const d=document.createElement('div');d.className='card';d.innerHTML='<b>'+time+'</b> '+what;document.getElementById('planList').appendChild(d)}
@@ -602,7 +782,7 @@ const tut=[
  {page:'start',sel:'#start .start-layout .card:nth-child(2)',title:'Szybki dostęp',text:'Te przyciski pozwalają szybko przejść do najczęściej używanych części HealthGo: Aktywności, Planu dnia i Mapy.'},
  {page:'start',sel:'.nav button[data-page="ai"]',title:'HealthGo AI',text:'Kliknij tę zakładkę. HealthGo AI będzie miejscem do zadawania pytań, tworzenia planów i korzystania z funkcji asystenta.'},
  {page:'ai',sel:'#aiChatShell',title:'Rozmowa z HealthGo AI',text:'To jest centrum HealthGo AI. Po lewej wybierasz tryb i szybkie funkcje, na środku masz dużą rozmowę, a na dole możesz pisać wiadomości lub dodać zdjęcie.'},
-  {page:'map',sel:'#mapWorkspace',title:'Mapa i restauracje',text:'Przesuń mapę na wybraną okolicę, wybierz rodzaj kuchni, np. azjatycką, i kliknij „Szukaj w tym obszarze”. HealthGo pobierze prawdziwe miejsca z OpenStreetMap.'},
+  {page:'map',sel:'#mapWorkspace',title:'Mapa prawdziwych miejsc',text:'Wpisz adres albo kliknij „Moje położenie” i zezwól na lokalizację. Wybierz kategorię, a „Szukaj w tym obszarze” pobierze prawdziwe restauracje, sklepy, siłownie i inne miejsca z OpenStreetMap.'},
  {page:'map',sel:'.nav button[data-page="games"]',title:'Gry',text:'Kliknij „Gry”, aby zobaczyć bezpieczne gry, misje i zabawy HealthGo.'},
  {page:'games',sel:'#games',title:'Gry i misje',text:'Tutaj znajdują się gry i misje. Każda gra może mieć opis, zasady, przebieg oraz informacje bezpieczeństwa.'},
  {page:'games',sel:'.nav button[data-page="plan"]',title:'Plan Dnia',text:'Kliknij „Plan Dnia”. Tutaj zarządzasz swoim harmonogramem.'},

@@ -2,7 +2,8 @@ const {
   app,
   BrowserWindow,
   Menu,
-  dialog
+  dialog,
+  session
 } = require("electron");
 
 const path = require("path");
@@ -20,6 +21,7 @@ app.setAppUserModelId("com.healthgo.app");
 let mainWindow = null;
 let webServer = null;
 let aiServer = null;
+let ollamaProcess = null;
 let updateIsInstalling = false;
 
 const PORT = 5500;
@@ -402,6 +404,136 @@ function startWebServer() {
 // ========================================
 // HEALTHGO AI
 // ========================================
+
+async function isOllamaRunning() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 1500);
+
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:11434/api/tags",
+      { signal: controller.signal }
+    );
+
+    return response.ok;
+  } catch (_) {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function findOllamaExecutable() {
+  const candidates = [
+    process.env.LOCALAPPDATA
+      ? path.join(process.env.LOCALAPPDATA, "Programs", "Ollama", "ollama.exe")
+      : null,
+    process.env.LOCALAPPDATA
+      ? path.join(process.env.LOCALAPPDATA, "Ollama", "ollama.exe")
+      : null,
+    process.env.ProgramFiles
+      ? path.join(process.env.ProgramFiles, "Ollama", "ollama.exe")
+      : null
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return "ollama";
+}
+
+async function ensureOllamaRunning() {
+  if (await isOllamaRunning()) {
+    console.log("HealthGo AI: Ollama już działa.");
+    return true;
+  }
+
+  const executable = findOllamaExecutable();
+
+  try {
+    ollamaProcess = spawn(
+      executable,
+      ["serve"],
+      {
+        windowsHide: true,
+        stdio: "ignore"
+      }
+    );
+
+    ollamaProcess.on(
+      "error",
+      (error) => {
+        console.error(
+          "HealthGo AI - nie udało się uruchomić Ollamy:",
+          error
+        );
+      }
+    );
+  } catch (error) {
+    console.error(
+      "HealthGo AI - błąd uruchamiania Ollamy:",
+      error
+    );
+
+    return false;
+  }
+
+  for (let i = 0; i < 30; i += 1) {
+    await new Promise(
+      (resolve) => setTimeout(resolve, 500)
+    );
+
+    if (await isOllamaRunning()) {
+      console.log("HealthGo AI: Ollama uruchomiona automatycznie.");
+      return true;
+    }
+  }
+
+  console.warn(
+    "HealthGo AI: Ollama nie odpowiedziała po uruchomieniu."
+  );
+
+  return false;
+}
+
+function configureHealthGoPermissions() {
+  const isHealthGoOrigin = (value) => {
+    return /^http:\/\/(127\.0\.0\.1|localhost):5500(?:\/|$)/i.test(
+      String(value || "")
+    );
+  };
+
+  session.defaultSession.setPermissionRequestHandler(
+    (webContents, permission, callback, details) => {
+      const origin =
+        details?.requestingUrl ||
+        webContents?.getURL?.() ||
+        "";
+
+      callback(
+        permission === "geolocation" &&
+        isHealthGoOrigin(origin)
+      );
+    }
+  );
+
+  session.defaultSession.setPermissionCheckHandler(
+    (webContents, permission, requestingOrigin) => {
+      const origin =
+        requestingOrigin ||
+        webContents?.getURL?.() ||
+        "";
+
+      return (
+        permission === "geolocation" &&
+        isHealthGoOrigin(origin)
+      );
+    }
+  );
+}
 
 function startAIServer() {
   const serverFile =
@@ -796,6 +928,10 @@ app.whenReady().then(
 
       await startWebServer();
 
+      configureHealthGoPermissions();
+
+      await ensureOllamaRunning();
+
       startAIServer();
 
       createWindow(
@@ -830,6 +966,12 @@ app.on(
     if (webServer) {
       try {
         webServer.close();
+      } catch (_) {}
+    }
+
+    if (ollamaProcess) {
+      try {
+        ollamaProcess.kill();
       } catch (_) {}
     }
 
