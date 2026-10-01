@@ -756,13 +756,42 @@ async function installHealthGoPwa(){
  if(text)text.textContent=isiOS?'W Safari dotknij Udostępnij, a potem „Dodaj do ekranu początkowego”.':'Otwórz menu przeglądarki i wybierz „Dodaj do ekranu głównego” lub „Zainstaluj aplikację”.';
  const btn=document.getElementById('pwaInstallBtn');if(btn)btn.style.display='none';
 }
+let healthGoVersionCheckBusy=false;
+async function checkHealthGoMobileUpdate(){
+ if(!isHostedMobileHealthGo()||healthGoVersionCheckBusy)return;
+ healthGoVersionCheckBusy=true;
+ try{
+   const res=await fetch('./version.json?t='+Date.now(),{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+   if(!res.ok)return;
+   const data=await res.json();
+   const remote=String(data.version||data.sha||'').trim();
+   if(!remote)return;
+   const key='healthgo_mobile_version';
+   const current=localStorage.getItem(key);
+   if(!current){localStorage.setItem(key,remote);return}
+   if(current!==remote){
+     localStorage.setItem(key,remote);
+     if('serviceWorker' in navigator){
+       try{const reg=await navigator.serviceWorker.getRegistration();if(reg)await reg.update()}catch(_){}
+     }
+     location.reload();
+   }
+ }catch(e){console.warn('HealthGo update check:',e)}
+ finally{healthGoVersionCheckBusy=false}
+}
 function setupMobilePWA(){
  if(isHostedMobileHealthGo())document.body.dataset.hostedMobile='1';
  if('serviceWorker' in navigator&&location.protocol==='https:'){
-  navigator.serviceWorker.register('./service-worker.js').catch(e=>console.warn('HealthGo PWA:',e));
+  navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'}).then(reg=>{
+    reg.update().catch(()=>{});
+  }).catch(e=>console.warn('HealthGo PWA:',e));
  }
  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();healthGoDeferredInstallPrompt=e;showPwaInstallHint()});
  window.addEventListener('appinstalled',()=>dismissPwaInstall());
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkHealthGoMobileUpdate()});
+ window.addEventListener('online',checkHealthGoMobileUpdate);
+ setTimeout(checkHealthGoMobileUpdate,900);
+ setInterval(checkHealthGoMobileUpdate,120000);
  setTimeout(showPwaInstallHint,2200);
 }
 function showPwaInstallHint(){
@@ -1637,8 +1666,11 @@ window.addEventListener('DOMContentLoaded', function () {
       'auth/email-already-in-use': 'Konto z tym adresem e-mail już istnieje.',
       'auth/weak-password': 'Hasło musi mieć co najmniej 6 znaków.',
       'auth/popup-closed-by-user': 'Okno Google zostało zamknięte.',
-      'auth/popup-blocked': 'Przeglądarka zablokowała okno Google. Zezwól na wyskakujące okna.',
-      'auth/unauthorized-domain': 'Ten adres strony nie jest dodany do Autoryzowanych domen Firebase.',
+      'auth/popup-blocked': 'Przeglądarka zablokowała okno Google. HealthGo spróbuje logowania przez przekierowanie.',
+      'auth/cancelled-popup-request': 'Poprzednie okno logowania zostało anulowane. Spróbuj ponownie.',
+      'auth/operation-not-supported-in-this-environment': 'Ta metoda logowania nie działa w tym trybie przeglądarki. HealthGo spróbuje przekierowania.',
+      'auth/web-storage-unsupported': 'Przeglądarka blokuje pamięć potrzebną do logowania Google.',
+      'auth/unauthorized-domain': 'Domena '+location.hostname+' nie jest jeszcze dodana do Autoryzowanych domen Firebase.',
       'auth/network-request-failed': 'Brak połączenia z Firebase. Sprawdź internet.',
       'auth/operation-not-allowed': 'Logowanie Google nie jest włączone w Firebase.',
       'auth/account-exists-with-different-credential': 'Ten e-mail jest już używany przez inną metodę logowania.'
@@ -1767,7 +1799,18 @@ window.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  // Google korzysta z oficjalnego Firebase Auth SDK. Compat nie wymaga importów type=module.
+  function healthGoIsMobileAuth(){
+    return /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent||'') || (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+  }
+  async function saveFirebaseUserSession(user){
+    if(!user)return;
+    try {
+      var gt = await user.getIdToken();
+      localStorage.setItem('healthgo_rest_session', JSON.stringify({idToken:gt,email:user.email||'',localId:user.uid||''}));
+    } catch (_) {}
+  }
+
+  // Google: popup na zwykłej stronie, a na iOS/PWA bezpieczny fallback do redirect.
   window.loginProvider = async function (name) {
     if (name !== 'Google') return;
     if (!auth || !window.firebase) {
@@ -1776,13 +1819,31 @@ window.addEventListener('DOMContentLoaded', function () {
     }
     setBusy(googleBtn, true, 'Otwieram Google…', 'Kontynuuj z Google');
     status('Otwieram Google…');
+    var provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:'select_account'});
     try {
-      var provider = new firebase.auth.GoogleAuthProvider();
-      provider.setCustomParameters({prompt:'select_account'});
-      var result = await auth.signInWithPopup(provider);
-      try { var gt = await result.user.getIdToken(); localStorage.setItem('healthgo_rest_session', JSON.stringify({idToken:gt,email:result.user.email||'',localId:result.user.uid||''})); } catch (_) {}
-      status('Zalogowano przez Google.', 'ok');
-      showMainApp(result.user);
+      if(healthGoIsMobileAuth()){
+        try{
+          var result = await auth.signInWithPopup(provider);
+          await saveFirebaseUserSession(result.user);
+          status('Zalogowano przez Google.', 'ok');
+          showMainApp(result.user);
+        }catch(firstError){
+          var fallbackCodes=['auth/popup-blocked','auth/cancelled-popup-request','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'];
+          if(fallbackCodes.indexOf(firstError&&firstError.code)>=0){
+            status('Przechodzę do bezpiecznego logowania Google…');
+            sessionStorage.setItem('healthgo_google_redirect','1');
+            await auth.signInWithRedirect(provider);
+            return;
+          }
+          throw firstError;
+        }
+      }else{
+        var result = await auth.signInWithPopup(provider);
+        await saveFirebaseUserSession(result.user);
+        status('Zalogowano przez Google.', 'ok');
+        showMainApp(result.user);
+      }
     } catch (error) {
       console.error('HealthGo Google login:', error);
       status(cleanFirebaseError(error), 'error');
@@ -1809,6 +1870,17 @@ window.addEventListener('DOMContentLoaded', function () {
       try { window.healthGoDb = firebase.firestore(); } catch (_) {}
       auth.languageCode = 'pl';
       auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
+      auth.getRedirectResult().then(async function(result){
+        if(result&&result.user){
+          await saveFirebaseUserSession(result.user);
+          try{sessionStorage.removeItem('healthgo_google_redirect')}catch(_){}
+          status('Zalogowano przez Google.', 'ok');
+          showMainApp(result.user);
+        }
+      }).catch(function(error){
+        console.error('HealthGo Google redirect:',error);
+        if(error&&error.code)status(cleanFirebaseError(error),'error');
+      });
       auth.onAuthStateChanged(function(user) {
         if (user) showMainApp(user);
       });
