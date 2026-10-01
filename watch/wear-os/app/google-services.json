@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "924242915977",
+    "project_id": "healthgo-e45be",
+    "storage_bucket": "healthgo-e45be.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:924242915977:android:66cec6e052c7d870f28c58",
+        "android_client_info": {
+          "package_name": "com.healthgo.wear"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "924242915977-8aljb6b3s45ft5uhbjsvrdlfdbaskcgp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlnzFay99NEt3OZp1MhdiOY_05MF8fWgk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "924242915977-8aljb6b3s45ft5uhbjsvrdlfdbaskcgp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
