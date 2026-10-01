@@ -348,7 +348,7 @@ html.hg-session-known #authScreen{display:none!important}\n</style>\n</head>
     <button class="active" data-page="start">🏠 <span>Start</span></button>
     <button data-page="ai">🤖 <span>HealthGo AI</span></button>
     <button data-page="map">🗺️ <span>Mapa</span></button>
-    <button data-page="games">🎮 <span>Gry</span></button>
+    <button data-page="games">🎮 <span>Minigry</span></button>
     <button data-page="plan">📅 <span>Plan Dnia</span></button>
     <button data-page="challenges">🎯 <span>Wyzwania</span></button>
     <button data-page="activity">❤️ <span>Aktywność</span></button>
@@ -494,14 +494,11 @@ html.hg-session-known #authScreen{display:none!important}\n</style>\n</head>
 </section>
 
 <section id="games" class="page">
-  <div class="hero"><h2>🎮 Gry</h2><p>Gry terenowe, rodzinne, quizy i misje odkrywcy.</p></div>
-  <div class="grid">
-    <div class="game"><div class="emoji">🗺️</div><h3>Podchody</h3><p><b>2–10 osób · 30–60 min · park</b></p><p>Jedna drużyna zostawia bezpieczne wskazówki, druga podąża ich śladem.</p><button class="btn" onclick="game('Podchody')">▶️ Rozpocznij grę</button></div>
-    <div class="game"><div class="emoji">🔎</div><h3>Poszukiwanie skarbów</h3><p><b>2–8 osób · 30 min · park/dom</b></p><p>Rozwiązuj zagadki i szukaj kolejnych wskazówek.</p><button class="btn" onclick="game('Poszukiwanie skarbów')">▶️ Rozpocznij grę</button></div>
-    <div class="game"><div class="emoji">📸</div><h3>Foto Quest</h3><p><b>2–8 osób · 30 min · miasto/park</b></p><p>Zrób bezpieczne zdjęcia rzeczy z listy.</p><button class="btn" onclick="game('Foto Quest')">▶️ Rozpocznij grę</button></div>
-    <div class="game"><div class="emoji">🧭</div><h3>Misja odkrywcy</h3><p><b>2–6 osób · 45 min · okolica</b></p><p>Wykonuj zadania i zdobywaj XP za kolejne etapy.</p><button class="btn" onclick="game('Misja odkrywcy')">▶️ Rozpocznij grę</button></div>
-    <div class="game"><div class="emoji">🧠</div><h3>Quiz terenowy</h3><p><b>2–10 osób · 20 min</b></p><p>Odpowiadaj na pytania przygotowane przez organizatora.</p><button class="btn" onclick="game('Quiz terenowy')">▶️ Rozpocznij grę</button></div>
-    <div class="game"><div class="emoji">🤖</div><h3>Gra stworzona przez AI</h3><p>Wybierz liczbę osób, czas i miejsce.</p><button class="btn" onclick="game('Gra AI')">✨ Wygeneruj</button></div>
+  <div class="hero"><h2>🎮 Minigry</h2><p>Nowe minigry HealthGo są w przygotowaniu.</p></div>
+  <div class="card" style="text-align:center;padding:48px 24px">
+    <div style="font-size:52px;margin-bottom:14px">🚧</div>
+    <h2 style="margin-bottom:8px">Wkrótce</h2>
+    <p class="muted">Pracujemy nad minigrami HealthGo. Pojawią się tutaj w jednej z kolejnych aktualizacji.</p>
   </div>
 </section>
 
@@ -742,7 +739,7 @@ html.hg-session-known #authScreen{display:none!important}\n</style>\n</head>
 
 <div id="mobileMoreBackdrop" class="mobile-more-backdrop" onclick="toggleMobileMore(false)"></div>
 <div id="mobileMoreSheet" class="mobile-more-sheet" aria-label="Więcej funkcji HealthGo">
-  <button type="button" onclick="mobileGo('games')">🎮 Gry</button>
+  <button type="button" onclick="mobileGo('games')">🎮 Minigry · wkrótce</button>
   <button type="button" onclick="mobileGo('challenges')">🎯 Wyzwania, XP i HealthGoPack</button>
   <button type="button" onclick="mobileGo('activity')">❤️ Aktywność</button>
   <button type="button" onclick="mobileGo('settings')">⚙️ Ustawienia i konto</button>
@@ -882,7 +879,7 @@ function showPwaInstallHint(){
  root.classList.add('show');
 }
 
-const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Gry',plan:'Plan Dnia',challenges:'Wyzwania',activity:'Aktywność',settings:'Ustawienia'};
+const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Minigry · wkrótce',plan:'Plan Dnia',challenges:'Wyzwania',activity:'Aktywność',settings:'Ustawienia'};
 let timerSec=0, timerInt=null;
 
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
