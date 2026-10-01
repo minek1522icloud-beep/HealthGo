@@ -1,0 +1,13 @@
+// Dodaj do wygenerowanego przez Android Studio modułu Wear OS.
+
+plugins {
+    id("com.google.gms.google-services")
+}
+
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+    implementation("com.google.firebase:firebase-ai")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+
+    implementation("androidx.wear.compose:compose-material3:1.7.0")
+}
