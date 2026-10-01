@@ -1,0 +1,55 @@
+name: HealthGo Apple Watch Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "watch/apple-watch/**"
+      - ".github/workflows/apple-watch-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+
+    steps:
+      - name: Pobierz kod
+        uses: actions/checkout@v6
+
+      - name: Pokaż wersję Xcode
+        run: xcodebuild -version
+
+      - name: Zainstaluj XcodeGen
+        run: brew install xcodegen
+
+      - name: Wygeneruj projekt Xcode
+        working-directory: watch/apple-watch
+        run: xcodegen generate
+
+      - name: Pobierz zależności Swift
+        working-directory: watch/apple-watch
+        run: |
+          xcodebuild             -resolvePackageDependencies             -project HealthGoWatch.xcodeproj             -scheme HealthGoWatch
+
+      - name: Zbuduj HealthGo dla symulatora Apple Watch
+        working-directory: watch/apple-watch
+        run: |
+          xcodebuild             -project HealthGoWatch.xcodeproj             -scheme HealthGoWatch             -configuration Debug             -destination 'generic/platform=watchOS Simulator'             CODE_SIGNING_ALLOWED=NO             build
+
+      - name: Spakuj aplikację
+        shell: bash
+        run: |
+          APP_PATH="$(find "$HOME/Library/Developer/Xcode/DerivedData" -type d -path '*Build/Products/Debug-watchsimulator/HealthGo.app' -print -quit)"
+          test -n "$APP_PATH"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" HealthGo-Apple-Watch-Simulator.zip
+
+      - name: Zapisz gotowy build
+        uses: actions/upload-artifact@v4
+        with:
+          name: HealthGo-Apple-Watch-Simulator
+          path: HealthGo-Apple-Watch-Simulator.zip
+          if-no-files-found: error
