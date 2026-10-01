@@ -1,0 +1,35 @@
+name: HealthGo Professional Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "www/**"
+      - ".github/workflows/healthgo-checks.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "www/**"
+      - ".github/workflows/healthgo-checks.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  web-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobierz kod
+        uses: actions/checkout@v6
+      - name: Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Sprawdź składnię modułu Professional
+        run: node --check www/healthgo-pro.js
+      - name: Sprawdź podpięcie modułu
+        run: grep -F 'healthgo-pro.js' www/index.html
+      - name: Sprawdź definicję 100 modeli
+        run: grep -F "BADGES.length!==100" www/healthgo-pro.js

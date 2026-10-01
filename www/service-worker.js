@@ -1,5 +1,5 @@
-const CACHE_NAME='healthgo-pwa-v6';
-const CORE=['./','./index.html','./manifest.webmanifest','./icon.png','./healthgo-ai-bundle.js'];
+const CACHE_NAME='healthgo-pwa-v7';
+const CORE=['./','./index.html','./manifest.webmanifest','./icon.png','./healthgo-ai-bundle.js','./healthgo-pro.js'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE)).catch(()=>{}));

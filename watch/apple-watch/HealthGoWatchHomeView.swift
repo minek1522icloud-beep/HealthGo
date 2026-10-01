@@ -1,9 +1,39 @@
 import SwiftUI
 
 struct HealthGoWatchHomeView: View {
+    @AppStorage("watch_local_xp") private var localXP = 0
+
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("HealthGo")
+                                .font(.headline)
+                            Text("XP zegarka: \(localXP)")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "heart.fill")
+                    }
+                }
+
+                Section("Dzisiaj") {
+                    NavigationLink {
+                        HealthGoWatchDailyView()
+                    } label: {
+                        Label("Zadania Dnia", systemImage: "checklist")
+                    }
+
+                    NavigationLink {
+                        HealthGoWatchActivityView()
+                    } label: {
+                        Label("Aktywność", systemImage: "figure.walk")
+                    }
+                }
+
                 Section("HealthGo") {
                     NavigationLink {
                         HealthGoWatchAIView()
@@ -14,19 +44,10 @@ struct HealthGoWatchHomeView: View {
                     NavigationLink {
                         WatchComingSoonView(
                             title: "Plan Dnia",
-                            text: "Synchronizacja Planu Dnia z kontem HealthGo będzie dodana w kolejnym etapie."
+                            text: "Podgląd pełnego Planu Dnia pojawi się po sparowaniu zegarka z kontem HealthGo."
                         )
                     } label: {
                         Label("Plan Dnia", systemImage: "calendar")
-                    }
-
-                    NavigationLink {
-                        WatchComingSoonView(
-                            title: "Aktywność",
-                            text: "HealthGo pokaże tu wyłącznie prawdziwe dane po uzyskaniu wymaganych uprawnień."
-                        )
-                    } label: {
-                        Label("Aktywność", systemImage: "figure.walk")
                     }
                 }
 
@@ -39,8 +60,8 @@ struct HealthGoWatchHomeView: View {
                 }
 
                 Section {
-                    Text("HealthGo Watch Alpha")
-                        .font(.footnote)
+                    Text("Dane aktywności są pobierane z HealthKit wyłącznie po zgodzie użytkownika.")
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
             }

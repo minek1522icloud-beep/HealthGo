@@ -8,6 +8,12 @@ on:
     paths:
       - "watch/wear-os/**"
       - ".github/workflows/wear-os-apk.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "watch/wear-os/**"
+      - ".github/workflows/wear-os-apk.yml"
 
 permissions:
   contents: read

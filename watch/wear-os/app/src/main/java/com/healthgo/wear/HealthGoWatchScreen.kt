@@ -16,7 +16,7 @@ import androidx.wear.compose.material3.Text
 import kotlinx.coroutines.launch
 
 private enum class WatchPage {
-    HOME, SETTINGS
+    HOME, DAILY, ACTIVITY, SETTINGS
 }
 
 @Composable
@@ -24,17 +24,29 @@ fun HealthGoWatchScreen() {
     val context = LocalContext.current
     var page by remember { mutableStateOf(WatchPage.HOME) }
 
-    if (page == WatchPage.SETTINGS) {
-        HealthGoWearSettingsScreen(onBack = { page = WatchPage.HOME })
-        return
+    when (page) {
+        WatchPage.DAILY -> {
+            HealthGoWearDailyScreen(onBack = { page = WatchPage.HOME })
+            return
+        }
+        WatchPage.ACTIVITY -> {
+            HealthGoWearActivityScreen(onBack = { page = WatchPage.HOME })
+            return
+        }
+        WatchPage.SETTINGS -> {
+            HealthGoWearSettingsScreen(onBack = { page = WatchPage.HOME })
+            return
+        }
+        WatchPage.HOME -> Unit
     }
 
-    var answer by remember { mutableStateOf("HealthGo Watch Alpha") }
+    var answer by remember { mutableStateOf("HealthGo Watch Professional") }
     var loading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val ai = remember { HealthGoWatchAI() }
     val settings = loadWearSettings(context)
     val answerSize = if (settings.largeText) 17.sp else 14.sp
+    val localXp = loadWearLocalXp(context)
 
     Column(
         modifier = Modifier
@@ -44,6 +56,15 @@ fun HealthGoWatchScreen() {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text("HealthGo")
+        Text("XP zegarka: $localXp")
+
+        Button(onClick = { page = WatchPage.DAILY }) {
+            Text("Zadania Dnia")
+        }
+
+        Button(onClick = { page = WatchPage.ACTIVITY }) {
+            Text("Aktywność")
+        }
 
         Button(
             onClick = {
@@ -59,7 +80,7 @@ fun HealthGoWatchScreen() {
                 }
             }
         ) {
-            Text(if (loading) "Łączę..." else "Test AI")
+            Text(if (loading) "Łączę..." else "HealthGo AI")
         }
 
         Text(answer, fontSize = answerSize)
@@ -68,6 +89,6 @@ fun HealthGoWatchScreen() {
             Text("Ustawienia")
         }
 
-        Text("Plan Dnia i Aktywność zostaną podłączone w kolejnym etapie.")
+        Text("Dane z czujników są pokazywane tylko po zgodzie. Brak odczytu oznacza brak danych, a nie zero.")
     }
 }
