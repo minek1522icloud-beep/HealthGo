@@ -136,6 +136,25 @@ body:has(#ai.active) .top{margin-bottom:8px}
 .plan-empty-mini{padding:18px;border-radius:14px;background:#f8fafc;border:1px dashed #cbd5e1;color:#64748b;text-align:center;font-size:13px}
 @media(max-width:1000px){.plan-shell{grid-template-columns:1fr}.plan-editor{position:static}}
 @media(max-width:620px){.plan-board-head{align-items:flex-start;flex-direction:column}.plan-day-control{width:100%}.plan-day-control input{width:100%}.plan-item{grid-template-columns:64px 1fr}.plan-item-actions{grid-column:1/-1;justify-content:flex-end}.plan-item-time{font-size:17px}}
+.plan-toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--border);background:#fafafa}
+.plan-toolbar button{padding:8px 11px;border-radius:10px;background:#f1f5f9;color:#334155;font-weight:750}
+.plan-toolbar button:hover{background:#e2e8f0}
+.plan-search{flex:1 1 190px;min-width:150px;margin:0!important;padding:8px 11px!important}
+.plan-progress{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted)}
+.plan-progress-track{height:7px;flex:1;min-width:90px;background:#e5e7eb;border-radius:99px;overflow:hidden}
+.plan-progress-track>div{height:100%;background:#10a37f;width:0%;transition:width .25s ease}
+.plan-item.done{opacity:.66;background:#f8fafc}
+.plan-item.done .plan-item-main b{text-decoration:line-through}
+.plan-item-time-wrap{display:flex;flex-direction:column;gap:3px}
+.plan-item-end{font-size:11px;color:#64748b;font-weight:700}
+.plan-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.plan-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;background:#f1f5f9;color:#475569;font-size:10px;font-weight:800}
+.plan-chip.high{background:#fef2f2;color:#b91c1c}.plan-chip.medium{background:#fff7ed;color:#c2410c}.plan-chip.low{background:#f0fdf4;color:#15803d}
+.plan-done-btn{background:#ecfdf5!important;color:#047857!important}.plan-item.done .plan-done-btn{background:#d1fae5!important;color:#065f46!important}
+.plan-editor-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.plan-editor-grid .plan-field{margin-bottom:2px}
+.plan-copy-status{font-size:12px;color:var(--muted);padding:0 14px 10px}
+@media(max-width:620px){.plan-toolbar{align-items:stretch}.plan-search{flex-basis:100%}.plan-editor-grid{grid-template-columns:1fr}.plan-progress{align-items:flex-start;flex-direction:column}.plan-progress-track{width:100%}}
 
 /* HealthGo Mapa — pełnoekranowa mapa prawdziwych miejsc */
 body:has(#map.active) .main{max-width:none;padding:10px 10px 12px}
@@ -489,7 +508,7 @@ body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{bac
 <section id="plan" class="page">
   <div class="hero">
     <h2>📅 Plan Dnia</h2>
-    <p>Twój prawdziwy harmonogram. Dodajesz tylko własne godziny, miejsca i plany — bez przykładowych wpisów.</p>
+    <p>Twój prawdziwy harmonogram z kategoriami, priorytetami, powtarzaniem i oznaczaniem wykonanych zadań.</p>
   </div>
 
   <div class="plan-shell">
@@ -504,6 +523,20 @@ body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{bac
         </div>
       </div>
 
+      <div class="plan-toolbar">
+        <button type="button" onclick="movePlanDay(-1)">← Poprzedni</button>
+        <button type="button" onclick="goPlanToday()">Dzisiaj</button>
+        <button type="button" onclick="movePlanDay(1)">Następny →</button>
+        <input id="planSearch" class="plan-search" type="search" placeholder="Szukaj w planie…" oninput="renderPlanDay()">
+        <button type="button" onclick="copyPlanDayToNext()">Kopiuj dzień +1</button>
+      </div>
+
+      <div class="plan-progress">
+        <span id="planProgressLabel">0 / 0 wykonane</span>
+        <div class="plan-progress-track"><div id="planProgressBar"></div></div>
+      </div>
+      <div id="planCopyStatus" class="plan-copy-status"></div>
+
       <div id="planList" class="plan-list">
         <div class="plan-empty">
           <div class="plan-empty-icon">📭</div>
@@ -515,11 +548,17 @@ body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{bac
 
     <aside class="plan-editor">
       <h3 id="planEditorTitle">＋ Dodaj punkt planu</h3>
-      <p>Wpisz godzinę oraz dokąd chcesz iść lub co chcesz zrobić.</p>
+      <p>Dodaj czas, kategorię i szczegóły. Pola końca, miejsca i notatki są opcjonalne.</p>
 
-      <div class="plan-field">
-        <label for="planTime">Godzina</label>
-        <input id="planTime" type="time">
+      <div class="plan-editor-grid">
+        <div class="plan-field">
+          <label for="planTime">Od</label>
+          <input id="planTime" type="time">
+        </div>
+        <div class="plan-field">
+          <label for="planEndTime">Do (opcjonalnie)</label>
+          <input id="planEndTime" type="time">
+        </div>
       </div>
 
       <div class="plan-field">
@@ -527,8 +566,42 @@ body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{bac
         <input id="planTitleInput" type="text" maxlength="80" placeholder="np. trening, kino, lekarz">
       </div>
 
+      <div class="plan-editor-grid">
+        <div class="plan-field">
+          <label for="planCategory">Kategoria</label>
+          <select id="planCategory">
+            <option value="other">📌 Inne</option>
+            <option value="school">🎓 Szkoła / nauka</option>
+            <option value="activity">🏃 Aktywność</option>
+            <option value="health">❤️ Zdrowie</option>
+            <option value="meeting">👥 Spotkanie</option>
+            <option value="travel">🚌 Wyjście / podróż</option>
+            <option value="rest">🎮 Odpoczynek</option>
+          </select>
+        </div>
+        <div class="plan-field">
+          <label for="planPriority">Priorytet</label>
+          <select id="planPriority">
+            <option value="normal">Zwykły</option>
+            <option value="high">🔴 Ważny</option>
+            <option value="medium">🟠 Średni</option>
+            <option value="low">🟢 Niski</option>
+          </select>
+        </div>
+      </div>
+
       <div class="plan-field">
-        <label for="planPlace">Gdzie chcesz iść?</label>
+        <label for="planRepeat">Powtarzanie</label>
+        <select id="planRepeat">
+          <option value="none">Nie powtarzaj</option>
+          <option value="daily">Codziennie</option>
+          <option value="weekdays">Poniedziałek–piątek</option>
+          <option value="weekly">Co tydzień w ten sam dzień</option>
+        </select>
+      </div>
+
+      <div class="plan-field">
+        <label for="planPlace">Gdzie?</label>
         <input id="planPlace" type="text" maxlength="120" placeholder="np. Park Lisiniec, kino, dom babci">
       </div>
 
@@ -1193,8 +1266,35 @@ function game(name){modal('🎮 '+name,'Gra rozpoczęta!<br><br><b>Zasady bezpie
 const HEALTHGO_PLAN_KEY='healthgo_plan_v2';
 let planEditingId=null;
 
+const PLAN_CATEGORY_META={
+ other:{icon:'📌',label:'Inne'},
+ school:{icon:'🎓',label:'Szkoła / nauka'},
+ activity:{icon:'🏃',label:'Aktywność'},
+ health:{icon:'❤️',label:'Zdrowie'},
+ meeting:{icon:'👥',label:'Spotkanie'},
+ travel:{icon:'🚌',label:'Wyjście / podróż'},
+ rest:{icon:'🎮',label:'Odpoczynek'}
+};
+const PLAN_PRIORITY_META={
+ normal:{label:'Zwykły',cls:''},
+ high:{label:'Ważny',cls:'high'},
+ medium:{label:'Średni',cls:'medium'},
+ low:{label:'Niski',cls:'low'}
+};
+const PLAN_REPEAT_META={
+ none:'Jednorazowo',
+ daily:'Codziennie',
+ weekdays:'Pon.–pt.',
+ weekly:'Co tydzień'
+};
+
 function planTodayKey(){
  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+ return y+'-'+m+'-'+day;
+}
+function planDateObj(value){return new Date(String(value||planTodayKey())+'T12:00:00')}
+function planDateKey(d){
+ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
  return y+'-'+m+'-'+day;
 }
 function healthGoPlanStorageKey(){
@@ -1202,6 +1302,17 @@ function healthGoPlanStorageKey(){
    if(typeof hgUserKey==='function'&&typeof hgSafeKey==='function')return HEALTHGO_PLAN_KEY+'_'+hgSafeKey(hgUserKey());
  }catch(_){}
  return HEALTHGO_PLAN_KEY;
+}
+function normalizePlanItem(x){
+ return {
+   ...x,
+   endTime:x.endTime||'',
+   category:x.category||'other',
+   priority:x.priority||'normal',
+   repeat:x.repeat||'none',
+   doneDates:Array.isArray(x.doneDates)?x.doneDates:[],
+   done:!!x.done
+ };
 }
 function loadHealthGoPlan(){
  try{
@@ -1212,7 +1323,7 @@ function loadHealthGoPlan(){
      if(legacy){localStorage.setItem(key,legacy);raw=legacy}
    }
    const data=JSON.parse(raw||'[]');
-   return Array.isArray(data)?data:[];
+   return Array.isArray(data)?data.map(normalizePlanItem):[];
  }catch(_){return []}
 }
 function saveHealthGoPlan(data){
@@ -1221,7 +1332,7 @@ function saveHealthGoPlan(data){
 }
 function planDateLabel(value){
  if(!value)return 'Plan dnia';
- const d=new Date(value+'T12:00:00');
+ const d=planDateObj(value);
  return new Intl.DateTimeFormat('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(d);
 }
 function initPlanDay(){
@@ -1237,49 +1348,135 @@ function currentPlanDate(){
  const date=document.getElementById('planDate');
  return date&&date.value?date.value:planTodayKey();
 }
+function planOccursOnDate(item,date){
+ if(!item||!item.date||date<item.date)return false;
+ const repeat=item.repeat||'none';
+ if(repeat==='none')return item.date===date;
+ if(repeat==='daily')return true;
+ const d=planDateObj(date),start=planDateObj(item.date);
+ if(repeat==='weekdays'){
+   const day=d.getDay();
+   return day>=1&&day<=5;
+ }
+ if(repeat==='weekly')return d.getDay()===start.getDay();
+ return item.date===date;
+}
+function isPlanDoneOnDate(item,date){
+ if((item.repeat||'none')==='none')return !!item.done;
+ return Array.isArray(item.doneDates)&&item.doneDates.includes(date);
+}
+function setPlanDoneOnDate(item,date,done){
+ if((item.repeat||'none')==='none'){
+   item.done=done;
+   return;
+ }
+ const set=new Set(Array.isArray(item.doneDates)?item.doneDates:[]);
+ if(done)set.add(date);else set.delete(date);
+ item.doneDates=[...set].sort();
+}
+function planItemsForDate(date){
+ return loadHealthGoPlan()
+   .filter(x=>planOccursOnDate(x,date))
+   .sort((a,b)=>(a.time||'').localeCompare(b.time||'')||(a.title||'').localeCompare(b.title||''));
+}
+function updatePlanProgress(items,date){
+ const total=items.length,done=items.filter(x=>isPlanDoneOnDate(x,date)).length;
+ const label=document.getElementById('planProgressLabel');
+ const bar=document.getElementById('planProgressBar');
+ if(label)label.textContent=done+' / '+total+' wykonane';
+ if(bar)bar.style.width=(total?Math.round(done/total*100):0)+'%';
+}
 function renderPlanDay(){
  const root=document.getElementById('planList');if(!root)return;
  const date=currentPlanDate();
  const title=document.getElementById('planDayTitle');
  const sub=document.getElementById('planDaySubtitle');
+ const search=(document.getElementById('planSearch')?.value||'').trim().toLowerCase();
  if(title)title.textContent=planDateLabel(date);
- const items=loadHealthGoPlan().filter(x=>x.date===date).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
- if(sub)sub.textContent=items.length?items.length+' '+(items.length===1?'punkt':'punkty')+' w tym dniu.':'Nie masz jeszcze planu na ten dzień.';
+
+ const allItems=planItemsForDate(date);
+ updatePlanProgress(allItems,date);
+ let items=allItems;
+ if(search){
+   items=allItems.filter(x=>[x.title,x.place,x.note,PLAN_CATEGORY_META[x.category]?.label].some(v=>String(v||'').toLowerCase().includes(search)));
+ }
+
+ const doneCount=allItems.filter(x=>isPlanDoneOnDate(x,date)).length;
+ if(sub)sub.textContent=allItems.length
+   ?allItems.length+' '+(allItems.length===1?'punkt':'punkty')+' · '+doneCount+' wykonane.'
+   :'Nie masz jeszcze planu na ten dzień.';
+
  if(!items.length){
-   root.innerHTML='<div class="plan-empty"><div class="plan-empty-icon">📭</div><b>Brak planu</b><span>Dodaj pierwszą godzinę i miejsce w formularzu obok.</span></div>';
+   root.innerHTML=search
+     ?'<div class="plan-empty"><div class="plan-empty-icon">🔎</div><b>Brak wyników</b><span>Nic w tym dniu nie pasuje do wyszukiwania.</span></div>'
+     :'<div class="plan-empty"><div class="plan-empty-icon">📭</div><b>Brak planu</b><span>Dodaj pierwszy punkt w formularzu obok.</span></div>';
    return;
  }
  root.innerHTML='';
  items.forEach(item=>{
+   const done=isPlanDoneOnDate(item,date);
+   const cat=PLAN_CATEGORY_META[item.category]||PLAN_CATEGORY_META.other;
+   const priority=PLAN_PRIORITY_META[item.priority]||PLAN_PRIORITY_META.normal;
+   const repeat=PLAN_REPEAT_META[item.repeat]||PLAN_REPEAT_META.none;
    const row=document.createElement('article');
-   row.className='plan-item';
+   row.className='plan-item'+(done?' done':'');
    const details=[];
    if(item.place)details.push('📍 '+planEscape(item.place));
    if(item.note)details.push(planEscape(item.note));
-   row.innerHTML='<div class="plan-item-time">'+planEscape(item.time)+'</div><div class="plan-item-main"><b>'+planEscape(item.title)+'</b>'+(details.length?'<p class="plan-item-place">'+details.join('<br>')+'</p>':'')+'</div><div class="plan-item-actions"><button class="plan-icon-btn" type="button" title="Edytuj">✏️</button><button class="plan-icon-btn danger" type="button" title="Usuń">🗑️</button></div>';
+   const meta=[
+     '<span class="plan-chip">'+planEscape(cat.icon+' '+cat.label)+'</span>',
+     item.priority!=='normal'?'<span class="plan-chip '+priority.cls+'">'+planEscape(priority.label)+'</span>':'',
+     item.repeat!=='none'?'<span class="plan-chip">🔁 '+planEscape(repeat)+'</span>':''
+   ].filter(Boolean).join('');
+   const timeBlock='<div class="plan-item-time-wrap"><div class="plan-item-time">'+planEscape(item.time)+'</div>'+(item.endTime?'<div class="plan-item-end">do '+planEscape(item.endTime)+'</div>':'')+'</div>';
+   row.innerHTML=timeBlock+
+     '<div class="plan-item-main"><b>'+planEscape(item.title)+'</b>'+
+     (details.length?'<p class="plan-item-place">'+details.join('<br>')+'</p>':'')+
+     '<div class="plan-meta">'+meta+'</div></div>'+
+     '<div class="plan-item-actions">'+
+       '<button class="plan-icon-btn plan-done-btn" type="button" title="'+(done?'Oznacz jako niewykonane':'Oznacz jako wykonane')+'">'+(done?'↩️':'✅')+'</button>'+
+       '<button class="plan-icon-btn" type="button" title="Duplikuj">📄</button>'+
+       '<button class="plan-icon-btn" type="button" title="Edytuj">✏️</button>'+
+       '<button class="plan-icon-btn danger" type="button" title="Usuń">🗑️</button>'+
+     '</div>';
    const buttons=row.querySelectorAll('button');
-   buttons[0].onclick=()=>editPlanItem(item.id);
-   buttons[1].onclick=()=>deletePlanItem(item.id);
+   buttons[0].onclick=()=>togglePlanDone(item.id,date);
+   buttons[1].onclick=()=>duplicatePlanItem(item.id,date);
+   buttons[2].onclick=()=>editPlanItem(item.id);
+   buttons[3].onclick=()=>deletePlanItem(item.id);
    root.appendChild(row);
  });
 }
 function savePlanItem(){
  const date=currentPlanDate();
  const time=(document.getElementById('planTime')?.value||'').trim();
+ const endTime=(document.getElementById('planEndTime')?.value||'').trim();
  const title=(document.getElementById('planTitleInput')?.value||'').trim();
  const place=(document.getElementById('planPlace')?.value||'').trim();
  const note=(document.getElementById('planNote')?.value||'').trim();
+ const category=document.getElementById('planCategory')?.value||'other';
+ const priority=document.getElementById('planPriority')?.value||'normal';
+ const repeat=document.getElementById('planRepeat')?.value||'none';
  const status=document.getElementById('planEditorStatus');
+
  if(!time||!title){
    if(status){status.textContent='Wpisz godzinę i nazwę planu.';status.style.color='#b91c1c'}
    return;
  }
+ if(endTime&&endTime<time){
+   if(status){status.textContent='Godzina zakończenia nie może być wcześniejsza niż początek.';status.style.color='#b91c1c'}
+   return;
+ }
+
  let data=loadHealthGoPlan();
  if(planEditingId){
    const idx=data.findIndex(x=>x.id===planEditingId);
-   if(idx>=0)data[idx]={...data[idx],date,time,title,place,note};
+   if(idx>=0)data[idx]={...data[idx],date,time,endTime,title,place,note,category,priority,repeat};
  }else{
-   data.push({id:'plan_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),date,time,title,place,note});
+   data.push({
+     id:'plan_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+     date,time,endTime,title,place,note,category,priority,repeat,done:false,doneDates:[]
+   });
  }
  saveHealthGoPlan(data);
  const wasEdit=!!planEditingId;
@@ -1294,9 +1491,13 @@ function editPlanItem(id){
  planEditingId=id;
  const date=document.getElementById('planDate');if(date)date.value=item.date;
  document.getElementById('planTime').value=item.time||'';
+ document.getElementById('planEndTime').value=item.endTime||'';
  document.getElementById('planTitleInput').value=item.title||'';
  document.getElementById('planPlace').value=item.place||'';
  document.getElementById('planNote').value=item.note||'';
+ document.getElementById('planCategory').value=item.category||'other';
+ document.getElementById('planPriority').value=item.priority||'normal';
+ document.getElementById('planRepeat').value=item.repeat||'none';
  document.getElementById('planEditorTitle').textContent='✏️ Edytuj punkt planu';
  document.getElementById('planSaveBtn').textContent='Zapisz zmiany';
  document.getElementById('planCancelBtn').style.display='';
@@ -1305,7 +1506,10 @@ function editPlanItem(id){
 }
 function cancelPlanEdit(){
  planEditingId=null;
- ['planTime','planTitleInput','planPlace','planNote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+ ['planTime','planEndTime','planTitleInput','planPlace','planNote'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
+ const cat=document.getElementById('planCategory');if(cat)cat.value='other';
+ const pri=document.getElementById('planPriority');if(pri)pri.value='normal';
+ const rep=document.getElementById('planRepeat');if(rep)rep.value='none';
  const title=document.getElementById('planEditorTitle');if(title)title.textContent='＋ Dodaj punkt planu';
  const save=document.getElementById('planSaveBtn');if(save)save.textContent='Dodaj do planu';
  const cancel=document.getElementById('planCancelBtn');if(cancel)cancel.style.display='none';
@@ -1317,18 +1521,82 @@ function deletePlanItem(id){
  renderPlanDay();
  renderTodayPlanPreview();
 }
+function togglePlanDone(id,date){
+ const data=loadHealthGoPlan();
+ const item=data.find(x=>x.id===id);if(!item)return;
+ setPlanDoneOnDate(item,date,!isPlanDoneOnDate(item,date));
+ saveHealthGoPlan(data);
+ renderPlanDay();
+ renderTodayPlanPreview();
+}
+function duplicatePlanItem(id,date){
+ const data=loadHealthGoPlan();
+ const source=data.find(x=>x.id===id);if(!source)return;
+ const copy={
+   ...source,
+   id:'plan_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+   date:date||source.date,
+   repeat:'none',
+   done:false,
+   doneDates:[],
+   title:source.title+' — kopia'
+ };
+ data.push(copy);
+ saveHealthGoPlan(data);
+ renderPlanDay();
+ renderTodayPlanPreview();
+ const status=document.getElementById('planCopyStatus');
+ if(status){status.textContent='Utworzono kopię punktu.';setTimeout(()=>{if(status.textContent==='Utworzono kopię punktu.')status.textContent=''},2200)}
+}
+function movePlanDay(delta){
+ const input=document.getElementById('planDate');if(!input)return;
+ const d=planDateObj(currentPlanDate());d.setDate(d.getDate()+Number(delta||0));
+ input.value=planDateKey(d);
+ renderPlanDay();
+}
+function goPlanToday(){
+ const input=document.getElementById('planDate');if(input)input.value=planTodayKey();
+ renderPlanDay();
+}
+function copyPlanDayToNext(){
+ const date=currentPlanDate();
+ const source=planItemsForDate(date);
+ const status=document.getElementById('planCopyStatus');
+ if(!source.length){
+   if(status)status.textContent='Nie ma czego kopiować w tym dniu.';
+   return;
+ }
+ const next=planDateObj(date);next.setDate(next.getDate()+1);
+ const nextKey=planDateKey(next);
+ const data=loadHealthGoPlan();
+ source.forEach(item=>{
+   data.push({
+     ...item,
+     id:'plan_'+Date.now()+'_'+Math.random().toString(36).slice(2,9),
+     date:nextKey,
+     repeat:'none',
+     done:false,
+     doneDates:[]
+   });
+ });
+ saveHealthGoPlan(data);
+ if(status)status.textContent='Skopiowano '+source.length+' '+(source.length===1?'punkt':'punkty')+' na '+planDateLabel(nextKey)+'.';
+}
 function renderTodayPlanPreview(){
  const root=document.getElementById('todayPlanPreview');if(!root)return;
- const items=loadHealthGoPlan().filter(x=>x.date===planTodayKey()).sort((a,b)=>(a.time||'').localeCompare(b.time||'')).slice(0,4);
+ const date=planTodayKey();
+ const items=planItemsForDate(date).slice(0,4);
  if(!items.length){
    root.innerHTML='<div class="plan-empty-mini">Brak planu na dzisiaj.</div>';
    return;
  }
  root.innerHTML='';
  items.forEach(item=>{
+   const done=isPlanDoneOnDate(item,date);
    const row=document.createElement('div');
    row.className='timeline-item';
-   row.innerHTML='<div class="timeline-time">'+planEscape(item.time)+'</div><div class="timeline-line"><span class="timeline-dot"></span></div><div><b>'+planEscape(item.title)+'</b><div class="muted">'+(item.place?'📍 '+planEscape(item.place):'Własny punkt planu')+'</div></div>';
+   row.style.opacity=done?'.58':'1';
+   row.innerHTML='<div class="timeline-time">'+planEscape(item.time)+'</div><div class="timeline-line"><span class="timeline-dot"></span></div><div><b style="'+(done?'text-decoration:line-through':'')+'">'+planEscape(item.title)+'</b><div class="muted">'+(item.place?'📍 '+planEscape(item.place):PLAN_CATEGORY_META[item.category]?.icon+' '+(PLAN_CATEGORY_META[item.category]?.label||'Własny punkt planu'))+'</div></div>';
    root.appendChild(row);
  });
 }
