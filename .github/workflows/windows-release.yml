@@ -1,0 +1,71 @@
+name: HealthGo Windows Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Pobierz kod
+        uses: actions/checkout@v6
+
+      - name: Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Zainstaluj zależności
+        run: npm ci
+
+      - name: Sprawdź wersję
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          Write-Host "HealthGo version: $version"
+          if ("v$version" -ne "${{ github.ref_name }}" -and "${{ github.event_name }}" -eq "push") {
+            throw "Tag nie pasuje do package.json"
+          }
+
+      - name: Zbuduj instalator i pliki aktualizacji
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win nsis --publish never
+
+      - name: Sprawdź pliki wydania
+        shell: pwsh
+        run: |
+          Get-ChildItem dist
+          if (-not (Test-Path "dist/latest.yml")) { throw "Brak dist/latest.yml" }
+          $setup = Get-ChildItem "dist/HealthGo-Setup-*.exe" | Select-Object -First 1
+          if (-not $setup) { throw "Brak instalatora HealthGo" }
+
+      - name: Zachowaj instalator jako artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HealthGo-Windows-${{ github.ref_name }}
+          path: |
+            dist/HealthGo-Setup-*.exe
+            dist/latest.yml
+            dist/*.blockmap
+          if-no-files-found: error
+
+      - name: Opublikuj GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $files = @()
+          $files += Get-ChildItem "dist/HealthGo-Setup-*.exe" | ForEach-Object { $_.FullName }
+          $files += (Resolve-Path "dist/latest.yml").Path
+          $files += Get-ChildItem "dist/*.blockmap" | ForEach-Object { $_.FullName }
+          gh release create "${{ github.ref_name }}" $files --title "HealthGo ${{ github.ref_name }}" --notes "HealthGo Professional: Zadania Dnia i XP, 100 odznak, rozbudowane ustawienia oraz przygotowanie aplikacji Apple Watch i Wear OS."
