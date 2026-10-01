@@ -22,15 +22,20 @@ targets:
           - SETUP.md
           - FIREBASE.md
           - README.md
+          - NO-MAC.md
+          - HealthGoWatch.entitlements
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.healthgo.watch
         PRODUCT_NAME: HealthGo
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "0.2.0"
+        CURRENT_PROJECT_VERSION: "2"
         GENERATE_INFOPLIST_FILE: "YES"
         INFOPLIST_KEY_CFBundleDisplayName: "HealthGo"
         INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp: "YES"
+        INFOPLIST_KEY_NSHealthShareUsageDescription: "HealthGo odczytuje kroki, dystans, aktywną energię i tętno, aby pokazać prawdziwe dane aktywności po Twojej zgodzie."
+        INFOPLIST_KEY_NSHealthUpdateUsageDescription: "HealthGo nie zapisuje danych zdrowotnych bez wyraźnej funkcji i zgody użytkownika."
+        CODE_SIGN_ENTITLEMENTS: HealthGoWatch.entitlements
         SDKROOT: watchos
         SUPPORTED_PLATFORMS: "watchos watchsimulator"
         TARGETED_DEVICE_FAMILY: "4"
