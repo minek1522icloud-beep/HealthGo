@@ -1,4 +1,4 @@
-const CACHE_NAME='healthgo-pwa-v5';
+const CACHE_NAME='healthgo-pwa-v6';
 const CORE=['./','./index.html','./manifest.webmanifest','./icon.png','./healthgo-ai-bundle.js'];
 
 self.addEventListener('install',event=>{
