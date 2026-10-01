@@ -403,7 +403,7 @@ body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{bac
         </div>
       </div>
 
-      <div class="mobile-ai-note"><b>🤖 HealthGo AI na telefonie</b><br>Mapa, konto, Plan Dnia, Wyzwania, XP i Aktywność działają na telefonie. Lokalny model Ollama jest uruchamiany na komputerze, więc mobilne AI podłączymy osobno przez bezpieczny serwer.</div>
+      <div class="mobile-ai-note"><b>🤖 HealthGo AI Mobile</b><br>Na telefonie HealthGo korzysta z Firebase AI Logic. Na komputerze nadal może korzystać z lokalnej Ollamy.</div>
 
       <div id="aiMessages" class="ai-messages" aria-live="polite">
         <div class="ai-msg assistant">
@@ -892,6 +892,27 @@ function aiTextToHtml(text){
  safe=safe.replace(/^[-•]\s+(.+)$/gm,'• $1');
  return '<p>'+safe.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')+'</p>';
 }
+async function waitForHealthGoMobileAI(){
+ const start=Date.now();
+ while(Date.now()-start<12000){
+   if(window.healthGoMobileAI&&typeof window.healthGoMobileAI.ask==='function')return window.healthGoMobileAI;
+   await new Promise(r=>setTimeout(r,120));
+ }
+ throw new Error('MOBILE_AI_SDK_NOT_READY');
+}
+function healthGoAIAccountType(){
+ try{return typeof loadHealthGoProfile==='function'?(loadHealthGoProfile().accountType||'standard'):'standard'}catch(_){return 'standard'}
+}
+async function askHealthGoMobileAI(message,imageData){
+ const api=await waitForHealthGoMobileAI();
+ return await api.ask({
+   message:message||'Opisz i przeanalizuj załączone zdjęcie.',
+   mode:aiMode,
+   history:aiHistory.slice(-12),
+   imageData:imageData||null,
+   accountType:healthGoAIAccountType()
+ });
+}
 function aiEndpoint(){
  if(isHostedMobileHealthGo())return null;
  const host=(location.hostname&&location.hostname!=='localhost')?location.hostname:'127.0.0.1';
@@ -906,13 +927,7 @@ async function askAI(){
  const input=document.getElementById('aiInput');if(!input)return;
  const q=input.value.trim();const photo=aiPendingPhoto;
  if(!q&&!photo)return;
- if(!aiEndpoint()){
-   if(q)aiAddMessage('user','<p>'+aiEscape(q)+'</p>');
-   input.value='';aiGrowInput(input);
-   aiAddMessage('assistant','<b>HealthGo AI na telefonie jest jeszcze w przygotowaniu.</b><p>Ta wersja działa z mapą, kontem, Planem Dnia, Wyzwania, XP i Aktywnością. Lokalny model Ollama działa tylko na komputerze, więc do telefonu dodamy osobne bezpieczne połączenie z AI.</p>');
-   aiSetConnection(false,'AI na komputerze');
-   return;
- }
+
  if(q)aiAddMessage('user','<p>'+aiEscape(q)+'</p>');
  let imageData=null;
  if(photo){
@@ -921,31 +936,59 @@ async function askAI(){
    aiRemovePhoto();
  }
  input.value='';aiGrowInput(input);
- const btn=document.getElementById('aiSendBtn');btn.disabled=true;
+
+ const btn=document.getElementById('aiSendBtn');if(btn)btn.disabled=true;
  const typing=aiShowTyping();
- const controller=new AbortController();
- const timeout=setTimeout(()=>controller.abort(),90000);
+
  try{
-   const payload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,history:aiHistory.slice(-20)};
-   if(imageData)payload.image=imageData;
-   const res=await fetch(aiEndpoint(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
-   const data=await res.json().catch(()=>({}));
-   if(!res.ok||!data.answer)throw new Error(data.error||'AI_BACKEND_UNAVAILABLE');
+   let answer='';
+
+   if(isHostedMobileHealthGo()){
+     aiSetConnection(true,'AI łączy się…');
+     answer=await askHealthGoMobileAI(q,imageData);
+   }else{
+     const controller=new AbortController();
+     const timeout=setTimeout(()=>controller.abort(),90000);
+     try{
+       const payload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,history:aiHistory.slice(-20)};
+       if(imageData)payload.image=imageData;
+       const res=await fetch(aiEndpoint(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
+       const data=await res.json().catch(()=>({}));
+       if(!res.ok||!data.answer)throw new Error(data.error||'AI_BACKEND_UNAVAILABLE');
+       answer=data.answer;
+     }finally{clearTimeout(timeout)}
+   }
+
+   if(!answer)throw new Error('EMPTY_AI_RESPONSE');
    if(typing)typing.remove();
-   aiAddMessage('assistant',aiTextToHtml(data.answer));
-   aiHistory.push({role:'user',content:q||'[zdjęcie]'},{role:'assistant',content:data.answer});
+   aiAddMessage('assistant',aiTextToHtml(answer));
+   aiHistory.push({role:'user',content:q||'[zdjęcie]'},{role:'assistant',content:answer});
    if(aiHistory.length>40)aiHistory=aiHistory.slice(-40);
-   aiSetConnection(true,'AI online');
+   aiSetConnection(true,isHostedMobileHealthGo()?'AI Mobile online':'AI online');
    awardChallenge('ai_first');
  }catch(err){
-   console.warn('HealthGo AI backend:',err);
+   console.warn('HealthGo AI:',err);
    if(typing)typing.remove();
-   aiSetConnection(false,'Serwer AI offline');
-   let detail='HealthGo nie połączył się z lokalnym modelem AI. Aplikacja próbuje uruchomić Ollamę automatycznie — spróbuj ponownie za chwilę.';
-   if(err&&err.name==='AbortError')detail='Serwer AI nie odpowiedział na czas. Spróbuj ponownie za chwilę.';
-   aiAddMessage('assistant','<b>Nie mam teraz połączenia z prawdziwym AI.</b><p>'+detail+'</p>');
+   aiSetConnection(false,'AI chwilowo niedostępne');
+
+   let detail='Spróbuj ponownie za chwilę.';
+   const msg=String((err&&err.message)||err||'');
+   if(isHostedMobileHealthGo()){
+     if(/MOBILE_AI_SDK_NOT_READY|firebase|AI Logic|403|404|permission|not.?found|failed-precondition/i.test(msg)){
+       detail='Mobilne AI jest już dodane do HealthGo, ale projekt Firebase musi mieć włączone AI Logic oraz Gemini Developer API.';
+     }else if(/quota|resource-exhausted|429/i.test(msg)){
+       detail='Limit AI został chwilowo wykorzystany. Spróbuj ponownie później.';
+     }else if(/network|fetch|offline/i.test(msg)){
+       detail='Nie udało się połączyć z AI. Sprawdź internet i spróbuj ponownie.';
+     }
+   }else{
+     detail='HealthGo nie połączył się z lokalnym modelem AI. Aplikacja próbuje uruchomić Ollamę automatycznie — spróbuj ponownie za chwilę.';
+     if(err&&err.name==='AbortError')detail='Serwer AI nie odpowiedział na czas. Spróbuj ponownie za chwilę.';
+   }
+   aiAddMessage('assistant','<b>Nie mam teraz połączenia z AI.</b><p>'+aiEscape(detail)+'</p>');
  }finally{
-   clearTimeout(timeout);btn.disabled=false;input.focus();
+   if(btn)btn.disabled=false;
+   input.focus();
  }
 }
 let healthGoMap=null,healthGoPlacesLayer=null,healthGoLocationLayer=null,healthGoCategory='all',healthGoMapBusy=false;
@@ -1972,5 +2015,86 @@ window.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 
+<script type="module">
+(async function(){
+  try{
+    const [{initializeApp},{getAI,getGenerativeModel,GoogleAIBackend}] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/12.19.0/firebase-ai.js')
+    ]);
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC841XoWIJ1AANTuIJ88s_mUIPa0MgrJZM",
+      authDomain: "healthgo-e45be.firebaseapp.com",
+      projectId: "healthgo-e45be",
+      storageBucket: "healthgo-e45be.firebasestorage.app",
+      messagingSenderId: "924242915977",
+      appId: "1:924242915977:web:bed648007802203cf28c58"
+    };
+
+    const aiApp=initializeApp(firebaseConfig,'healthgo-mobile-ai');
+    const ai=getAI(aiApp,{backend:new GoogleAIBackend()});
+
+    function systemInstruction(accountType){
+      const common=[
+        'Jesteś HealthGo AI, pomocnym asystentem aplikacji HealthGo.',
+        'Odpowiadaj po polsku, jasno, życzliwie i konkretnie.',
+        'Nie udawaj, że HealthGo ma dane, których nie otrzymał.',
+        'Jeżeli pytanie dotyczy zdrowia, nie stawiaj diagnozy i zachęć do rozmowy z zaufanym dorosłym lub lekarzem, gdy objawy są poważne.',
+        'Nie podawaj niebezpiecznych instrukcji, nie promuj ryzykownych zachowań ani szkodliwych porad dotyczących jedzenia, ciała lub ćwiczeń.',
+        'Nie ujawniaj prywatnych danych użytkownika.'
+      ];
+      if(accountType==='child'){
+        common.push('To konto dziecka: używaj prostego, bezpiecznego i przyjaznego języka oraz szczególnie chroń prywatność użytkownika.');
+      }
+      return common.join(' ');
+    }
+
+    function buildPrompt(message,mode,history){
+      const modeNames={assistant:'Asystent',plan:'Plan dnia',food:'Jedzenie',activity:'Aktywność',explore:'Odkrywanie'};
+      const recent=(Array.isArray(history)?history:[]).slice(-10).map(x=>{
+        const role=x&&x.role==='assistant'?'HealthGo AI':'Użytkownik';
+        return role+': '+String((x&&x.content)||'').slice(0,1200);
+      }).join('\n');
+      return [
+        'Tryb: '+(modeNames[mode]||'Asystent')+'.',
+        recent?'Ostatnia część rozmowy:\n'+recent:'',
+        'Nowa wiadomość użytkownika:\n'+message
+      ].filter(Boolean).join('\n\n');
+    }
+
+    function imagePart(dataUrl){
+      if(!dataUrl||typeof dataUrl!=='string'||!dataUrl.startsWith('data:'))return null;
+      const comma=dataUrl.indexOf(',');
+      if(comma<0)return null;
+      const meta=dataUrl.slice(5,comma);
+      const mime=(meta.split(';')[0]||'image/jpeg').toLowerCase();
+      if(!['image/png','image/jpeg','image/webp'].includes(mime))return null;
+      return {inlineData:{data:dataUrl.slice(comma+1),mimeType:mime}};
+    }
+
+    window.healthGoMobileAI={
+      async ask({message,mode,history,imageData,accountType}){
+        const model=getGenerativeModel(ai,{
+          model:'gemini-3.8-flash',
+          systemInstruction:systemInstruction(accountType)
+        });
+        const prompt=buildPrompt(String(message||''),mode,history);
+        const parts=[prompt];
+        const img=imagePart(imageData);
+        if(img)parts.push(img);
+        const result=await model.generateContent(parts);
+        const answer=result&&result.response&&result.response.text?result.response.text():'';
+        if(!answer)throw new Error('EMPTY_AI_RESPONSE');
+        return answer;
+      }
+    };
+    window.dispatchEvent(new Event('healthgo-mobile-ai-ready'));
+  }catch(error){
+    console.error('HealthGo Mobile AI init:',error);
+    window.healthGoMobileAIInitError=String((error&&error.message)||error||'AI_INIT_ERROR');
+  }
+})();
+</script>
 </body>
 </html>
