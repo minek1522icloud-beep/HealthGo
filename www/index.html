@@ -353,6 +353,7 @@ html.hg-session-known #authScreen{display:none!important}
     <button data-page="games">🎮 <span>Minigry</span></button>
     <button data-page="plan">📅 <span>Plan Dnia</span></button>
     <button data-page="challenges">🎯 <span>Wyzwania</span></button>
+    <button data-page="backpack">🎒 <span>Plecak</span></button>
     <button data-page="activity">❤️ <span>Aktywność</span></button>
   </div>
   <div class="sidebar-footer">
@@ -620,40 +621,15 @@ html.hg-session-known #authScreen{display:none!important}
 </section>
 
 <section id="challenges" class="page">
-  <div class="hero"><h2>Wyzwania</h2><p>XP, poziomy, odznaki i HealthGoPack są teraz w jednym miejscu. XP dostajesz za prawdziwie wykonane działania w HealthGo.</p></div>
-
-  <div class="challenge-overview">
-    <section class="level-panel">
-      <div class="level-top">
-        <div>
-          <div class="muted">Twój poziom</div>
-          <div class="level-number">Poziom <span id="levelValue">1</span></div>
-          <div class="level-copy" id="levelCopy">Do następnego poziomu potrzebujesz 400 XP.</div>
-        </div>
-        <span class="account-type-chip" id="challengeAccountType">Konto zwykłe</span>
-      </div>
-      <div class="xp-track"><div id="xpProgress"></div></div>
-      <div class="xp-row"><span id="xpCurrent">0 XP</span><span id="xpRequired">400 XP</span></div>
-    </section>
-
-    <section class="pack-summary">
-      <div class="pack-icon">🎒</div>
-      <div><h3>HealthGoPack</h3><p><span id="earnedBadgeCount">0</span> / 100 odznak · przedmioty eventowe i trofea będziemy dodawać tutaj.</p></div>
-    </section>
-  </div>
-
-  <div class="challenge-layout">
-    <section class="challenge-panel">
-      <h3>Aktywne wyzwania</h3>
-      <p class="muted">Nie ma przycisku „daj mi XP”. HealthGo zalicza zadanie dopiero po wykonaniu konkretnej czynności.</p>
-      <div id="realChallengeList" class="challenge-list"></div>
-    </section>
-
-    <section class="badge-panel">
-      <div class="between"><div><h3 style="margin:0">Odznaki</h3><div class="badge-count">Kolekcja przygotowana na 100 odznak.</div></div><span id="badgeCounter" class="badge-count">0 / 100</span></div>
-      <div id="badgeGrid" class="badge-grid"></div>
-    </section>
-  </div>
+  <div class="hero"><h2>Wyzwania</h2><p>Profesjonalne cele HealthGo z jasnymi wymaganiami, postępem i nagrodami XP.</p></div>
+  <div class="challenge-overview"><section class="level-panel"><div class="level-top"><div><div class="muted">Twój poziom</div><div class="level-number">Poziom <span id="levelValue">1</span></div><div class="level-copy" id="levelCopy">Do następnego poziomu potrzebujesz 400 XP.</div></div><span class="account-type-chip" id="challengeAccountType">Konto zwykłe</span></div><div class="xp-track"><div id="xpProgress"></div></div><div class="xp-row"><span id="xpCurrent">0 XP</span><span id="xpRequired">400 XP</span></div></section></div>
+  <section class="challenge-panel"><div class="between"><div><h3 style="margin:0">Aktywne wyzwania</h3><p class="muted">Każde wyzwanie ma konkretny cel i nagrodę. Postęp jest zaliczany tylko na podstawie prawdziwego działania.</p></div><span class="tag">🎯 Cele</span></div><div id="realChallengeList" class="challenge-list"></div></section>
+</section>
+<section id="backpack" class="page">
+  <div class="hero"><h2>🎒 Plecak</h2><p>Twoja kolekcja HealthGo: odznaki, puchary, sportowe osiągnięcia i przedmioty specjalne.</p></div>
+  <div class="challenge-overview"><section class="level-panel"><div class="between"><div><div class="muted">Kolekcja</div><h2 style="margin:4px 0">HealthGo Plecak</h2><p class="muted">Wszystkie zdobyte nagrody są zebrane tutaj.</p></div><div class="pack-icon">🎒</div></div></section><section class="pack-summary"><div><b>Zdobyte odznaki</b><div style="font-size:28px;font-weight:850;margin-top:5px"><span id="earnedBadgeCount">0</span> / 100</div></div></section></div>
+  <div class="row" style="margin-bottom:14px"><button class="btn backpack-tab" onclick="showBackpackTab('badges',this)">🎖️ Odznaki</button><button class="btn secondary backpack-tab" onclick="showBackpackTab('cups',this)">🏆 Puchary</button><button class="btn secondary backpack-tab" onclick="showBackpackTab('sports',this)">⚽ Sportowe</button><button class="btn secondary backpack-tab" onclick="showBackpackTab('special',this)">✨ Specjalne</button></div>
+  <section class="badge-panel"><div class="between"><div><h3 id="backpackTitle" style="margin:0">Odznaki</h3><div class="badge-count">Twoja kolekcja HealthGo.</div></div><span id="badgeCounter" class="badge-count">0 / 100</span></div><div id="badgeGrid" class="badge-grid"></div><div id="backpackExtra" class="grid" style="display:none;margin-top:12px"></div></section>
 </section>
 
 <section id="activity" class="page">
@@ -736,7 +712,8 @@ html.hg-session-known #authScreen{display:none!important}
 <div id="mobileMoreBackdrop" class="mobile-more-backdrop" onclick="toggleMobileMore(false)"></div>
 <div id="mobileMoreSheet" class="mobile-more-sheet" aria-label="Więcej funkcji HealthGo">
   <button type="button" onclick="mobileGo('games')">🎮 Minigry · wkrótce</button>
-  <button type="button" onclick="mobileGo('challenges')">🎯 Wyzwania, XP i HealthGoPack</button>
+  <button type="button" onclick="mobileGo('challenges')">🎯 Wyzwania i XP</button>
+  <button type="button" onclick="mobileGo('backpack')">🎒 Plecak i kolekcja</button>
   <button type="button" onclick="mobileGo('activity')">❤️ Aktywność</button>
   <button type="button" onclick="mobileGo('settings')">⚙️ Ustawienia i konto</button>
 </div>
@@ -888,7 +865,8 @@ function showAchievementTab(tab,btn){
  var list=data[tab]||data.badges;
  root.innerHTML='<div class="grid">'+list.map(function(x){return '<div class="card"><div style="font-size:34px">'+x[0]+'</div><h3>'+x[1]+'</h3><p class="muted">'+x[2]+'</p><span class="tag">🔒 Do zdobycia</span></div>'}).join('')+'</div>';
 }
-const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Minigry · wkrótce',plan:'Plan Dnia',challenges:'Wyzwania',activity:'Aktywność',settings:'Ustawienia'};
+function showBackpackTab(tab,btn){document.querySelectorAll('.backpack-tab').forEach(function(b){b.classList.add('secondary')});if(btn)btn.classList.remove('secondary');var grid=document.getElementById('badgeGrid'),extra=document.getElementById('backpackExtra'),title=document.getElementById('backpackTitle'),counter=document.getElementById('badgeCounter');if(!grid||!extra)return;if(tab==='badges'){grid.style.display='grid';extra.style.display='none';if(title)title.textContent='Odznaki';if(counter)counter.style.display='inline';return;}grid.style.display='none';extra.style.display='grid';if(counter)counter.style.display='none';var data={cups:[['🏆','Puchary','Puchary za większe osiągnięcia i serie.']],sports:[['🚶','Chodzenie','Nagrody z prawdziwych danych aktywności.'],['🏃','Bieganie','Osiągnięcia biegowe po synchronizacji urządzenia.'],['🚴','Rower','Osiągnięcia rowerowe, gdy źródło danych je obsługuje.']],special:[['✨','Specjalne','Nagrody z przyszłych wydarzeń HealthGo.']]};if(title)title.textContent=tab==='cups'?'Puchary':tab==='sports'?'Sportowe':'Specjalne';extra.innerHTML=(data[tab]||[]).map(function(x){return '<div class="card"><div style="font-size:32px">'+x[0]+'</div><h3>'+x[1]+'</h3><p class="muted">'+x[2]+'</p></div>'}).join('');}
+const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Minigry · wkrótce',plan:'Plan Dnia',challenges:'Wyzwania',backpack:'Plecak',activity:'Aktywność',settings:'Ustawienia'};
 let timerSec=0, timerInt=null;
 
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
@@ -1623,10 +1601,10 @@ const HG_BADGES=Array.from({length:100},(_,i)=>{
  return base[i]||{id:'badge_'+(i+1),emoji:'◆',name:'Odznaka '+(i+1),desc:'Do zdobycia w przyszłych wyzwaniach i eventach'};
 });
 const HG_CHALLENGES=[
- {id:'first_plan',icon:'📅',title:'Pierwszy plan',desc:'Dodaj pierwszy prawdziwy punkt w Planie Dnia.',xp:60,badge:'planner'},
- {id:'map_explorer',icon:'🗺️',title:'Odkrywca mapy',desc:'Wyszukaj prawdziwe miejsca w widocznym obszarze mapy.',xp:80,badge:'explorer'},
- {id:'ai_first',icon:'🤖',title:'Pierwsza rozmowa AI',desc:'Otrzymaj odpowiedź od działającego HealthGo AI.',xp:50,badge:'ai_first'},
- {id:'first_activity',icon:'🏃',title:'Pierwsza aktywność',desc:'Uruchom i zakończ ręczny pomiar aktywności.',xp:70,badge:'active_first'}
+ {id:'first_plan',icon:'📅',title:'Zaplanuj dzień',desc:'Dodaj pierwszy rzeczywisty punkt do Planu Dnia.',xp:60,badge:'planner'},
+ {id:'map_explorer',icon:'🗺️',title:'Poznaj okolicę',desc:'Wyszukaj prawdziwe miejsce na mapie HealthGo.',xp:80,badge:'explorer'},
+ {id:'ai_first',icon:'🤖',title:'Skorzystaj z HealthGo AI',desc:'Przeprowadź pierwszą zakończoną rozmowę z działającym HealthGo AI.',xp:50,badge:'ai_first'},
+ {id:'activity_sync',icon:'⌚',title:'Pierwsza synchronizacja aktywności',desc:'Zsynchronizuj prawdziwe dane aktywności z obsługiwanego urządzenia.',xp:100,badge:'active_first'}
 ];
 let setupAccountType='standard',manualActivityStartedAt=null,manualActivityInterval=null;
 
