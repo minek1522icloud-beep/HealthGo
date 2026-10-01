@@ -974,12 +974,16 @@ async function askAI(){
    let detail='Spróbuj ponownie za chwilę.';
    const msg=String((err&&err.message)||err||'');
    if(isHostedMobileHealthGo()){
-     if(/MOBILE_AI_SDK_NOT_READY|firebase|AI Logic|403|404|permission|not.?found|failed-precondition/i.test(msg)){
-       detail='Mobilne AI jest już dodane do HealthGo, ale projekt Firebase musi mieć włączone AI Logic oraz Gemini Developer API.';
+     if(/APP_CHECK_ERROR/i.test(msg)){
+       detail='HealthGo nie dostał poprawnego tokenu App Check. Uruchom HealthGo z ikony na ekranie głównym albo w zwykłym Safari/Chrome i spróbuj ponownie. Kod: '+msg.slice(0,180);
      }else if(/quota|resource-exhausted|429/i.test(msg)){
        detail='Limit AI został chwilowo wykorzystany. Spróbuj ponownie później.';
      }else if(/network|fetch|offline/i.test(msg)){
        detail='Nie udało się połączyć z AI. Sprawdź internet i spróbuj ponownie.';
+     }else if(/AI_REQUEST_ERROR|403|404|permission|failed-precondition/i.test(msg)){
+       detail='Firebase AI Logic odrzucił żądanie. Kod diagnostyczny: '+msg.slice(0,180);
+     }else if(/MOBILE_AI_SDK_NOT_READY/i.test(msg)){
+       detail='Moduł AI nie załadował się poprawnie. Zamknij HealthGo, uruchom go ponownie i spróbuj jeszcze raz.';
      }
    }else{
      detail='HealthGo nie połączył się z lokalnym modelem AI. Aplikacja próbuje uruchomić Ollamę automatycznie — spróbuj ponownie za chwilę.';
@@ -2018,7 +2022,7 @@ window.addEventListener('DOMContentLoaded', function () {
 <script type="module">
 (async function(){
   try{
-    const [{initializeApp},{getAI,getGenerativeModel,GoogleAIBackend},{initializeAppCheck,ReCaptchaEnterpriseProvider}] = await Promise.all([
+    const [{initializeApp},{getAI,getGenerativeModel,GoogleAIBackend},{initializeAppCheck,ReCaptchaEnterpriseProvider,getToken}] = await Promise.all([
       import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),
       import('https://www.gstatic.com/firebasejs/12.19.0/firebase-ai.js'),
       import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js')
@@ -2034,7 +2038,7 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     const aiApp=initializeApp(firebaseConfig,'healthgo-mobile-ai');
-    initializeAppCheck(aiApp,{
+    const appCheck=initializeAppCheck(aiApp,{
       provider:new ReCaptchaEnterpriseProvider('6LewC9ktAAAAAHQOyhaCb4y7VIUCgMsBV7frnt_i'),
       isTokenAutoRefreshEnabled:true
     });
@@ -2080,18 +2084,43 @@ window.addEventListener('DOMContentLoaded', function () {
 
     window.healthGoMobileAI={
       async ask({message,mode,history,imageData,accountType}){
-        const model=getGenerativeModel(ai,{
-          model:'gemini-3.8-flash',
-          systemInstruction:systemInstruction(accountType)
-        });
+        try{
+          await getToken(appCheck,false);
+        }catch(error){
+          const code=String((error&&error.code)||'app-check/token-error');
+          const message=String((error&&error.message)||error||'App Check error');
+          throw new Error('APP_CHECK_ERROR '+code+' '+message);
+        }
+
         const prompt=buildPrompt(String(message||''),mode,history);
         const parts=[prompt];
         const img=imagePart(imageData);
         if(img)parts.push(img);
-        const result=await model.generateContent(parts);
-        const answer=result&&result.response&&result.response.text?result.response.text():'';
-        if(!answer)throw new Error('EMPTY_AI_RESPONSE');
-        return answer;
+
+        const models=['gemini-3.8-flash','gemini-3.5-flash-lite'];
+        let lastError=null;
+        for(const modelName of models){
+          try{
+            const model=getGenerativeModel(ai,{
+              model:modelName,
+              systemInstruction:systemInstruction(accountType)
+            });
+            const result=await model.generateContent(parts);
+            const answer=result&&result.response&&result.response.text?result.response.text():'';
+            if(!answer)throw new Error('EMPTY_AI_RESPONSE');
+            return answer;
+          }catch(error){
+            lastError=error;
+            const msg=String((error&&error.message)||error||'');
+            const code=String((error&&error.code)||'');
+            const canFallback=/404|not.?found|model|unavailable|unsupported|failed-precondition/i.test(msg+' '+code);
+            if(!canFallback)break;
+          }
+        }
+
+        const code=String((lastError&&lastError.code)||'ai/request-failed');
+        const message=String((lastError&&lastError.message)||lastError||'AI request failed');
+        throw new Error('AI_REQUEST_ERROR '+code+' '+message);
       }
     };
     window.dispatchEvent(new Event('healthgo-mobile-ai-ready'));
