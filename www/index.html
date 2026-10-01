@@ -2018,9 +2018,10 @@ window.addEventListener('DOMContentLoaded', function () {
 <script type="module">
 (async function(){
   try{
-    const [{initializeApp},{getAI,getGenerativeModel,GoogleAIBackend}] = await Promise.all([
+    const [{initializeApp},{getAI,getGenerativeModel,GoogleAIBackend},{initializeAppCheck,ReCaptchaEnterpriseProvider}] = await Promise.all([
       import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),
-      import('https://www.gstatic.com/firebasejs/12.19.0/firebase-ai.js')
+      import('https://www.gstatic.com/firebasejs/12.19.0/firebase-ai.js'),
+      import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check.js')
     ]);
 
     const firebaseConfig = {
@@ -2033,6 +2034,10 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
     const aiApp=initializeApp(firebaseConfig,'healthgo-mobile-ai');
+    initializeAppCheck(aiApp,{
+      provider:new ReCaptchaEnterpriseProvider('6LewC9ktAAAAAHQOyhaCb4y7VIUCgMsBV7frnt_i'),
+      isTokenAutoRefreshEnabled:true
+    });
     const ai=getAI(aiApp,{backend:new GoogleAIBackend()});
 
     function systemInstruction(accountType){
