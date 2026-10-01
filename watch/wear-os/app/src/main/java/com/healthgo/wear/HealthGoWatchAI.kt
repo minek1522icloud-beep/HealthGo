@@ -11,10 +11,17 @@ class HealthGoWatchAI {
         .ai(backend = GenerativeBackend.googleAI())
         .generativeModel("gemini-3.8-flash")
 
-    suspend fun ask(message: String): Result<String> = withContext(Dispatchers.IO) {
+    suspend fun ask(message: String, responseStyle: String = "compact"): Result<String> = withContext(Dispatchers.IO) {
         runCatching {
+            val styleInstruction = when (responseStyle) {
+                "detailed" -> "Odpowiadaj dokładnie, ale nadal czytelnie na małym ekranie."
+                "standard" -> "Odpowiadaj zwięźle, ale z potrzebnym wyjaśnieniem."
+                else -> "Odpowiadaj bardzo krótko i konkretnie."
+            }
+
             val prompt = """
-                Jesteś HealthGo AI. Odpowiadaj po polsku, krótko i konkretnie, tak aby odpowiedź dobrze mieściła się na ekranie zegarka.
+                Jesteś HealthGo AI. Odpowiadaj po polsku.
+                $styleInstruction
                 Nie wymyślaj danych zdrowotnych użytkownika.
                 Pytanie użytkownika: ${message.trim()}
             """.trimIndent()

@@ -18,8 +18,20 @@ final class HealthGoWatchAIService: ObservableObject {
         isLoading = true
         errorMessage = nil
 
+        let style = UserDefaults.standard.string(forKey: "watch_ai_response_style") ?? "compact"
+        let styleInstruction: String
+        switch style {
+        case "detailed":
+            styleInstruction = "Odpowiadaj dokładnie, ale nadal czytelnie na małym ekranie."
+        case "standard":
+            styleInstruction = "Odpowiadaj zwięźle, ale z potrzebnym wyjaśnieniem."
+        default:
+            styleInstruction = "Odpowiadaj bardzo krótko i konkretnie."
+        }
+
         let prompt = """
-        Jesteś HealthGo AI. Odpowiadaj po polsku, krótko i konkretnie, tak aby odpowiedź dobrze mieściła się na ekranie zegarka.
+        Jesteś HealthGo AI. Odpowiadaj po polsku.
+        \(styleInstruction)
         Nie wymyślaj danych zdrowotnych użytkownika. W ważnych sprawach zdrowotnych zaznacz, że AI może się mylić.
         Pytanie użytkownika: \(trimmed)
         """

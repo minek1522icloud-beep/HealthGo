@@ -4,7 +4,7 @@ struct HealthGoWatchHomeView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section {
+                Section("HealthGo") {
                     NavigationLink {
                         HealthGoWatchAIView()
                     } label: {
@@ -27,6 +27,14 @@ struct HealthGoWatchHomeView: View {
                         )
                     } label: {
                         Label("Aktywność", systemImage: "figure.walk")
+                    }
+                }
+
+                Section("Aplikacja") {
+                    NavigationLink {
+                        HealthGoWatchSettingsView()
+                    } label: {
+                        Label("Ustawienia", systemImage: "gearshape")
                     }
                 }
 
