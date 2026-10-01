@@ -355,6 +355,7 @@ html.hg-session-known #authScreen{display:none!important}
     <button data-page="challenges">🎯 <span>Wyzwania</span></button>
     <button data-page="backpack">🎒 <span>Plecak</span></button>
     <button data-page="activity">❤️ <span>Aktywność</span></button>
+    <button data-page="devices">⌚ <span>Urządzenia</span></button>
   </div>
   <div class="sidebar-footer">
     <button class="sidebar-account" type="button" onclick="go('settings')">
@@ -632,6 +633,16 @@ html.hg-session-known #authScreen{display:none!important}
   <section class="badge-panel"><div class="between"><div><h3 id="backpackTitle" style="margin:0">Odznaki</h3><div class="badge-count">Twoja kolekcja HealthGo.</div></div><span id="badgeCounter" class="badge-count">0 / 100</span></div><div id="badgeGrid" class="badge-grid"></div><div id="backpackExtra" class="grid" style="display:none;margin-top:12px"></div></section>
 </section>
 
+<section id="devices" class="page">
+  <div class="hero"><h2>⌚ Urządzenia</h2><p>Połączone źródła zdrowia i aktywności. HealthGo pokazuje tylko dane, które naprawdę otrzymał.</p></div>
+  <div class="grid">
+    <div class="card"><div class="between"><div><div class="muted">Stan synchronizacji</div><h2 id="deviceSyncTitle" style="margin:5px 0">Brak połączonego źródła</h2><p id="deviceSyncText" class="muted">Połącz zgodne źródło danych na telefonie, a HealthGo pokaże je tutaj.</p></div><div style="font-size:42px">⌚</div></div><div id="deviceSyncTime" class="tag" style="margin-top:12px">Nigdy nie synchronizowano</div></div>
+    <div class="card"><h3>Jak to działa</h3><p class="muted">Zegarek łączy się z telefonem przez obsługiwaną aplikację lub systemową usługę zdrowotną. HealthGo odczytuje dane dopiero po Twojej zgodzie. Samo zbliżenie zegarka przez Bluetooth nie daje aplikacji dostępu do wszystkich pomiarów.</p></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>Dostępne dane</h3><div class="activity-metrics"><div class="activity-metric"><span>👣 Kroki</span><b id="deviceSteps">Brak danych</b><small>Źródło urządzenia</small></div><div class="activity-metric"><span>📍 Dystans</span><b id="deviceDistance">Brak danych</b><small>Źródło urządzenia</small></div><div class="activity-metric"><span>❤️ Tętno</span><b id="deviceHeart">Brak danych</b><small>Źródło urządzenia</small></div><div class="activity-metric"><span>😴 Sen</span><b id="deviceSleep">Brak danych</b><small>Źródło urządzenia</small></div></div></div>
+  <div class="card" style="margin-top:14px"><div class="between"><div><h3 style="margin:0">🔔 Powiadomienia</h3><p class="muted">Plan dnia, ukończone wyzwania, odznaki i synchronizacja.</p></div><button class="btn" type="button" onclick="enableHealthGoNotifications()">Włącz powiadomienia</button></div><div id="notificationStatus" class="muted" style="margin-top:10px">Sprawdzanie uprawnień…</div></div>
+</section>
+
 <section id="activity" class="page">
   <div class="hero"><h2>Aktywność</h2><p>Profesjonalny panel aktywności oparty wyłącznie na prawdziwych danych z połączonego urządzenia.</p></div>
   <div class="activity-shell">
@@ -715,6 +726,7 @@ html.hg-session-known #authScreen{display:none!important}
   <button type="button" onclick="mobileGo('challenges')">🎯 Wyzwania i XP</button>
   <button type="button" onclick="mobileGo('backpack')">🎒 Plecak i kolekcja</button>
   <button type="button" onclick="mobileGo('activity')">❤️ Aktywność</button>
+  <button type="button" onclick="mobileGo('devices')">⌚ Urządzenia i powiadomienia</button>
   <button type="button" onclick="mobileGo('settings')">⚙️ Ustawienia i konto</button>
 </div>
 
@@ -730,7 +742,7 @@ html.hg-session-known #authScreen{display:none!important}
     <div class="badge-award-kicker">NOWA ODZNAKA</div>
     <h2 id="badgeAwardTitle">Health</h2>
     <p id="badgeAwardText">Odznaka została dodana do HealthGoPack.</p>
-    <button class="btn" type="button" onclick="closeBadgeAward()">Dodaj do HealthGoPack</button>
+    <button class="btn" type="button" onclick="closeBadgeAward()">Zobacz w Plecaku</button>
   </div>
 </div>
 
@@ -866,7 +878,37 @@ function showAchievementTab(tab,btn){
  root.innerHTML='<div class="grid">'+list.map(function(x){return '<div class="card"><div style="font-size:34px">'+x[0]+'</div><h3>'+x[1]+'</h3><p class="muted">'+x[2]+'</p><span class="tag">🔒 Do zdobycia</span></div>'}).join('')+'</div>';
 }
 function showBackpackTab(tab,btn){document.querySelectorAll('.backpack-tab').forEach(function(b){b.classList.add('secondary')});if(btn)btn.classList.remove('secondary');var grid=document.getElementById('badgeGrid'),extra=document.getElementById('backpackExtra'),title=document.getElementById('backpackTitle'),counter=document.getElementById('badgeCounter');if(!grid||!extra)return;if(tab==='badges'){grid.style.display='grid';extra.style.display='none';if(title)title.textContent='Odznaki';if(counter)counter.style.display='inline';return;}grid.style.display='none';extra.style.display='grid';if(counter)counter.style.display='none';var data={cups:[['🏆','Puchary','Puchary za większe osiągnięcia i serie.']],sports:[['🚶','Chodzenie','Nagrody z prawdziwych danych aktywności.'],['🏃','Bieganie','Osiągnięcia biegowe po synchronizacji urządzenia.'],['🚴','Rower','Osiągnięcia rowerowe, gdy źródło danych je obsługuje.']],special:[['✨','Specjalne','Nagrody z przyszłych wydarzeń HealthGo.']]};if(title)title.textContent=tab==='cups'?'Puchary':tab==='sports'?'Sportowe':'Specjalne';extra.innerHTML=(data[tab]||[]).map(function(x){return '<div class="card"><div style="font-size:32px">'+x[0]+'</div><h3>'+x[1]+'</h3><p class="muted">'+x[2]+'</p></div>'}).join('');}
-const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Minigry · wkrótce',plan:'Plan Dnia',challenges:'Wyzwania',backpack:'Plecak',activity:'Aktywność',settings:'Ustawienia'};
+const HG_DEVICE_KEY='healthgo_device_health_v1';
+function hgNumber(v){if(v===null||v===undefined||v==='')return null;var n=Number(v);return Number.isFinite(n)?n:null}
+function hgTimestampMs(v){if(!v)return 0;if(v&&typeof v.toDate==='function')return v.toDate().getTime();var ms=Date.parse(v);return Number.isFinite(ms)?ms:0}
+function loadDeviceHealth(){try{return JSON.parse(localStorage.getItem(HG_DEVICE_KEY)||'null')}catch(_){return null}}
+function applyDeviceHealth(data){
+ if(!data||typeof data!=='object')return;
+ localStorage.setItem(HG_DEVICE_KEY,JSON.stringify(data));
+ var steps=hgNumber(data.steps),dist=hgNumber(data.distanceKm),active=hgNumber(data.activeMinutes),sleep=hgNumber(data.sleepMinutes),heart=hgNumber(data.heartRate);
+ var set=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v};
+ set('stepsValue',steps==null?'Brak danych':Math.round(steps).toLocaleString('pl-PL'));
+ set('distanceValue',dist==null?'Brak danych':dist.toFixed(2)+' km');set('activeValue',active==null?'Brak danych':Math.round(active)+' min');set('sleepValue',sleep==null?'—':Math.floor(sleep/60)+' h '+Math.round(sleep%60)+' min');
+ set('deviceSteps',steps==null?'Brak danych':Math.round(steps).toLocaleString('pl-PL'));set('deviceDistance',dist==null?'Brak danych':dist.toFixed(2)+' km');set('deviceHeart',heart==null?'Brak danych':Math.round(heart)+' bpm');set('deviceSleep',sleep==null?'Brak danych':Math.floor(sleep/60)+' h '+Math.round(sleep%60)+' min');
+ var source=String(data.source||'Połączone źródło');var ms=hgTimestampMs(data.updatedAt);var fresh=ms&&Date.now()-ms<36*60*60*1000;
+ set('deviceSyncTitle',fresh?source:'Dane wymagają odświeżenia');set('deviceSyncText',fresh?'HealthGo otrzymuje prawdziwe dane z tego źródła.':'Ostatnia synchronizacja jest starsza niż 36 godzin.');
+ set('deviceSyncTime',ms?'Ostatnia synchronizacja: '+new Date(ms).toLocaleString('pl-PL'):'Brak czasu synchronizacji');
+ var note=document.getElementById('deviceHealthNote');if(note)note.textContent='⌚ Źródło: '+source+(ms?' · '+new Date(ms).toLocaleString('pl-PL'):'');
+}
+async function refreshDeviceHealth(){
+ var cached=loadDeviceHealth();if(cached)applyDeviceHealth(cached);
+ try{var db=window.healthGoDb,uid=typeof hgUid==='function'?hgUid():'';if(!db||!uid)return;var snap=await db.collection('users').doc(uid).collection('health').doc('latest').get();if(snap.exists)applyDeviceHealth(snap.data()||{});}catch(e){console.warn('HealthGo device sync:',e)}
+}
+async function enableHealthGoNotifications(){
+ var status=document.getElementById('notificationStatus');
+ if(!('Notification' in window)){if(status)status.textContent='Powiadomienia systemowe nie są dostępne.';return}
+ var p=Notification.permission;if(p==='default')p=await Notification.requestPermission();
+ if(status)status.textContent=p==='granted'?'Powiadomienia są włączone.':'Powiadomienia nie mają uprawnień.';
+ if(p==='granted')new Notification('HealthGo',{body:'Powiadomienia HealthGo są włączone.'});
+}
+function updateNotificationStatus(){var e=document.getElementById('notificationStatus');if(!e)return;e.textContent=!('Notification' in window)?'Powiadomienia systemowe niedostępne.':Notification.permission==='granted'?'Powiadomienia są włączone.':Notification.permission==='denied'?'Powiadomienia są zablokowane w systemie.':'Powiadomienia czekają na zgodę.'}
+setInterval(refreshDeviceHealth,30000);setTimeout(function(){refreshDeviceHealth();updateNotificationStatus()},1200);
+const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Minigry · wkrótce',plan:'Plan Dnia',challenges:'Wyzwania',backpack:'Plecak',activity:'Aktywność',devices:'Urządzenia',settings:'Ustawienia'};
 let timerSec=0, timerInt=null;
 
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
@@ -881,7 +923,8 @@ function go(page){
  if(page==='plan')setTimeout(renderPlanDay,20);
  if(page==='start')setTimeout(()=>{renderTodayPlanPreview();renderProgressUI()},20);
  if(page==='challenges')setTimeout(renderProgressUI,20);
- if(page==='activity')setTimeout(renderManualActivityLog,20);
+ if(page==='activity')setTimeout(refreshDeviceHealth,20);
+ if(page==='devices')setTimeout(function(){refreshDeviceHealth();updateNotificationStatus()},20);
  if(page==='settings')setTimeout(renderHealthGoProfile,20);
  syncMobileNav(page);
 }
@@ -1717,7 +1760,8 @@ function showBadgeAward(badge){
  const root=document.getElementById('badgeAward');if(!root)return;
  document.getElementById('badgeAwardEmoji').textContent=badge.emoji;
  document.getElementById('badgeAwardTitle').textContent=badge.name;
- document.getElementById('badgeAwardText').textContent=badge.desc+' · Odznaka została zapisana w HealthGoPack.';
+ document.getElementById('badgeAwardText').textContent=badge.desc+' · Odznaka została zapisana w Plecaku.';
+ try{if('Notification' in window&&Notification.permission==='granted')new Notification('Nowa odznaka 🎖️',{body:badge.name});}catch(_){}
  root.classList.add('show');
 }
 function awardBadge(id,animate=true){
@@ -1743,6 +1787,7 @@ function awardChallenge(id){
  const p=loadProgress();if(p.completed.includes(id))return false;
  p.completed.push(id);putProgress(p);addXP(ch.xp);
  if(ch.badge)awardBadge(ch.badge,true);
+ try{if('Notification' in window&&Notification.permission==='granted')new Notification('Wyzwanie ukończone 🎯',{body:ch.title+' · +'+ch.xp+' XP'});}catch(_){}
  renderProgressUI();return true;
 }
 function renderProgressUI(){
@@ -1856,7 +1901,7 @@ function showTutorialStep(){
 function advanceTutorial(){if(!tutActive)return;tutStep++;showTutorialStep()}
 function endTutorial(done=false){
  tutActive=false;clearTutorialTarget();document.getElementById('tutorialBubble').classList.remove('show');
- if(done){ensureHealthBadge(true);modal('🎉 Tutorial ukończony','Poznałeś najważniejsze funkcje HealthGo. Odznaka Health jest zapisana w HealthGoPack.');}
+ if(done){ensureHealthBadge(true);modal('🎉 Tutorial ukończony','Poznałeś najważniejsze funkcje HealthGo. Odznaka Health jest zapisana w Plecaku.');}
 }
 window.addEventListener('resize',()=>{if(tutActive){const st=tut[tutStep],el=st&&document.querySelector(st.sel);if(isVisibleTutorialTarget(el))positionTutorialBubble(el)}});
 
