@@ -391,6 +391,8 @@ body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{bac
         </div>
       </div>
 
+      <div class="mobile-ai-note"><b>🤖 HealthGo AI na telefonie</b><br>Mapa, konto, Plan Dnia, Wyzwania, XP i Aktywność działają na telefonie. Lokalny model Ollama jest uruchamiany na komputerze, więc mobilne AI podłączymy osobno przez bezpieczny serwer.</div>
+
       <div id="aiMessages" class="ai-messages" aria-live="polite">
         <div class="ai-msg assistant">
           
@@ -1102,14 +1104,27 @@ function planTodayKey(){
  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
  return y+'-'+m+'-'+day;
 }
+function healthGoPlanStorageKey(){
+ try{
+   if(typeof hgUserKey==='function'&&typeof hgSafeKey==='function')return HEALTHGO_PLAN_KEY+'_'+hgSafeKey(hgUserKey());
+ }catch(_){}
+ return HEALTHGO_PLAN_KEY;
+}
 function loadHealthGoPlan(){
  try{
-   const data=JSON.parse(localStorage.getItem(HEALTHGO_PLAN_KEY)||'[]');
+   const key=healthGoPlanStorageKey();
+   let raw=localStorage.getItem(key);
+   if(!raw){
+     const legacy=localStorage.getItem(HEALTHGO_PLAN_KEY);
+     if(legacy){localStorage.setItem(key,legacy);raw=legacy}
+   }
+   const data=JSON.parse(raw||'[]');
    return Array.isArray(data)?data:[];
  }catch(_){return []}
 }
 function saveHealthGoPlan(data){
- localStorage.setItem(HEALTHGO_PLAN_KEY,JSON.stringify(data));
+ localStorage.setItem(healthGoPlanStorageKey(),JSON.stringify(data));
+ try{if(typeof syncHealthGoCloudState==='function')syncHealthGoCloudState({plan:data}).catch(()=>{})}catch(_){}
 }
 function planDateLabel(value){
  if(!value)return 'Plan dnia';
@@ -1274,7 +1289,8 @@ async function loadHealthGoCloudState(){
    if(data.profile&&typeof data.profile==='object')localStorage.setItem(hgProfileKey(),JSON.stringify({...defaultHealthGoProfile(),...data.profile}));
    if(data.progress&&typeof data.progress==='object')localStorage.setItem(hgProgressKey(),JSON.stringify(data.progress));
    if(Array.isArray(data.manualActivities))localStorage.setItem(hgActivityKey(),JSON.stringify(data.manualActivities));
-   renderHealthGoProfile();renderProgressUI();renderManualActivityLog();
+   if(Array.isArray(data.plan))localStorage.setItem(healthGoPlanStorageKey(),JSON.stringify(data.plan));
+   renderHealthGoProfile();renderProgressUI();renderManualActivityLog();renderPlanDay();renderTodayPlanPreview();
  }catch(e){console.warn('HealthGo cloud profile:',e)}
 }
 
@@ -1345,7 +1361,7 @@ function finishHealthGoAccountSetup(){
  const nick=(document.getElementById('setupNickname')?.value||'').trim(),s=document.getElementById('setupProfileStatus');
  if(!validNickname(nick)){if(s){s.textContent='Wpisz nick 3–20 znaków bez wulgaryzmów.';s.style.color='#b91c1c'};return}
  putHealthGoProfile({nickname:nick,accountType:setupAccountType,configured:true});
- syncHealthGoCloudState({accountType:setupAccountType,nickname:nick}).catch(()=>{});
+ syncHealthGoCloudState({accountType:setupAccountType,nickname:nick,createdAt:new Date().toISOString()}).catch(()=>{});
  document.getElementById('accountSetup')?.classList.remove('show');
  renderHealthGoProfile();ensureHealthBadge(true);
 }
