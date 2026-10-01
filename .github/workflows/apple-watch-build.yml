@@ -8,6 +8,12 @@ on:
     paths:
       - "watch/apple-watch/**"
       - ".github/workflows/apple-watch-build.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "watch/apple-watch/**"
+      - ".github/workflows/apple-watch-build.yml"
 
 permissions:
   contents: read
@@ -33,12 +39,12 @@ jobs:
       - name: Pobierz zależności Swift
         working-directory: watch/apple-watch
         run: |
-          xcodebuild             -resolvePackageDependencies             -project HealthGoWatch.xcodeproj             -scheme HealthGoWatch
+          xcodebuild -resolvePackageDependencies -project HealthGoWatch.xcodeproj -scheme HealthGoWatch
 
       - name: Zbuduj HealthGo dla symulatora Apple Watch
         working-directory: watch/apple-watch
         run: |
-          xcodebuild             -project HealthGoWatch.xcodeproj             -scheme HealthGoWatch             -configuration Debug             -destination 'generic/platform=watchOS Simulator'             CODE_SIGNING_ALLOWED=NO             build
+          xcodebuild -project HealthGoWatch.xcodeproj -scheme HealthGoWatch -configuration Debug -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO build
 
       - name: Spakuj aplikację
         shell: bash
