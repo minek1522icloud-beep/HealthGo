@@ -1,4 +1,4 @@
-const CACHE_NAME='healthgo-pwa-v1';
+const CACHE_NAME='healthgo-pwa-v2';
 const CORE=['./','./index.html','./manifest.webmanifest','./icon.png'];
 
 self.addEventListener('install',event=>{
@@ -18,6 +18,7 @@ self.addEventListener('fetch',event=>{
   if(req.method!=='GET')return;
   const url=new URL(req.url);
   if(url.origin!==self.location.origin)return;
+  if(url.pathname.endsWith('/version.json')){event.respondWith(fetch(req,{cache:'no-store'}));return;}
   event.respondWith(
     fetch(req).then(res=>{
       const copy=res.clone();
