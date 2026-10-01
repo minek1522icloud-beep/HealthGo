@@ -896,6 +896,7 @@ async function waitForHealthGoMobileAI(){
  const start=Date.now();
  while(Date.now()-start<12000){
    if(window.healthGoMobileAI&&typeof window.healthGoMobileAI.ask==='function')return window.healthGoMobileAI;
+   if(window.healthGoMobileAIInitError)throw new Error('MOBILE_AI_INIT_ERROR '+window.healthGoMobileAIInitError);
    await new Promise(r=>setTimeout(r,120));
  }
  throw new Error('MOBILE_AI_SDK_NOT_READY');
@@ -982,6 +983,8 @@ async function askAI(){
        detail='Nie udało się połączyć z AI. Sprawdź internet i spróbuj ponownie.';
      }else if(/AI_REQUEST_ERROR|403|404|permission|failed-precondition/i.test(msg)){
        detail='Firebase AI Logic odrzucił żądanie. Kod diagnostyczny: '+msg.slice(0,180);
+     }else if(/MOBILE_AI_INIT_ERROR/i.test(msg)){
+       detail='Moduł AI nie uruchomił się poprawnie. Kod diagnostyczny: '+msg.slice(0,260);
      }else if(/MOBILE_AI_SDK_NOT_READY/i.test(msg)){
        detail='Moduł AI nie załadował się poprawnie. Zamknij HealthGo, uruchom go ponownie i spróbuj jeszcze raz.';
      }
@@ -2126,7 +2129,9 @@ window.addEventListener('DOMContentLoaded', function () {
     window.dispatchEvent(new Event('healthgo-mobile-ai-ready'));
   }catch(error){
     console.error('HealthGo Mobile AI init:',error);
-    window.healthGoMobileAIInitError=String((error&&error.message)||error||'AI_INIT_ERROR');
+    const initCode=String((error&&error.code)||'');
+    const initMessage=String((error&&error.message)||error||'AI_INIT_ERROR');
+    window.healthGoMobileAIInitError=(initCode?initCode+' ':'')+initMessage;
   }
 })();
 </script>
