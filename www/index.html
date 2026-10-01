@@ -742,7 +742,7 @@ html.hg-session-known #authScreen{display:none!important}
     <div class="badge-award-kicker">NOWA ODZNAKA</div>
     <h2 id="badgeAwardTitle">Health</h2>
     <p id="badgeAwardText">Odznaka została dodana do HealthGoPack.</p>
-    <button class="btn" type="button" onclick="closeBadgeAward()">Dodaj do HealthGoPack</button>
+    <button class="btn" type="button" onclick="closeBadgeAward()">Zobacz w Plecaku</button>
   </div>
 </div>
 
@@ -1760,7 +1760,8 @@ function showBadgeAward(badge){
  const root=document.getElementById('badgeAward');if(!root)return;
  document.getElementById('badgeAwardEmoji').textContent=badge.emoji;
  document.getElementById('badgeAwardTitle').textContent=badge.name;
- document.getElementById('badgeAwardText').textContent=badge.desc+' · Odznaka została zapisana w HealthGoPack.';
+ document.getElementById('badgeAwardText').textContent=badge.desc+' · Odznaka została zapisana w Plecaku.';
+ try{if('Notification' in window&&Notification.permission==='granted')new Notification('Nowa odznaka 🎖️',{body:badge.name});}catch(_){}
  root.classList.add('show');
 }
 function awardBadge(id,animate=true){
@@ -1786,6 +1787,7 @@ function awardChallenge(id){
  const p=loadProgress();if(p.completed.includes(id))return false;
  p.completed.push(id);putProgress(p);addXP(ch.xp);
  if(ch.badge)awardBadge(ch.badge,true);
+ try{if('Notification' in window&&Notification.permission==='granted')new Notification('Wyzwanie ukończone 🎯',{body:ch.title+' · +'+ch.xp+' XP'});}catch(_){}
  renderProgressUI();return true;
 }
 function renderProgressUI(){
@@ -1899,7 +1901,7 @@ function showTutorialStep(){
 function advanceTutorial(){if(!tutActive)return;tutStep++;showTutorialStep()}
 function endTutorial(done=false){
  tutActive=false;clearTutorialTarget();document.getElementById('tutorialBubble').classList.remove('show');
- if(done){ensureHealthBadge(true);modal('🎉 Tutorial ukończony','Poznałeś najważniejsze funkcje HealthGo. Odznaka Health jest zapisana w HealthGoPack.');}
+ if(done){ensureHealthBadge(true);modal('🎉 Tutorial ukończony','Poznałeś najważniejsze funkcje HealthGo. Odznaka Health jest zapisana w Plecaku.');}
 }
 window.addEventListener('resize',()=>{if(tutActive){const st=tut[tutStep],el=st&&document.querySelector(st.sel);if(isVisibleTutorialTarget(el))positionTutorialBubble(el)}});
 
