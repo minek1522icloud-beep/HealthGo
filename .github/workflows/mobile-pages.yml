@@ -35,6 +35,7 @@ jobs:
         run: |
           cp icon.png www/icon.png
           touch www/.nojekyll
+          printf '{"version":"%s","deployedAt":"%s"}\n' "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > www/version.json
 
       - name: Skonfiguruj GitHub Pages
         uses: actions/configure-pages@v6
