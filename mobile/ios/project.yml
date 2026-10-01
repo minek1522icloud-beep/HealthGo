@@ -1,0 +1,22 @@
+name: HealthGoMobile
+options:
+  bundleIdPrefix: com.healthgo
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk.git
+    from: 12.0.0
+targets:
+  HealthGoMobile:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources: [HealthGoMobile]
+    entitlements:
+      path: HealthGoMobile/HealthGoMobile.entitlements
+    info:
+      path: HealthGoMobile/Info.plist
+    dependencies:
+      - package: Firebase
+        product: FirebaseAuth
+      - package: Firebase
+        product: FirebaseFirestore
