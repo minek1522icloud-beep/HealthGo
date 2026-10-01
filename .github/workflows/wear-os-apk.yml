@@ -26,12 +26,11 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Przygotuj Android SDK
-        shell: bash
-        run: |
-          SDKMANAGER="/usr/local/lib/android/sdk/cmdline-tools/16.0/bin/sdkmanager"
-          yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platform-tools" "platforms;android-37" "build-tools;37.0.0"
+      - name: Android SDK
+        uses: android-actions/setup-android@v4.0.4
+        with:
+          packages: "platform-tools platforms;android-37 build-tools;37.0.0"
+          log-accepted-android-sdk-licenses: "false"
 
       - name: Gradle
         uses: gradle/actions/setup-gradle@v4
