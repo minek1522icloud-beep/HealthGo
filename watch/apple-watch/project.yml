@@ -1,0 +1,55 @@
+name: HealthGoWatch
+
+options:
+  createIntermediateGroups: true
+  deploymentTarget:
+    watchOS: "11.0"
+
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk.git
+    exactVersion: 12.19.2
+
+targets:
+  HealthGoWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "11.0"
+    sources:
+      - path: .
+        excludes:
+          - project.yml
+          - SETUP.md
+          - FIREBASE.md
+          - README.md
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.healthgo.watch
+        PRODUCT_NAME: HealthGo
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_KEY_CFBundleDisplayName: "HealthGo"
+        INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp: "YES"
+        SDKROOT: watchos
+        SUPPORTED_PLATFORMS: "watchos watchsimulator"
+        TARGETED_DEVICE_FAMILY: "4"
+        SWIFT_VERSION: "6.0"
+        CODE_SIGN_STYLE: Automatic
+    dependencies:
+      - package: Firebase
+        product: FirebaseCore
+      - package: Firebase
+        product: FirebaseAILogic
+      - package: Firebase
+        product: FirebaseAppCheck
+
+schemes:
+  HealthGoWatch:
+    build:
+      targets:
+        HealthGoWatch: all
+    run:
+      config: Debug
+    archive:
+      config: Release
