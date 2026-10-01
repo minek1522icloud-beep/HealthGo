@@ -15,7 +15,7 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
 
     const aiApp=initializeApp(firebaseConfig,'healthgo-mobile-ai');
     const appCheck=initializeAppCheck(aiApp,{
-      provider:new ReCaptchaEnterpriseProvider('6LewC9ktAAAAAHQOyhaCb4y7VIUCgMsBV7frnt_i'),
+      provider:new ReCaptchaEnterpriseProvider('6LejMdktAAAAAH1fKJ0wcrsG_WLjImYUHyNjpXMR'),
       isTokenAutoRefreshEnabled:true
     });
     const ai=getAI(aiApp,{backend:new GoogleAIBackend()});
