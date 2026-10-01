@@ -1,0 +1,21 @@
+{
+  "name": "HealthGo",
+  "short_name": "HealthGo",
+  "description": "HealthGo — plan dnia, mapa, wyzwania, aktywność i konto w jednym miejscu.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "lang": "pl",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

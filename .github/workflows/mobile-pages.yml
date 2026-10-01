@@ -1,0 +1,49 @@
+name: HealthGo Mobile Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "www/**"
+      - "icon.png"
+      - ".github/workflows/mobile-pages.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "healthgo-mobile-pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pobierz kod
+        uses: actions/checkout@v6
+
+      - name: Przygotuj wersje mobilna
+        shell: bash
+        run: |
+          cp icon.png www/icon.png
+          touch www/.nojekyll
+
+      - name: Skonfiguruj GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Wyslij pliki strony
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: www
+
+      - name: Opublikuj HealthGo Mobile
+        id: deployment
+        uses: actions/deploy-pages@v4

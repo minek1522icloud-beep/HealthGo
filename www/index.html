@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HealthGo</title>
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HealthGo">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
@@ -239,6 +246,37 @@ body[data-dark="1"] .activity-ring:before{background:#2f2f2f}
 @media(max-width:900px){.sidebar{display:none}.main{margin-left:0;width:100%;padding:0 14px 82px}.top{margin:0 -14px 16px;padding:0 14px;height:58px}.page{max-width:none}.account-pill span.account-name{display:none}.badge-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:600px){.dashboard-hero{align-items:flex-start!important}.challenge-overview{grid-template-columns:1fr}.level-top{flex-direction:column}.activity-metrics{grid-template-columns:1fr 1fr}.activity-ring{width:185px;height:185px}.settings-row{grid-template-columns:1fr;gap:7px}.account-type-grid{grid-template-columns:1fr}.badge-grid{grid-template-columns:repeat(2,1fr)}}
 
+
+/* ===== HealthGo Mobile / PWA ===== */
+.pwa-install-hint{position:fixed;z-index:130000;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));display:none;align-items:flex-start;gap:12px;padding:14px 15px;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.97);box-shadow:0 18px 50px rgba(0,0,0,.16);backdrop-filter:blur(14px);color:var(--text)}
+.pwa-install-hint.show{display:flex}.pwa-install-hint .pwa-icon{width:42px;height:42px;flex:0 0 42px;border-radius:12px;background:#111827;color:#fff;display:grid;place-items:center;font-size:22px}.pwa-install-hint b{display:block;font-size:14px}.pwa-install-hint p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.45}.pwa-install-actions{margin-left:auto;display:flex;gap:6px}.pwa-install-actions button{padding:8px 10px;border-radius:9px;background:var(--soft);color:var(--text);font-weight:750}.pwa-install-actions .install-primary{background:#111827;color:#fff}
+.mobile-more-backdrop{position:fixed;inset:0;z-index:10990;background:rgba(0,0,0,.28);display:none}.mobile-more-backdrop.show{display:block}.mobile-more-sheet{position:fixed;z-index:11000;left:10px;right:10px;bottom:calc(72px + env(safe-area-inset-bottom));display:none;padding:10px;border:1px solid var(--border);border-radius:18px;background:var(--card);box-shadow:0 24px 70px rgba(0,0,0,.24)}.mobile-more-sheet.show{display:grid;gap:5px;animation:mobileSheetIn .18s ease}.mobile-more-sheet button{width:100%;display:flex;align-items:center;gap:12px;padding:13px;border-radius:11px;background:transparent;color:var(--text);text-align:left;font-weight:700}.mobile-more-sheet button:hover{background:var(--hover)}@keyframes mobileSheetIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.mobile-ai-note{display:none;margin:12px 12px 0;padding:11px 12px;border:1px solid #fde68a;border-radius:12px;background:#fffbeb;color:#92400e;font-size:12px;line-height:1.45}
+body[data-hosted-mobile="1"] .mobile-ai-note{display:block}
+@media(max-width:900px){
+ body{min-height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+ .main{padding:0 12px calc(86px + env(safe-area-inset-bottom));min-height:100dvh}
+ .top{height:calc(58px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);margin:0 -12px 14px;padding-left:14px;padding-right:14px}
+ .top h1{font-size:17px}
+ .mobile-nav{display:flex;position:fixed;z-index:10000;left:0;right:0;bottom:0;height:calc(66px + env(safe-area-inset-bottom));padding:6px 6px env(safe-area-inset-bottom);gap:2px;justify-content:space-around;background:rgba(247,247,248,.96);border-top:1px solid var(--border);backdrop-filter:blur(18px)}
+ .mobile-nav button{flex:1;min-width:0;background:transparent;color:#60646c;font-size:10px;font-weight:700;border-radius:10px;padding:5px 2px;line-height:1.1}
+ .mobile-nav button.active{background:var(--hover);color:var(--text)}
+ .mobile-nav-icon{display:block;font-size:20px;line-height:1;margin-bottom:4px}
+ .mobile-nav-label{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ #map{height:calc(100dvh - 138px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+ #ai{height:calc(100dvh - 136px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+ #ai .ai-tools{padding:8px 10px}
+ #ai .ai-messages{height:auto;min-height:0}
+ #ai .ai-workspace{height:100%}
+ .ai-composer{margin-bottom:calc(6px + env(safe-area-inset-bottom))}
+ .map-toolbar{padding:7px}
+ .map-toolbar-row{gap:6px}
+ .map-category{font-size:11px;padding:7px 9px}
+ .hero h2,.dashboard-hero h2{font-size:27px!important}
+}
+@media(display-mode:standalone){.pwa-install-hint{display:none!important}}
+body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{background:rgba(47,47,47,.98)}
+
 </style>
 </head>
 <body style="background:#07111f">
@@ -352,6 +390,8 @@ body[data-dark="1"] .activity-ring:before{background:#2f2f2f}
           <button type="button" title="Wyczyść rozmowę" onclick="aiClearChat()">🗑️</button>
         </div>
       </div>
+
+      <div class="mobile-ai-note"><b>🤖 HealthGo AI na telefonie</b><br>Mapa, konto, Plan Dnia, Wyzwania, XP i Aktywność działają na telefonie. Lokalny model Ollama jest uruchamiany na komputerze, więc mobilne AI podłączymy osobno przez bezpieczny serwer.</div>
 
       <div id="aiMessages" class="ai-messages" aria-live="polite">
         <div class="ai-msg assistant">
@@ -607,12 +647,26 @@ body[data-dark="1"] .activity-ring:before{background:#2f2f2f}
 </main>
 </div>
 
-<div class="mobile-nav auth-hidden">
-<button onclick="go('start')">🏠<br>Start</button>
-<button onclick="go('ai')">🤖<br>AI</button>
-<button onclick="go('map')">🗺️<br>Mapa</button>
-<button onclick="go('games')">🎮<br>Gry</button>
-<button onclick="go('plan')">📅<br>Plan</button>
+<div class="mobile-nav auth-hidden" id="mobileNav">
+<button data-mobile-page="start" class="active" onclick="mobileGo('start')"><span class="mobile-nav-icon">🏠</span><span class="mobile-nav-label">Start</span></button>
+<button data-mobile-page="ai" onclick="mobileGo('ai')"><span class="mobile-nav-icon">🤖</span><span class="mobile-nav-label">AI</span></button>
+<button data-mobile-page="map" onclick="mobileGo('map')"><span class="mobile-nav-icon">🗺️</span><span class="mobile-nav-label">Mapa</span></button>
+<button data-mobile-page="plan" onclick="mobileGo('plan')"><span class="mobile-nav-icon">📅</span><span class="mobile-nav-label">Plan</span></button>
+<button data-mobile-page="more" onclick="toggleMobileMore(true)"><span class="mobile-nav-icon">•••</span><span class="mobile-nav-label">Więcej</span></button>
+</div>
+
+<div id="mobileMoreBackdrop" class="mobile-more-backdrop" onclick="toggleMobileMore(false)"></div>
+<div id="mobileMoreSheet" class="mobile-more-sheet" aria-label="Więcej funkcji HealthGo">
+  <button type="button" onclick="mobileGo('games')">🎮 Gry</button>
+  <button type="button" onclick="mobileGo('challenges')">🎯 Wyzwania, XP i HealthGoPack</button>
+  <button type="button" onclick="mobileGo('activity')">❤️ Aktywność</button>
+  <button type="button" onclick="mobileGo('settings')">⚙️ Ustawienia i konto</button>
+</div>
+
+<div id="pwaInstallHint" class="pwa-install-hint" role="status">
+  <div class="pwa-icon">❤️</div>
+  <div><b>Zainstaluj HealthGo na telefonie</b><p id="pwaInstallText">Dodaj HealthGo do ekranu początkowego, aby uruchamiało się jak zwykła aplikacja.</p></div>
+  <div class="pwa-install-actions"><button type="button" onclick="dismissPwaInstall()">Później</button><button id="pwaInstallBtn" class="install-primary" type="button" onclick="installHealthGoPwa()">Zainstaluj</button></div>
 </div>
 
 <div id="badgeAward" class="badge-award" role="dialog" aria-live="polite">
@@ -656,6 +710,62 @@ body[data-dark="1"] .activity-ring:before{background:#2f2f2f}
 </div>
 
 <script>
+let healthGoDeferredInstallPrompt=null;
+function isHostedMobileHealthGo(){
+ const mobile=/iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent||'');
+ const local=/^(127\.0\.0\.1|localhost)$/i.test(location.hostname||'');
+ return mobile&&!local&&(location.protocol==='https:'||location.hostname.endsWith('github.io'));
+}
+function isStandaloneHealthGo(){
+ return window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+}
+function toggleMobileMore(show){
+ document.getElementById('mobileMoreSheet')?.classList.toggle('show',!!show);
+ document.getElementById('mobileMoreBackdrop')?.classList.toggle('show',!!show);
+}
+function syncMobileNav(page){
+ document.querySelectorAll('[data-mobile-page]').forEach(b=>b.classList.toggle('active',b.dataset.mobilePage===page));
+}
+function mobileGo(page){toggleMobileMore(false);go(page);syncMobileNav(page)}
+function dismissPwaInstall(){
+ document.getElementById('pwaInstallHint')?.classList.remove('show');
+ try{localStorage.setItem('healthgo_pwa_hint_dismissed','1')}catch(_){}
+}
+async function installHealthGoPwa(){
+ if(healthGoDeferredInstallPrompt){
+  healthGoDeferredInstallPrompt.prompt();
+  try{await healthGoDeferredInstallPrompt.userChoice}catch(_){}
+  healthGoDeferredInstallPrompt=null;
+  dismissPwaInstall();
+  return;
+ }
+ const text=document.getElementById('pwaInstallText');
+ const isiOS=/iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+ if(text)text.textContent=isiOS?'W Safari dotknij Udostępnij, a potem „Dodaj do ekranu początkowego”.':'Otwórz menu przeglądarki i wybierz „Dodaj do ekranu głównego” lub „Zainstaluj aplikację”.';
+ const btn=document.getElementById('pwaInstallBtn');if(btn)btn.style.display='none';
+}
+function setupMobilePWA(){
+ if(isHostedMobileHealthGo())document.body.dataset.hostedMobile='1';
+ if('serviceWorker' in navigator&&location.protocol==='https:'){
+  navigator.serviceWorker.register('./service-worker.js').catch(e=>console.warn('HealthGo PWA:',e));
+ }
+ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();healthGoDeferredInstallPrompt=e;showPwaInstallHint()});
+ window.addEventListener('appinstalled',()=>dismissPwaInstall());
+ setTimeout(showPwaInstallHint,2200);
+}
+function showPwaInstallHint(){
+ if(isStandaloneHealthGo()||!/iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent||''))return;
+ try{if(localStorage.getItem('healthgo_pwa_hint_dismissed')==='1')return}catch(_){}
+ const root=document.getElementById('pwaInstallHint'),text=document.getElementById('pwaInstallText'),btn=document.getElementById('pwaInstallBtn');
+ if(!root)return;
+ const isiOS=/iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+ if(isiOS&&!healthGoDeferredInstallPrompt){
+  if(text)text.textContent='W Safari: Udostępnij → „Dodaj do ekranu początkowego”. Potem HealthGo otwiera się jak aplikacja.';
+  if(btn){btn.textContent='Jak dodać';btn.style.display=''}
+ }
+ root.classList.add('show');
+}
+
 const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Gry',plan:'Plan Dnia',challenges:'Wyzwania',activity:'Aktywność',settings:'Ustawienia'};
 let timerSec=0, timerInt=null;
 
@@ -673,6 +783,7 @@ function go(page){
  if(page==='challenges')setTimeout(renderProgressUI,20);
  if(page==='activity')setTimeout(renderManualActivityLog,20);
  if(page==='settings')setTimeout(renderHealthGoProfile,20);
+ syncMobileNav(page);
 }
 function modal(title,text,action='OK'){
  document.getElementById('modalTitle').textContent=title;
@@ -739,6 +850,7 @@ function aiTextToHtml(text){
  return '<p>'+safe.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')+'</p>';
 }
 function aiEndpoint(){
+ if(isHostedMobileHealthGo())return null;
  const host=(location.hostname&&location.hostname!=='localhost')?location.hostname:'127.0.0.1';
  return 'http://'+host+':8787/api/ai';
 }
@@ -751,6 +863,13 @@ async function askAI(){
  const input=document.getElementById('aiInput');if(!input)return;
  const q=input.value.trim();const photo=aiPendingPhoto;
  if(!q&&!photo)return;
+ if(!aiEndpoint()){
+   if(q)aiAddMessage('user','<p>'+aiEscape(q)+'</p>');
+   input.value='';aiGrowInput(input);
+   aiAddMessage('assistant','<b>HealthGo AI na telefonie jest jeszcze w przygotowaniu.</b><p>Ta wersja działa z mapą, kontem, Planem Dnia, Wyzwania, XP i Aktywnością. Lokalny model Ollama działa tylko na komputerze, więc do telefonu dodamy osobne bezpieczne połączenie z AI.</p>');
+   aiSetConnection(false,'AI na komputerze');
+   return;
+ }
  if(q)aiAddMessage('user','<p>'+aiEscape(q)+'</p>');
  let imageData=null;
  if(photo){
@@ -985,14 +1104,27 @@ function planTodayKey(){
  const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
  return y+'-'+m+'-'+day;
 }
+function healthGoPlanStorageKey(){
+ try{
+   if(typeof hgUserKey==='function'&&typeof hgSafeKey==='function')return HEALTHGO_PLAN_KEY+'_'+hgSafeKey(hgUserKey());
+ }catch(_){}
+ return HEALTHGO_PLAN_KEY;
+}
 function loadHealthGoPlan(){
  try{
-   const data=JSON.parse(localStorage.getItem(HEALTHGO_PLAN_KEY)||'[]');
+   const key=healthGoPlanStorageKey();
+   let raw=localStorage.getItem(key);
+   if(!raw){
+     const legacy=localStorage.getItem(HEALTHGO_PLAN_KEY);
+     if(legacy){localStorage.setItem(key,legacy);raw=legacy}
+   }
+   const data=JSON.parse(raw||'[]');
    return Array.isArray(data)?data:[];
  }catch(_){return []}
 }
 function saveHealthGoPlan(data){
- localStorage.setItem(HEALTHGO_PLAN_KEY,JSON.stringify(data));
+ localStorage.setItem(healthGoPlanStorageKey(),JSON.stringify(data));
+ try{if(typeof syncHealthGoCloudState==='function')syncHealthGoCloudState({plan:data}).catch(()=>{})}catch(_){}
 }
 function planDateLabel(value){
  if(!value)return 'Plan dnia';
@@ -1157,7 +1289,8 @@ async function loadHealthGoCloudState(){
    if(data.profile&&typeof data.profile==='object')localStorage.setItem(hgProfileKey(),JSON.stringify({...defaultHealthGoProfile(),...data.profile}));
    if(data.progress&&typeof data.progress==='object')localStorage.setItem(hgProgressKey(),JSON.stringify(data.progress));
    if(Array.isArray(data.manualActivities))localStorage.setItem(hgActivityKey(),JSON.stringify(data.manualActivities));
-   renderHealthGoProfile();renderProgressUI();renderManualActivityLog();
+   if(Array.isArray(data.plan))localStorage.setItem(healthGoPlanStorageKey(),JSON.stringify(data.plan));
+   renderHealthGoProfile();renderProgressUI();renderManualActivityLog();renderPlanDay();renderTodayPlanPreview();
  }catch(e){console.warn('HealthGo cloud profile:',e)}
 }
 
@@ -1228,7 +1361,7 @@ function finishHealthGoAccountSetup(){
  const nick=(document.getElementById('setupNickname')?.value||'').trim(),s=document.getElementById('setupProfileStatus');
  if(!validNickname(nick)){if(s){s.textContent='Wpisz nick 3–20 znaków bez wulgaryzmów.';s.style.color='#b91c1c'};return}
  putHealthGoProfile({nickname:nick,accountType:setupAccountType,configured:true});
- syncHealthGoCloudState({accountType:setupAccountType,nickname:nick}).catch(()=>{});
+ syncHealthGoCloudState({accountType:setupAccountType,nickname:nick,createdAt:new Date().toISOString()}).catch(()=>{});
  document.getElementById('accountSetup')?.classList.remove('show');
  renderHealthGoProfile();ensureHealthBadge(true);
 }
@@ -1416,6 +1549,7 @@ window.addEventListener('DOMContentLoaded', function () {
   if (typeof initPlanDay === 'function') initPlanDay();
   if (typeof renderProgressUI === 'function') renderProgressUI();
   if (typeof renderManualActivityLog === 'function') renderManualActivityLog();
+  if (typeof setupMobilePWA === 'function') setupMobilePWA();
   var authScreen = document.getElementById('authScreen');
   var appShell = document.querySelector('.app');
   var mobileNav = document.querySelector('.mobile-nav');
@@ -1570,13 +1704,21 @@ window.addEventListener('DOMContentLoaded', function () {
     setBusy(emailBtn, true, 'Logowanie…', 'Zaloguj się');
     status('Logowanie…');
     try {
-      var data = await restAuth('signInWithPassword', email, password);
-      saveRestSession(data);
-      status('Zalogowano.', 'ok');
-      showMainApp({email:data.email,uid:data.localId,localId:data.localId});
+      if (auth && auth.signInWithEmailAndPassword) {
+        var credential = await auth.signInWithEmailAndPassword(email, password);
+        var token = await credential.user.getIdToken();
+        saveRestSession({idToken:token,email:credential.user.email,localId:credential.user.uid});
+        status('Zalogowano.', 'ok');
+        showMainApp(credential.user);
+      } else {
+        var data = await restAuth('signInWithPassword', email, password);
+        saveRestSession(data);
+        status('Zalogowano.', 'ok');
+        showMainApp({email:data.email,uid:data.localId,localId:data.localId});
+      }
     } catch (error) {
       console.error('HealthGo e-mail login:', error);
-      status(cleanRestError(error.restCode), 'error');
+      status(error && error.code ? cleanFirebaseError(error) : cleanRestError(error.restCode), 'error');
     } finally {
       setBusy(emailBtn, false, 'Logowanie…', 'Zaloguj się');
     }
@@ -1590,13 +1732,21 @@ window.addEventListener('DOMContentLoaded', function () {
     setBusy(createBtn, true, 'Tworzenie…', 'Utwórz konto HealthGo');
     status('Tworzenie konta…');
     try {
-      var data = await restAuth('signUp', email, password);
-      saveRestSession(data);
-      status('Konto utworzone.', 'ok');
-      showMainApp({email:data.email});
+      if (auth && auth.createUserWithEmailAndPassword) {
+        var credential = await auth.createUserWithEmailAndPassword(email, password);
+        var token = await credential.user.getIdToken();
+        saveRestSession({idToken:token,email:credential.user.email,localId:credential.user.uid});
+        status('Konto utworzone.', 'ok');
+        showMainApp(credential.user);
+      } else {
+        var data = await restAuth('signUp', email, password);
+        saveRestSession(data);
+        status('Konto utworzone.', 'ok');
+        showMainApp({email:data.email,uid:data.localId,localId:data.localId});
+      }
     } catch (error) {
       console.error('HealthGo create account:', error);
-      status(cleanRestError(error.restCode), 'error');
+      status(error && error.code ? cleanFirebaseError(error) : cleanRestError(error.restCode), 'error');
     } finally {
       setBusy(createBtn, false, 'Tworzenie…', 'Utwórz konto HealthGo');
     }
