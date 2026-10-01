@@ -30,6 +30,16 @@ jobs:
       - name: Pobierz kod
         uses: actions/checkout@v6
 
+      - name: Zbuduj mobilny pakiet AI
+        shell: bash
+        run: |
+          mkdir -p .mobile-build
+          cp www/healthgo-ai-entry.js .mobile-build/entry.js
+          cd .mobile-build
+          npm init -y >/dev/null 2>&1
+          npm install --no-package-lock --no-save firebase@12.19.0 esbuild@0.25.10
+          npx esbuild entry.js --bundle --format=iife --platform=browser --target=es2020 --minify --outfile=../www/healthgo-ai-bundle.js
+
       - name: Przygotuj wersje mobilna
         shell: bash
         run: |
