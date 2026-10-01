@@ -18,11 +18,15 @@ private const val PREFS = "healthgo_watch_settings"
 private const val KEY_AI_STYLE = "ai_response_style"
 private const val KEY_LARGE_TEXT = "large_text"
 private const val KEY_PRIVACY_PREVIEW = "privacy_preview"
+private const val KEY_DAILY_NOTIFICATIONS = "daily_notifications"
+private const val KEY_ACTIVITY_HAPTICS = "activity_haptics"
 
 data class WearSettingsState(
     val aiStyle: String = "compact",
     val largeText: Boolean = false,
-    val privacyPreview: Boolean = true
+    val privacyPreview: Boolean = true,
+    val dailyNotifications: Boolean = true,
+    val activityHaptics: Boolean = true
 )
 
 fun loadWearSettings(context: Context): WearSettingsState {
@@ -30,7 +34,9 @@ fun loadWearSettings(context: Context): WearSettingsState {
     return WearSettingsState(
         aiStyle = prefs.getString(KEY_AI_STYLE, "compact") ?: "compact",
         largeText = prefs.getBoolean(KEY_LARGE_TEXT, false),
-        privacyPreview = prefs.getBoolean(KEY_PRIVACY_PREVIEW, true)
+        privacyPreview = prefs.getBoolean(KEY_PRIVACY_PREVIEW, true),
+        dailyNotifications = prefs.getBoolean(KEY_DAILY_NOTIFICATIONS, true),
+        activityHaptics = prefs.getBoolean(KEY_ACTIVITY_HAPTICS, true)
     )
 }
 
@@ -40,6 +46,8 @@ private fun saveWearSettings(context: Context, state: WearSettingsState) {
         .putString(KEY_AI_STYLE, state.aiStyle)
         .putBoolean(KEY_LARGE_TEXT, state.largeText)
         .putBoolean(KEY_PRIVACY_PREVIEW, state.privacyPreview)
+        .putBoolean(KEY_DAILY_NOTIFICATIONS, state.dailyNotifications)
+        .putBoolean(KEY_ACTIVITY_HAPTICS, state.activityHaptics)
         .apply()
 }
 
@@ -63,12 +71,13 @@ fun HealthGoWearSettingsScreen(onBack: () -> Unit) {
         Text("Ustawienia")
 
         Text("AI")
-        Text("Długość odpowiedzi: ${when (state.aiStyle) {
-            "compact" -> "Krótka"
-            "standard" -> "Standardowa"
-            else -> "Dokładna"
-        }}")
-
+        Text(
+            "Długość: " + when (state.aiStyle) {
+                "compact" -> "Krótka"
+                "standard" -> "Standardowa"
+                else -> "Dokładna"
+            }
+        )
         Button(onClick = {
             val next = when (state.aiStyle) {
                 "compact" -> "standard"
@@ -85,18 +94,29 @@ fun HealthGoWearSettingsScreen(onBack: () -> Unit) {
             Text(if (state.largeText) "Większy tekst: WŁ." else "Większy tekst: WYŁ.")
         }
 
-        Text("Prywatność")
-        Button(onClick = { update(state.copy(privacyPreview = !state.privacyPreview)) }) {
-            Text(if (state.privacyPreview) "Podgląd prywatny: WŁ." else "Podgląd prywatny: WYŁ.")
+        Text("Zadania")
+        Button(onClick = { update(state.copy(dailyNotifications = !state.dailyNotifications)) }) {
+            Text(if (state.dailyNotifications) "Przypomnienia: WŁ." else "Przypomnienia: WYŁ.")
         }
 
-        Text("Połączenie")
-        Text("Firebase AI Logic")
-        Text("Wersja: Wear Alpha")
+        Text("Aktywność")
+        Button(onClick = { update(state.copy(activityHaptics = !state.activityHaptics)) }) {
+            Text(if (state.activityHaptics) "Haptyka: WŁ." else "Haptyka: WYŁ.")
+        }
+
+        Text("Prywatność")
+        Button(onClick = { update(state.copy(privacyPreview = !state.privacyPreview)) }) {
+            Text(if (state.privacyPreview) "Ukrywanie podglądu: WŁ." else "Ukrywanie podglądu: WYŁ.")
+        }
+
+        Text("Połączenia")
+        Text("AI: Firebase AI Logic")
+        Text("Czujniki: Android Sensor API")
+        Text("Konto: niesparowane")
+        Text("Wersja: Wear Professional 0.2")
 
         Button(onClick = {
-            val defaults = WearSettingsState()
-            update(defaults)
+            update(WearSettingsState())
         }) {
             Text("Przywróć ustawienia")
         }
