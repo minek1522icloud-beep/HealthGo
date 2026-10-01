@@ -654,35 +654,28 @@ html.hg-session-known #authScreen{display:none!important}\n</style>\n</head>
 </section>
 
 <section id="activity" class="page">
-  <div class="hero"><h2>Aktywność</h2><p>Tylko prawdziwe dane. HealthGo nie wpisuje kroków, dystansu, tętna ani snu, jeśli nie ma ich z prawdziwego źródła.</p></div>
-
+  <div class="hero"><h2>Aktywność</h2><p>Profesjonalny panel aktywności oparty wyłącznie na prawdziwych danych z połączonego urządzenia.</p></div>
   <div class="activity-shell">
     <section class="activity-ring-card">
-      <div class="muted">Aktywność dzisiaj</div>
-      <div class="activity-ring"><div class="activity-ring-center"><b>Brak danych</b><span>Niepołączone źródło</span></div></div>
+      <div class="muted">Dzisiaj</div>
+      <div class="activity-ring"><div class="activity-ring-center"><b>Brak danych</b><span>Połącz urządzenie</span></div></div>
       <div class="activity-source">⌚ Źródło danych: <b>niepołączone</b></div>
     </section>
-
     <section class="activity-data-card">
-      <h3 style="margin-top:0">Dane urządzenia</h3>
+      <div class="between"><div><h3 style="margin:0">Parametry aktywności</h3><p class="muted">Dane odświeżają się automatycznie po synchronizacji.</p></div><button class="btn secondary" type="button" onclick="openAchievementHub()">🏆 Osiągnięcia</button></div>
       <div class="activity-metrics">
-        <div class="activity-metric"><span>👣 Kroki</span><b>Brak danych</b><small>Nie otrzymano z urządzenia</small></div>
-        <div class="activity-metric"><span>📍 Dystans</span><b>Brak danych</b><small>Nie otrzymano z urządzenia</small></div>
-        <div class="activity-metric"><span>❤️ Tętno</span><b>Brak danych</b><small>Nie otrzymano z urządzenia</small></div>
-        <div class="activity-metric"><span>😴 Sen</span><b>Brak danych</b><small>Nie otrzymano z urządzenia</small></div>
+        <div class="activity-metric"><span>👣 Kroki</span><b>Brak danych</b><small>Dane z urządzenia</small></div>
+        <div class="activity-metric"><span>📍 Dystans</span><b>Brak danych</b><small>Dane z urządzenia</small></div>
+        <div class="activity-metric"><span>❤️ Tętno</span><b>Brak danych</b><small>Dane z urządzenia</small></div>
+        <div class="activity-metric"><span>😴 Sen</span><b>Brak danych</b><small>Dane z urządzenia</small></div>
       </div>
-
-      <div class="manual-activity">
-        <h3 style="margin:0 0 5px">Aktywność ręczna</h3>
-        <p class="muted">Możesz zmierzyć prawdziwy czas aktywności w HealthGo. Taki wpis jest zawsze oznaczony jako „Dodano ręcznie”.</p>
-        <div class="manual-controls">
-          <select id="manualActivityType"><option>Spacer</option><option>Rower</option><option>Bieg</option><option>Taniec</option><option>Inna aktywność</option></select>
-          <button id="manualActivityBtn" class="btn" type="button" onclick="toggleManualActivity()">▶ Start</button>
-        </div>
-        <div id="manualActivityTimer" style="font-size:28px;font-weight:850;margin-top:12px">00:00</div>
-        <div id="manualActivityLog" class="manual-log"></div>
-      </div>
+      <div class="card" style="margin-top:16px"><div class="between"><div><b>🏆 Kolekcja osiągnięć</b><p class="muted" style="margin:5px 0 0">Odznaki, puchary i osiągnięcia sportowe w jednym miejscu.</p></div><button class="btn" type="button" onclick="openAchievementHub()">Otwórz kolekcję</button></div></div>
     </section>
+  </div>
+  <div id="achievementHub" class="card" style="display:none;margin-top:18px">
+    <div class="between"><div><h2 style="margin:0">🏆 Osiągnięcia</h2><p class="muted">Twoja kolekcja HealthGo</p></div><button class="btn secondary" type="button" onclick="closeAchievementHub()">✕ Zamknij</button></div>
+    <div class="row" style="margin:14px 0"><button class="btn achievement-tab" onclick="showAchievementTab('badges',this)">🎖️ Odznaki</button><button class="btn secondary achievement-tab" onclick="showAchievementTab('cups',this)">🏆 Puchary</button><button class="btn secondary achievement-tab" onclick="showAchievementTab('sports',this)">⚽ Sportowe</button></div>
+    <div id="achievementTabContent"></div>
   </div>
 </section>
 
@@ -879,6 +872,19 @@ function showPwaInstallHint(){
  root.classList.add('show');
 }
 
+function openAchievementHub(){var h=document.getElementById('achievementHub');if(h){h.style.display='block';showAchievementTab('badges',document.querySelector('.achievement-tab'));h.scrollIntoView({behavior:'smooth',block:'start'});}}
+function closeAchievementHub(){var h=document.getElementById('achievementHub');if(h)h.style.display='none';}
+function showAchievementTab(tab,btn){
+ document.querySelectorAll('.achievement-tab').forEach(function(b){b.classList.add('secondary')});if(btn)btn.classList.remove('secondary');
+ var root=document.getElementById('achievementTabContent');if(!root)return;
+ var data={
+  badges:[['🌱','Pierwszy krok','Rozpocznij korzystanie z aktywności HealthGo'],['⭐','Regularność','Zdobywaj XP i realizuj zadania'],['🧭','Odkrywca','Rozwijaj swoją kolekcję osiągnięć'],['💎','Kolekcjoner','Odblokowuj kolejne odznaki HealthGo']],
+  cups:[['🏆','Pierwszy puchar','Osiągnięcie specjalne'],['🥈','Seria','Utrzymuj regularność'],['🥇','Mistrz kolekcji','Rozwijaj osiągnięcia w wielu kategoriach']],
+  sports:[['🚶','Spacer','Osiągnięcia z prawdziwych danych chodzenia'],['🏃','Bieg','Osiągnięcia biegowe po synchronizacji urządzenia'],['🚴','Rower','Osiągnięcia rowerowe po synchronizacji urządzenia'],['🏊','Pływanie','Osiągnięcia pływackie, gdy źródło danych je obsługuje']]
+ };
+ var list=data[tab]||data.badges;
+ root.innerHTML='<div class="grid">'+list.map(function(x){return '<div class="card"><div style="font-size:34px">'+x[0]+'</div><h3>'+x[1]+'</h3><p class="muted">'+x[2]+'</p><span class="tag">🔒 Do zdobycia</span></div>'}).join('')+'</div>';
+}
 const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Minigry · wkrótce',plan:'Plan Dnia',challenges:'Wyzwania',activity:'Aktywność',settings:'Ustawienia'};
 let timerSec=0, timerInt=null;
 
