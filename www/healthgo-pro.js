@@ -223,6 +223,43 @@ function hook(){
  if(typeof window.toggleManualActivity==='function'&&!window.toggleManualActivity.__hgpro){var a=window.toggleManualActivity,w=function(){var before=typeof manualActivityStartedAt!=='undefined'&&!!manualActivityStartedAt,r=a.apply(this,arguments);if(before)setTimeout(function(){evaluate(true);renderProgressUI();},60);return r;};w.__hgpro=true;window.toggleManualActivity=w;}
  if(typeof window.savePlanItem==='function'&&!window.savePlanItem.__hgpro){var s=window.savePlanItem,sw=function(){var before=typeof loadHealthGoPlan==='function'?loadHealthGoPlan().length:0,r=s.apply(this,arguments),after=typeof loadHealthGoPlan==='function'?loadHealthGoPlan().length:0;if(after>before){evaluate(true);renderProgressUI();}return r;};sw.__hgpro=true;window.savePlanItem=sw;}
 }
-function init(){injectStyles();injectDaily();injectSettings();applySettings();renderSettings();hook();evaluate(false);renderProgressUI();setInterval(function(){refreshHealthGoStatus();evaluate(false);},30000);console.info('HealthGo Professional '+PRO_VERSION+': '+BADGES.length+' badge models loaded.');}
+
+function hgSetText(id,value){var e=document.getElementById(id);if(e)e.textContent=value;}
+function hgFormatMetric(value,suffix){return value===null||value===undefined||value===''?'Brak danych':String(value)+(suffix||'');}
+function renderRealHealthMetrics(data){
+ data=data&&typeof data==='object'?data:{};
+ var steps=Number.isFinite(Number(data.steps))?Math.max(0,Math.round(Number(data.steps))):null;
+ var distance=Number.isFinite(Number(data.distanceKm))?Math.max(0,Number(data.distanceKm)):null;
+ var active=Number.isFinite(Number(data.activeMinutes))?Math.max(0,Math.round(Number(data.activeMinutes))):null;
+ var sleep=Number.isFinite(Number(data.sleepMinutes))?Math.max(0,Math.round(Number(data.sleepMinutes))):null;
+ hgSetText('stepsValue',steps===null?'Brak danych':steps.toLocaleString('pl-PL'));
+ hgSetText('distanceValue',distance===null?'Brak danych':distance.toLocaleString('pl-PL',{maximumFractionDigits:2})+' km');
+ hgSetText('activeValue',active===null?'Brak danych':active+' min');
+ hgSetText('sleepValue',sleep===null?'Brak danych':Math.floor(sleep/60)+' h '+(sleep%60)+' min');
+ var metrics=document.querySelectorAll('#activity .activity-metric b');
+ if(metrics[0])metrics[0].textContent=steps===null?'Brak danych':steps.toLocaleString('pl-PL');
+ if(metrics[1])metrics[1].textContent=distance===null?'Brak danych':distance.toLocaleString('pl-PL',{maximumFractionDigits:2})+' km';
+ if(metrics[2])metrics[2].textContent=Number.isFinite(Number(data.heartRate))?Math.round(Number(data.heartRate))+' bpm':'Brak danych';
+ if(metrics[3])metrics[3].textContent=sleep===null?'Brak danych':Math.floor(sleep/60)+' h '+(sleep%60)+' min';
+ var source=document.querySelector('#activity .activity-source b');
+ if(source)source.textContent=data.source?String(data.source):'niepołączone';
+ var note=document.getElementById('deviceHealthNote');
+ if(note)note.textContent=data.updatedAt?'✓ Prawdziwe dane urządzenia · ostatnia synchronizacja: '+new Date(data.updatedAt).toLocaleString('pl-PL'):'🔒 Brak zsynchronizowanych danych z zegarka lub telefonu. HealthGo nie tworzy przykładowych wyników.';
+}
+async function refreshRealHealthMetrics(){
+ var db=window.healthGoDb,uid=typeof hgUid==='function'?hgUid():'';
+ if(!db||!uid){renderRealHealthMetrics(null);return;}
+ try{
+   var snap=await db.collection('users').doc(uid).collection('health').doc('latest').get();
+   if(!snap.exists){renderRealHealthMetrics(null);return;}
+   var data=snap.data()||{};
+   var updated=Date.parse(data.updatedAt||'');
+   if(!updated||Date.now()-updated>36*60*60*1000){renderRealHealthMetrics(null);return;}
+   renderRealHealthMetrics(data);
+ }catch(e){console.warn('HealthGo real health metrics:',e);renderRealHealthMetrics(null);}
+}
+window.refreshRealHealthMetrics=refreshRealHealthMetrics;
+
+function init(){injectStyles();injectDaily();injectSettings();applySettings();renderSettings();hook();evaluate(false);renderProgressUI();refreshRealHealthMetrics();setInterval(function(){refreshHealthGoStatus();refreshRealHealthMetrics();evaluate(false);},30000);console.info('HealthGo Professional '+PRO_VERSION+': '+BADGES.length+' badge models loaded.');}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
