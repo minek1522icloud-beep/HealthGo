@@ -308,9 +308,9 @@ body[data-hosted-mobile="1"] .mobile-ai-note{display:block}
 @media(display-mode:standalone){.pwa-install-hint{display:none!important}}
 body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{background:rgba(47,47,47,.98)}
 
-</style>
-</head>
-<body style="background:#07111f">
+
+html.hg-session-known #authScreen{display:none!important}\n</style>\n</head>
+<body style="background:#07111f"><script>try{var __hgSaved=JSON.parse(localStorage.getItem("healthgo_rest_session")||"null");if(__hgSaved&&__hgSaved.idToken&&__hgSaved.email)document.documentElement.classList.add("hg-session-known")}catch(_){}</script>
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
   <div class="splash-glow"></div>
   <div class="splash-content">
@@ -2209,12 +2209,20 @@ window.addEventListener('DOMContentLoaded', function () {
     console.error('Firebase Compat init:', error);
   }
 
-  // Przy odświeżeniu zachowaj prostą sesję e-mailową.
+  // Przy odświeżeniu najpierw wykorzystaj zapisaną sesję, bez migania ekranu logowania.
   try {
     var saved = JSON.parse(localStorage.getItem('healthgo_rest_session') || 'null');
-    if (saved && saved.idToken && saved.email) showMainApp({email:saved.email,uid:saved.localId||'',localId:saved.localId||''});
-    else showAuthScreen();
-  } catch (_) { showAuthScreen(); }
+    if (saved && saved.idToken && saved.email) {
+      document.documentElement.classList.add('hg-session-known');
+      showMainApp({email:saved.email,uid:saved.localId||'',localId:saved.localId||''});
+    } else {
+      document.documentElement.classList.remove('hg-session-known');
+      showAuthScreen();
+    }
+  } catch (_) {
+    document.documentElement.classList.remove('hg-session-known');
+    showAuthScreen();
+  }
 })();
 </script>
 
