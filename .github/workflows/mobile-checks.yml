@@ -5,6 +5,7 @@ on:
       - "mobile/**"
       - ".github/workflows/mobile-checks.yml"
   workflow_dispatch:
+
 jobs:
   android:
     runs-on: ubuntu-latest
@@ -23,17 +24,36 @@ jobs:
           grep -q "HealthConnectClient" mobile/android/app/src/main/java/com/healthgo/mobile/HealthSync.kt
           grep -q "FirebaseAuth" mobile/android/app/src/main/java/com/healthgo/mobile/MainActivity.kt
           grep -q 'collection("health").document("latest")' mobile/android/app/src/main/java/com/healthgo/mobile/HealthSync.kt
+
   ios:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
+
       - name: Install XcodeGen
         run: brew install xcodegen
-      - name: Generate iOS project
+
+      - name: Generate Xcode project
         working-directory: mobile/ios
         run: xcodegen generate
-      - name: Validate iOS integration
+
+      - name: Resolve Swift packages
+        working-directory: mobile/ios
+        run: xcodebuild -resolvePackageDependencies -project HealthGoMobile.xcodeproj
+
+      - name: Build HealthGo for iPhone (unsigned)
+        working-directory: mobile/ios
+        run: |
+          xcodebuild             -project HealthGoMobile.xcodeproj             -target HealthGoMobile             -configuration Debug             -sdk iphoneos             CODE_SIGNING_ALLOWED=NO             CODE_SIGNING_REQUIRED=NO             build
+
+      - name: Build HealthGo for iPhone Simulator
+        working-directory: mobile/ios
+        run: |
+          xcodebuild             -project HealthGoMobile.xcodeproj             -target HealthGoMobile             -configuration Debug             -sdk iphonesimulator             CODE_SIGNING_ALLOWED=NO             build
+
+      - name: Validate Firebase + HealthKit integration
         run: |
           grep -q "HealthKit" mobile/ios/HealthGoMobile/HealthSync.swift
           grep -q "FirebaseAuth" mobile/ios/HealthGoMobile/ContentView.swift
           grep -q 'document("latest")' mobile/ios/HealthGoMobile/HealthSync.swift
+          grep -q "com.healthgo.HealthGoMobile" mobile/ios/HealthGoMobile/GoogleService-Info.plist
