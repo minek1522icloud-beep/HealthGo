@@ -60,6 +60,23 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             build
 
+      - name: Package unsigned iPhone IPA
+        working-directory: mobile/ios
+        run: |
+          rm -rf HealthGoIpa HealthGo-unsigned.ipa
+          mkdir -p HealthGoIpa/Payload
+          cp -R "$RUNNER_TEMP/HealthGoBuild/Debug-iphoneos/HealthGoMobile.app" HealthGoIpa/Payload/
+          (cd HealthGoIpa && zip -qry ../HealthGo-unsigned.ipa Payload)
+          test -s HealthGo-unsigned.ipa
+
+      - name: Upload unsigned iPhone IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: HealthGo-iPhone-unsigned
+          path: mobile/ios/HealthGo-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Build HealthGo for iPhone Simulator
         working-directory: mobile/ios
         run: |
