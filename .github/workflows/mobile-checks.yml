@@ -5,6 +5,7 @@ on:
       - "mobile/**"
       - ".github/workflows/mobile-checks.yml"
   workflow_dispatch:
+
 jobs:
   android:
     runs-on: ubuntu-latest
@@ -23,17 +24,77 @@ jobs:
           grep -q "HealthConnectClient" mobile/android/app/src/main/java/com/healthgo/mobile/HealthSync.kt
           grep -q "FirebaseAuth" mobile/android/app/src/main/java/com/healthgo/mobile/MainActivity.kt
           grep -q 'collection("health").document("latest")' mobile/android/app/src/main/java/com/healthgo/mobile/HealthSync.kt
+
   ios:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
+
       - name: Install XcodeGen
         run: brew install xcodegen
-      - name: Generate iOS project
+
+      - name: Generate Xcode project
         working-directory: mobile/ios
         run: xcodegen generate
-      - name: Validate iOS integration
+
+      - name: Resolve Swift packages
+        working-directory: mobile/ios
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project HealthGoMobile.xcodeproj \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages"
+
+      - name: Build HealthGo for iPhone (unsigned)
+        working-directory: mobile/ios
+        run: |
+          xcodebuild \
+            -project HealthGoMobile.xcodeproj \
+            -scheme HealthGoMobile \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/HealthGoDeviceDerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages" \
+            SYMROOT="$RUNNER_TEMP/HealthGoBuild" \
+            OBJROOT="$RUNNER_TEMP/HealthGoIntermediates" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Package unsigned iPhone IPA
+        working-directory: mobile/ios
+        run: |
+          rm -rf HealthGoIpa HealthGo-unsigned.ipa
+          mkdir -p HealthGoIpa/Payload
+          cp -R "$RUNNER_TEMP/HealthGoBuild/Debug-iphoneos/HealthGoMobile.app" HealthGoIpa/Payload/
+          (cd HealthGoIpa && zip -qry ../HealthGo-unsigned.ipa Payload)
+          test -s HealthGo-unsigned.ipa
+
+      - name: Upload unsigned iPhone IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: HealthGo-iPhone-unsigned
+          path: mobile/ios/HealthGo-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Build HealthGo for iPhone Simulator
+        working-directory: mobile/ios
+        run: |
+          xcodebuild \
+            -project HealthGoMobile.xcodeproj \
+            -scheme HealthGoMobile \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/HealthGoSimulatorDerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages" \
+            SYMROOT="$RUNNER_TEMP/HealthGoSimBuild" \
+            OBJROOT="$RUNNER_TEMP/HealthGoSimIntermediates" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Validate Firebase + HealthKit integration
         run: |
           grep -q "HealthKit" mobile/ios/HealthGoMobile/HealthSync.swift
           grep -q "FirebaseAuth" mobile/ios/HealthGoMobile/ContentView.swift
           grep -q 'document("latest")' mobile/ios/HealthGoMobile/HealthSync.swift
+          grep -q "com.healthgo.HealthGoMobile" mobile/ios/HealthGoMobile/GoogleService-Info.plist
