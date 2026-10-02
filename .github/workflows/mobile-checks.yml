@@ -39,17 +39,41 @@ jobs:
 
       - name: Resolve Swift packages
         working-directory: mobile/ios
-        run: xcodebuild -resolvePackageDependencies -project HealthGoMobile.xcodeproj
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project HealthGoMobile.xcodeproj \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages"
 
       - name: Build HealthGo for iPhone (unsigned)
         working-directory: mobile/ios
         run: |
-          xcodebuild             -project HealthGoMobile.xcodeproj             -target HealthGoMobile             -configuration Debug             -sdk iphoneos             CODE_SIGNING_ALLOWED=NO             CODE_SIGNING_REQUIRED=NO             build
+          xcodebuild \
+            -project HealthGoMobile.xcodeproj \
+            -scheme HealthGoMobile \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/HealthGoDeviceDerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages" \
+            SYMROOT="$RUNNER_TEMP/HealthGoBuild" \
+            OBJROOT="$RUNNER_TEMP/HealthGoIntermediates" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
 
       - name: Build HealthGo for iPhone Simulator
         working-directory: mobile/ios
         run: |
-          xcodebuild             -project HealthGoMobile.xcodeproj             -target HealthGoMobile             -configuration Debug             -sdk iphonesimulator             CODE_SIGNING_ALLOWED=NO             build
+          xcodebuild \
+            -project HealthGoMobile.xcodeproj \
+            -scheme HealthGoMobile \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/HealthGoSimulatorDerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages" \
+            SYMROOT="$RUNNER_TEMP/HealthGoSimBuild" \
+            OBJROOT="$RUNNER_TEMP/HealthGoSimIntermediates" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
 
       - name: Validate Firebase + HealthKit integration
         run: |
