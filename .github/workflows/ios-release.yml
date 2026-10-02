@@ -1,0 +1,86 @@
+name: HealthGo iOS Release Asset
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ios-release:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Resolve release tag
+        id: release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$TAG" ]; then
+            TAG="$(gh release list --limit 1 --json tagName --jq '.[0].tagName')"
+          fi
+          if [ -z "$TAG" ]; then
+            echo "Brak wydania GitHub do aktualizacji." >&2
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Xcode project
+        working-directory: mobile/ios
+        run: xcodegen generate
+
+      - name: Resolve Swift packages
+        working-directory: mobile/ios
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project HealthGoMobile.xcodeproj \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages"
+
+      - name: Build unsigned iPhone app
+        working-directory: mobile/ios
+        run: |
+          xcodebuild \
+            -project HealthGoMobile.xcodeproj \
+            -scheme HealthGoMobile \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/HealthGoReleaseDerivedData" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages" \
+            SYMROOT="$RUNNER_TEMP/HealthGoReleaseBuild" \
+            OBJROOT="$RUNNER_TEMP/HealthGoReleaseIntermediates" \
+            MARKETING_VERSION="${{ steps.release.outputs.version }}" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Package IPA
+        working-directory: mobile/ios
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          rm -rf HealthGoIpa
+          mkdir -p HealthGoIpa/Payload
+          cp -R "$RUNNER_TEMP/HealthGoReleaseBuild/Release-iphoneos/HealthGoMobile.app" HealthGoIpa/Payload/
+          (cd HealthGoIpa && zip -qry "../HealthGo-iPhone-${VERSION}-unsigned.ipa" Payload)
+          test -s "HealthGo-iPhone-${VERSION}-unsigned.ipa"
+
+      - name: Attach iPhone build to GitHub Release
+        working-directory: mobile/ios
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          TAG="${{ steps.release.outputs.tag }}"
+          gh release upload "$TAG" "HealthGo-iPhone-${VERSION}-unsigned.ipa" --clobber
