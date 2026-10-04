@@ -1,0 +1,90 @@
+name: HealthGo 2 Validation
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: healthgo-validation-${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run check:syntax
+      - run: npm install --prefix firebase/functions --ignore-scripts
+      - run: npm --prefix firebase/functions run build
+      - run: npm test
+      - run: node --check firebase/functions/index.js
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm audit --prefix firebase/functions --omit=dev --audit-level=high
+  rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: npm install --prefix tests/rules --ignore-scripts
+      - name: Firestore authorization tests
+        run: node tests/rules/node_modules/firebase-tools/lib/bin/firebase.js emulators:exec --only firestore --project demo-healthgo "node --test tests/rules/*.test.cjs"
+  desktop:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npx electron-builder --win nsis --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HealthGo-Windows-review
+          path: dist/HealthGo-Setup-*.exe
+          retention-days: 7
+  mobile:
+    uses: ./.github/workflows/mobile-checks.yml
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Scan changes and history
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+  responsive-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - run: npm install --prefix tests/browser --ignore-scripts
+      - run: node tests/browser/node_modules/playwright/cli.js install --with-deps chromium
+      - run: node --test tests/browser/*.test.cjs

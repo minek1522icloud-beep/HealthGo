@@ -42,6 +42,8 @@ function stop(){
  generation++;for(const off of unsubscribers.splice(0))off();for(const off of familyUnsubs.splice(0))off();familyId=null;initializing=null;
  state=empty();window.healthGoCurrentUid='';window.healthGoCurrentEmail='';document.documentElement.classList.remove('hg-session-known');
  const chat=document.getElementById('aiMessages');if(chat)chat.replaceChildren();
+ for(const id of ['planList','todayPlanList','todayPlanPreview','manualActivityLog'])document.getElementById(id)?.replaceChildren();
+ for(const id of ['topNick','sidebarNick']){const node=document.getElementById(id);if(node)node.textContent='HealthGo';}
  for(const id of ['stepsValue','distanceValue','activeValue','sleepValue','deviceSteps','deviceDistance','deviceHeart','deviceSleep']){const el=document.getElementById(id);if(el)el.textContent='Brak danych';}
  document.getElementById('accountSetup')?.classList.remove('show');
  emit('SESSION_CHANGED',null);notify();
@@ -92,6 +94,7 @@ async function start(user){
  if(state.uid===user.uid)return initialize();stop();
  const g=generation;state.uid=user.uid;state.deviceId=read('installationId')||crypto.randomUUID();save('installationId',state.deviceId);state.session={providers:(user.providerData||[]).map(p=>p.providerId),mfaFactors:user.multiFactor?.enrolledFactors?.length||0};state.loading=true;
  window.healthGoCurrentUid=user.uid;window.healthGoCurrentEmail=user.email||'';
+ state.legacyArchive=read('legacyArchive');if(!state.legacyArchive&&typeof loadProgress==='function'){state.legacyArchive=loadProgress();save('legacyArchive',state.legacyArchive);}
  state.health=read('health');state.healthDays=read('days')||[];state.engine=read('engine');
  emit('SESSION_CHANGED',{uid:user.uid});notify();
  const db=window.healthGoDb;if(!db){state.loading=false;notify();return;}

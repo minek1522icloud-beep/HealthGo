@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://unpkg.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.googleusercontent.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.cloudfunctions.net https://*.run.app https://healthgo-e45be.firebaseapp.com https://healthgo-e45be.web.app https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://healthgo-e45be.firebaseapp.com https://healthgo-e45be.web.app https://accounts.google.com https://appleid.apple.com https://www.google.com https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com https://appleid.apple.com">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HealthGo</title>
 <meta name="theme-color" content="#ffffff">
@@ -39,7 +40,7 @@ input,select{width:100%;padding:12px;border:1px solid var(--border);border-radiu
 @media(min-width:901px) and (max-width:1200px){.grid{grid-template-columns:repeat(2,1fr)}}
 
 /* HealthGo cinematic splash */
-.splash-screen{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 35%,#2563eb 0,#132d72 28%,#071226 66%,#030712 100%);color:#fff;transition:opacity .45s ease,visibility .45s ease;animation:splashAutoHide .45s ease 2.55s forwards}
+.splash-screen{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 35%,#2563eb 0,#132d72 28%,#071226 66%,#030712 100%);color:#fff;transition:opacity .45s ease,visibility .45s ease;}
 .splash-screen.hide{opacity:0;visibility:hidden;pointer-events:none}.splash-glow{position:absolute;width:420px;height:420px;border-radius:50%;background:rgba(59,130,246,.22);filter:blur(45px);animation:splashGlow 2s ease-in-out infinite}.splash-content{position:relative;text-align:center;animation:splashIn .8s cubic-bezier(.2,.8,.2,1) both}.splash-mark{width:104px;height:104px;margin:0 auto 22px;border-radius:30px;display:grid;place-items:center;font-size:52px;background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.22);box-shadow:0 24px 70px rgba(0,0,0,.35),inset 0 1px rgba(255,255,255,.3);backdrop-filter:blur(14px)}.splash-title{font-size:44px;font-weight:950;letter-spacing:-1.8px}.splash-title span{color:#7dd3fc}.splash-sub{margin-top:8px;color:#cbd5e1;font-size:14px;letter-spacing:.5px}.splash-loader{width:150px;height:4px;margin:28px auto 0;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}.splash-loader:after{content:"";display:block;height:100%;width:45%;border-radius:99px;background:#fff;animation:splashLoad 1.45s ease-in-out infinite}
 @keyframes splashAutoHide{to{opacity:0;visibility:hidden;pointer-events:none}}@keyframes splashIn{from{opacity:0;transform:translateY(18px) scale(.94)}to{opacity:1;transform:none}}@keyframes splashGlow{50%{transform:scale(1.12);opacity:.65}}@keyframes splashLoad{0%{transform:translateX(-120%)}100%{transform:translateX(330%)}}
 
@@ -311,8 +312,11 @@ body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{bac
 
 html.hg-session-known #authScreen{display:none!important}
 </style>
+<script src="./core/achievement-engine.js"></script>
+<script src="./core/health-data.js"></script>
+<link rel="stylesheet" href="./healthgo-v2.css">
 </head>
-<body style="background:#07111f"><script>try{var __hgSaved=JSON.parse(localStorage.getItem("healthgo_rest_session")||"null");if(__hgSaved&&__hgSaved.idToken&&__hgSaved.email)document.documentElement.classList.add("hg-session-known")}catch(_){}</script>
+<body style="background:#07111f">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
   <div class="splash-glow"></div>
   <div class="splash-content">
@@ -338,8 +342,9 @@ html.hg-session-known #authScreen{display:none!important}
       <div class="auth-divider">LUB</div>
       <button id="googleLoginBtn" type="button" class="auth-google-btn" onclick="loginProvider('Google')" aria-label="Kontynuuj z Google"><span class="google-g" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path fill="#4285F4" d="M17.64 9.205c0-.638-.057-1.252-.164-1.841H9v3.482h4.844a4.14 4.14 0 0 1-1.797 2.715v2.258h2.909c1.702-1.567 2.684-3.875 2.684-6.614Z"/><path fill="#34A853" d="M9 18c2.43 0 4.468-.806 5.956-2.181l-2.909-2.258c-.806.54-1.835.859-3.047.859-2.344 0-4.328-1.585-5.037-3.714H.956v2.332A9 9 0 0 0 9 18Z"/><path fill="#FBBC05" d="M3.963 10.706A5.41 5.41 0 0 1 3.682 9c0-.592.102-1.168.281-1.706V4.962H.956A9 9 0 0 0 0 9c0 1.45.347 2.823.956 4.038l3.007-2.332Z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.507.454 3.441 1.346l2.581-2.581C13.464.892 11.426 0 9 0A9 9 0 0 0 .956 4.962l3.007 2.332C4.672 5.165 6.656 3.58 9 3.58Z"/></svg></span><span class="google-label">Kontynuuj z Google</span></button>
       <div style="height:10px"></div>
+      <button id="appleLoginBtn" type="button" class="auth-google-btn" onclick="loginProvider('Apple')">Kontynuuj z Apple</button>
       <button id="createAccountBtn" type="button" class="auth-create-btn" onclick="createAccount()">Utwórz konto HealthGo</button>
-      <div id="authStatus" role="status" aria-live="polite" style="display:none;margin-top:14px;padding:11px 12px;border-radius:12px;background:#eff6ff;color:#1e40af;font-size:13px;text-align:left"></div><div class="auth-note">Konto HealthGo jest obsługiwane przez Firebase Authentication.</div>
+      <div id="authStatus" role="status" aria-live="polite" style="display:none;margin-top:14px;padding:11px 12px;border-radius:12px;background:#eff6ff;color:#1e40af;font-size:13px;text-align:left"></div><div class="auth-note">Twoje konto działa na komputerze i urządzeniach mobilnych.</div>
     </div>
   </div>
 </div>
@@ -864,41 +869,15 @@ function showPwaInstallHint(){
  root.classList.add('show');
 }
 
-function openAchievementHub(){var h=document.getElementById('achievementHub');if(h){h.style.display='block';showAchievementTab('badges',document.querySelector('.achievement-tab'));h.scrollIntoView({behavior:'smooth',block:'start'});}}
-function closeAchievementHub(){var h=document.getElementById('achievementHub');if(h)h.style.display='none';}
-function showAchievementTab(tab,btn){
- document.querySelectorAll('.achievement-tab').forEach(function(b){b.classList.add('secondary')});if(btn)btn.classList.remove('secondary');
- var root=document.getElementById('achievementTabContent');if(!root)return;
- var data={
-  badges:[['🌱','Pierwszy krok','Rozpocznij korzystanie z aktywności HealthGo'],['⭐','Regularność','Zdobywaj XP i realizuj zadania'],['🧭','Odkrywca','Rozwijaj swoją kolekcję osiągnięć'],['💎','Kolekcjoner','Odblokowuj kolejne odznaki HealthGo']],
-  cups:[['🏆','Pierwszy puchar','Osiągnięcie specjalne'],['🥈','Seria','Utrzymuj regularność'],['🥇','Mistrz kolekcji','Rozwijaj osiągnięcia w wielu kategoriach']],
-  sports:[['🚶','Spacer','Osiągnięcia z prawdziwych danych chodzenia'],['🏃','Bieg','Osiągnięcia biegowe po synchronizacji urządzenia'],['🚴','Rower','Osiągnięcia rowerowe po synchronizacji urządzenia'],['🏊','Pływanie','Osiągnięcia pływackie, gdy źródło danych je obsługuje']]
- };
- var list=data[tab]||data.badges;
- root.innerHTML='<div class="grid">'+list.map(function(x){return '<div class="card"><div style="font-size:34px">'+x[0]+'</div><h3>'+x[1]+'</h3><p class="muted">'+x[2]+'</p><span class="tag">🔒 Do zdobycia</span></div>'}).join('')+'</div>';
-}
-function showBackpackTab(tab,btn){document.querySelectorAll('.backpack-tab').forEach(function(b){b.classList.add('secondary')});if(btn)btn.classList.remove('secondary');var grid=document.getElementById('badgeGrid'),extra=document.getElementById('backpackExtra'),title=document.getElementById('backpackTitle'),counter=document.getElementById('badgeCounter');if(!grid||!extra)return;if(tab==='badges'){grid.style.display='grid';extra.style.display='none';if(title)title.textContent='Odznaki';if(counter)counter.style.display='inline';return;}grid.style.display='none';extra.style.display='grid';if(counter)counter.style.display='none';var data={cups:[['🏆','Puchary','Puchary za większe osiągnięcia i serie.']],sports:[['🚶','Chodzenie','Nagrody z prawdziwych danych aktywności.'],['🏃','Bieganie','Osiągnięcia biegowe po synchronizacji urządzenia.'],['🚴','Rower','Osiągnięcia rowerowe, gdy źródło danych je obsługuje.']],special:[['✨','Specjalne','Nagrody z przyszłych wydarzeń HealthGo.']]};if(title)title.textContent=tab==='cups'?'Puchary':tab==='sports'?'Sportowe':'Specjalne';extra.innerHTML=(data[tab]||[]).map(function(x){return '<div class="card"><div style="font-size:32px">'+x[0]+'</div><h3>'+x[1]+'</h3><p class="muted">'+x[2]+'</p></div>'}).join('');}
-const HG_DEVICE_KEY='healthgo_device_health_v1';
-function hgNumber(v){if(v===null||v===undefined||v==='')return null;var n=Number(v);return Number.isFinite(n)?n:null}
-function hgTimestampMs(v){if(!v)return 0;if(v&&typeof v.toDate==='function')return v.toDate().getTime();var ms=Date.parse(v);return Number.isFinite(ms)?ms:0}
-function loadDeviceHealth(){try{return JSON.parse(localStorage.getItem(HG_DEVICE_KEY)||'null')}catch(_){return null}}
-function applyDeviceHealth(data){
- if(!data||typeof data!=='object')return;
- localStorage.setItem(HG_DEVICE_KEY,JSON.stringify(data));
- var steps=hgNumber(data.steps),dist=hgNumber(data.distanceKm),active=hgNumber(data.activeMinutes),sleep=hgNumber(data.sleepMinutes),heart=hgNumber(data.heartRate);
- var set=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v};
- set('stepsValue',steps==null?'Brak danych':Math.round(steps).toLocaleString('pl-PL'));
- set('distanceValue',dist==null?'Brak danych':dist.toFixed(2)+' km');set('activeValue',active==null?'Brak danych':Math.round(active)+' min');set('sleepValue',sleep==null?'—':Math.floor(sleep/60)+' h '+Math.round(sleep%60)+' min');
- set('deviceSteps',steps==null?'Brak danych':Math.round(steps).toLocaleString('pl-PL'));set('deviceDistance',dist==null?'Brak danych':dist.toFixed(2)+' km');set('deviceHeart',heart==null?'Brak danych':Math.round(heart)+' bpm');set('deviceSleep',sleep==null?'Brak danych':Math.floor(sleep/60)+' h '+Math.round(sleep%60)+' min');
- var source=String(data.source||'Połączone źródło');var ms=hgTimestampMs(data.updatedAt);var fresh=ms&&Date.now()-ms<36*60*60*1000;
- set('deviceSyncTitle',fresh?source:'Dane wymagają odświeżenia');set('deviceSyncText',fresh?'HealthGo otrzymuje prawdziwe dane z tego źródła.':'Ostatnia synchronizacja jest starsza niż 36 godzin.');
- set('deviceSyncTime',ms?'Ostatnia synchronizacja: '+new Date(ms).toLocaleString('pl-PL'):'Brak czasu synchronizacji');
- var note=document.getElementById('deviceHealthNote');if(note)note.textContent='⌚ Źródło: '+source+(ms?' · '+new Date(ms).toLocaleString('pl-PL'):'');
-}
-async function refreshDeviceHealth(){
- var cached=loadDeviceHealth();if(cached)applyDeviceHealth(cached);
- try{var db=window.healthGoDb,uid=typeof hgUid==='function'?hgUid():'';if(!db||!uid)return;var snap=await db.collection('users').doc(uid).collection('health').doc('latest').get();if(snap.exists)applyDeviceHealth(snap.data()||{});}catch(e){console.warn('HealthGo device sync:',e)}
-}
+function openAchievementHub(){go('backpack');}
+function closeAchievementHub(){}
+function showAchievementTab(){go('backpack');}
+function showBackpackTab(){go('backpack');}
+function hgNumber(v){return window.HealthGoData.number(v);}
+function hgTimestampMs(v){return window.HealthGoData.timestamp(v)||0;}
+function loadDeviceHealth(){return window.HealthGoServices?.state.health||null;}
+function applyDeviceHealth(data){return window.HealthGoServices?.refreshHealth();}
+async function refreshDeviceHealth(){return window.HealthGoServices?.refreshHealth();}
 async function enableHealthGoNotifications(){
  var status=document.getElementById('notificationStatus');
  if(!('Notification' in window)){if(status)status.textContent='Powiadomienia systemowe nie są dostępne.';return}
@@ -907,7 +886,7 @@ async function enableHealthGoNotifications(){
  if(p==='granted')new Notification('HealthGo',{body:'Powiadomienia HealthGo są włączone.'});
 }
 function updateNotificationStatus(){var e=document.getElementById('notificationStatus');if(!e)return;e.textContent=!('Notification' in window)?'Powiadomienia systemowe niedostępne.':Notification.permission==='granted'?'Powiadomienia są włączone.':Notification.permission==='denied'?'Powiadomienia są zablokowane w systemie.':'Powiadomienia czekają na zgodę.'}
-setInterval(refreshDeviceHealth,30000);setTimeout(function(){refreshDeviceHealth();updateNotificationStatus()},1200);
+setTimeout(updateNotificationStatus,1200);
 const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Minigry · wkrótce',plan:'Plan Dnia',challenges:'Wyzwania',backpack:'Plecak',activity:'Aktywność',devices:'Urządzenia',settings:'Ustawienia'};
 let timerSec=0, timerInt=null;
 
@@ -930,7 +909,7 @@ function go(page){
 }
 function modal(title,text,action='OK'){
  document.getElementById('modalTitle').textContent=title;
- document.getElementById('modalText').innerHTML=text;
+ document.getElementById('modalText').textContent=String(text||'').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]*>/g,'');
  document.getElementById('modalAction').textContent=action;
  document.getElementById('modal').classList.add('show');
 }
@@ -1198,11 +1177,11 @@ function useMyLocation(){
  mapStatus('Czekam na zgodę na lokalizację…');
  navigator.geolocation.getCurrentPosition(
    function(pos){
-     const lat=pos.coords.latitude,lon=pos.coords.longitude,acc=Math.max(10,pos.coords.accuracy||30);
+     const lat=pos.coords.latitude,lon=pos.coords.longitude,acc=(Number.isFinite(pos.coords.accuracy)?pos.coords.accuracy:null);
      if(healthGoLocationLayer)healthGoLocationLayer.clearLayers();
      const marker=L.marker([lat,lon]).addTo(healthGoLocationLayer);
-     marker.bindPopup('<b>📍 Twoje położenie</b><br>Dokładność około '+Math.round(acc)+' m').openPopup();
-     L.circle([lat,lon],{radius:acc,weight:1,fillOpacity:.08}).addTo(healthGoLocationLayer);
+     marker.bindPopup('<b>📍 Twoje położenie</b><br>'+(acc===null?'Dokładność niedostępna':'Dokładność około '+Math.round(acc)+' m')).openPopup();
+     if(acc!==null)L.circle([lat,lon],{radius:acc,weight:1,fillOpacity:.08}).addTo(healthGoLocationLayer);
      healthGoMap.setView([lat,lon],16,{animate:true});
      mapStatus('Pokazuję Twoje położenie. Lokalizacja została użyta po Twojej zgodzie.');
    },
@@ -1326,7 +1305,7 @@ function planDateKey(d){
 }
 function healthGoPlanStorageKey(){
  try{
-   if(typeof hgUserKey==='function'&&typeof hgSafeKey==='function')return HEALTHGO_PLAN_KEY+'_'+hgSafeKey(hgUserKey());
+   if(typeof hgUserKey==='function'&&typeof hgSafeKey==='function')return hgScopedKey('plan_v2',HEALTHGO_PLAN_KEY+'_'+hgSafeKey(hgUserKey()));
  }catch(_){}
  return HEALTHGO_PLAN_KEY;
 }
@@ -1347,7 +1326,7 @@ function loadHealthGoPlan(){
    let raw=localStorage.getItem(key);
    if(!raw){
      const legacy=localStorage.getItem(HEALTHGO_PLAN_KEY);
-     if(legacy){localStorage.setItem(key,legacy);raw=legacy}
+     if(legacy&&window.healthGoLegacyOwnerUid===hgUid()&&hgUid()){localStorage.setItem(key,legacy);raw=legacy}
    }
    const data=JSON.parse(raw||'[]');
    return Array.isArray(data)?data.map(normalizePlanItem):[];
@@ -1507,7 +1486,7 @@ function savePlanItem(){
  }
  saveHealthGoPlan(data);
  const wasEdit=!!planEditingId;
- if(!wasEdit)awardChallenge('first_plan');
+ if(!wasEdit){const newest=data[data.length-1];syncHealthGoCloudState({plan:data}).then(()=>HealthGoServices.record('PLAN_CREATED',{planId:newest.id},'plan-created:'+newest.id)).catch(()=>{});}
  cancelPlanEdit();
  renderPlanDay();
  renderTodayPlanPreview();
@@ -1553,6 +1532,7 @@ function togglePlanDone(id,date){
  const item=data.find(x=>x.id===id);if(!item)return;
  setPlanDoneOnDate(item,date,!isPlanDoneOnDate(item,date));
  saveHealthGoPlan(data);
+ if(isPlanDoneOnDate(item,date))syncHealthGoCloudState({plan:data}).then(()=>HealthGoServices.record('PLAN_COMPLETED',{planId:id,day:date},'plan-done:'+id+':'+date)).catch(()=>{});
  renderPlanDay();
  renderTodayPlanPreview();
 }
@@ -1632,23 +1612,8 @@ function addPlan(){
  setTimeout(()=>document.getElementById('planTime')?.focus(),50);
 }
 
-const HG_BADGES=Array.from({length:100},(_,i)=>{
- const base=[
-  {id:'health',emoji:'❤️',name:'Health',desc:'Pierwsza odznaka HealthGo'},
-  {id:'planner',emoji:'📅',name:'Planista',desc:'Utwórz pierwszy punkt planu'},
-  {id:'explorer',emoji:'🗺️',name:'Odkrywca',desc:'Znajdź prawdziwe miejsca na mapie'},
-  {id:'ai_first',emoji:'🤖',name:'Rozmówca AI',desc:'Otrzymaj pierwszą odpowiedź HealthGo AI'},
-  {id:'active_first',emoji:'🏃',name:'Aktywny start',desc:'Zapisz pierwszą aktywność ręczną'},
-  {id:'maxxp',emoji:'🏆',name:'MAX XP',desc:'Osiągnij poziom 1000'}
- ];
- return base[i]||{id:'badge_'+(i+1),emoji:'◆',name:'Odznaka '+(i+1),desc:'Do zdobycia w przyszłych wyzwaniach i eventach'};
-});
-const HG_CHALLENGES=[
- {id:'first_plan',icon:'📅',title:'Zaplanuj dzień',desc:'Dodaj pierwszy rzeczywisty punkt do Planu Dnia.',xp:60,badge:'planner'},
- {id:'map_explorer',icon:'🗺️',title:'Poznaj okolicę',desc:'Wyszukaj prawdziwe miejsce na mapie HealthGo.',xp:80,badge:'explorer'},
- {id:'ai_first',icon:'🤖',title:'Skorzystaj z HealthGo AI',desc:'Przeprowadź pierwszą zakończoną rozmowę z działającym HealthGo AI.',xp:50,badge:'ai_first'},
- {id:'activity_sync',icon:'⌚',title:'Pierwsza synchronizacja aktywności',desc:'Zsynchronizuj prawdziwe dane aktywności z obsługiwanego urządzenia.',xp:100,badge:'active_first'}
-];
+const HG_BADGES=window.HealthGoEngine.CATALOG;
+const HG_CHALLENGES=window.HealthGoEngine.CHALLENGES;
 let setupAccountType='standard',manualActivityStartedAt=null,manualActivityInterval=null;
 
 function hgUserKey(){
@@ -1658,13 +1623,15 @@ function hgUserKey(){
  }catch(_){return String(window.healthGoCurrentEmail||'healthgo-user').toLowerCase()}
 }
 function hgSafeKey(v){return btoa(unescape(encodeURIComponent(v))).replace(/[^a-zA-Z0-9]/g,'').slice(0,50)}
-function hgProfileKey(){return 'healthgo_profile_v2_'+hgSafeKey(hgUserKey())}
-function hgProgressKey(){return 'healthgo_progress_v2_'+hgSafeKey(hgUserKey())}
-function hgActivityKey(){return 'healthgo_activity_v1_'+hgSafeKey(hgUserKey())}
+function hgScopedKey(area,legacy){const k='healthgo_'+area+'_uid_'+hgUid();if(hgUid()&&!localStorage.getItem(k)&&localStorage.getItem(legacy))localStorage.setItem(k,localStorage.getItem(legacy));return hgUid()?k:legacy}
+function hgProfileKey(){return hgScopedKey('profile_v2','healthgo_profile_v2_'+hgSafeKey(hgUserKey()))}
+function hgProgressKey(){return hgScopedKey('progress_v2','healthgo_progress_v2_'+hgSafeKey(hgUserKey()))}
+function hgActivityKey(){return hgScopedKey('activity_v1','healthgo_activity_v1_'+hgSafeKey(hgUserKey()))}
 function hgUid(){return String(window.healthGoCurrentUid||'')}
 async function syncHealthGoCloudState(partial){
  const db=window.healthGoDb,uid=hgUid();if(!db||!uid)return false;
- const payload={updatedAt:new Date().toISOString(),...partial};
+ try{const settings=JSON.parse(localStorage.getItem('healthgo_settings_v3_uid_'+uid)||'{}');if(settings.cloudSync===false&&!partial.settingsV3)return false;}catch(_){}
+ const payload={updatedAt:new Date().toISOString()};for(const field of ['plan','manualActivities','settingsV3'])if(Object.prototype.hasOwnProperty.call(partial,field))payload[field]=partial[field];
  await db.collection('users').doc(uid).set(payload,{merge:true});
  return true;
 }
@@ -1673,6 +1640,7 @@ async function loadHealthGoCloudState(){
  try{
    const snap=await db.collection('users').doc(uid).get();
    if(!snap.exists)return;
+   if(hgUid()!==uid)return;
    const data=snap.data()||{};
    if(data.profile&&typeof data.profile==='object')localStorage.setItem(hgProfileKey(),JSON.stringify({...defaultHealthGoProfile(),...data.profile}));
    if(data.progress&&typeof data.progress==='object')localStorage.setItem(hgProgressKey(),JSON.stringify(data.progress));
@@ -1684,21 +1652,21 @@ async function loadHealthGoCloudState(){
 
 function defaultHealthGoProfile(){
  const email=hgUserKey(),raw=email.includes('@')?email.split('@')[0]:'HealthGo';
- return {nickname:(raw.replace(/[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ_.-]/g,'').slice(0,20)||'HealthGo'),accountType:'standard',configured:false};
+ return {nickname:(raw.replace(/[^a-zA-Z0-9ąćęłńóśźżĄĆĘŁŃÓŚŹŻ_.-]/g,'').slice(0,20)||'HealthGo'),accountType:null,configured:false};
 }
 function loadHealthGoProfile(){
  try{return {...defaultHealthGoProfile(),...JSON.parse(localStorage.getItem(hgProfileKey())||'{}')}}catch(_){return defaultHealthGoProfile()}
 }
 function putHealthGoProfile(p){
  localStorage.setItem(hgProfileKey(),JSON.stringify(p));
- syncHealthGoCloudState({profile:p}).catch(()=>{});
+ // Authoritative profile updates use AccountService.
 }
 function loadProgress(){
  try{return {level:1,xp:0,totalXp:0,badges:[],completed:[],topPrompted:false,...JSON.parse(localStorage.getItem(hgProgressKey())||'{}')}}catch(_){return {level:1,xp:0,totalXp:0,badges:[],completed:[],topPrompted:false}}
 }
 function putProgress(p){
  localStorage.setItem(hgProgressKey(),JSON.stringify(p));
- syncHealthGoCloudState({progress:p}).catch(()=>{});
+ // Legacy progress stays preserved locally; authoritative XP is backend-only.
 }
 function xpNeeded(level){return 400+Math.min(1600,Math.floor((level-1)*12))}
 function profanityNick(v){
@@ -1711,27 +1679,26 @@ function validNickname(v){
  return n.length>=3&&n.length<=20&&!profanityNick(n)&&/^[\p{L}\p{N}_. -]+$/u.test(n);
 }
 function renderHealthGoProfile(){
- const p=loadHealthGoProfile(),email=hgUserKey();
+ const p=window.HealthGoServices?.state.profile||loadHealthGoProfile(),email=window.healthGoCurrentEmail||'';
  ['topNick','sidebarNick'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=p.nickname||'HealthGo'});
  ['topAvatar','sidebarAvatar'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=(p.nickname||'H').trim().charAt(0).toUpperCase()||'H'});
- const typeLabel=p.accountType==='child'?'Konto dziecka':'Konto zwykłe';
+ const typeLabel=p.accountType==='child'?'Konto HealthGo Family':p.accountType==='guardian'?'Rodzic / opiekun':'Konto standardowe';
  const sat=document.getElementById('sidebarAccountType');if(sat)sat.textContent=typeLabel;
  const cat=document.getElementById('challengeAccountType');if(cat)cat.textContent=typeLabel;
  const nick=document.getElementById('settingsNickname');if(nick)nick.value=p.nickname||'';
- const type=document.getElementById('settingsAccountType');if(type)type.value=p.accountType||'standard';
+ const type=document.getElementById('settingsAccountType');if(type){type.value=p.accountType||'standard';type.disabled=true;type.title='Zmiana typu połączonego konta wymaga bezpiecznego procesu.';}
  const em=document.getElementById('settingsEmail');if(em)em.textContent=email;
  const child=document.getElementById('childSafetyNote');
  if(child)child.textContent=p.accountType==='child'
    ?'🧸 Konto dziecka: profil jest prywatniejszy domyślnie, dokładna lokalizacja nie jest publikowana, a komunikaty są bezpieczne i przyjazne.'
    :'👤 Konto zwykłe: standardowe ustawienia prywatności. Dokładna lokalizacja nadal nie jest publikowana.';
 }
-function saveHealthGoProfile(){
- const nick=(document.getElementById('settingsNickname')?.value||'').trim(),type=document.getElementById('settingsAccountType')?.value||'standard',status=document.getElementById('nicknameStatus');
- if(!validNickname(nick)){if(status){status.textContent='Nick musi mieć 3–20 znaków i nie może zawierać wulgaryzmów.';status.style.color='#b91c1c'};return}
- putHealthGoProfile({...loadHealthGoProfile(),nickname:nick,accountType:type,configured:true});
- syncHealthGoCloudState({accountType:type,nickname:nick}).catch(()=>{});
- if(status){status.textContent='Zapisano.';status.style.color='#087f5b'}
- renderHealthGoProfile();renderProgressUI();
+async function saveHealthGoProfile(){
+ const nickname=(document.getElementById('settingsNickname')?.value||'').trim(),status=document.getElementById('nicknameStatus');
+ if(!validNickname(nickname)){if(status)status.textContent='Nick musi mieć 3–20 znaków.';return;}
+ try{const current=HealthGoServices.state.profile;if(!current)throw Error('Poczekaj na odczyt profilu.');
+ await HealthGoServices.call('configureAccount',{nickname,accountType:current.accountType==='child'?'child':'standard'});
+ if(status)status.textContent='Zapisano.';}catch(e){if(status)status.textContent=e.message;}
 }
 function chooseHealthGoAccountType(type){
  setupAccountType=type;
@@ -1739,19 +1706,21 @@ function chooseHealthGoAccountType(type){
  document.getElementById('setupChild')?.classList.toggle('active',type==='child');
 }
 function maybeShowAccountSetup(){
- const p=loadHealthGoProfile();renderHealthGoProfile();
- if(p.configured){ensureHealthBadge(false);return}
- const input=document.getElementById('setupNickname');if(input)input.value=p.nickname||'';
- setupAccountType=p.accountType||'standard';chooseHealthGoAccountType(setupAccountType);
+ const p=window.HealthGoServices?.state.profile;renderHealthGoProfile();
+ if(p&&p.configured&&p.accountType)return;
+ const input=document.getElementById('setupNickname');if(input)input.value=p?.nickname||loadHealthGoProfile().nickname||'';
+ setupAccountType='standard';chooseHealthGoAccountType(setupAccountType);
  document.getElementById('accountSetup')?.classList.add('show');
 }
-function finishHealthGoAccountSetup(){
- const nick=(document.getElementById('setupNickname')?.value||'').trim(),s=document.getElementById('setupProfileStatus');
- if(!validNickname(nick)){if(s){s.textContent='Wpisz nick 3–20 znaków bez wulgaryzmów.';s.style.color='#b91c1c'};return}
- putHealthGoProfile({nickname:nick,accountType:setupAccountType,configured:true});
- syncHealthGoCloudState({accountType:setupAccountType,nickname:nick,createdAt:new Date().toISOString()}).catch(()=>{});
+async function finishHealthGoAccountSetup(){
+ const nickname=(document.getElementById('setupNickname')?.value||'').trim(),status=document.getElementById('setupProfileStatus');
+ if(!validNickname(nickname)){if(status)status.textContent='Wpisz nick 3–20 znaków.';return;}
+ if(status)status.textContent='Konfiguruję profil…';
+ try{
+ await AccountService.configure({nickname,accountType:setupAccountType});
  document.getElementById('accountSetup')?.classList.remove('show');
- renderHealthGoProfile();ensureHealthBadge(true);
+ if(status)status.textContent='Gotowe.';await HealthGoServices.initialize();
+ }catch(e){if(status)status.textContent=e.message;}
 }
 function scrollSettings(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
 
@@ -1764,31 +1733,14 @@ function showBadgeAward(badge){
  try{if('Notification' in window&&Notification.permission==='granted')new Notification('Nowa odznaka 🎖️',{body:badge.name});}catch(_){}
  root.classList.add('show');
 }
-function awardBadge(id,animate=true){
- const badge=HG_BADGES.find(b=>b.id===id);if(!badge)return false;
- const p=loadProgress();if(p.badges.includes(id))return false;
- p.badges.push(id);putProgress(p);renderProgressUI();
- if(animate)showBadgeAward(badge);
- return true;
-}
-function ensureHealthBadge(animate){awardBadge('health',animate)}
-function addXP(amount){
- const p=loadProgress();if(p.level>=1000)return;
- p.xp+=amount;p.totalXp+=amount;
- while(p.level<1000&&p.xp>=xpNeeded(p.level)){p.xp-=xpNeeded(p.level);p.level++}
- if(p.level>=1000){
-  p.level=1000;p.xp=0;putProgress(p);awardBadge('maxxp',true);
-  if(!p.topPrompted){p.topPrompted=true;putProgress(p);setTimeout(()=>modal('🏆 Maksymalny poziom','Osiągnąłeś poziom 1000. Gdy uruchomimy Topkę XP, HealthGo zapyta Cię, czy chcesz dobrowolnie dołączyć do rankingu.'),700)}
- }else putProgress(p);
- renderProgressUI();
-}
+function awardBadge(){return false;}
+function ensureHealthBadge(){return false;}
+function addXP(){return false;}
 function awardChallenge(id){
- const ch=HG_CHALLENGES.find(x=>x.id===id);if(!ch)return false;
- const p=loadProgress();if(p.completed.includes(id))return false;
- p.completed.push(id);putProgress(p);addXP(ch.xp);
- if(ch.badge)awardBadge(ch.badge,true);
- try{if('Notification' in window&&Notification.permission==='granted')new Notification('Wyzwanie ukończone 🎯',{body:ch.title+' · +'+ch.xp+' XP'});}catch(_){}
- renderProgressUI();return true;
+ const types={first_plan:'PLAN_CREATED',map_explorer:'MAP_EXPLORED',ai_first:'AI_USED'};
+ const type=types[id];if(!type||!window.HealthGoServices)return false;
+ let payload={};if(type==='PLAN_CREATED'){const list=loadHealthGoPlan();payload={planId:list.length?list[list.length-1].id:null};}
+ return HealthGoServices.record(type,payload,'legacy-action:'+id);
 }
 function renderProgressUI(){
  const p=loadProgress(),need=xpNeeded(p.level);
@@ -1927,10 +1879,7 @@ window.addEventListener('DOMContentLoaded', function () {
   var authScreen = document.getElementById('authScreen');
   var appShell = document.querySelector('.app');
   var mobileNav = document.querySelector('.mobile-nav');
-  setTimeout(function () {
-    var splash = document.getElementById('splashScreen');
-    if (splash) { splash.classList.add('hide'); splash.style.pointerEvents='none'; }
-  }, 3000);
+  // The verified Firebase Auth session resolves the splash.
 });
 </script>
 
@@ -1938,376 +1887,134 @@ window.addEventListener('DOMContentLoaded', function () {
 <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check-compat.js"></script>
+<script src="./healthgo-services.js"></script>
 <script>
-(function () {
-  'use strict';
-
-  var firebaseConfig = {
-    apiKey: "AIzaSyC841XoWIJ1AANTuIJ88s_mUIPa0MgrJZM",
-    authDomain: "healthgo-e45be.firebaseapp.com",
-    projectId: "healthgo-e45be",
-    storageBucket: "healthgo-e45be.firebasestorage.app",
-    messagingSenderId: "924242915977",
-    appId: "1:924242915977:web:bed648007802203cf28c58"
-  };
-
-  var API_KEY = firebaseConfig.apiKey;
-  var statusBox = document.getElementById('authStatus');
-  var emailInput = document.getElementById('loginEmail');
-  var passInput = document.getElementById('loginPass');
-  var emailBtn = document.getElementById('emailLoginBtn');
-  var googleBtn = document.getElementById('googleLoginBtn');
-  var createBtn = document.getElementById('createAccountBtn');
-  var auth = null;
-
-  function status(message, type) {
-    type = type || 'info';
-    if (!statusBox) return;
-    statusBox.style.display = 'block';
-    statusBox.textContent = message;
-    statusBox.style.background = type === 'error' ? '#fef2f2' : type === 'ok' ? '#f0fdf4' : '#eff6ff';
-    statusBox.style.color = type === 'error' ? '#991b1b' : type === 'ok' ? '#166534' : '#1e40af';
-  }
-
-  function cleanRestError(code) {
-    code = String(code || '').split(' : ')[0];
-    var map = {
-      'INVALID_EMAIL': 'Wpisz poprawny adres e-mail.',
-      'MISSING_EMAIL': 'Wpisz adres e-mail.',
-      'MISSING_PASSWORD': 'Wpisz hasło.',
-      'INVALID_LOGIN_CREDENTIALS': 'Nieprawidłowy e-mail lub hasło.',
-      'EMAIL_NOT_FOUND': 'Nie ma takiego konta. Możesz utworzyć nowe konto.',
-      'INVALID_PASSWORD': 'Nieprawidłowy e-mail lub hasło.',
-      'EMAIL_EXISTS': 'Konto z tym adresem e-mail już istnieje.',
-      'WEAK_PASSWORD': 'Hasło musi mieć co najmniej 6 znaków.',
-      'USER_DISABLED': 'To konto jest wyłączone.',
-      'TOO_MANY_ATTEMPTS_TRY_LATER': 'Za dużo prób. Poczekaj chwilę i spróbuj ponownie.',
-      'OPERATION_NOT_ALLOWED': 'Ta metoda logowania nie jest włączona w Firebase.'
-    };
-    return map[code] || 'Nie udało się zalogować. Spróbuj ponownie.';
-  }
-
-  function cleanFirebaseError(error) {
-    var code = error && error.code ? error.code : '';
-    var map = {
-      'auth/invalid-email': 'Wpisz poprawny adres e-mail.',
-      'auth/invalid-credential': 'Nieprawidłowy e-mail lub hasło.',
-      'auth/wrong-password': 'Nieprawidłowy e-mail lub hasło.',
-      'auth/user-not-found': 'Nie ma takiego konta.',
-      'auth/email-already-in-use': 'Konto z tym adresem e-mail już istnieje.',
-      'auth/weak-password': 'Hasło musi mieć co najmniej 6 znaków.',
-      'auth/popup-closed-by-user': 'Okno Google zostało zamknięte.',
-      'auth/popup-blocked': 'Przeglądarka zablokowała okno Google. HealthGo spróbuje logowania przez przekierowanie.',
-      'auth/cancelled-popup-request': 'Poprzednie okno logowania zostało anulowane. Spróbuj ponownie.',
-      'auth/operation-not-supported-in-this-environment': 'Ta metoda logowania nie działa w tym trybie przeglądarki. HealthGo spróbuje przekierowania.',
-      'auth/web-storage-unsupported': 'Przeglądarka blokuje pamięć potrzebną do logowania Google.',
-      'auth/unauthorized-domain': 'Domena '+location.hostname+' nie jest jeszcze dodana do Autoryzowanych domen Firebase.',
-      'auth/network-request-failed': 'Brak połączenia z Firebase. Sprawdź internet.',
-      'auth/operation-not-allowed': 'Logowanie Google nie jest włączone w Firebase.',
-      'auth/account-exists-with-different-credential': 'Ten e-mail jest już używany przez inną metodę logowania.'
-    };
-    return map[code] || 'Logowanie Google nie powiodło się. Spróbuj ponownie.';
-  }
-
-  function setBusy(button, busy, busyText, normalText) {
-    if (!button) return;
-    button.disabled = !!busy;
-    button.style.opacity = busy ? '.7' : '1';
-    if (button === googleBtn) {
-      var label = button.querySelector('.google-label');
-      if (label) label.textContent = busy ? busyText : normalText;
-    } else {
-      button.textContent = busy ? busyText : normalText;
-    }
-  }
-
-  function showAuthScreen() {
-    var splash = document.getElementById('splashScreen');
-    var authScreen = document.getElementById('authScreen');
-    var appShell = document.querySelector('.app');
-    var mobileNav = document.querySelector('.mobile-nav');
-    if (splash) { splash.classList.add('hide'); splash.style.pointerEvents='none'; }
-    if (authScreen) authScreen.classList.add('show');
-    if (appShell) appShell.classList.add('auth-hidden');
-    if (mobileNav) mobileNav.classList.add('auth-hidden');
-  }
-
-  function showMainApp(user) {
-    var splash = document.getElementById('splashScreen');
-    var authScreen = document.getElementById('authScreen');
-    var appShell = document.querySelector('.app');
-    var mobileNav = document.querySelector('.mobile-nav');
-    if (splash) { splash.classList.add('hide'); splash.style.pointerEvents='none'; }
-    if (authScreen) authScreen.classList.remove('show');
-    if (appShell) appShell.classList.remove('auth-hidden');
-    if (mobileNav) mobileNav.classList.remove('auth-hidden');
-    window.healthGoCurrentEmail = (user && user.email) || window.healthGoCurrentEmail || '';
-    window.healthGoCurrentUid = (user && (user.uid || user.localId)) || window.healthGoCurrentUid || '';
-    if (typeof renderHealthGoProfile === 'function') renderHealthGoProfile();
-    if (typeof loadHealthGoCloudState === 'function') loadHealthGoCloudState().finally(function(){ if (typeof maybeShowAccountSetup === 'function') setTimeout(maybeShowAccountSetup, 250); });
-    else if (typeof maybeShowAccountSetup === 'function') setTimeout(maybeShowAccountSetup, 250);
-    if (typeof renderProgressUI === 'function') renderProgressUI();
-    if (typeof window.go === 'function' && !document.querySelector('.page.active')) window.go('start');
-    if (typeof showPwaInstallHint === 'function') setTimeout(showPwaInstallHint, 1600);
-  }
-
-  async function restAuth(path, email, password) {
-    var response = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:' + path + '?key=' + encodeURIComponent(API_KEY), {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({email:email, password:password, returnSecureToken:true})
-    });
-    var data = await response.json().catch(function(){ return {}; });
-    if (!response.ok) {
-      var err = new Error((data.error && data.error.message) || 'AUTH_ERROR');
-      err.restCode = (data.error && data.error.message) || 'AUTH_ERROR';
-      throw err;
-    }
-    return data;
-  }
-
-  function saveRestSession(data) {
-    try {
-      localStorage.setItem('healthgo_rest_session', JSON.stringify({
-        idToken:data.idToken || '', refreshToken:data.refreshToken || '', email:data.email || '', localId:data.localId || ''
-      }));
-    } catch (_) {}
-  }
-
-  // E-mail i hasło działają bez zależności od załadowania Firebase SDK.
-  window.loginDemo = async function () {
-    var email = emailInput ? emailInput.value.trim() : '';
-    var password = passInput ? passInput.value : '';
-    if (!email || !password) return status('Wpisz e-mail i hasło.', 'error');
-    setBusy(emailBtn, true, 'Logowanie…', 'Zaloguj się');
-    status('Logowanie…');
-    try {
-      if (auth && auth.signInWithEmailAndPassword) {
-        var credential = await auth.signInWithEmailAndPassword(email, password);
-        var token = await credential.user.getIdToken();
-        saveRestSession({idToken:token,email:credential.user.email,localId:credential.user.uid});
-        status('Zalogowano.', 'ok');
-        showMainApp(credential.user);
-      } else {
-        var data = await restAuth('signInWithPassword', email, password);
-        saveRestSession(data);
-        status('Zalogowano.', 'ok');
-        showMainApp({email:data.email,uid:data.localId,localId:data.localId});
-      }
-    } catch (error) {
-      console.error('HealthGo e-mail login:', error);
-      status(error && error.code ? cleanFirebaseError(error) : cleanRestError(error.restCode), 'error');
-    } finally {
-      setBusy(emailBtn, false, 'Logowanie…', 'Zaloguj się');
-    }
-  };
-
-  window.createAccount = async function () {
-    var email = emailInput ? emailInput.value.trim() : '';
-    var password = passInput ? passInput.value : '';
-    if (!email || !password) return status('Wpisz e-mail i hasło.', 'error');
-    if (password.length < 6) return status('Hasło musi mieć co najmniej 6 znaków.', 'error');
-    setBusy(createBtn, true, 'Tworzenie…', 'Utwórz konto HealthGo');
-    status('Tworzenie konta…');
-    try {
-      if (auth && auth.createUserWithEmailAndPassword) {
-        var credential = await auth.createUserWithEmailAndPassword(email, password);
-        var token = await credential.user.getIdToken();
-        saveRestSession({idToken:token,email:credential.user.email,localId:credential.user.uid});
-        status('Konto utworzone.', 'ok');
-        showMainApp(credential.user);
-      } else {
-        var data = await restAuth('signUp', email, password);
-        saveRestSession(data);
-        status('Konto utworzone.', 'ok');
-        showMainApp({email:data.email,uid:data.localId,localId:data.localId});
-      }
-    } catch (error) {
-      console.error('HealthGo create account:', error);
-      status(error && error.code ? cleanFirebaseError(error) : cleanRestError(error.restCode), 'error');
-    } finally {
-      setBusy(createBtn, false, 'Tworzenie…', 'Utwórz konto HealthGo');
-    }
-  };
-
-  function healthGoIsMobileAuth(){
-    return /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent||'') || (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
-  }
-  async function saveFirebaseUserSession(user){
-    if(!user)return;
-    try {
-      var gt = await user.getIdToken();
-      localStorage.setItem('healthgo_rest_session', JSON.stringify({idToken:gt,email:user.email||'',localId:user.uid||''}));
-    } catch (_) {}
-  }
-
-  // Google: popup na zwykłej stronie, a na iOS/PWA bezpieczny fallback do redirect.
-  window.loginProvider = async function (name) {
-    if (name !== 'Google') return;
-    if (!auth || !window.firebase) {
-      status('Logowanie Google jeszcze się ładuje. Odśwież stronę i spróbuj ponownie.', 'error');
-      return;
-    }
-    setBusy(googleBtn, true, 'Otwieram Google…', 'Kontynuuj z Google');
-    status('Otwieram Google…');
-    var provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({prompt:'select_account'});
-    try {
-      if(healthGoIsMobileAuth()){
-        try{
-          var result = await auth.signInWithPopup(provider);
-          await saveFirebaseUserSession(result.user);
-          status('Zalogowano przez Google.', 'ok');
-          showMainApp(result.user);
-        }catch(firstError){
-          var fallbackCodes=['auth/popup-blocked','auth/cancelled-popup-request','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'];
-          if(fallbackCodes.indexOf(firstError&&firstError.code)>=0){
-            status('Przechodzę do bezpiecznego logowania Google…');
-            sessionStorage.setItem('healthgo_google_redirect','1');
-            await auth.signInWithRedirect(provider);
-            return;
-          }
-          throw firstError;
-        }
-      }else{
-        var result = await auth.signInWithPopup(provider);
-        await saveFirebaseUserSession(result.user);
-        status('Zalogowano przez Google.', 'ok');
-        showMainApp(result.user);
-      }
-    } catch (error) {
-      console.error('HealthGo Google login:', error);
-      status(cleanFirebaseError(error), 'error');
-    } finally {
-      setBusy(googleBtn, false, 'Otwieram Google…', 'Kontynuuj z Google');
-    }
-  };
-
-  window.logoutHealthGo = async function () {
-    try { localStorage.removeItem('healthgo_rest_session'); } catch (_) {}
-    try { if (auth) await auth.signOut(); } catch (_) {}
-    showAuthScreen();
-  };
-
-  if (passInput) passInput.addEventListener('keydown', function (event) {
-    if (event.key === 'Enter') window.loginDemo();
-  });
-
-  // Firebase SDK jest potrzebny tylko do Google. Awaria CDN nie blokuje e-mail/hasło.
-  try {
-    if (window.firebase && firebase.initializeApp) {
-      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-      auth = firebase.auth();
-      try { window.healthGoDb = firebase.firestore(); } catch (_) {}
-      auth.languageCode = 'pl';
-      auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){});
-      auth.getRedirectResult().then(async function(result){
-        if(result&&result.user){
-          await saveFirebaseUserSession(result.user);
-          try{sessionStorage.removeItem('healthgo_google_redirect')}catch(_){}
-          status('Zalogowano przez Google.', 'ok');
-          showMainApp(result.user);
-        }
-      }).catch(function(error){
-        console.error('HealthGo Google redirect:',error);
-        if(error&&error.code)status(cleanFirebaseError(error),'error');
-      });
-      auth.onAuthStateChanged(function(user) {
-        if (user) showMainApp(user);
-      });
-    } else {
-      console.warn('Firebase Compat SDK nie załadował się; e-mail/hasło nadal działa przez REST.');
-    }
-  } catch (error) {
-    console.error('Firebase Compat init:', error);
-  }
-
-  // Przy odświeżeniu najpierw wykorzystaj zapisaną sesję, bez migania ekranu logowania.
-  try {
-    var saved = JSON.parse(localStorage.getItem('healthgo_rest_session') || 'null');
-    if (saved && saved.idToken && saved.email) {
-      document.documentElement.classList.add('hg-session-known');
-      showMainApp({email:saved.email,uid:saved.localId||'',localId:saved.localId||''});
-    } else {
-      document.documentElement.classList.remove('hg-session-known');
-      showAuthScreen();
-    }
-  } catch (_) {
-    document.documentElement.classList.remove('hg-session-known');
-    showAuthScreen();
-  }
+(function(){
+'use strict';
+const config={apiKey:"AIzaSyC841XoWIJ1AANTuIJ88s_mUIPa0MgrJZM",authDomain:"healthgo-e45be.firebaseapp.com",projectId:"healthgo-e45be",storageBucket:"healthgo-e45be.firebasestorage.app",messagingSenderId:"924242915977",appId:"1:924242915977:web:bed648007802203cf28c58"};
+const box=document.getElementById('authStatus');
+function status(text,error){if(box){box.style.display='block';box.textContent=text;box.style.color=error?'#991b1b':'#166534';}}
+function clean(error){
+ const code=String(error&&error.code||'');
+ if(/invalid-email/.test(code))return 'Wpisz poprawny adres e-mail.';
+ if(/invalid-credential|wrong-password|user-not-found/.test(code))return 'Nie udało się zalogować. Sprawdź e-mail i hasło.';
+ if(/email-already-in-use/.test(code))return 'Ten adres ma już konto. Zaloguj się lub zresetuj hasło.';
+ if(/weak-password/.test(code))return 'Użyj hasła o długości co najmniej 6 znaków.';
+ if(/too-many-requests/.test(code))return 'Za dużo prób. Poczekaj chwilę i spróbuj ponownie.';
+ if(/popup-closed/.test(code))return 'Logowanie zostało przerwane.';
+ if(/operation-not-allowed|unauthorized-domain/.test(code))return 'Ta metoda logowania nie jest jeszcze dostępna.';
+ if(/network-request/.test(code))return 'Sprawdź połączenie z internetem i spróbuj ponownie.';
+ return 'Nie udało się zalogować. Spróbuj ponownie.';
+}
+function showAuth(){
+ document.documentElement.classList.remove('hg-session-known');
+ document.getElementById('splashScreen')?.classList.add('hide');
+ document.getElementById('authScreen')?.classList.add('show');
+ document.querySelector('.app')?.classList.add('auth-hidden');
+ document.querySelector('.mobile-nav')?.classList.add('auth-hidden');
+}
+function showApp(){
+ document.getElementById('splashScreen')?.classList.add('hide');
+ document.getElementById('authScreen')?.classList.remove('show');
+ document.querySelector('.app')?.classList.remove('auth-hidden');
+ document.querySelector('.mobile-nav')?.classList.remove('auth-hidden');
+}
+async function busy(button,action){
+ if(button)button.disabled=true;
+ try{await action();}catch(e){status(clean(e),true);}finally{if(button)button.disabled=false;const p=document.getElementById('loginPass');if(p)p.value='';}
+}
+let auth;
+try{
+ if(!window.firebase)throw new Error('sdk-unavailable');
+ if(!firebase.apps.length)firebase.initializeApp(config);
+ auth=window.healthGoAuth=firebase.auth();window.healthGoDb=firebase.firestore();auth.languageCode='pl';
+ window.healthGoDb.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+ try{window.healthGoLegacyOwnerUid=JSON.parse(localStorage.getItem('healthgo_rest_session')||'null')?.localId||null;}catch(_){}
+ localStorage.removeItem('healthgo_rest_session');
+ const oldHealth=localStorage.getItem('healthgo_device_health_v1');if(oldHealth&&!localStorage.getItem('healthgo_unassigned_health_archive'))localStorage.setItem('healthgo_unassigned_health_archive',oldHealth);localStorage.removeItem('healthgo_device_health_v1');
+ if(window.HEALTHGO_APP_CHECK_SITE_KEY&&firebase.appCheck)firebase.appCheck().activate(window.HEALTHGO_APP_CHECK_SITE_KEY,true);
+ auth.onAuthStateChanged(async user=>{
+  if(!user){HealthGoServices.stop();showAuth();return;}
+  status('Sprawdzanie konta…');const uid=user.uid;
+  await HealthGoServices.start(user);
+  if(!auth.currentUser||auth.currentUser.uid!==uid)return;
+  await loadHealthGoCloudState();HealthGoServices.refreshLegacy();
+  if(!auth.currentUser||auth.currentUser.uid!==uid)return;
+  renderHealthGoProfile();showApp();maybeShowAccountSetup();
+ });
+ auth.getRedirectResult().catch(e=>status(clean(e),true));
+}catch(_){showAuth();status('Nie udało się uruchomić logowania. Sprawdź połączenie i odśwież aplikację.',true);}
+window.loginDemo=()=>busy(document.getElementById('emailLoginBtn'),async()=>{
+ if(!auth)throw new Error('sdk-unavailable');status('Logowanie…');
+ await auth.signInWithEmailAndPassword(document.getElementById('loginEmail').value.trim(),document.getElementById('loginPass').value);
+});
+window.createAccount=()=>busy(document.getElementById('createAccountBtn'),async()=>{
+ if(!auth)throw new Error('sdk-unavailable');status('Tworzenie konta…');
+ await auth.createUserWithEmailAndPassword(document.getElementById('loginEmail').value.trim(),document.getElementById('loginPass').value);
+});
+window.loginProvider=name=>busy(document.getElementById(name==='Apple'?'appleLoginBtn':'googleLoginBtn'),async()=>{
+ if(!auth)throw new Error('sdk-unavailable');
+ const provider=name==='Apple'?new firebase.auth.OAuthProvider('apple.com'):new firebase.auth.GoogleAuthProvider();
+ if(name==='Apple'){provider.addScope('email');provider.addScope('name');}else provider.setCustomParameters({prompt:'select_account'});
+ status('Łączenie…');
+ try{await auth.signInWithPopup(provider);}
+ catch(e){if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'].includes(e.code))await auth.signInWithRedirect(provider);else throw e;}
+});
+window.logoutHealthGo=async()=>{HealthGoServices.stop();try{if(auth)await auth.signOut();}finally{showAuth();}};
+document.getElementById('loginPass')?.addEventListener('keydown',e=>{if(e.key==='Enter')window.loginDemo();});
 })();
 </script>
 
 
 <script>
 (function(){
-  const KEY='healthgo_ai_conversations_v1';
-  let currentId=null;
-
-  function all(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}}
-  function put(list){localStorage.setItem(KEY,JSON.stringify(list))}
-  function msgs(){return document.getElementById('aiMessages')}
-
-  function titleFromChat(){
-    const root=msgs(); if(!root)return 'Nowa rozmowa';
-    const u=root.querySelector('.ai-msg.user .ai-bubble');
-    if(!u)return 'Nowa rozmowa';
-    let t=(u.innerText||u.textContent||'').trim().replace(/\s+/g,' ');
-    return t.length>32?t.slice(0,32)+'…':(t||'Nowa rozmowa');
-  }
-  function save(){
-    const root=msgs(); if(!root||!currentId)return;
-    let list=all(), item=list.find(x=>x.id===currentId);
-    if(!item){item={id:currentId,title:'Nowa rozmowa',html:'',updated:Date.now()};list.unshift(item)}
-    item.title=titleFromChat(); item.html=root.innerHTML; item.updated=Date.now();
-    list.sort((a,b)=>b.updated-a.updated); put(list); render();
-  }
-  function render(){
-    const box=document.getElementById('aiHistory'); if(!box)return;
-    const list=all();
-    box.innerHTML=list.length?'':'<div class="ai-history-empty">Brak zapisanych rozmów</div>';
-    list.forEach(c=>{
-      const b=document.createElement('button');
-      b.className='ai-history-item'+(c.id===currentId?' active':'');
-      b.textContent=c.title||'Nowa rozmowa';
-      b.title=c.title||'Nowa rozmowa';
-      b.onclick=()=>load(c.id);
-      box.appendChild(b);
-    });
-  }
-  function load(id){
-    const c=all().find(x=>x.id===id); if(!c)return;
-    currentId=id;
-    const root=msgs(); if(root)root.innerHTML=c.html||'';
-    render();
-    if(root)root.scrollTop=root.scrollHeight;
-  }
-  function fresh(){
-    currentId='chat_'+Date.now();
-    const root=msgs();
-    if(root)root.innerHTML='';
-    let list=all();
-    list.unshift({id:currentId,title:'Nowa rozmowa',html:'',updated:Date.now()});
-    put(list); render();
-  }
-
-  // Override New conversation, but preserve a clean empty chat.
-  window.aiNewChat=function(){ save(); fresh(); };
-
-  document.addEventListener('DOMContentLoaded',()=>{
-    const list=all();
-    if(list.length) load(list[0].id); else fresh();
-
-    const root=msgs();
-    if(root){
-      const obs=new MutationObserver(()=>setTimeout(save,80));
-      obs.observe(root,{childList:true,subtree:true,characterData:true});
-    }
-    const input=document.getElementById('aiInput');
-    if(input) input.addEventListener('keydown',()=>setTimeout(save,250));
-    window.addEventListener('beforeunload',save);
-  });
+'use strict';
+let currentId=null,currentUid=null,observer=null;
+const legacyKey='healthgo_ai_conversations_v1';
+function key(){return 'healthgo_ai_conversations_v2_'+(currentUid||'signed-out');}
+function all(){if(!currentUid)return [];try{const data=JSON.parse(localStorage.getItem(key())||'[]');return Array.isArray(data)?data:[];}catch(_){return [];}}
+function put(list){if(currentUid)localStorage.setItem(key(),JSON.stringify(list));}
+function root(){return document.getElementById('aiMessages');}
+function collect(){return Array.from(root()?.querySelectorAll('.ai-msg')||[]).map(row=>({role:row.classList.contains('user')?'user':'assistant',text:row.querySelector('.ai-bubble')?.textContent||''}));}
+function render(){
+ const box=document.getElementById('aiHistory');if(!box)return;box.replaceChildren();
+ const list=all();if(!list.length){const note=document.createElement('p');note.className='ai-history-empty';note.textContent='Brak zapisanych rozmów';box.appendChild(note);}
+ for(const c of list){const b=document.createElement('button');b.className='ai-history-item'+(c.id===currentId?' active':'');b.textContent=c.title||'Nowa rozmowa';b.onclick=()=>load(c.id);box.appendChild(b);}
+}
+function save(){
+ if(!currentUid||!currentId)return;const messages=collect();let list=all(),item=list.find(x=>x.id===currentId);
+ if(!item){item={id:currentId};list.unshift(item);}
+ item.title=(messages.find(x=>x.role==='user')?.text||'Nowa rozmowa').slice(0,32);item.messages=messages;item.updated=Date.now();
+ list.sort((a,b)=>b.updated-a.updated);put(list);render();
+}
+function load(id){
+ const item=all().find(x=>x.id===id);if(!item)return;
+ currentId=id;const box=root();if(!box)return;box.replaceChildren();
+ for(const message of item.messages||[]){const row=document.createElement('div'),bubble=document.createElement('div');row.className='ai-msg '+(message.role==='user'?'user':'assistant');bubble.className='ai-bubble';bubble.textContent=String(message.text||'');row.appendChild(bubble);box.appendChild(row);}
+ render();box.scrollTop=box.scrollHeight;
+}
+function fresh(){currentId='chat_'+crypto.randomUUID();root()?.replaceChildren();const list=all();list.unshift({id:currentId,title:'Nowa rozmowa',messages:[],updated:Date.now()});put(list);render();}
+function migrate(){
+ if(!currentUid||window.healthGoLegacyOwnerUid!==currentUid||localStorage.getItem(key()))return;
+ try{
+  const old=JSON.parse(localStorage.getItem(legacyKey)||'[]');
+  const list=old.map(c=>{
+   const inert=new DOMParser().parseFromString(String(c.html||''),'text/html');
+   const messages=Array.from(inert.querySelectorAll('.ai-msg')).map(row=>({role:row.classList.contains('user')?'user':'assistant',text:row.querySelector('.ai-bubble')?.textContent||''}));
+   return {id:c.id,title:c.title,messages,updated:c.updated};
+  });put(list);
+ }catch(_){}
+}
+window.aiNewChat=()=>{save();fresh();};
+HealthGoServices.events.addEventListener('SESSION_CHANGED',event=>{
+ observer?.disconnect();currentUid=event.detail?.uid||null;currentId=null;root()?.replaceChildren();migrate();
+ const list=all();if(list.length)load(list[0].id);else if(currentUid)fresh();else render();
+ if(currentUid&&root()){observer=new MutationObserver(()=>queueMicrotask(save));observer.observe(root(),{childList:true,subtree:true,characterData:true});}
+});
+window.addEventListener('beforeunload',save);
 })();
 </script>
 
@@ -2324,5 +2031,6 @@ window.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 <script src="./healthgo-pro.js"></script>
+<script src="./healthgo-v2-ui.js"></script>
 </body>
 </html>

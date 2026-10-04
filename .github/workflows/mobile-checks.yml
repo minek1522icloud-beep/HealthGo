@@ -1,10 +1,9 @@
 name: HealthGo Mobile Checks
 on:
-  pull_request:
-    paths:
-      - "mobile/**"
-      - ".github/workflows/mobile-checks.yml"
+  workflow_call:
   workflow_dispatch:
+permissions:
+  contents: read
 
 jobs:
   android:
@@ -16,14 +15,17 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: android-actions/setup-android@v4
-      - name: Validate Android project
-        shell: bash
-        run: |
-          test -f mobile/android/app/src/main/AndroidManifest.xml
-          test -f mobile/android/app/src/main/java/com/healthgo/mobile/HealthSync.kt
-          grep -q "HealthConnectClient" mobile/android/app/src/main/java/com/healthgo/mobile/HealthSync.kt
-          grep -q "FirebaseAuth" mobile/android/app/src/main/java/com/healthgo/mobile/MainActivity.kt
-          grep -q 'collection("health").document("latest")' mobile/android/app/src/main/java/com/healthgo/mobile/HealthSync.kt
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.13"
+      - name: Build and test Android (CI has no production Firebase credentials)
+        working-directory: mobile/android
+        run: gradle --no-daemon :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HealthGo-Android-review
+          path: mobile/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 7
 
   ios:
     runs-on: macos-latest

@@ -1,0 +1,11 @@
+title = "HealthGo secret scan"
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Existing public Firebase client configuration keys; no server credentials"
+regexes = [
+  '''AIzaSyC841XoWIJ1AANTuIJ88s_mUIPa0MgrJZM''',
+  '''AIzaSyA78oChyFIHwtCNDBtMA410wHABCi5nwVI''',
+  '''AIzaSyAlnzFay99NEt3OZp1MhdiOY_05MF8fWgk'''
+]

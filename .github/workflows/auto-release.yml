@@ -1,51 +1,10 @@
-name: HealthGo Auto Release
-
+name: HealthGo Auto Release (manual compatibility entry)
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-
 permissions:
-  contents: write
-
+  contents: read
 jobs:
-  build-and-release:
-    runs-on: windows-latest
-
-    steps:
-      - name: Pobierz kod
-        uses: actions/checkout@v4
-
-      - name: Ustaw Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Zainstaluj zaleznosci
-        run: npm ci
-
-      - name: Ustaw automatyczny numer wersji
-        shell: pwsh
-        run: |
-          $version = "1.0.${{ github.run_number }}"
-          npm version $version --no-git-tag-version
-          "HEALTHGO_VERSION=$version" >> $env:GITHUB_ENV
-
-      - name: Zbuduj instalator HealthGo
-        run: npm run dist -- --publish never
-
-      - name: Opublikuj aktualizacje
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $tag = "v$env:HEALTHGO_VERSION"
-          gh release create $tag `
-            "dist/HealthGo-Setup-$env:HEALTHGO_VERSION.exe" `
-            "dist/HealthGo-Setup-$env:HEALTHGO_VERSION.exe.blockmap" `
-            "dist/latest.yml" `
-            --target "${{ github.sha }}" `
-            --title "HealthGo $env:HEALTHGO_VERSION" `
-            --notes "Automatyczna aktualizacja HealthGo."
+  release:
+    permissions:
+      contents: write
+    uses: ./.github/workflows/windows-release.yml
