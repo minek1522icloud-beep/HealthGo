@@ -47,7 +47,7 @@ test('auth UI keeps Apple removed and supports Google OAuth plus email redirects
   assert.match(html,/googleLoginBtn/);
   assert.match(html,/Kontynuuj z Google/);
   assert.match(client,/signInWithOAuth/);
-  assert.match(client,/provider=.*google/);
+  assert.match(client,/provider!==['\"]google['\"]/);
   assert.match(client,/healthgo-oauth-session/);
   assert.match(client,/sessionFromUrl/);
 });
