@@ -72,6 +72,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
   dependency-review:
     if: github.event_name == 'pull_request'
+    # Public repositories without Dependency Graph enabled cannot run this action.
+    # Keep the signal visible, but do not block the release on a repository setting;
+    # CodeQL, npm audit and secret scanning remain blocking.
+    continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
