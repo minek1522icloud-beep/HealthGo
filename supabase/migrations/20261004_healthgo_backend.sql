@@ -1,6 +1,137 @@
 begin;
 create extension if not exists pgcrypto;
 
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  account_type text not null default 'standard' check (account_type in ('standard','child','guardian')),
+  display_name text,
+  xp integer not null default 0 check (xp >= 0),
+  level integer not null default 1 check (level >= 1),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create table if not exists public.devices (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  name text not null,
+  platform text,
+  device_type text,
+  last_sync_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.activity_daily (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  activity_date date not null,
+  steps integer check (steps is null or steps >= 0),
+  distance_meters double precision check (distance_meters is null or distance_meters >= 0),
+  active_minutes integer check (active_minutes is null or active_minutes >= 0),
+  calories double precision check (calories is null or calories >= 0),
+  source text,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, activity_date)
+);
+create table if not exists public.xp_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  event_key text not null,
+  xp_amount integer not null check (xp_amount > 0),
+  dedupe_key text not null,
+  created_at timestamptz not null default now(),
+  unique (user_id, dedupe_key)
+);
+create table if not exists public.achievements (
+  code text primary key,
+  name text not null,
+  description text,
+  xp_reward integer not null default 0 check (xp_reward >= 0),
+  rarity text not null default 'common' check (rarity in ('common','uncommon','rare','epic','legendary'))
+);
+create table if not exists public.user_achievements (
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  achievement_code text not null references public.achievements(code) on delete cascade,
+  unlocked_at timestamptz not null default now(),
+  primary key (user_id, achievement_code)
+);
+create table if not exists public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  title text not null,
+  body text,
+  kind text,
+  read_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.families (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  created_by uuid not null references public.profiles(id),
+  created_at timestamptz not null default now()
+);
+create table if not exists public.family_members (
+  family_id uuid not null references public.families(id) on delete cascade,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  role text not null check (role in ('guardian','child','member')),
+  joined_at timestamptz not null default now(),
+  primary key (family_id,user_id)
+);
+create table if not exists public.family_permissions (
+  family_id uuid not null references public.families(id) on delete cascade,
+  child_id uuid not null references public.profiles(id) on delete cascade,
+  guardian_id uuid not null references public.profiles(id) on delete cascade,
+  permission_key text not null,
+  allowed boolean not null default false,
+  updated_at timestamptz not null default now(),
+  primary key (family_id,child_id,guardian_id,permission_key)
+);
+create table if not exists public.family_locations (
+  user_id uuid primary key references public.profiles(id) on delete cascade,
+  family_id uuid not null references public.families(id) on delete cascade,
+  share_mode text not null default 'off' check (share_mode in ('off','approximate','precise')),
+  latitude double precision,
+  longitude double precision,
+  shared_at timestamptz
+);
+
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path=public as $
+begin
+ insert into public.profiles(id,account_type,display_name)
+ values(new.id,
+   case when new.raw_user_meta_data->>'account_type' in ('standard','child','guardian') then new.raw_user_meta_data->>'account_type' else 'standard' end,
+   new.raw_user_meta_data->>'display_name')
+ on conflict(id) do nothing;
+ return new;
+end $;
+drop trigger if exists healthgo_new_user on auth.users;
+create trigger healthgo_new_user after insert on auth.users for each row execute procedure public.handle_new_user();
+
+alter table public.profiles enable row level security;
+alter table public.devices enable row level security;
+alter table public.activity_daily enable row level security;
+alter table public.xp_events enable row level security;
+alter table public.achievements enable row level security;
+alter table public.user_achievements enable row level security;
+alter table public.notifications enable row level security;
+alter table public.families enable row level security;
+alter table public.family_members enable row level security;
+alter table public.family_permissions enable row level security;
+alter table public.family_locations enable row level security;
+
+drop policy if exists "profile_read_own" on public.profiles;
+create policy "profile_read_own" on public.profiles for select to authenticated using (id=auth.uid());
+drop policy if exists "devices_own" on public.devices;
+create policy "devices_own" on public.devices for all to authenticated using (user_id=auth.uid()) with check (user_id=auth.uid());
+drop policy if exists "activity_own" on public.activity_daily;
+create policy "activity_own" on public.activity_daily for all to authenticated using (user_id=auth.uid()) with check (user_id=auth.uid());
+drop policy if exists "xp_read_own" on public.xp_events;
+create policy "xp_read_own" on public.xp_events for select to authenticated using (user_id=auth.uid());
+drop policy if exists "achievements_read" on public.achievements;
+create policy "achievements_read" on public.achievements for select to authenticated using (true);
+drop policy if exists "user_achievements_read_own" on public.user_achievements;
+create policy "user_achievements_read_own" on public.user_achievements for select to authenticated using (user_id=auth.uid());
+drop policy if exists "notifications_read_own" on public.notifications;
+create policy "notifications_read_own" on public.notifications for select to authenticated using (user_id=auth.uid());
+
 create table if not exists public.account_state (
   user_id uuid primary key references public.profiles(id) on delete cascade,
   plan jsonb not null default '[]'::jsonb,
@@ -209,17 +340,17 @@ end $$;
 
 create or replace function public.healthgo_get_family_state()
 returns jsonb language plpgsql security definer set search_path=public as $$
-declare u uuid:=auth.uid(); fid uuid; role text; members jsonb; perms jsonb; locs jsonb;
+declare u uuid:=auth.uid(); fid uuid; caller_role text; members jsonb; perms jsonb; locs jsonb;
 begin
  if u is null then raise exception 'unauthenticated'; end if;
- select family_id,fm.role into fid,role from public.family_members fm where user_id=u limit 1;
+ select fm.family_id,fm.role into fid,caller_role from public.family_members fm where user_id=u limit 1;
  if fid is null then return jsonb_build_object('id',null,'members','[]'::jsonb,'permissions','[]'::jsonb,'locations','[]'::jsonb,'devices','[]'::jsonb,'audit','[]'::jsonb,'invites','[]'::jsonb,'projections','{}'::jsonb);end if;
  select coalesce(jsonb_agg(jsonb_build_object('uid',fm.user_id,'id',fm.user_id,'role',fm.role,'nickname',p.display_name,'joinedAt',fm.joined_at) order by fm.joined_at),'[]'::jsonb)
  into members from public.family_members fm left join public.profiles p on p.id=fm.user_id where fm.family_id=fid;
  select coalesce(jsonb_agg(jsonb_build_object('childUid',x.child_id,'guardianUid',x.guardian_id,'scopes',x.scopes)),'[]'::jsonb) into perms
  from (
   select fp.child_id,fp.guardian_id,jsonb_object_agg(fp.permission_key,fp.allowed) scopes
-  from public.family_permissions fp where fp.family_id=fid and (fp.guardian_id=u or fp.child_id=u or role='guardian')
+  from public.family_permissions fp where fp.family_id=fid and (fp.guardian_id=u or fp.child_id=u or caller_role='guardian')
   group by fp.child_id,fp.guardian_id
  ) x;
  select coalesce(jsonb_agg(jsonb_build_object('uid',l.user_id,'mode',case when precise.allowed then l.share_mode else 'approximate' end,
