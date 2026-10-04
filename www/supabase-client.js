@@ -62,9 +62,31 @@ function authPayload(data){
  if(data.access_token)return normalizeSession(data);
  return null;
 }
+async function sessionFromUrl(){
+ try{
+  const hash=String(root.location&&root.location.hash||'');
+  if(!hash||hash.indexOf('access_token=')<0)return null;
+  const params=new URLSearchParams(hash.replace(/^#/,''));
+  const accessToken=params.get('access_token');
+  if(!accessToken)return null;
+  const response=await fetch(URL+'/auth/v1/user',{headers:headers(accessToken)});
+  const user=await decode(response);
+  const next=normalizeSession({
+   access_token:accessToken,
+   refresh_token:params.get('refresh_token')||'',
+   expires_in:Number(params.get('expires_in'))||3600,
+   token_type:params.get('token_type')||'bearer',
+   user
+  });
+  persist(next);
+  try{if(root.history&&root.location)root.history.replaceState(null,'',root.location.pathname+root.location.search);}catch(_){}
+  notify('SIGNED_IN');return next;
+ }catch(e){persist(null);throw e;}
+}
 const auth={
  get currentUser(){return session&&session.user||null;},
  async restore(){
+  const redirected=await sessionFromUrl();if(redirected)return redirected;
   if(!session){notify('INITIAL_SESSION');return null;}
   try{
    if(session.expires_at<=Math.floor(Date.now()/1000)+45)await refreshSession();
