@@ -11,6 +11,12 @@ const fs = require("fs");
 const http = require("http");
 const { spawn } = require("child_process");
 const { autoUpdater } = require("electron-updater");
+const {
+  isHealthGoOrigin,
+  isAllowedAuthPopupUrl,
+  secureWebPreferences,
+  guardMainNavigation
+} = require("./desktop-security.cjs");
 
 // ========================================
 // HEALTHGO
@@ -587,12 +593,6 @@ async function ensureOllamaRunning() {
 }
 
 function configureHealthGoPermissions() {
-  const isHealthGoOrigin = (value) => {
-    return /^http:\/\/(127\.0\.0\.1|localhost):5500(?:\/|$)/i.test(
-      String(value || "")
-    );
-  };
-
   session.defaultSession.setPermissionRequestHandler(
     (webContents, permission, callback, details) => {
       const origin =
@@ -1185,16 +1185,8 @@ function createWindow(
 
       show: false,
 
-      webPreferences: {
-        contextIsolation:
-          true,
-
-        nodeIntegration:
-          false,
-
-        webSecurity:
-          true
-      }
+      webPreferences:
+        secureWebPreferences()
     });
 
   mainWindow.setMenu(
@@ -1210,14 +1202,8 @@ function createWindow(
     .setWindowOpenHandler(
       ({ url }) => {
         const allowed =
-          url.startsWith(
-            "https://accounts.google.com"
-          ) ||
-          url.includes(
-            "firebaseapp.com"
-          ) ||
-          url.includes(
-            "googleapis.com"
+          isAllowedAuthPopupUrl(
+            url
           );
 
         if (!allowed) {
@@ -1251,16 +1237,8 @@ function createWindow(
               backgroundColor:
                 "#ffffff",
 
-              webPreferences: {
-                contextIsolation:
-                  true,
-
-                nodeIntegration:
-                  false,
-
-                webSecurity:
-                  true
-              }
+              webPreferences:
+                secureWebPreferences()
             }
         };
       }
@@ -1290,6 +1268,11 @@ function createWindow(
           );
       }
     );
+
+  // Nie pozwalamy głównemu oknu przejść na obcą stronę.
+  guardMainNavigation(
+    mainWindow.webContents
+  );
 
   // ========================================
   // OTWARCIE HEALTHGO
