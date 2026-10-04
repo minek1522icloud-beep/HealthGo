@@ -79,6 +79,12 @@ async function sessionFromUrl(){
    user
   });
   persist(next);
+  try{
+   if(root.opener&&root.location){
+    root.opener.postMessage({type:'healthgo-oauth-session',session:next},root.location.origin);
+    setTimeout(()=>{try{root.close();}catch(_){}},80);
+   }
+  }catch(_){}
   try{if(root.history&&root.location)root.history.replaceState(null,'',root.location.pathname+root.location.search);}catch(_){}
   notify('SIGNED_IN');return next;
  }catch(e){persist(null);throw e;}
@@ -95,6 +101,15 @@ const auth={
   }catch(_){persist(null);notify('SIGNED_OUT');return null;}
  },
  onAuthStateChange(fn){listeners.add(fn);queueMicrotask(()=>{try{fn('INITIAL_SESSION',session);}catch(_){}});return{data:{subscription:{unsubscribe(){listeners.delete(fn);}}}};},
+ async signInWithOAuth(options){
+  const provider=String(options&&options.provider||'').toLowerCase();
+  if(provider!=='google'){const e=new Error('unsupported-provider');e.code='unsupported-provider';throw e;}
+  const redirectTo=String(options&&options.options&&options.options.redirectTo||((root.location&&root.location.origin)?root.location.origin+'/index.html':''));
+  const authorizeUrl=URL+'/auth/v1/authorize?provider='+encodeURIComponent(provider)+'&redirect_to='+encodeURIComponent(redirectTo);
+  const popup=root.open(authorizeUrl,'healthgo-google-auth','popup=yes,width=520,height=720');
+  if(!popup){const e=new Error('popup-blocked');e.code='popup-blocked';throw e;}
+  return{data:{provider,url:authorizeUrl},error:null};
+ },
  async signInWithPassword(credentials){
   const response=await fetch(URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:headers(null),body:JSON.stringify({email:String(credentials.email||'').trim(),password:String(credentials.password||'')})});
   const data=await decode(response),next=authPayload(data);persist(next);notify('SIGNED_IN');return{data:{session:next,user:next&&next.user},error:null};
@@ -129,5 +144,20 @@ function toHealthGoUser(user){
  if(!providers.length)providers.push({providerId:'password'});
  return{uid:user.id,email:user.email||'',providerData:providers,multiFactor:{enrolledFactors:[]},raw:user};
 }
+try{
+ root.addEventListener('message',event=>{
+  if(!root.location||event.origin!==root.location.origin)return;
+  const data=event.data;
+  if(!data||data.type!=='healthgo-oauth-session'||!data.session||!data.session.access_token||!data.session.user)return;
+  persist(data.session);notify('SIGNED_IN');
+ });
+ root.addEventListener('storage',event=>{
+  if(event.key!==STORAGE||!event.newValue)return;
+  try{
+   const next=JSON.parse(event.newValue);
+   if(next&&next.access_token&&next.user){session=normalizeSession(next);notify('SIGNED_IN');}
+  }catch(_){}
+ });
+}catch(_){}
 root.HealthGoSupabase={url:URL,publishableKey:KEY,auth,db,request,toHealthGoUser,hasSession(){return!!(session&&session.access_token);},get session(){return session;}};
 })(typeof window!=='undefined'?window:globalThis);
