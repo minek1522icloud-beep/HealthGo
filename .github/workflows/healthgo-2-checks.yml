@@ -19,10 +19,10 @@ jobs:
           node-version: "24"
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm run check:syntax
+      - run: npm test
       - run: npm install --prefix firebase/functions --ignore-scripts
       - run: npm --prefix firebase/functions run build
-      - run: npm test
+      - run: npm run check:syntax
       - run: node --check firebase/functions/index.js
       - run: npm audit --omit=dev --audit-level=high
       - run: npm audit --prefix firebase/functions --omit=dev --audit-level=high
