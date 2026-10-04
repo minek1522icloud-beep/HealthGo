@@ -1,0 +1,68 @@
+name: HealthGo Firebase Deploy
+
+on:
+  workflow_call:
+    secrets:
+      FIREBASE_SERVICE_ACCOUNT_HEALTHGO:
+        required: true
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: healthgo-firebase-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      FIREBASE_PROJECT_ID: healthgo-e45be
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_HEALTHGO }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Verify Firebase credentials are configured
+        shell: bash
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::Missing repository secret FIREBASE_SERVICE_ACCOUNT_HEALTHGO"
+            exit 1
+          fi
+
+      - name: Prepare Firebase Functions
+        run: |
+          npm install --prefix firebase/functions --ignore-scripts
+          npm --prefix firebase/functions run build
+
+      - name: Write temporary service-account credentials
+        shell: bash
+        run: |
+          credentials="$RUNNER_TEMP/healthgo-firebase-service-account.json"
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$credentials"
+          chmod 600 "$credentials"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$credentials" >> "$GITHUB_ENV"
+
+      - name: Validate Firebase project configuration
+        run: |
+          npx --yes firebase-tools@14.16.0 projects:list --json >/dev/null
+          npx --yes firebase-tools@14.16.0 use "$FIREBASE_PROJECT_ID" --add --non-interactive || true
+
+      - name: Deploy Firebase Functions
+        run: npx --yes firebase-tools@14.16.0 deploy --only functions --project "$FIREBASE_PROJECT_ID" --non-interactive
+
+      - name: Deploy Firestore Rules
+        run: npx --yes firebase-tools@14.16.0 deploy --only firestore:rules --project "$FIREBASE_PROJECT_ID" --non-interactive
+
+      - name: Remove temporary credentials
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/healthgo-firebase-service-account.json"

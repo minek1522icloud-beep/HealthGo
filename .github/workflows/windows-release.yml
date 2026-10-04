@@ -8,16 +8,26 @@ on:
       - "docs/**"
       - ".github/**"
   workflow_dispatch:
+  workflow_call:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: healthgo-windows-release
   cancel-in-progress: false
 
 jobs:
+  validate:
+    uses: ./.github/workflows/healthgo-2-checks.yml
+  firebase:
+    needs: validate
+    uses: ./.github/workflows/firebase-deploy.yml
+    secrets: inherit
   release:
+    needs: [validate, firebase]
+    permissions:
+      contents: write
     runs-on: windows-latest
     steps:
       - name: Pobierz kod

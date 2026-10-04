@@ -1,11 +1,169 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      match /health/{document=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+    function isFamilyMember(familyId) {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid));
+    }
+    function isGuardian(familyId) {
+      return isFamilyMember(familyId) &&
+        get(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)).data.role == 'guardian';
+    }
+    function permissionFor(familyId, childUid) {
+      return get(/databases/$(database)/documents/families/$(familyId)/permissions/$(request.auth.uid + '_' + childUid));
+    }
+    function hasScope(familyId, childUid, scope) {
+      return isGuardian(familyId) &&
+        exists(/databases/$(database)/documents/families/$(familyId)/permissions/$(request.auth.uid + '_' + childUid)) &&
+        permissionFor(familyId, childUid).data.guardianUid == request.auth.uid &&
+        permissionFor(familyId, childUid).data.childUid == childUid &&
+        permissionFor(familyId, childUid).data.scopes[scope] == true;
+    }
+    function scopeForArea(area) {
+      return area == 'activity' ? 'HEALTH_ACTIVITY' :
+        area == 'sleep' ? 'HEALTH_SLEEP' :
+        area == 'heartRate' ? 'HEALTH_HEART_RATE' :
+        area == 'device' ? 'DEVICE_STATUS' :
+        area == 'achievements' ? 'ACHIEVEMENTS' :
+        area == 'challenges' ? 'CHALLENGE_PROGRESS' :
+        area == 'notifications' ? 'NOTIFICATIONS' : 'DENY';
+    }
+    function validHealthNumber(data, field, max) {
+      return !(field in data) || data[field] == null ||
+        (data[field] is number && data[field] >= 0 && data[field] <= max);
+    }
+    function validHealthWrite() {
+      return request.resource.data.keys().hasOnly([
+        'schemaVersion','steps','distanceKm','activeMinutes','heartRate','sleepMinutes',
+        'source','sourceId','device','deviceId','syncId','day','timeZone',
+        'timestamp','observedAt','updatedAt','syncedAt','heartRateMeasuredAt'
+      ]) &&
+      validHealthNumber(request.resource.data, 'steps', 250000) &&
+      validHealthNumber(request.resource.data, 'distanceKm', 500) &&
+      validHealthNumber(request.resource.data, 'activeMinutes', 1440) &&
+      validHealthNumber(request.resource.data, 'heartRate', 350) &&
+      validHealthNumber(request.resource.data, 'sleepMinutes', 1440) &&
+      (!('source' in request.resource.data) || request.resource.data.source is string) &&
+      (!('device' in request.resource.data) || request.resource.data.device is string);
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+
+      // Existing clients may still synchronize only these user-owned planning fields.
+      // Account type, Family membership, profile authority and XP are backend-owned.
+      allow create: if isOwner(uid) &&
+        request.resource.data.keys().hasOnly(['plan','manualActivities','settingsV3','updatedAt']);
+      allow update: if isOwner(uid) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['plan','manualActivities','settingsV3','updatedAt']);
+
+      match /health/latest {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validHealthWrite();
+        allow delete: if isOwner(uid);
       }
+      match /health/daily/days/{day} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+      match /health/{document=**} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      match /engine/{document=**} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+      match /progressEvents/{document=**} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+      match /rewardLedger/{document=**} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+      match /syncEvents/{document=**} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+      match /privacy/{document=**} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+      match /locationSettings/{document=**} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+      match /notifications/{notificationId} {
+        allow read: if isOwner(uid);
+        allow create, delete: if false;
+        allow update: if isOwner(uid) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read','readAt']);
+      }
+      match /{document=**} {
+        allow read, write: if false;
+      }
+    }
+
+    match /families/{familyId} {
+      allow read: if isFamilyMember(familyId);
+      allow write: if false;
+
+      match /members/{memberUid} {
+        allow read: if isFamilyMember(familyId);
+        allow write: if false;
+      }
+
+      match /permissions/{permissionId} {
+        allow read: if signedIn() &&
+          (resource.data.guardianUid == request.auth.uid || resource.data.childUid == request.auth.uid);
+        allow write: if false;
+      }
+
+      match /invites/{inviteId} {
+        allow read: if signedIn() && resource.data.inviterUid == request.auth.uid;
+        allow write: if false;
+      }
+
+      match /audit/{auditId} {
+        allow read: if isFamilyMember(familyId);
+        allow write: if false;
+      }
+
+      match /shared/{childUid}/{area}/{documentId} {
+        allow read: if isOwner(childUid) ||
+          (scopeForArea(area) != 'DENY' && hasScope(familyId, childUid, scopeForArea(area)));
+        allow write: if false;
+      }
+
+      match /locations/{childUid}/samples/{mode} {
+        allow read: if isOwner(childUid) ||
+          (mode == 'precise' && hasScope(familyId, childUid, 'LOCATION_PRECISE')) ||
+          (mode == 'approximate' &&
+            (hasScope(familyId, childUid, 'LOCATION_APPROXIMATE') ||
+             hasScope(familyId, childUid, 'LOCATION_PRECISE')));
+        allow write: if false;
+      }
+
+      match /{document=**} {
+        allow read, write: if false;
+      }
+    }
+
+    match /familyInvites/{inviteId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

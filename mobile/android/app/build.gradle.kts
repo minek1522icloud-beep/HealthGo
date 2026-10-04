@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
 }
 android {
@@ -10,7 +9,8 @@ android {
 }
 dependencies {
     implementation("androidx.activity:activity-ktx:1.12.4")
-    implementation("androidx.health.connect:connect-client:1.2.0-alpha06")
+    implementation("androidx.fragment:fragment-ktx:1.9.1")
+    implementation("androidx.health.connect:connect-client:1.1.0")
     implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
