@@ -4,7 +4,7 @@ plugins {
 }
 android {
     namespace = "com.healthgo.mobile"
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig { applicationId = "com.healthgo.mobile"; minSdk = 28; targetSdk = 36; versionCode = 1; versionName = "0.1.0" }
 }
 dependencies {
