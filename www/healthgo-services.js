@@ -11,7 +11,8 @@ function emit(type,detail){events.dispatchEvent(new CustomEvent(type,{detail}));
 function notify(){for(const fn of subscribers){try{fn(state);}catch(_){}}emit('STATE_CHANGED',state);}
 function key(area,uid){return 'healthgo_v2_'+area+'_'+(uid||state.uid||'signed-out');}
 function read(area,uid){try{return JSON.parse(localStorage.getItem(key(area,uid))||'null');}catch(_){return null;}}
-function save(area,value){if(!state.uid)return;try{localStorage.setItem(key(area),JSON.stringify(value));}catch(_){}}
+function saveFor(area,uid,value){if(!uid)return;try{localStorage.setItem(key(area,uid),JSON.stringify(value));}catch(_){}}
+function save(area,value){saveFor(area,state.uid,value);}
 function errorMessage(error){
  const raw=String(error&&((error.code)||(error.message))||'').toLowerCase();
  if(/unauth|jwt|token/.test(raw))return 'Zaloguj się ponownie, aby wykonać tę operację.';
@@ -124,7 +125,14 @@ async function initialize(){
  })();
  return initializing;
 }
-async function rpc(name,body){ensureSession();try{return await S.db.rpc(name,body||{});}catch(e){const safe=new Error(errorMessage(e));safe.code=e.code||e.status;throw safe;}}
+async function rpc(name,body){
+ const requestUid=state.uid,requestGeneration=generation;ensureSession();
+ try{
+  const result=await S.db.rpc(name,body||{});
+  if(requestGeneration!==generation||state.uid!==requestUid||!S.auth.currentUser||S.auth.currentUser.id!==requestUid){const stale=new Error('Sesja została zmieniona.');stale.code='unauthenticated';throw stale;}
+  return result;
+ }catch(e){if(e&&e.code==='unauthenticated')throw e;const safe=new Error(errorMessage(e));safe.code=e.code||e.status;throw safe;}
+}
 async function call(name,data){
  data=data||{};
  switch(name){
@@ -169,11 +177,16 @@ async function start(user){
 }
 async function record(type,payload,id){
  if(!state.uid)return false;
- const event={id:id||crypto.randomUUID(),type,payload:payload||{}};
+ const requestUid=state.uid,requestGeneration=generation,event={id:id||crypto.randomUUID(),type,payload:payload||{}};
  if(!navigator.onLine||!state.backendAvailable){
-  const outbox=read('outbox')||[];if(!outbox.some(e=>e.id===event.id)){outbox.push(event);save('outbox',outbox.slice(-500));}return false;
+  const outbox=read('outbox',requestUid)||[];if(!outbox.some(e=>e.id===event.id)){outbox.push(event);saveFor('outbox',requestUid,outbox.slice(-500));}return false;
  }
- try{await call('recordProgressEvent',event);return true;}catch(_){const queue=read('outbox')||[];if(!queue.some(x=>x.id===event.id))queue.push(event);save('outbox',queue.slice(-500));return false;}
+ try{await call('recordProgressEvent',event);return true;}catch(e){
+  if(state.uid===requestUid&&generation===requestGeneration&&String(e&&e.code||'')!=='unauthenticated'){
+   const queue=read('outbox',requestUid)||[];if(!queue.some(x=>x.id===event.id))queue.push(event);saveFor('outbox',requestUid,queue.slice(-500));
+  }
+  return false;
+ }
 }
 async function flush(){
  const uid=state.uid;if(!uid||!state.backendAvailable||!navigator.onLine)return;
