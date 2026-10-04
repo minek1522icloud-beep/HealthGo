@@ -28,7 +28,7 @@ function coarsenLocation(coords){
  return {latitude,longitude,accuracyMeters:Math.max(1500,number(coords.accuracyMeters)||0),mode:'approximate'};
 }
 function locationStatus(record,settings,online,now){
- if(!settings||settings.enabled!==true||settings.mode==='off')return 'DISABLED';
+ if(!settings||!['approximate','precise'].includes(settings.mode)||settings.enabled===false)return 'DISABLED';
  if(settings.permissionRequired)return 'PERMISSION_REQUIRED';
  if(online===false)return 'OFFLINE';
  const ms=timestamp(record&&(record.timestamp||record.updatedAt));

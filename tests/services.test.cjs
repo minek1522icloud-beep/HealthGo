@@ -2,15 +2,15 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const data=require('../www/core/health-data.js');
 function fixture(){
- const storage=new Map(),callbacks=[],watchers=[];let identity=null;
+ const storage=new Map(),callbacks=[],watchers=[];let identity=null,response=null;
  const doc={onSnapshot(options,fn){callbacks.push(fn);watchers.push({off:false});const w=watchers.at(-1);return()=>{w.off=true;};},collection(){return doc;},doc(){return doc;},orderBy(){return doc;},where(){return doc;},limit(){return doc;},get:async()=>({exists:false,metadata:{fromCache:false}}),update:async()=>{}};
  const eventTarget=new EventTarget(),window=eventTarget;window.HealthGoData=data;window.healthGoDb={collection:()=>doc};window.healthGoAuth={get currentUser(){return identity;}};
- const firebase={app:()=>({functions:()=>({httpsCallable:()=>async()=>({data:{profile:{nickname:'Test',accountType:'standard'},engine:{totalXp:0}}})})}),functions:()=>{}};
+ const firebase={app:()=>({functions:()=>({httpsCallable:()=>async()=>response?response():({data:{profile:{nickname:'Test',accountType:'standard'},engine:{totalXp:0}}})})}),functions:()=>{}};
  window.firebase=firebase;
  const document={getElementById:()=>null,documentElement:{classList:{remove:()=>{}}}};
  const context={window,document,navigator:{onLine:true},firebase,EventTarget,CustomEvent,localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},crypto:require('node:crypto').webcrypto,queueMicrotask,console};
  vm.runInNewContext(fs.readFileSync('www/healthgo-services.js','utf8'),context);
- return {service:window.HealthGoServices,callbacks,storage,watchers,login(uid){identity={uid,providerData:[]};return identity;}};
+ return {service:window.HealthGoServices,callbacks,storage,watchers,setResponse(fn){response=fn;},login(uid){identity={uid,providerData:[]};return identity;}};
 }
 test('logout clears UID, private data and listeners',async()=>{
  const f=fixture();await f.service.start(f.login('A'));f.service.state.health={steps:500};f.service.stop();
@@ -43,4 +43,20 @@ test('permission revocation clears family projections and rejects late snapshots
  for(const callback of late)callback({exists:true,data:()=>({steps:999,latitude:50,longitude:19}),metadata:{fromCache:false}});
  assert.equal(f.service.state.family.projections.child.activity,undefined);
  assert.equal(f.service.state.family.locations.length,0);
+});
+
+test('pending callable from A rejects private result after switching to B',async()=>{
+ const f=fixture();await f.service.start(f.login('A'));
+ let resolve;f.setResponse(()=>new Promise(done=>{resolve=done;}));
+ const pending=f.service.call('exportOwnData');f.service.stop();
+ f.setResponse(null);await f.service.start(f.login('B'));
+ resolve({data:{private:'A'}});await assert.rejects(pending,e=>e.code==='unauthenticated');
+});
+test('failed pending event cannot enter the next account outbox',async()=>{
+ const f=fixture();await f.service.start(f.login('A'));
+ let reject;f.setResponse(()=>new Promise((_,fail)=>{reject=fail;}));
+ const pending=f.service.record('AI_USED',{},'A-event');f.service.stop();
+ f.setResponse(null);await f.service.start(f.login('B'));
+ reject({code:'unavailable'});assert.equal(await pending,false);
+ assert.equal(f.storage.get('healthgo_v2_outbox_B'),undefined);
 });

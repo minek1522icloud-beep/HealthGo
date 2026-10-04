@@ -18,6 +18,7 @@ for(const width of [390,768,1440]){
   await page.route('https://**/*',route=>route.abort());
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin);await page.waitForFunction(()=>!!window.HealthGoServices);
+  await page.waitForFunction(()=>!!window.HealthGoV2UI,undefined,{timeout:5000});
   await page.evaluate(async()=>{
    // Explicit test fixture: no health metrics, device, XP or family data fabricated.
    await HealthGoServices.start({uid:'ui-test',email:'fixture@example.invalid',providerData:[]});
@@ -29,6 +30,7 @@ for(const width of [390,768,1440]){
    await page.waitForTimeout(80);
    const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
    assert.ok(size.scroll<=size.client+1,screen+' overflows at '+width);
+   assert.ok(await page.locator('#'+screen+' .hg2-card').count()>0,screen+' must render its HealthGo 2.0 view');
   }
   assert.deepEqual(errors,[]);await page.close();
  });

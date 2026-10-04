@@ -1004,6 +1004,9 @@ function aiSetConnection(ok,label){
  badge.innerHTML='<span style="background:'+(ok?'#4ade80':'#fbbf24')+'"></span> '+aiEscape(label|| (ok?'AI online':'AI offline'));
 }
 async function askAI(){
+ const requestSession=window.HealthGoServices?.state,requestUid=requestSession?.uid;
+ const sessionActive=()=>window.HealthGoServices?.state===requestSession&&window.HealthGoServices?.state.uid===requestUid;
+ if(!requestUid)return;
  const input=document.getElementById('aiInput');if(!input)return;
  const q=input.value.trim();const photo=aiPendingPhoto;
  if(!q&&!photo)return;
@@ -1013,6 +1016,7 @@ async function askAI(){
  if(photo){
    aiAddMessage('user','<p>📷 Dodałem zdjęcie: <b>'+aiEscape(photo.name)+'</b></p>');
    try{imageData=await aiFileToDataUrl(photo)}catch(_){imageData=null}
+   if(!sessionActive())return;
    aiRemovePhoto();
  }
  input.value='';aiGrowInput(input);
@@ -1039,6 +1043,7 @@ async function askAI(){
      }finally{clearTimeout(timeout)}
    }
 
+   if(!sessionActive())return;
    if(!answer)throw new Error('EMPTY_AI_RESPONSE');
    if(typing)typing.remove();
    aiAddMessage('assistant',aiTextToHtml(answer));
@@ -1047,7 +1052,8 @@ async function askAI(){
    aiSetConnection(true,isHostedMobileHealthGo()?'AI Mobile online':'AI online');
    awardChallenge('ai_first');
  }catch(err){
-   console.warn('HealthGo AI:',err);
+   if(!sessionActive())return;
+   console.warn('HealthGo AI: request unavailable');
    if(typing)typing.remove();
    aiSetConnection(false,'AI chwilowo niedostępne');
 
@@ -1055,15 +1061,15 @@ async function askAI(){
    const msg=String((err&&err.message)||err||'');
    if(isHostedMobileHealthGo()){
      if(/APP_CHECK_ERROR/i.test(msg)){
-       detail='HealthGo nie dostał poprawnego tokenu App Check. Uruchom HealthGo z ikony na ekranie głównym albo w zwykłym Safari/Chrome i spróbuj ponownie. Kod: '+msg.slice(0,180);
+       detail='Nie udało się potwierdzić dostępu do AI. Uruchom aplikację ponownie.';
      }else if(/quota|resource-exhausted|429/i.test(msg)){
        detail='Limit AI został chwilowo wykorzystany. Spróbuj ponownie później.';
      }else if(/network|fetch|offline/i.test(msg)){
        detail='Nie udało się połączyć z AI. Sprawdź internet i spróbuj ponownie.';
      }else if(/AI_REQUEST_ERROR|403|404|permission|failed-precondition/i.test(msg)){
-       detail='Firebase AI Logic odrzucił żądanie. Kod diagnostyczny: '+msg.slice(0,180);
+       detail='AI jest chwilowo niedostępne. Spróbuj ponownie później.';
      }else if(/MOBILE_AI_INIT_ERROR/i.test(msg)){
-       detail='Moduł AI nie uruchomił się poprawnie. Kod diagnostyczny: '+msg.slice(0,260);
+       detail='Moduł AI nie uruchomił się poprawnie. Uruchom aplikację ponownie.';
      }else if(/MOBILE_AI_SDK_NOT_READY/i.test(msg)){
        detail='Moduł AI nie załadował się poprawnie. Zamknij HealthGo, uruchom go ponownie i spróbuj jeszcze raz.';
      }
@@ -1073,8 +1079,7 @@ async function askAI(){
    }
    aiAddMessage('assistant','<b>Nie mam teraz połączenia z AI.</b><p>'+aiEscape(detail)+'</p>');
  }finally{
-   if(btn)btn.disabled=false;
-   input.focus();
+   if(sessionActive()){if(btn)btn.disabled=false;input.focus();}
  }
 }
 let healthGoMap=null,healthGoPlacesLayer=null,healthGoLocationLayer=null,healthGoCategory='all',healthGoMapBusy=false;

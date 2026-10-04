@@ -26,3 +26,8 @@ test('approximate location loses precision before transmission',()=>{
  const input={latitude:50.812345,longitude:19.123456,accuracyMeters:4};
  const coarse=D.coarsenLocation(input);assert.notEqual(coarse.latitude,input.latitude);assert.notEqual(coarse.longitude,input.longitude);assert.equal(coarse.mode,'approximate');assert.ok(coarse.accuracyMeters>=1500);assert.throws(()=>D.coarsenLocation({latitude:95,longitude:1}));
 });
+
+test('backend location settings show real foreground sharing without legacy enabled flag',()=>{
+ assert.equal(D.locationStatus({timestamp:Date.now()},{mode:'approximate',familySharing:true},true),'LIVE');
+ assert.equal(D.locationStatus(null,{mode:'off',familySharing:false},true),'DISABLED');
+});
