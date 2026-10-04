@@ -27,6 +27,8 @@ create table if not exists public.family_invites (
   created_at timestamptz not null default now()
 );
 
+alter table public.activity_daily add column if not exists heart_rate double precision check (heart_rate is null or (heart_rate >= 0 and heart_rate <= 350));
+alter table public.activity_daily add column if not exists sleep_minutes integer check (sleep_minutes is null or (sleep_minutes >= 0 and sleep_minutes <= 1440));
 alter table public.xp_events add column if not exists event_payload jsonb not null default '{}'::jsonb;
 alter table public.xp_events add column if not exists client_event_id text;
 alter table public.family_locations add column if not exists accuracy_meters double precision;
