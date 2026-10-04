@@ -2,7 +2,7 @@
 'use strict';
 const D=window.HealthGoData;
 const events=new EventTarget(),subscribers=new Set();
-let generation=0,unsubscribers=[],familyUnsubs=[],familyId=null,initializing=null;
+let generation=0,unsubscribers=[],familyUnsubs=[],projectionUnsubs=[],familyId=null,initializing=null;
 const empty=()=>({uid:null,profile:null,engine:null,health:null,healthDays:[],syncEvents:[],notifications:[],family:{id:null,members:[],permissions:[],locations:[],devices:[],audit:[],invites:[],projections:{}},online:navigator.onLine,backendAvailable:false,error:null,loading:false,privacy:null,locationSettings:{enabled:false,mode:'off'},session:null});
 let state=empty();
 function emit(type,detail){events.dispatchEvent(new CustomEvent(type,{detail}));}
@@ -39,7 +39,7 @@ function watch(ref,fn,collection){
 function watchCollection(ref,fn){return watch(ref,fn,true);}
 function rootRef(){return window.healthGoDb.collection('users').doc(state.uid);}
 function stop(){
- generation++;for(const off of unsubscribers.splice(0))off();for(const off of familyUnsubs.splice(0))off();familyId=null;initializing=null;
+ generation++;projectionRun++;for(const off of projectionUnsubs.splice(0))off();for(const off of unsubscribers.splice(0))off();for(const off of familyUnsubs.splice(0))off();familyId=null;initializing=null;
  state=empty();window.healthGoCurrentUid='';window.healthGoCurrentEmail='';document.documentElement.classList.remove('hg-session-known');
  const chat=document.getElementById('aiMessages');if(chat)chat.replaceChildren();
  for(const id of ['planList','todayPlanList','todayPlanPreview','manualActivityLog'])document.getElementById(id)?.replaceChildren();
@@ -48,7 +48,7 @@ function stop(){
  document.getElementById('accountSetup')?.classList.remove('show');
  emit('SESSION_CHANGED',null);notify();
 }
-function familyReset(){for(const off of familyUnsubs.splice(0))off();state.family=empty().family;}
+function familyReset(){projectionRun++;for(const off of projectionUnsubs.splice(0))off();for(const off of familyUnsubs.splice(0))off();state.family=empty().family;}
 function watchFamily(fid){
  if(fid===familyId)return;familyReset();familyId=fid||null;if(!fid){notify();return;}
  const f=window.healthGoDb.collection('families').doc(fid);state.family.id=fid;
@@ -59,24 +59,37 @@ function watchFamily(fid){
 }
 let projectionRun=0;
 async function loadFamilyProjections(){
- const run=++projectionRun,g=generation,fid=state.family.id;if(!fid)return;
- const f=window.healthGoDb.collection('families').doc(fid),out={},locations=[],devices=[];
+ const run=++projectionRun,g=generation,fid=state.family.id;
+ for(const off of projectionUnsubs.splice(0))off();
+ state.family.projections={};state.family.locations=[];state.family.devices=[];notify();
+ if(!fid)return;
+ const f=window.healthGoDb.collection('families').doc(fid);
+ const fields={HEALTH_ACTIVITY:'activity',HEALTH_SLEEP:'sleep',HEALTH_HEART_RATE:'heartRate',DEVICE_STATUS:'device',ACHIEVEMENTS:'achievements',CHALLENGE_PROGRESS:'challenges',NOTIFICATIONS:'notifications'};
+ function active(){return run===projectionRun&&g===generation&&fid===state.family.id;}
+ function listen(ref,update){
+  const off=ref.onSnapshot({includeMetadataChanges:true},snap=>{
+   if(!active())return;update(snap.exists?snap.data():null);notify();
+  },()=>{if(active()){update(null);notify();}});
+  projectionUnsubs.push(off);
+ }
  for(const member of state.family.members){
-  if(member.uid===state.uid||member.id===state.uid)continue;
-  const uid=member.uid||member.id,grant=state.family.permissions.find(p=>p.childUid===uid&&p.guardianUid===state.uid),scopes=grant?.scopes||{};
-  out[uid]={};
-  const fields={HEALTH_ACTIVITY:'activity',HEALTH_SLEEP:'sleep',HEALTH_HEART_RATE:'heartRate',DEVICE_STATUS:'device',ACHIEVEMENTS:'achievements',CHALLENGE_PROGRESS:'challenges',NOTIFICATIONS:'notifications'};
+  const uid=member.uid||member.id;if(uid===state.uid)continue;
+  const grant=state.family.permissions.find(p=>p.childUid===uid&&p.guardianUid===state.uid),scopes=grant?.scopes||{};
+  state.family.projections[uid]={};
   for(const [scope,area] of Object.entries(fields)){
    if(scopes[scope]!==true)continue;
-   try{const snap=await f.collection('shared').doc(uid).collection(area).doc('latest').get();if(snap.exists)out[uid][area]=snap.data();}catch(_){}
+   listen(f.collection('shared').doc(uid).collection(area).doc('latest'),value=>{
+    if(value)state.family.projections[uid][area]=value;else delete state.family.projections[uid][area];
+    if(area==='device')state.family.devices=Object.entries(state.family.projections).filter(([,p])=>p.device).map(([memberUid,p])=>Object.assign({uid:memberUid},p.device));
+   });
   }
-  if(out[uid].device)devices.push(Object.assign({uid},out[uid].device));
   if(scopes.LOCATION_APPROXIMATE===true||scopes.LOCATION_PRECISE===true){
-   try{const snap=await f.collection('locations').doc(uid).get();if(snap.exists)locations.push(Object.assign({uid},snap.data()));}catch(_){}
+   listen(f.collection('locations').doc(uid),value=>{
+    state.family.locations=state.family.locations.filter(p=>p.uid!==uid);
+    if(value)state.family.locations.push(Object.assign({uid},value));
+   });
   }
  }
- if(run!==projectionRun||g!==generation)return;
- state.family.projections=out;state.family.locations=locations;state.family.devices=devices;notify();
 }
 async function initialize(){
  if(!state.uid)return;if(initializing)return initializing;
@@ -111,7 +124,7 @@ async function start(user){
  unsubscribers.push(watch(u.collection('health').doc('latest'),(data,snap)=>{
   state.health=D.normalize(data);if(state.health)save('health',state.health);
   state.healthFromCache=!!snap.metadata.fromCache;
-  emit('HEALTH_SYNCED',state.health);loadFamilyProjections();
+  emit('HEALTH_SYNCED',state.health);
  }));
  unsubscribers.push(watchCollection(u.collection('health').doc('daily').collection('days').orderBy('day','desc').limit(366),days=>{state.healthDays=days.map(d=>Object.assign({id:d.id},D.normalize(d)||{}));save('days',state.healthDays);}));
  unsubscribers.push(watchCollection(u.collection('syncEvents').orderBy('createdAt','desc').limit(50),v=>{state.syncEvents=v;}));

@@ -26,3 +26,21 @@ test('cache is scoped per UID and shared v1 cache is not read',async()=>{
  f.storage.set('healthgo_v2_health_A',JSON.stringify({steps:123}));await f.service.start(f.login('B'));assert.equal(f.service.state.health,null);
  f.service.stop();await f.service.start(f.login('A'));assert.equal(f.service.state.health.steps,123);
 });
+
+test('permission revocation clears family projections and rejects late snapshots',async()=>{
+ const f=fixture();await f.service.start(f.login('parent'));
+ f.callbacks[0]({exists:true,data:()=>({accountType:'guardian',familyId:'family-A'}),metadata:{fromCache:false}});
+ const familyStart=8;
+ f.callbacks[familyStart]({docs:[{id:'child',data:()=>({uid:'child',role:'child'})}],metadata:{fromCache:false}});
+ const permissions=f.callbacks[familyStart+1];
+ permissions({docs:[{id:'grant',data:()=>({childUid:'child',guardianUid:'parent',scopes:{HEALTH_ACTIVITY:true,LOCATION_APPROXIMATE:true}})}],metadata:{fromCache:false}});
+ const late=f.callbacks.slice(familyStart+4);
+ for(const callback of late)callback({exists:true,data:()=>({steps:123,latitude:50,longitude:19}),metadata:{fromCache:false}});
+ assert.equal(f.service.state.family.projections.child.activity.steps,123);
+ permissions({docs:[],metadata:{fromCache:false}});
+ assert.deepEqual(Object.keys(f.service.state.family.projections.child),[]);
+ assert.equal(f.service.state.family.locations.length,0);
+ for(const callback of late)callback({exists:true,data:()=>({steps:999,latitude:50,longitude:19}),metadata:{fromCache:false}});
+ assert.equal(f.service.state.family.projections.child.activity,undefined);
+ assert.equal(f.service.state.family.locations.length,0);
+});
