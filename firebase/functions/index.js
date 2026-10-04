@@ -316,11 +316,28 @@ exports.updateFamilyPermissions=onCall({region:REGION},async request=>{
   FAMILY_SCOPES.forEach(key=>{scopes[key]=raw[key]===true});
   const user=await db.collection('users').doc(uid).get();
   if(!user.exists||!user.data().familyId)throw new HttpsError('failed-precondition','No family.');
-  const familyId=user.data().familyId,family=db.collection('families').doc(familyId),guardian=await family.collection('members').doc(uid).get(),child=await family.collection('members').doc(childUid).get();
-  if(!guardian.exists||guardian.data().role!=='guardian'||!child.exists||child.data().role!=='child')throw new HttpsError('permission-denied','Invalid family relationship.');
-  const permissionId=uid+'_'+childUid,batch=db.batch();
-  batch.set(family.collection('permissions').doc(permissionId),{guardianUid:uid,childUid,scopes,updatedAt:nowIso()},{merge:false});
-  batch.set(family.collection('audit').doc('permission_'+crypto.randomUUID()),{type:'PERMISSION_CHANGED',actorUid:uid,childUid,createdAt:nowIso()},{merge:false});
+  const familyId=user.data().familyId,family=db.collection('families').doc(familyId);
+  const caller=await family.collection('members').doc(uid).get(),child=await family.collection('members').doc(childUid).get();
+  if(!caller.exists||!child.exists||child.data().role!=='child')throw new HttpsError('permission-denied','Invalid family relationship.');
+  let guardianUid;
+  if(caller.data().role==='guardian'){
+    guardianUid=uid;
+  }else if(caller.data().role==='child'&&uid===childUid){
+    guardianUid=id(request.data&&request.data.guardianUid,'guardian uid');
+    const guardian=await family.collection('members').doc(guardianUid).get();
+    if(!guardian.exists||guardian.data().role!=='guardian')throw new HttpsError('permission-denied','Invalid guardian.');
+    const current=await family.collection('permissions').doc(guardianUid+'_'+childUid).get();
+    if(!current.exists)throw new HttpsError('not-found','Permission grant not found.');
+    const existing=current.data().scopes||{};
+    for(const key of FAMILY_SCOPES){
+      if(scopes[key]===true&&existing[key]!==true)throw new HttpsError('permission-denied','A child account can revoke access but cannot grant new access.');
+    }
+  }else{
+    throw new HttpsError('permission-denied','Only a guardian may grant access.');
+  }
+  const permissionId=guardianUid+'_'+childUid,batch=db.batch();
+  batch.set(family.collection('permissions').doc(permissionId),{guardianUid,childUid,scopes,updatedAt:nowIso()},{merge:false});
+  batch.set(family.collection('audit').doc('permission_'+crypto.randomUUID()),{type:'PERMISSION_CHANGED',actorUid:uid,childUid,guardianUid,createdAt:nowIso()},{merge:false});
   batch.set(db.collection('users').doc(childUid).collection('notifications').doc('family_permission_'+Date.now()),{type:'family',title:'Zmieniono udostępnianie rodzinne',message:'Sprawdź w HealthGo Family, jakie dane są udostępniane.',createdAt:nowIso(),read:false},{merge:false});
   await batch.commit();return {ok:true};
 });
