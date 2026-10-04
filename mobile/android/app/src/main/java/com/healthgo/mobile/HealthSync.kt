@@ -2,7 +2,7 @@ package com.healthgo.mobile
 
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.aggregate.AggregateRequest
+import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.*
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -32,7 +32,7 @@ class HealthSync(private val context: Context) {
             timeRangeFilter=TimeRangeFilter.between(start,end)
         ))
         val hr = client.readRecords(ReadRecordsRequest(HeartRateRecord::class, timeRangeFilter=TimeRangeFilter.between(start,end)))
-            .records.flatMap { it.samples }.maxByOrNull { it.time }?.beatsPerMinute
+            .records.flatMap { it.samples }.maxByOrNull { it.time }?.beatsPerMinute?.toDouble()
         val sleepStart = LocalDate.now(zone).minusDays(1).atTime(12,0).atZone(zone).toInstant()
         val sleeps = client.readRecords(ReadRecordsRequest(SleepSessionRecord::class,timeRangeFilter=TimeRangeFilter.between(sleepStart,end))).records
         val sleepMinutes = sleeps.sumOf { Duration.between(it.startTime,it.endTime).toMinutes().coerceAtLeast(0) }
