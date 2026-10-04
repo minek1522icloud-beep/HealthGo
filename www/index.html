@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://unpkg.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.googleusercontent.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.cloudfunctions.net https://*.run.app https://healthgo-e45be.firebaseapp.com https://healthgo-e45be.web.app https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://healthgo-e45be.firebaseapp.com https://healthgo-e45be.web.app https://accounts.google.com https://appleid.apple.com https://www.google.com https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com https://appleid.apple.com">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.googleusercontent.com; connect-src 'self' https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://appleid.apple.com https://www.google.com https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HealthGo</title>
 <meta name="theme-color" content="#ffffff">
@@ -432,7 +432,7 @@ html.hg-session-known #authScreen{display:none!important}
         </div>
       </div>
 
-      <div class="mobile-ai-note"><b>🤖 HealthGo AI Mobile</b><br>Na telefonie HealthGo korzysta z Firebase AI Logic. Na komputerze nadal może korzystać z lokalnej Ollamy.</div>
+      <div class="mobile-ai-note"><b>🤖 HealthGo AI Mobile</b><br>Na telefonie HealthGo korzysta z mobilnego modułu AI. Konto, Family i postęp są synchronizowane przez Supabase.</div>
 
       <div id="aiMessages" class="ai-messages" aria-live="polite">
         <div class="ai-msg assistant">
@@ -1634,25 +1634,19 @@ function hgProgressKey(){return hgScopedKey('progress_v2','healthgo_progress_v2_
 function hgActivityKey(){return hgScopedKey('activity_v1','healthgo_activity_v1_'+hgSafeKey(hgUserKey()))}
 function hgUid(){return String(window.healthGoCurrentUid||'')}
 async function syncHealthGoCloudState(partial){
- const db=window.healthGoDb,uid=hgUid();if(!db||!uid)return false;
- try{const settings=JSON.parse(localStorage.getItem('healthgo_settings_v3_uid_'+uid)||'{}');if(settings.cloudSync===false&&!partial.settingsV3)return false;}catch(_){}
- const payload={updatedAt:new Date().toISOString()};for(const field of ['plan','manualActivities','settingsV3'])if(Object.prototype.hasOwnProperty.call(partial,field))payload[field]=partial[field];
- await db.collection('users').doc(uid).set(payload,{merge:true});
- return true;
+ const uid=hgUid();if(!uid||!window.HealthGoServices)return false;
+ try{return await HealthGoServices.syncCloudState(partial||{});}catch(e){console.warn('HealthGo Supabase sync:',e);return false;}
 }
 async function loadHealthGoCloudState(){
- const db=window.healthGoDb,uid=hgUid();if(!db||!uid)return;
+ const uid=hgUid();if(!uid||!window.HealthGoServices)return;
  try{
-   const snap=await db.collection('users').doc(uid).get();
-   if(!snap.exists)return;
-   if(hgUid()!==uid)return;
-   const data=snap.data()||{};
-   if(data.profile&&typeof data.profile==='object')localStorage.setItem(hgProfileKey(),JSON.stringify({...defaultHealthGoProfile(),...data.profile}));
-   if(data.progress&&typeof data.progress==='object')localStorage.setItem(hgProgressKey(),JSON.stringify(data.progress));
-   if(Array.isArray(data.manualActivities))localStorage.setItem(hgActivityKey(),JSON.stringify(data.manualActivities));
+   const data=await HealthGoServices.loadCloudState();if(!data||hgUid()!==uid)return;
+   const profile=HealthGoServices.state.profile;
+   if(profile&&typeof profile==='object')localStorage.setItem(hgProfileKey(),JSON.stringify({...defaultHealthGoProfile(),nickname:profile.nickname||profile.displayName||'HealthGo',accountType:profile.accountType||'standard',configured:!!profile.configured}));
+   if(Array.isArray(data.manual_activities))localStorage.setItem(hgActivityKey(),JSON.stringify(data.manual_activities));
    if(Array.isArray(data.plan))localStorage.setItem(healthGoPlanStorageKey(),JSON.stringify(data.plan));
    renderHealthGoProfile();renderProgressUI();renderManualActivityLog();renderPlanDay();renderTodayPlanPreview();
- }catch(e){console.warn('HealthGo cloud profile:',e)}
+ }catch(e){console.warn('HealthGo Supabase profile:',e)}
 }
 
 function defaultHealthGoProfile(){
@@ -1884,33 +1878,26 @@ window.addEventListener('DOMContentLoaded', function () {
   var authScreen = document.getElementById('authScreen');
   var appShell = document.querySelector('.app');
   var mobileNav = document.querySelector('.mobile-nav');
-  // The verified Firebase Auth session resolves the splash.
+  // The verified Supabase Auth session resolves the splash.
 });
 </script>
 
-<!-- Firebase Compat: zwykłe skrypty, bez importów ES Modules. -->
-<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-functions-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-check-compat.js"></script>
+<script src="./supabase-client.js"></script>
 <script src="./healthgo-services.js"></script>
 <script>
 (function(){
 'use strict';
-const config={apiKey:"AIzaSyC841XoWIJ1AANTuIJ88s_mUIPa0MgrJZM",authDomain:"healthgo-e45be.firebaseapp.com",projectId:"healthgo-e45be",storageBucket:"healthgo-e45be.firebasestorage.app",messagingSenderId:"924242915977",appId:"1:924242915977:web:bed648007802203cf28c58"};
-const box=document.getElementById('authStatus');
+const box=document.getElementById('authStatus'),auth=window.HealthGoSupabase&&HealthGoSupabase.auth;
 function status(text,error){if(box){box.style.display='block';box.textContent=text;box.style.color=error?'#991b1b':'#166534';}}
 function clean(error){
- const code=String(error&&error.code||'');
- if(/invalid-email/.test(code))return 'Wpisz poprawny adres e-mail.';
- if(/invalid-credential|wrong-password|user-not-found/.test(code))return 'Nie udało się zalogować. Sprawdź e-mail i hasło.';
- if(/email-already-in-use/.test(code))return 'Ten adres ma już konto. Zaloguj się lub zresetuj hasło.';
- if(/weak-password/.test(code))return 'Użyj hasła o długości co najmniej 6 znaków.';
- if(/too-many-requests/.test(code))return 'Za dużo prób. Poczekaj chwilę i spróbuj ponownie.';
- if(/popup-closed/.test(code))return 'Logowanie zostało przerwane.';
- if(/operation-not-allowed|unauthorized-domain/.test(code))return 'Ta metoda logowania nie jest jeszcze dostępna.';
- if(/network-request/.test(code))return 'Sprawdź połączenie z internetem i spróbuj ponownie.';
+ const code=String(error&&((error.code)||(error.message))||'').toLowerCase();
+ if(/invalid.*email/.test(code))return 'Wpisz poprawny adres e-mail.';
+ if(/invalid_credentials|invalid login|wrong-password|user-not-found/.test(code))return 'Nie udało się zalogować. Sprawdź e-mail i hasło.';
+ if(/email_not_confirmed|email not confirmed/.test(code))return 'Najpierw potwierdź adres e-mail w wiadomości od HealthGo.';
+ if(/already|user_already_exists|email-already/.test(code))return 'Ten adres ma już konto. Zaloguj się.';
+ if(/weak|password.*6/.test(code))return 'Użyj hasła o długości co najmniej 6 znaków.';
+ if(/rate|429|too many/.test(code))return 'Za dużo prób. Poczekaj chwilę i spróbuj ponownie.';
+ if(/fetch|network|offline/.test(code))return 'Sprawdź połączenie z internetem i spróbuj ponownie.';
  return 'Nie udało się zalogować. Spróbuj ponownie.';
 }
 function showAuth(){
@@ -1930,43 +1917,35 @@ async function busy(button,action){
  if(button)button.disabled=true;
  try{await action();}catch(e){status(clean(e),true);}finally{if(button)button.disabled=false;const p=document.getElementById('loginPass');if(p)p.value='';}
 }
-let auth;
-try{
- if(!window.firebase)throw new Error('sdk-unavailable');
- if(!firebase.apps.length)firebase.initializeApp(config);
- auth=window.healthGoAuth=firebase.auth();window.healthGoDb=firebase.firestore();auth.languageCode='pl';
- window.healthGoDb.enablePersistence({synchronizeTabs:true}).catch(()=>{});
- auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
- try{window.healthGoLegacyOwnerUid=JSON.parse(localStorage.getItem('healthgo_rest_session')||'null')?.localId||null;}catch(_){}
- localStorage.removeItem('healthgo_rest_session');
- const oldHealth=localStorage.getItem('healthgo_device_health_v1');if(oldHealth&&!localStorage.getItem('healthgo_unassigned_health_archive'))localStorage.setItem('healthgo_unassigned_health_archive',oldHealth);localStorage.removeItem('healthgo_device_health_v1');
- if(window.HEALTHGO_APP_CHECK_SITE_KEY&&firebase.appCheck)firebase.appCheck().activate(window.HEALTHGO_APP_CHECK_SITE_KEY,true);
- auth.onAuthStateChanged(async user=>{
-  if(!user){HealthGoServices.stop();showAuth();return;}
-  status('Sprawdzanie konta…');const uid=user.uid;
-  await HealthGoServices.start(user);
-  if(!auth.currentUser||auth.currentUser.uid!==uid)return;
-  await loadHealthGoCloudState();HealthGoServices.refreshLegacy();
-  if(!auth.currentUser||auth.currentUser.uid!==uid)return;
-  renderHealthGoProfile();showApp();maybeShowAccountSetup();
- });
- auth.getRedirectResult().catch(e=>status(clean(e),true));
-}catch(_){showAuth();status('Nie udało się uruchomić logowania. Sprawdź połączenie i odśwież aplikację.',true);}
+let handlingUid=null;
+async function handleSession(session){
+ const user=session&&session.user?HealthGoSupabase.toHealthGoUser(session.user):null;
+ if(!user){handlingUid=null;HealthGoServices.stop();showAuth();return;}
+ const uid=user.uid;if(handlingUid===uid&&HealthGoServices.state.uid===uid)return;handlingUid=uid;
+ status('Sprawdzanie konta…');
+ await HealthGoServices.start(user);
+ if(!HealthGoSupabase.auth.currentUser||HealthGoSupabase.auth.currentUser.id!==uid)return;
+ await loadHealthGoCloudState();HealthGoServices.refreshLegacy();
+ if(!HealthGoSupabase.auth.currentUser||HealthGoSupabase.auth.currentUser.id!==uid)return;
+ renderHealthGoProfile();showApp();maybeShowAccountSetup();
+}
+if(!auth){showAuth();status('Nie udało się uruchomić logowania Supabase.',true);}
+else{
+ auth.onAuthStateChange(function(_event,session){handleSession(session).catch(function(e){showAuth();status(clean(e),true);});});
+ auth.restore().catch(function(e){showAuth();status(clean(e),true);});
+}
 window.loginDemo=()=>busy(document.getElementById('emailLoginBtn'),async()=>{
  if(!auth)throw new Error('sdk-unavailable');status('Logowanie…');
- await auth.signInWithEmailAndPassword(document.getElementById('loginEmail').value.trim(),document.getElementById('loginPass').value);
+ const result=await auth.signInWithPassword({email:document.getElementById('loginEmail').value.trim(),password:document.getElementById('loginPass').value});
+ if(result&&result.data&&result.data.session)await handleSession(result.data.session);
 });
 window.createAccount=()=>busy(document.getElementById('createAccountBtn'),async()=>{
  if(!auth)throw new Error('sdk-unavailable');status('Tworzenie konta…');
- await auth.createUserWithEmailAndPassword(document.getElementById('loginEmail').value.trim(),document.getElementById('loginPass').value);
+ const result=await auth.signUp({email:document.getElementById('loginEmail').value.trim(),password:document.getElementById('loginPass').value});
+ if(result&&result.data&&result.data.session)await handleSession(result.data.session);else status('Konto utworzone. Sprawdź e-mail i potwierdź konto, a potem zaloguj się.');
 });
 window.loginProvider=name=>busy(document.getElementById(name==='Apple'?'appleLoginBtn':'googleLoginBtn'),async()=>{
- if(!auth)throw new Error('sdk-unavailable');
- const provider=name==='Apple'?new firebase.auth.OAuthProvider('apple.com'):new firebase.auth.GoogleAuthProvider();
- if(name==='Apple'){provider.addScope('email');provider.addScope('name');}else provider.setCustomParameters({prompt:'select_account'});
- status('Łączenie…');
- try{await auth.signInWithPopup(provider);}
- catch(e){if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'].includes(e.code))await auth.signInWithRedirect(provider);else throw e;}
+ status('Logowanie przez '+name+' nie jest jeszcze skonfigurowane w Supabase. Użyj teraz e-maila i hasła.',true);
 });
 window.logoutHealthGo=async()=>{HealthGoServices.stop();try{if(auth)await auth.signOut();}finally{showAuth();}};
 document.getElementById('loginPass')?.addEventListener('keydown',e=>{if(e.key==='Enter')window.loginDemo();});
@@ -2030,7 +2009,7 @@ window.addEventListener('beforeunload',save);
   s.src='./healthgo-ai-bundle.js?v=8';
   s.async=true;
   s.onerror=function(){
-    window.healthGoMobileAIInitError='BUNDLE_LOAD_ERROR Nie udało się załadować lokalnego pakietu Firebase AI.';
+    window.healthGoMobileAIInitError='BUNDLE_LOAD_ERROR Nie udało się załadować lokalnego pakietu HealthGo AI.';
   };
   document.head.appendChild(s);
 })();

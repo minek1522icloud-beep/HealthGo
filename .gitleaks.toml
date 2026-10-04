@@ -3,11 +3,12 @@ title = "HealthGo secret scan"
 useDefault = true
 
 [allowlist]
-description = "Existing public Firebase client configuration keys; no server credentials"
+description = "Public browser/client identifiers only; no server credentials"
 regexes = [
   '''AIzaSyC841XoWIJ1AANTuIJ88s_mUIPa0MgrJZM''',
   '''AIzaSyA78oChyFIHwtCNDBtMA410wHABCi5nwVI''',
   '''AIzaSyAlnzFay99NEt3OZp1MhdiOY_05MF8fWgk''',
+  '''sb_publishable_AuERvskDwwmm13In-B45zA_yKP6IElB''',
   '''healthgo_ai_chat_v1''',
   '''healthgo_ai_conversations_v1'''
 ]

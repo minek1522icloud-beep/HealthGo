@@ -17,7 +17,7 @@ test('desktop trusts only the local HealthGo application origin',()=>{
 
 test('auth popup allowlist rejects hostname lookalikes and unsafe schemes',()=>{
   assert.equal(isAllowedAuthPopupUrl('https://accounts.google.com/o/oauth2/auth'),true);
-  assert.equal(isAllowedAuthPopupUrl('https://healthgo-e45be.firebaseapp.com/__/auth/handler'),true);
+  assert.equal(isAllowedAuthPopupUrl('https://oqrfapmdcofguwdvhbeo.supabase.co/auth/v1/authorize'),true);
   assert.equal(isAllowedAuthPopupUrl('https://identitytoolkit.googleapis.com/v1/test'),true);
   assert.equal(isAllowedAuthPopupUrl('https://evil.example/?next=accounts.google.com'),false);
   assert.equal(isAllowedAuthPopupUrl('https://accounts.google.com.evil.example/'),false);

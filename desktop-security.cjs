@@ -4,8 +4,7 @@ const LOCAL_APP_HOSTS=new Set(['127.0.0.1','localhost']);
 const AUTH_HOSTS=new Set([
   'accounts.google.com',
   'appleid.apple.com',
-  'healthgo-e45be.firebaseapp.com',
-  'healthgo-e45be.web.app'
+  'oqrfapmdcofguwdvhbeo.supabase.co'
 ]);
 
 function parseHttpUrl(value){
