@@ -3,7 +3,6 @@
 const LOCAL_APP_HOSTS=new Set(['127.0.0.1','localhost']);
 const AUTH_HOSTS=new Set([
   'accounts.google.com',
-  'appleid.apple.com',
   'oqrfapmdcofguwdvhbeo.supabase.co'
 ]);
 
