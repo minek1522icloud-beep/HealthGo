@@ -61,6 +61,10 @@ begin
  if p_account_type not in ('standard','child','guardian') then raise exception 'invalid-account-type'; end if;
  update public.profiles set display_name=left(nullif(trim(p_nickname),''),40),account_type=p_account_type,updated_at=now() where id=u returning * into row;
  if row.id is null then raise exception 'profile-not-found'; end if;
+ insert into public.account_state(user_id) values(u) on conflict(user_id) do nothing;
+ insert into public.xp_events(user_id,event_key,xp_amount,dedupe_key,event_payload,client_event_id,created_at)
+ values(u,'PROFILE_CONFIGURED',25,'profile-configured',jsonb_build_object('accountType',p_account_type),'profile-configured',now())
+ on conflict(user_id,dedupe_key) do nothing;
  return jsonb_build_object('id',row.id,'nickname',row.display_name,'accountType',row.account_type,'configured',row.display_name is not null,'xp',row.xp,'level',row.level,'createdAt',row.created_at);
 end $$;
 
