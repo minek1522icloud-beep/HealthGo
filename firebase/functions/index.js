@@ -29,7 +29,7 @@ function string(value,max){
 }
 function id(value,label){
   value=string(value,200);
-  if(!value||!^[A-Za-z0-9_.:@-]{1,200}$/.test(value))throw new HttpsError('invalid-argument','Invalid '+label+'.');
+  if(!value||!/^[A-Za-z0-9_.:@-]{1,200}$/.test(value))throw new HttpsError('invalid-argument','Invalid '+label+'.');
   return value;
 }
 function safeDocId(value){return String(value).replace(/\//g,'_').slice(0,400)}
@@ -45,7 +45,7 @@ function nickname(value){
   return value;
 }
 function nearbyDay(value){
-  if(typeof value!=='string'||!^\d{4}-\d{2}-\d{2}$/.test(value))return false;
+  if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
   const ms=Date.parse(value+'T12:00:00Z');
   return Number.isFinite(ms)&&Math.abs(ms-Date.now())<=2*DAY_MS;
 }
