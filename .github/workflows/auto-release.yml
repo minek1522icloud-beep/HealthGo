@@ -8,3 +8,4 @@ jobs:
     permissions:
       contents: write
     uses: ./.github/workflows/windows-release.yml
+    secrets: inherit
