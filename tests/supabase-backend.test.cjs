@@ -38,3 +38,13 @@ test('Windows release is no longer blocked by Firebase Functions deployment',()=
   assert.doesNotMatch(workflow,/firebase-deploy\.yml/);
   assert.doesNotMatch(workflow,/needs:\s*\[validate,\s*firebase\]/);
 });
+
+
+test('auth UI exposes only working email login and restores confirmation redirects',()=>{
+  const html=fs.readFileSync('www/index.html','utf8');
+  const client=fs.readFileSync('www/supabase-client.js','utf8');
+  assert.doesNotMatch(html,/appleLoginBtn|Kontynuuj z Apple/);
+  assert.doesNotMatch(html,/googleLoginBtn|Kontynuuj z Google/);
+  assert.match(client,/access_token=/);
+  assert.match(client,/sessionFromUrl/);
+});
