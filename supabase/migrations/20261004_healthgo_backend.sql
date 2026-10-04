@@ -49,6 +49,10 @@ using (user_id = auth.uid());
 drop policy if exists "family_invites_none" on public.family_invites;
 create policy "family_invites_none" on public.family_invites for all to authenticated using (false) with check (false);
 
+drop policy if exists "family_location_write_own" on public.family_locations;
+drop policy if exists "family_location_read_own" on public.family_locations;
+create policy "family_location_read_own" on public.family_locations for select to authenticated using (user_id = auth.uid());
+
 create or replace function public.healthgo_configure_account(p_nickname text, p_account_type text)
 returns jsonb language plpgsql security definer set search_path=public as $$
 declare u uuid:=auth.uid(); row public.profiles;
@@ -221,8 +225,8 @@ begin
   'device',l.device,'timestamp',l.shared_at))
  ,'[]'::jsonb) into locs
  from public.family_locations l
- left join lateral (select coalesce(max(fp.allowed::int),0)=1 allowed from public.family_permissions fp where fp.family_id=fid and fp.child_id=l.user_id and fp.guardian_id=u and fp.permission_key='LOCATION_PRECISE') precise on true
- left join lateral (select coalesce(max(fp.allowed::int),0)=1 allowed from public.family_permissions fp where fp.family_id=fid and fp.child_id=l.user_id and fp.guardian_id=u and fp.permission_key='LOCATION_APPROXIMATE') approx on true
+ left join lateral (select coalesce(bool_or(fp.allowed),false) allowed from public.family_permissions fp where fp.family_id=fid and fp.child_id=l.user_id and fp.guardian_id=u and fp.permission_key='LOCATION_PRECISE') precise on true
+ left join lateral (select coalesce(bool_or(fp.allowed),false) allowed from public.family_permissions fp where fp.family_id=fid and fp.child_id=l.user_id and fp.guardian_id=u and fp.permission_key='LOCATION_APPROXIMATE') approx on true
  where l.family_id=fid and l.share_mode<>'off' and (l.user_id=u or precise.allowed or approx.allowed);
  return jsonb_build_object('id',fid,'members',members,'permissions',perms,'locations',locs,'devices','[]'::jsonb,'audit','[]'::jsonb,'invites','[]'::jsonb,'projections','{}'::jsonb);
 end $$;
