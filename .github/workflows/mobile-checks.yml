@@ -17,7 +17,7 @@ jobs:
       - uses: android-actions/setup-android@v4
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.13"
+          gradle-version: "9.3.1"
       - name: Build and test Android (CI has no production Firebase credentials)
         working-directory: mobile/android
         run: gradle --no-daemon :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
