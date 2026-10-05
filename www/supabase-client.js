@@ -3,6 +3,9 @@
 const URL='https://oqrfapmdcofguwdvhbeo.supabase.co';
 const KEY='sb_publishable_AuERvskDwwmm13In-B45zA_yKP6IElB';
 const STORAGE='healthgo_supabase_session_v1';
+const PKCE='healthgo_google_pkce_v1';
+function randomToken(){return base64url(crypto.getRandomValues(new Uint8Array(32)));}
+function base64url(bytes){return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 const listeners=new Set();
 let session=readSession(),refreshing=null;
 
@@ -64,6 +67,18 @@ function authPayload(data){
 }
 async function sessionFromUrl(){
  try{
+  const query=new URLSearchParams(root.location&&root.location.search||'');
+  if(query.has('code')||query.has('error')){
+   let pending;try{pending=JSON.parse(sessionStorage.getItem(PKCE)||'null');}catch(_){}
+   sessionStorage.removeItem(PKCE);
+   root.history.replaceState(null,'',root.location.pathname);
+   if(query.has('error'))throw new Error('google_cancelled');
+   if(!pending||Date.now()-pending.created>600000)throw new Error('google_expired');
+   const response=await fetch(URL+'/auth/v1/token?grant_type=pkce',{method:'POST',headers:headers(null),body:JSON.stringify({auth_code:query.get('code'),code_verifier:pending.verifier})});
+   const next=authPayload(await decode(response));
+   if(!next||!next.user)throw new Error('invalid_google_session');
+   persist(next);notify('SIGNED_IN');return next;
+  }
   const hash=String(root.location&&root.location.hash||'');
   if(!hash||hash.indexOf('access_token=')<0)return null;
   const params=new URLSearchParams(hash.replace(/^#/,''));
@@ -84,6 +99,18 @@ async function sessionFromUrl(){
  }catch(e){persist(null);throw e;}
 }
 const auth={
+ async signInWithGoogle(){
+  const settings=await request('/auth/v1/settings',{auth:false});
+  if(!settings.external||!settings.external.google)throw new Error('google_not_configured');
+  const verifier=randomToken();
+  const challenge=base64url(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));
+  const desktop=/Electron\//.test(root.navigator&&root.navigator.userAgent||'');
+  const redirect=desktop?'http://127.0.0.1:5500/auth/callback?attempt='+randomToken():root.location.origin+root.location.pathname;
+  sessionStorage.setItem(PKCE,JSON.stringify({verifier,created:Date.now()}));
+  const params=new URLSearchParams({provider:'google',redirect_to:redirect,code_challenge:challenge,code_challenge_method:'s256'});
+  const target=URL+'/auth/v1/authorize?'+params;
+  if(desktop)root.open(target,'_blank');else root.location.assign(target);
+ },
  get currentUser(){return session&&session.user||null;},
  async restore(){
   const redirected=await sessionFromUrl();if(redirected)return redirected;
