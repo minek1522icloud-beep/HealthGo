@@ -48,3 +48,11 @@ test('auth UI exposes Google and email login and restores confirmation redirects
   assert.match(client,/access_token=/);
   assert.match(client,/sessionFromUrl/);
 });
+
+
+test('authenticated table grants match HealthGo RLS client access',()=>{
+  const sql=fs.readFileSync('supabase/migrations/20261006_healthgo_authenticated_table_grants.sql','utf8');
+  assert.match(sql,/grant\s+select\s+on\s+table\s+public\.profiles\s+to\s+authenticated/i);
+  assert.match(sql,/grant\s+select\s*,\s*insert\s*,\s*update\s+on\s+table\s+public\.account_state\s+to\s+authenticated/i);
+  assert.match(sql,/grant\s+select\s*,\s*insert\s*,\s*update\s+on\s+table\s+public\.activity_daily\s+to\s+authenticated/i);
+});
