@@ -56,3 +56,28 @@ test('authenticated table grants match HealthGo RLS client access',()=>{
   assert.match(sql,/grant\s+select\s*,\s*insert\s*,\s*update\s+on\s+table\s+public\.account_state\s+to\s+authenticated/i);
   assert.match(sql,/grant\s+select\s*,\s*insert\s*,\s*update\s+on\s+table\s+public\.activity_daily\s+to\s+authenticated/i);
 });
+
+
+test('family code invite is code-only and backend returns named locations',()=>{
+  const ui=fs.readFileSync('www/healthgo-v2-ui.js','utf8');
+  const sql=fs.readFileSync('supabase/migrations/20261006_healthgo_family_code_and_location_names.sql','utf8');
+  assert.match(sql,/function public\.healthgo_create_family_invite\(\)/i);
+  assert.match(sql,/extensions\.digest\(/i);
+  assert.match(sql,/'nickname'\s*,\s*coalesce\(p\.display_name/i);
+  assert.match(ui,/Wygeneruj kod rodzinny/);
+  assert.match(ui,/loc\.nickname/);
+  assert.doesNotMatch(ui,/new QRCode|Kopiuj link|kod i QR|zeskanuj/i);
+});
+
+test('account type setup is one-shot and devices refresh from Supabase',()=>{
+  const html=fs.readFileSync('www/index.html','utf8');
+  const services=fs.readFileSync('www/healthgo-services.js','utf8');
+  const devices=fs.readFileSync('www/healthgo-devices.js','utf8');
+  assert.match(html,/p&&p\.configured&&p\.accountType/);
+  assert.match(html,/modal\?\.classList\.remove\('show'\)/);
+  assert.match(html,/setupAccountSaving/);
+  assert.match(services,/async function refreshDevices\(\)/);
+  assert.match(services,/S\.db\.select\('devices'/);
+  assert.match(devices,/Odśwież z bazy/);
+  assert.match(devices,/Supabase · tabela devices/);
+});
