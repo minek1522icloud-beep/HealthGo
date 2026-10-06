@@ -114,8 +114,8 @@
     badge('xp_first','✨','Pierwsze XP','xp',100),
     badge('daily_first','☀️','Regularny początek','dailyTasks',5),
     badge('perfect_first','🌟','Trzy pełne dni','perfectDays',3),
-    badge('level_2','5️⃣','Pierwszy kamień milowy','level',5),
-    badge('level_5','🔟','Drugi kamień milowy','level',10)
+    badge('level_2','2️⃣','Poziom 2','level',2),
+    badge('level_5','5️⃣','Poziom 5','level',5)
   ];
   var CATALOG = [].concat(STARTER,
     group('xp','⚡',['Iskra XP','250 XP','500 XP','1K XP','2K XP','3,5K XP','5K XP','7,5K XP','10K XP','25K XP'],'xp',[100,250,500,1000,2000,3500,5000,7500,10000,25000]),
