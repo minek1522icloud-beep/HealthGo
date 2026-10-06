@@ -140,9 +140,10 @@ async function call(name,data){
   case 'configureAccount':{const r=await rpc('healthgo_configure_account',{p_nickname:data.nickname,p_account_type:data.accountType});await initialize();return r;}
   case 'recordProgressEvent':{const r=await rpc('healthgo_record_progress_event',{p_event_id:data.id,p_event_type:data.type,p_payload:data.payload||{}});await refreshEngine();return r;}
   case 'updateProfilePreferences':await syncCloudState({selectedTitle:data.titleId});return{ok:true};
-  case 'createFamily':{const r=await rpc('healthgo_create_family',{});await initialize();return r;}
+  case 'createFamily':{const r=await rpc('healthgo_create_family_named',{p_name:data.name||null});await initialize();return r;}
   case 'createFamilyInvite':return rpc('healthgo_create_family_invite',{});
   case 'acceptFamilyInvite':{const r=await rpc('healthgo_accept_family_invite',{p_code:data.code});await initialize();return r;}
+  case 'leaveFamily':{const r=await rpc('healthgo_leave_family',{});await initialize();return r;}
   case 'updateFamilyPermissions':{const r=await rpc('healthgo_update_family_permissions',{p_child_id:data.childUid,p_guardian_id:data.guardianUid,p_scopes:data.scopes||{}});await initialize();return r;}
   case 'updateLocationSettings':{const r=await rpc('healthgo_update_location_settings',{p_mode:data.mode||'off'});await initialize();return r;}
   case 'publishLocation':{const r=await rpc('healthgo_publish_location',{p_latitude:Number(data.latitude),p_longitude:Number(data.longitude),p_accuracy:Number(data.accuracyMeters)||0,p_device:data.device||'HealthGo'});await initialize();return r;}
