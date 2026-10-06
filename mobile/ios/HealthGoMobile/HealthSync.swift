@@ -1,7 +1,5 @@
 import Foundation
 import HealthKit
-import FirebaseAuth
-import FirebaseFirestore
 
 struct HealthSnapshot {
     let steps: Double?
@@ -18,7 +16,9 @@ final class HealthSync {
     private let sleep = HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!
 
     func authorize() async throws {
-        guard HKHealthStore.isHealthDataAvailable() else { throw NSError(domain:"HealthGo",code:1,userInfo:[NSLocalizedDescriptionKey:"HealthKit jest niedostępny"]) }
+        guard HKHealthStore.isHealthDataAvailable() else {
+            throw NSError(domain:"HealthGo",code:1,userInfo:[NSLocalizedDescriptionKey:"Apple Health nie jest dostępne na tym urządzeniu."])
+        }
         try await store.requestAuthorization(toShare: [], read: [step,distance,heart,sleep])
     }
 
@@ -38,9 +38,10 @@ final class HealthSync {
             let pred=HKQuery.predicateForSamples(withStart:start,end:end)
             let q=HKSampleQuery(sampleType:heart,predicate:pred,limit:1,sortDescriptors:[NSSortDescriptor(key:HKSampleSortIdentifierEndDate,ascending:false)]) { _,samples,error in
                 if let error { cont.resume(throwing:error); return }
-                let v=(samples?.first as? HKQuantitySample)?.quantity.doubleValue(for:HKUnit.count().unitDivided(by:.minute()))
-                cont.resume(returning:v)
-            }; store.execute(q)
+                let value=(samples?.first as? HKQuantitySample)?.quantity.doubleValue(for:HKUnit.count().unitDivided(by:.minute()))
+                cont.resume(returning:value)
+            }
+            store.execute(q)
         }
     }
 
@@ -49,10 +50,18 @@ final class HealthSync {
             let pred=HKQuery.predicateForSamples(withStart:start,end:end)
             let q=HKSampleQuery(sampleType:sleep,predicate:pred,limit:HKObjectQueryNoLimit,sortDescriptors:nil) { _,samples,error in
                 if let error { cont.resume(throwing:error); return }
-                let asleep=Set([HKCategoryValueSleepAnalysis.asleepCore.rawValue,HKCategoryValueSleepAnalysis.asleepDeep.rawValue,HKCategoryValueSleepAnalysis.asleepREM.rawValue,HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue])
-                let total=(samples as? [HKCategorySample] ?? []).filter{asleep.contains($0.value)}.reduce(0.0){$0+$1.endDate.timeIntervalSince($1.startDate)/60}
+                let asleep=Set([
+                    HKCategoryValueSleepAnalysis.asleepCore.rawValue,
+                    HKCategoryValueSleepAnalysis.asleepDeep.rawValue,
+                    HKCategoryValueSleepAnalysis.asleepREM.rawValue,
+                    HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue
+                ])
+                let total=(samples as? [HKCategorySample] ?? [])
+                    .filter{asleep.contains($0.value)}
+                    .reduce(0.0){$0+$1.endDate.timeIntervalSince($1.startDate)/60}
                 cont.resume(returning:total>0 ? total:nil)
-            }; store.execute(q)
+            }
+            store.execute(q)
         }
     }
 
@@ -66,11 +75,39 @@ final class HealthSync {
         return try await HealthSnapshot(steps:s,distanceKm:d,heartRate:h,sleepMinutes:sl)
     }
 
-    func upload(_ s: HealthSnapshot) async throws {
-        guard let uid=Auth.auth().currentUser?.uid else { throw NSError(domain:"HealthGo",code:2,userInfo:[NSLocalizedDescriptionKey:"Zaloguj się do HealthGo"]) }
-        try await Firestore.firestore().collection("users").document(uid).collection("health").document("latest").setData([
-            "steps":s.steps as Any,"distanceKm":s.distanceKm as Any,"heartRate":s.heartRate as Any,"sleepMinutes":s.sleepMinutes as Any,
-            "source":"iPhone · Apple Health","updatedAt":FieldValue.serverTimestamp()
-        ],merge:true)
+    @MainActor
+    func upload(_ snapshot: HealthSnapshot, session: HealthGoSession) async throws {
+        guard let uid=session.userId else {
+            throw NSError(domain:"HealthGo",code:2,userInfo:[NSLocalizedDescriptionKey:"Zaloguj się do HealthGo."])
+        }
+
+        let endpoint=URL(string:"https://oqrfapmdcofguwdvhbeo.supabase.co/rest/v1/activity_daily?on_conflict=user_id,activity_date")!
+        var request=try session.authorizedRequest(url:endpoint)
+        request.httpMethod="POST"
+        request.setValue("resolution=merge-duplicates,return=minimal",forHTTPHeaderField:"Prefer")
+
+        let formatter=DateFormatter()
+        formatter.calendar=Calendar(identifier:.gregorian)
+        formatter.locale=Locale(identifier:"en_US_POSIX")
+        formatter.dateFormat="yyyy-MM-dd"
+
+        var body:[String:Any]=[
+            "user_id":uid,
+            "activity_date":formatter.string(from:Date()),
+            "source":"iPhone · Apple Health",
+            "updated_at":ISO8601DateFormatter().string(from:Date())
+        ]
+        if let value=snapshot.steps { body["steps"]=Int(value.rounded()) }
+        if let value=snapshot.distanceKm { body["distance_meters"]=value*1000 }
+        if let value=snapshot.heartRate { body["heart_rate"]=value }
+        if let value=snapshot.sleepMinutes { body["sleep_minutes"]=Int(value.rounded()) }
+
+        request.httpBody=try JSONSerialization.data(withJSONObject:body)
+        let (data,response)=try await URLSession.shared.data(for:request)
+        guard let http=response as? HTTPURLResponse,(200..<300).contains(http.statusCode) else {
+            let message=(try? JSONSerialization.jsonObject(with:data) as? [String:Any])?["message"] as? String
+                ?? "Nie udało się zapisać danych Apple Health."
+            throw NSError(domain:"HealthGo",code:(response as? HTTPURLResponse)?.statusCode ?? 3,userInfo:[NSLocalizedDescriptionKey:message])
+        }
     }
 }
