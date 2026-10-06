@@ -254,6 +254,25 @@ function startWebServer() {
                   `http://127.0.0.1:${PORT}`
                 );
 
+              if (requestUrl.pathname === '/api/ai' && req.method === 'POST') {
+                (async () => {
+                  try {
+                    const data = await readAiBody(req);
+                    const answer = await askLocalOllama(data);
+                    aiWriteJson(res, 200, {answer}, '');
+                  } catch (error) {
+                    console.error('HealthGo AI same-origin:', error);
+                    let status = 503;
+                    let message = error?.message === 'OLLAMA_NOT_RUNNING'
+                      ? 'Ollama nie jest uruchomiona lub nie jest zainstalowana.'
+                      : (error?.message || 'Nie udało się uruchomić HealthGo AI.');
+                    if (error?.name === 'AbortError') { status = 504; message = 'Model AI nie odpowiedział na czas.'; }
+                    aiWriteJson(res, status, {error: message}, '');
+                  }
+                })();
+                return;
+              }
+
               const tileMatch = requestUrl.pathname.match(/^\/map-tiles\/(\d+)\/(\d+)\/(\d+)\.png$/);
               if (tileMatch && req.method === 'GET') {
                 const [, z, x, y] = tileMatch;
