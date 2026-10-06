@@ -84,7 +84,11 @@ function normalizeFactors(data){
 }
 const mfa={
  async listFactors(){
-  const data=normalizeFactors(await request('/auth/v1/factors'));
+  let user=session&&session.user||null;
+  if(!user&&session&&session.access_token){
+   try{user=await request('/auth/v1/user');session.user=user;persist(session);}catch(_){}
+  }
+  const data=normalizeFactors(user&&user.factors||[]);
   mfaFactorCount=data.all.filter(x=>x.status==='verified').length;
   return{data,error:null};
  },
