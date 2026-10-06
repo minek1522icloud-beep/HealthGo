@@ -32,7 +32,7 @@ function ensureSession(){
 }
 function legacyProfile(row){
  if(!row)return null;
- return{id:row.id,nickname:row.display_name||'',displayName:row.display_name||'',accountType:row.account_type||'standard',configured:!!row.display_name,xp:Number(row.xp)||0,level:Number(row.level)||1,createdAt:row.created_at||null,familyId:state.family&&state.family.id||null};
+ return{id:row.id,nickname:row.display_name||'',displayName:row.display_name||'',accountType:row.account_type||'standard',configured:row.account_type_locked===undefined?!!row.display_name:!!row.account_type_locked,xp:Number(row.xp)||0,level:Number(row.level)||1,createdAt:row.created_at||null,familyId:state.family&&state.family.id||null};
 }
 function healthRow(row){
  if(!row)return null;
