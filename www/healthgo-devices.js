@@ -149,6 +149,18 @@ async function requestBluetooth(){
   }
 }
 
+async function refreshDatabaseDevices(){
+  const status=document.getElementById('hgRealDeviceStatus');
+  if(!Services.state.uid){if(status)status.textContent='Najpierw zaloguj się do HealthGo.';return;}
+  try{
+    if(status)status.textContent='Odświeżam urządzenia z bazy HealthGo…';
+    const rows=typeof Services.refreshDevices==='function'?await Services.refreshDevices():[];
+    if(status)status.textContent='Baza HealthGo odświeżona · '+rows.length+' '+(rows.length===1?'urządzenie':'urządzeń')+'.';
+  }catch(error){
+    if(status)status.textContent='Nie udało się odświeżyć urządzeń z bazy.';
+  }
+}
+
 async function reconnectGranted(){
   const status=document.getElementById('hgRealDeviceStatus');
   if(!navigator.bluetooth||typeof navigator.bluetooth.getDevices!=='function'){
@@ -225,12 +237,14 @@ function render(){
   if(ios){
     controls.append(
       button('Połącz Apple Health',openAppleHealth,false),
-      button('Odśwież dane',()=>Services.refreshHealth(),true)
+      button('Odśwież dane zdrowotne',()=>Services.refreshHealth(),true),
+      button('Odśwież z bazy',refreshDatabaseDevices,true)
     );
   }else{
     controls.append(
       button('Połącz urządzenie',requestBluetooth,false),
-      button('Połącz ponownie',reconnectGranted,true)
+      button('Połącz ponownie',reconnectGranted,true),
+      button('Odśwież z bazy',refreshDatabaseDevices,true)
     );
     if(activeDevice)controls.appendChild(button('Rozłącz',disconnectCurrent,true));
   }
@@ -254,7 +268,7 @@ function render(){
     const empty=el('div','settings-note','Nie zapisano jeszcze żadnego urządzenia na tym koncie.');
     list.appendChild(empty);
   }else{
-    const title=el('b','', 'Urządzenia zapisane na koncie');
+    const title=el('b','', 'Urządzenia z bazy HealthGo');
     list.appendChild(title);
     saved.forEach(d=>{
       const row=el('div','hg2-member');
@@ -271,6 +285,10 @@ function render(){
     });
   }
   root.appendChild(list);
+
+  const databaseInfo=el('div','settings-note','Źródło listy: Supabase · tabela devices · '+saved.length+' '+(saved.length===1?'rekord':'rekordów')+'. HealthGo nie dopisuje tutaj przykładowych urządzeń.');
+  databaseInfo.style.marginTop='12px';
+  root.appendChild(databaseInfo);
 
   const info=el('div','settings-note');
   info.style.marginTop='12px';
