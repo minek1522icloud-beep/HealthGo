@@ -1624,7 +1624,7 @@ function addPlan(){
 
 const HG_BADGES=window.HealthGoEngine.CATALOG;
 const HG_CHALLENGES=window.HealthGoEngine.CHALLENGES;
-let setupAccountType='standard',manualActivityStartedAt=null,manualActivityInterval=null;
+let setupAccountType='standard',setupAccountSaving=false,manualActivityStartedAt=null,manualActivityInterval=null;
 
 function hgUserKey(){
  try{
@@ -1707,27 +1707,36 @@ async function saveHealthGoProfile(){
  if(status)status.textContent='Zapisano.';}catch(e){if(status)status.textContent=e.message;}
 }
 function chooseHealthGoAccountType(type){
+ if(setupAccountSaving)return;
  setupAccountType=type;
  document.getElementById('setupStandard')?.classList.toggle('active',type==='standard');
  document.getElementById('setupGuardian')?.classList.toggle('active',type==='guardian');
  document.getElementById('setupChild')?.classList.toggle('active',type==='child');
 }
 function maybeShowAccountSetup(){
- const p=window.HealthGoServices?.state.profile;renderHealthGoProfile();
- if(p&&p.configured&&p.accountType)return;
- const input=document.getElementById('setupNickname');if(input)input.value=p?.nickname||loadHealthGoProfile().nickname||'';
+ const serviceState=window.HealthGoServices?.state,p=serviceState?.profile,modal=document.getElementById('accountSetup');renderHealthGoProfile();
+ if(serviceState?.loading)return;
+ if(p&&p.configured&&p.accountType){modal?.classList.remove('show');return;}
+ if(!p)return;
+ const input=document.getElementById('setupNickname');if(input)input.value=p.nickname||loadHealthGoProfile().nickname||'';
  setupAccountType='standard';chooseHealthGoAccountType(setupAccountType);
- document.getElementById('accountSetup')?.classList.add('show');
+ modal?.classList.add('show');
 }
 async function finishHealthGoAccountSetup(){
+ if(setupAccountSaving)return;
  const nickname=(document.getElementById('setupNickname')?.value||'').trim(),status=document.getElementById('setupProfileStatus');
  if(!validNickname(nickname)){if(status)status.textContent='Wpisz nick 3–20 znaków.';return;}
+ const current=window.HealthGoServices?.state.profile;
+ if(current&&current.configured){document.getElementById('accountSetup')?.classList.remove('show');return;}
+ setupAccountSaving=true;
  if(status)status.textContent='Konfiguruję profil…';
  try{
- await AccountService.configure({nickname,accountType:setupAccountType});
- document.getElementById('accountSetup')?.classList.remove('show');
- if(status)status.textContent='Gotowe.';await HealthGoServices.initialize();setTimeout(()=>startTutorial(),350);
+  await AccountService.configure({nickname,accountType:setupAccountType});
+  document.getElementById('accountSetup')?.classList.remove('show');
+  if(status)status.textContent='Gotowe. Typ konta został zapisany na stałe.';
+  await HealthGoServices.initialize();setTimeout(()=>startTutorial(),350);
  }catch(e){if(status)status.textContent=e.message;}
+ finally{setupAccountSaving=false;}
 }
 function scrollSettings(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
 
