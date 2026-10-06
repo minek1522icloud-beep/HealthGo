@@ -164,7 +164,7 @@ const auth={
   const pending={verifier,created:Date.now()};
   sessionStorage.setItem(PKCE,JSON.stringify(pending));
   try{localStorage.setItem(PKCE,JSON.stringify(pending));}catch(_){}
-  const params=new URLSearchParams({provider:'google',redirect_to:redirect,code_challenge:challenge,code_challenge_method:'s256'});
+  const params=new URLSearchParams({provider:'google',redirect_to:redirect,code_challenge:challenge,code_challenge_method:'s256',prompt:'select_account'});
   const target=URL+'/auth/v1/authorize?'+params;
   if(desktop)root.open(target,'_blank');else root.location.assign(target);
  },
