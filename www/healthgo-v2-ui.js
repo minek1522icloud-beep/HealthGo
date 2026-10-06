@@ -177,7 +177,7 @@ function renderPresentationCards(){
 }
 function renderAll(){ensureCards();renderBackpack();renderChallenges();renderActivity();renderDevices();renderFamily();renderSettings();renderPresentationCards()}
 
-injectStyle();familyPage();addNav();ensureCards();
+injectStyle();familyPage();notificationPage();addNav();ensureCards();
 window.HealthGoV2UI={ready:true,render:renderAll,renderFamily:renderFamily,renderBackpack:renderBackpack,renderChallenges:renderChallenges,renderNotifications:renderNotifications};
 Services.subscribe(function(){renderAll()});renderAll();
 })();
