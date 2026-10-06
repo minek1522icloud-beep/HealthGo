@@ -119,7 +119,12 @@ function renderFamily(){
  var page=familyPage(),root=q('#hg2FamilyRoot',page),s=Services.state,f=s.family||{members:[],permissions:[],locations:[]};root.replaceChildren();
  if(!f.id){
   var welcome=el('section','hg2-card'),hero=el('div','hg2-family-hero'),copy=el('div');copy.append(el('div','hg2-family-name','Twoja rodzina w HealthGo'),el('p','hg2-meta','Utwórz nową rodzinę albo dołącz do istniejącej kodem lub po zeskanowaniu QR.'));
-  var actions=el('div','hg2-family-actions');actions.append(btn('Utwórz rodzinę',createFamily,false),btn('Dołącz kodem',joinFamily,true));hero.append(copy,actions);welcome.appendChild(hero);
+  var actions=el('div','hg2-family-actions'),accountType=s.profile&&s.profile.accountType||'standard';
+  if(accountType==='guardian')actions.append(btn('Utwórz rodzinę',createFamily,false),btn('Dołącz kodem',joinFamily,true));
+  else actions.appendChild(btn('Dołącz do rodziny',joinFamily,false));
+  hero.append(copy,actions);welcome.appendChild(hero);
+  if(accountType==='child')welcome.appendChild(el('div','hg2-note','Konto dziecka nie może utworzyć rodziny ani zmienić się w konto dorosłego. Do rodziny dołącza kodem lub QR od rodzica/opiekuna.'));
+  else if(accountType==='standard')welcome.appendChild(el('div','hg2-note','To jest konto zwykłe. Rodzinę może utworzyć wyłącznie konto Rodzica / Opiekuna wybrane podczas pierwszej konfiguracji.'));
   var steps=el('div');[['1','Utwórz rodzinę','Nadaj jej nazwę i utwórz prywatną przestrzeń.'],['2','Wygeneruj zaproszenie','HealthGo tworzy jednorazowy kod i QR ważny przez 30 minut.'],['3','Zeskanuj i dołącz','Druga osoba skanuje QR aparatem albo wpisuje kod.']].forEach(function(x){var row=el('div','hg2-family-step'),n=el('div','hg2-family-step-num',x[0]),txt=el('div','hg2-grow');txt.append(el('b','',x[1]),el('small','',x[2]));row.append(n,txt);steps.appendChild(row)});welcome.appendChild(steps);root.appendChild(welcome);return;
  }
  var summary=el('section','hg2-card'),hero=el('div','hg2-family-hero'),left=el('div'),right=el('div','hg2-family-actions');
@@ -131,7 +136,17 @@ function renderFamily(){
  (f.members||[]).forEach(function(m){var uid=m.uid||m.id||'',row=el('div','hg2-member'),avatar=el('div','hg2-avatar',(m.nickname||m.displayName||'H').slice(0,1).toUpperCase()),copy=el('div','hg2-grow'),name=(m.nickname||m.displayName||(uid===s.uid?'Ty':'Członek rodziny'));copy.append(el('b','',name+(uid===s.uid?' · Ty':'')),el('small','',m.joinedAt?'Dołączono '+date(m.joinedAt):'Członek HealthGo'));copy.appendChild(el('span','hg2-member-role',familyRole(m.role)));var grant=(f.permissions||[]).find(function(p){return p.childUid===uid&&p.guardianUid===s.uid});if(grant){var ps=el('div','hg2-permissions'),labels=scopes(grant.scopes);labels.forEach(function(x){ps.appendChild(el('span','hg2-permission',x))});if(labels.length)copy.appendChild(ps)}if(m.role==='child'&&f.callerRole==='guardian')row.appendChild(btn('Uprawnienia',function(){editPermissions(uid)},true));row.append(avatar,copy);members.appendChild(row)});
  if(!(f.members||[]).length)members.appendChild(empty('Brak członków','Wygeneruj zaproszenie, aby dodać pierwszą osobę.'));root.appendChild(members);
  var safety=el('section','hg2-card'),sh=el('div','hg2-section-title'),sc=el('div');sc.append(el('h3','','Zaproszenia i bezpieczeństwo'),el('p','','Kody są jednorazowe, wygasają i powinny być udostępniane tylko osobom, które znasz.'));sh.appendChild(sc);safety.appendChild(sh);
- if(f.callerRole==='guardian')safety.append(btn('Wygeneruj nowe zaproszenie QR',createInvite,false));
+ if(f.callerRole==='guardian'){
+  var saved=readFamilyInvite();
+  if(saved){
+   var inviteBox=el('div','hg2-family-invite'),inviteCopy=el('div'),qr=el('div','hg2-family-qr');
+   inviteCopy.append(el('small','hg2-meta','Aktualny kod rodzinny'),el('div','hg2-family-code',saved.code),el('p','hg2-meta','Ważny do '+date(saved.expiresAt)+'.'));
+   var inviteTools=el('div','hg2-toolbar');
+   inviteTools.append(btn('Kopiuj kod',function(){copyText(saved.code)},true),btn('Kopiuj link',function(){copyText(familyInviteUrl(saved.code))},true),btn('Nowy kod i QR',createInvite,false));
+   inviteCopy.appendChild(inviteTools);inviteBox.append(inviteCopy,qr);safety.appendChild(inviteBox);
+   if(window.QRCode)new QRCode(qr,{text:familyInviteUrl(saved.code),width:168,height:168,correctLevel:QRCode.CorrectLevel.M});
+  }else safety.append(btn('Wygeneruj kod i QR',createInvite,false));
+ }
  safety.appendChild(el('div','hg2-note','Skan QR nie przekazuje danych zdrowotnych ani lokalizacji. Dołącza wyłącznie konto do wybranej rodziny po zalogowaniu do HealthGo.'));
  var danger=el('div','hg2-family-danger');danger.appendChild(btn('Opuść rodzinę',leaveFamily,true));safety.appendChild(danger);root.appendChild(safety);
 }
@@ -184,7 +199,10 @@ async function inviteDialog(r){
   actions.append(btn('Gotowe',close,false));box.appendChild(actions);back.appendChild(box);document.body.appendChild(back);document.body.classList.add('hg2-dialog-open');
  });
 }
-async function createInvite(){try{var r=await Services.call('createFamilyInvite',{});if(!r||!r.code)throw new Error('Nie udało się utworzyć kodu.');await inviteDialog(r)}catch(e){await dialog('Nie udało się utworzyć zaproszenia',e.message)}}
+function familyInviteStorageKey(){return 'healthgo_family_invite_'+(Services.state.uid||'signed-out')}
+function readFamilyInvite(){try{var x=JSON.parse(localStorage.getItem(familyInviteStorageKey())||'null');if(!x||!x.code||!x.expiresAt)return null;if(new Date(x.expiresAt).getTime()<=Date.now()){localStorage.removeItem(familyInviteStorageKey());return null}return x}catch(_){return null}}
+function saveFamilyInvite(value){try{localStorage.setItem(familyInviteStorageKey(),JSON.stringify(value))}catch(_){}}
+async function createInvite(){try{var r=await Services.call('createFamilyInvite',{});if(!r||!r.code)throw new Error('Nie udało się utworzyć kodu.');saveFamilyInvite({code:r.code,expiresAt:r.expiresAt});renderFamily();await inviteDialog(r)}catch(e){await dialog('Nie udało się utworzyć zaproszenia',e.message)}}
 async function joinFamily(){
  var code=await dialog('Dołącz do rodziny','Wpisz jednorazowy kod z zaproszenia. Możesz też zeskanować QR aparatem telefonu.',{placeholder:'Kod rodzinny',maxLength:32});
  if(!code)return;
