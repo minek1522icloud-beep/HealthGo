@@ -13,11 +13,6 @@ struct ContentView: View {
         NavigationStack {
             Form {
                 Section("Konto HealthGo") {
-                    TextField("E-mail",text:$email)
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.emailAddress)
-                    SecureField("Hasło",text:$password)
-
                     if session.isAuthenticated {
                         Text("Zalogowano: \(session.email)")
                             .foregroundStyle(.secondary)
@@ -27,12 +22,28 @@ struct ContentView: View {
                             status="Wylogowano."
                         }
                     } else {
-                        Button("Zaloguj się"){ Task{await login()} }
+                        TextField("E-mail",text:$email)
+                            .textInputAutocapitalization(.never)
+                            .keyboardType(.emailAddress)
+                            .textContentType(.username)
+                        SecureField("Hasło",text:$password)
+                            .textContentType(.password)
+
+                        Button(session.busy ? "Logowanie…" : "Zaloguj się") {
+                            Task{await login()}
+                        }
+                        .disabled(session.busy)
+
+                        Button("Kontynuuj z Google") {
+                            Task{await loginGoogle()}
+                        }
+                        .disabled(session.busy)
                     }
                 }
 
                 Section("Apple Watch i Apple Health") {
                     Text("Apple Watch zapisuje pomiary w Apple Health. HealthGo może po Twojej zgodzie odczytać kroki, dystans, sen i ostatni zapis tętna.")
+
                     Button(healthConnected ? "Apple Health połączone ✓" : "Połącz Apple Health") {
                         Task{await authorize()}
                     }
@@ -50,10 +61,15 @@ struct ContentView: View {
             }
             .navigationTitle("HealthGo")
             .task {
+                await session.restore()
                 email=session.email
                 if session.isAuthenticated {
                     status="Konto HealthGo jest zalogowane. Połącz Apple Health."
                 }
+            }
+            .onOpenURL { url in
+                guard url.scheme=="healthgo",url.host=="connect-health" else{return}
+                Task{await authorize()}
             }
         }
     }
@@ -62,9 +78,20 @@ struct ContentView: View {
         do {
             try await session.login(email:email,password:password)
             self.email=session.email
+            password=""
             status="Zalogowano. Teraz połącz Apple Health."
         } catch {
             status="Nie udało się zalogować: "+error.localizedDescription
+        }
+    }
+
+    private func loginGoogle() async {
+        do {
+            try await session.loginGoogle()
+            email=session.email
+            status="Zalogowano przez Google. Teraz połącz Apple Health."
+        } catch {
+            status="Logowanie Google nie powiodło się: "+error.localizedDescription
         }
     }
 
@@ -76,11 +103,11 @@ struct ContentView: View {
         do {
             try await sync.authorize()
             healthConnected=true
-            status="Apple Health połączone. HealthGo może odczytać dozwolone dane."
+            status="Apple Health połączone. Synchronizuję dozwolone dane."
             await syncNow()
         } catch {
             healthConnected=false
-            status=error.localizedDescription
+            status="Nie udało się połączyć Apple Health: "+error.localizedDescription
         }
     }
 

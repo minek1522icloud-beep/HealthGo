@@ -82,7 +82,7 @@ final class HealthSync {
         }
 
         let endpoint=URL(string:"https://oqrfapmdcofguwdvhbeo.supabase.co/rest/v1/activity_daily?on_conflict=user_id,activity_date")!
-        var request=try session.authorizedRequest(url:endpoint)
+        var request=try await session.authorizedRequest(url:endpoint)
         request.httpMethod="POST"
         request.setValue("resolution=merge-duplicates,return=minimal",forHTTPHeaderField:"Prefer")
 
@@ -108,6 +108,30 @@ final class HealthSync {
             let message=(try? JSONSerialization.jsonObject(with:data) as? [String:Any])?["message"] as? String
                 ?? "Nie udało się zapisać danych Apple Health."
             throw NSError(domain:"HealthGo",code:(response as? HTTPURLResponse)?.statusCode ?? 3,userInfo:[NSLocalizedDescriptionKey:message])
+        }
+
+        try await registerDevice(session:session,uid:uid)
+    }
+
+    @MainActor
+    private func registerDevice(session:HealthGoSession,uid:String) async throws {
+        let endpoint=URL(string:"https://oqrfapmdcofguwdvhbeo.supabase.co/rest/v1/rpc/healthgo_register_device")!
+        var request=try await session.authorizedRequest(url:endpoint)
+        request.httpMethod="POST"
+        request.httpBody=try JSONSerialization.data(withJSONObject:[
+            "p_external_id":"apple-health-"+uid,
+            "p_name":"Apple Health / Apple Watch",
+            "p_platform":"iOS",
+            "p_device_type":"wearable",
+            "p_connection_type":"healthkit",
+            "p_battery_level":NSNull(),
+            "p_connected":true
+        ])
+        let (data,response)=try await URLSession.shared.data(for:request)
+        guard let http=response as? HTTPURLResponse,(200..<300).contains(http.statusCode) else {
+            let message=(try? JSONSerialization.jsonObject(with:data) as? [String:Any])?["message"] as? String
+                ?? "Dane zapisano, ale nie udało się zapisać źródła Apple Health."
+            throw NSError(domain:"HealthGo",code:(response as? HTTPURLResponse)?.statusCode ?? 4,userInfo:[NSLocalizedDescriptionKey:message])
         }
     }
 }

@@ -31,6 +31,34 @@ function platform(){
   return 'Web';
 }
 
+function isIOS(){
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+}
+
+function appleHealthDevice(){
+  return (Services.state.devices||[]).find(d=>d.connectionType==='healthkit'||/apple health/i.test(String(d.name||'')))||null;
+}
+
+async function openAppleHealth(){
+  const status=document.getElementById('hgRealDeviceStatus');
+  if(!Services.state.uid){
+    if(status)status.textContent='Najpierw zaloguj się do HealthGo.';
+    return;
+  }
+  if(!isIOS()){
+    if(status)status.textContent='Apple Health jest dostępne w natywnej aplikacji HealthGo na iPhonie.';
+    return;
+  }
+  if(status)status.textContent='Otwieram HealthGo i systemowe uprawnienia Apple Health…';
+  const started=Date.now();
+  try{window.location.href='healthgo://connect-health';}catch(_){}
+  setTimeout(()=>{
+    if(document.visibilityState==='visible'&&Date.now()-started>1200&&status){
+      status.textContent='Safari nie ma bezpośredniego dostępu do Apple Health. Zainstaluj natywną aplikację HealthGo na iPhonie, a potem kliknij ponownie.';
+    }
+  },1800);
+}
+
 function deviceType(name){
   const n=String(name||'').toLowerCase();
   if(/watch|band|fit|garmin|polar|amazfit|galaxy|mi band|huawei/i.test(n))return 'wearable';
@@ -95,13 +123,12 @@ async function requestBluetooth(){
     if(status)status.textContent='Najpierw zaloguj się do HealthGo.';
     return;
   }
+  if(isIOS()){
+    await openAppleHealth();
+    return;
+  }
   if(!navigator.bluetooth||typeof navigator.bluetooth.requestDevice!=='function'){
-    if(status){
-      const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent||'');
-      status.textContent=ios
-        ?'Safari na iPhonie nie udostępnia Web Bluetooth. Na iPhonie dane zegarka trafiają do HealthGo przez natywną aplikację i Apple Health.'
-        :'Ta przeglądarka nie udostępnia Web Bluetooth. Użyj HealthGo na Windowsie lub zgodnej przeglądarki na Androidzie.';
-    }
+    if(status)status.textContent='Ta przeglądarka nie udostępnia Web Bluetooth. Użyj HealthGo na Windowsie lub zgodnej przeglądarki na Androidzie.';
     return;
   }
 
@@ -179,28 +206,43 @@ function render(){
   if(!root)return;
   root.replaceChildren();
 
+  const ios=isIOS();
+  const healthKit=appleHealthDevice();
   const header=el('div','between');
   const copy=el('div');
   copy.append(
-    el('h3','', '📡 Prawdziwe połączenie urządzenia'),
-    el('p','muted','HealthGo używa systemowego wyboru Bluetooth i zapisuje tylko urządzenie, które sam wybierzesz.')
+    el('h3','',ios?'❤️ Apple Health i zegarek':'📡 Prawdziwe połączenie urządzenia'),
+    el('p','muted',ios
+      ?'Na iPhonie HealthGo otwiera natywną aplikację i prawdziwe uprawnienia Apple Health. Tętno, kroki i sen są odczytywane tylko po Twojej zgodzie.'
+      :'HealthGo używa systemowego wyboru Bluetooth i zapisuje tylko urządzenie, które sam wybierzesz.')
   );
-  const badge=el('span','tag',activeServer&&activeServer.connected?'Połączono':'Niepołączono');
+  const badge=el('span','tag',ios?(healthKit?'Połączono':'Niepołączono'):(activeServer&&activeServer.connected?'Połączono':'Niepołączono'));
   header.append(copy,badge);
   root.appendChild(header);
 
   const controls=el('div','row');
   controls.style.marginTop='12px';
-  controls.append(
-    button('Połącz urządzenie',requestBluetooth,false),
-    button('Połącz ponownie',reconnectGranted,true)
-  );
-  if(activeDevice)controls.appendChild(button('Rozłącz',disconnectCurrent,true));
+  if(ios){
+    controls.append(
+      button('Połącz Apple Health',openAppleHealth,false),
+      button('Odśwież dane',()=>Services.refreshHealth(),true)
+    );
+  }else{
+    controls.append(
+      button('Połącz urządzenie',requestBluetooth,false),
+      button('Połącz ponownie',reconnectGranted,true)
+    );
+    if(activeDevice)controls.appendChild(button('Rozłącz',disconnectCurrent,true));
+  }
   root.appendChild(controls);
 
-  const status=el('div','muted',activeServer&&activeServer.connected
-    ?'Aktywne: '+(activeDevice?.name||'Urządzenie Bluetooth')+(batteryLevel==null?'':' · bateria '+batteryLevel+'%')
-    :'Kliknij „Połącz urządzenie”, aby otworzyć prawdziwy wybór Bluetooth.');
+  const status=el('div','muted',ios
+    ?(healthKit
+      ?'Apple Health jest połączone z tym kontem. HealthGo pokazuje tylko dane faktycznie udostępnione przez iPhone lub zegarek.'
+      :'Kliknij „Połącz Apple Health”. iPhone otworzy natywną aplikację HealthGo i systemowe okno uprawnień.')
+    :(activeServer&&activeServer.connected
+      ?'Aktywne: '+(activeDevice?.name||'Urządzenie Bluetooth')+(batteryLevel==null?'':' · bateria '+batteryLevel+'%')
+      :'Kliknij „Połącz urządzenie”, aby otworzyć prawdziwy wybór Bluetooth.'));
   status.id='hgRealDeviceStatus';
   status.style.marginTop='10px';
   root.appendChild(status);
@@ -232,7 +274,9 @@ function render(){
 
   const info=el('div','settings-note');
   info.style.marginTop='12px';
-  info.textContent='Bluetooth potwierdza prawdziwe połączenie z urządzeniem. Kroki, sen i tętno są pobierane tylko wtedy, gdy urządzenie lub system zdrowotny rzeczywiście udostępnia te dane — HealthGo nie tworzy fikcyjnych pomiarów.';
+  info.textContent=ios
+    ?'Apple Watch i inne zgodne źródła zapisują dane w Apple Health. HealthGo może odczytać kroki, sen i ostatni dostępny pomiar tętna wyłącznie po systemowej zgodzie. Safari samo nie ma dostępu do HealthKit.'
+    :'Bluetooth potwierdza prawdziwe połączenie z urządzeniem. Kroki, sen i tętno są pobierane tylko wtedy, gdy urządzenie lub system zdrowotny rzeczywiście udostępnia te dane — HealthGo nie tworzy fikcyjnych pomiarów.';
   root.appendChild(info);
 }
 

@@ -90,3 +90,6 @@ jobs:
           grep -q "oqrfapmdcofguwdvhbeo.supabase.co" mobile/ios/HealthGoMobile/HealthGoSession.swift
           grep -q "activity_daily" mobile/ios/HealthGoMobile/HealthSync.swift
           grep -q "heart_rate" mobile/ios/HealthGoMobile/HealthSync.swift
+          grep -q "loginGoogle" mobile/ios/HealthGoMobile/HealthGoSession.swift
+          grep -q "healthgo_register_device" mobile/ios/HealthGoMobile/HealthSync.swift
+          grep -q "healthgo://auth-callback" www/mobile-oauth-callback.html

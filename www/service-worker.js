@@ -1,6 +1,6 @@
 'use strict';
-const CACHE_NAME='healthgo-pwa-v3-account-healthkit-20261006';
-const CORE=['./','./index.html','./manifest.webmanifest','./healthgo-pro.js','./supabase-client.js','./core/achievement-engine.js','./core/health-data.js','./healthgo-services.js','./healthgo-v2-ui.js'];
+const CACHE_NAME='healthgo-pwa-v4-native-apple-health-20261006';
+const CORE=['./','./index.html','./manifest.webmanifest','./healthgo-pro.js','./supabase-client.js','./core/achievement-engine.js','./core/health-data.js','./healthgo-services.js','./healthgo-v2-ui.js','./healthgo-devices.js'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{for(const url of CORE){try{await cache.add(url);}catch(_){}}}));
  self.skipWaiting();
