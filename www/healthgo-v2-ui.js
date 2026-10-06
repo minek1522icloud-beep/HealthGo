@@ -39,16 +39,15 @@ function ensurePage(id,title,desc){
 }
 function addNav(){
  var nav=q('.sidebar .nav');
- [['family','👨‍👩‍👧','Rodzina'],['notifications','🔔','Powiadomienia']].forEach(function(item){
+ [['family','👨‍👩‍👧','Rodzina']].forEach(function(item){
   if(!nav||nav.querySelector('[data-page="'+item[0]+'"]'))return;
   var b=el('button');b.dataset.page=item[0];b.append(item[1]+' ',el('span','',item[2]));b.addEventListener('click',function(){go(item[0])});nav.appendChild(b);
  });
  var sheet=q('#mobileMoreSheet');
  if(sheet&&!sheet.querySelector('[data-hg2-family]')){
   var family=btn('👨‍👩‍👧 Rodzina',function(){window.mobileGo?mobileGo('family'):go('family')},true);family.dataset.hg2Family='1';
-  var notifications=btn('🔔 Powiadomienia',function(){window.mobileGo?mobileGo('notifications'):go('notifications')},true);notifications.dataset.hg2Notifications='1';
   var settings=Array.from(sheet.children).find(function(x){return /Ustawienia/.test(x.textContent)});
-  sheet.insertBefore(family,settings||null);sheet.insertBefore(notifications,settings||null);
+  sheet.insertBefore(family,settings||null);
  }
 }
 function ensureCards(){
@@ -163,9 +162,9 @@ async function shareCurrentLocation(){
  if(!navigator.geolocation){await dialog('Lokalizacja niedostępna','To urządzenie nie udostępnia lokalizacji przeglądarce.');return}
  try{var position=await new Promise(function(resolve,reject){navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:settings.mode==='precise',timeout:12000,maximumAge:30000})});var payload={latitude:position.coords.latitude,longitude:position.coords.longitude,accuracyMeters:position.coords.accuracy,device:navigator.userAgent&&/iPhone|iPad/i.test(navigator.userAgent)?'iPhone':/Android/i.test(navigator.userAgent)?'Android':'Urządzenie HealthGo'};if(settings.mode==='approximate'&&Data&&Data.coarsenLocation)payload=Object.assign(payload,Data.coarsenLocation(payload));await Services.call('publishLocation',payload);await dialog('Lokalizacja zaktualizowana','HealthGo zapisał tylko lokalizację dozwoloną przez wybrany tryb.');await Services.initialize()}catch(_){await dialog('Nie udało się pobrać lokalizacji','Sprawdź uprawnienia lokalizacji urządzenia i spróbuj ponownie.')}
 }
-function renderAll(){ensureCards();renderBackpack();renderChallenges();renderActivity();renderDevices();renderFamily();renderNotifications();renderSettings()}
+function renderAll(){ensureCards();renderBackpack();renderChallenges();renderActivity();renderDevices();renderFamily();renderSettings()}
 
-injectStyle();familyPage();notificationPage();addNav();ensureCards();
+injectStyle();familyPage();addNav();ensureCards();
 window.HealthGoV2UI={ready:true,render:renderAll,renderFamily:renderFamily,renderBackpack:renderBackpack,renderChallenges:renderChallenges,renderNotifications:renderNotifications};
 Services.subscribe(function(){renderAll()});renderAll();
 })();
