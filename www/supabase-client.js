@@ -7,7 +7,7 @@ const PKCE='healthgo_google_pkce_v1';
 function randomToken(){return base64url(crypto.getRandomValues(new Uint8Array(32)));}
 function base64url(bytes){return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 const listeners=new Set();
-let session=readSession(),refreshing=null;
+let session=readSession(),refreshing=null,mfaFactorCount=0;
 
 function readSession(){
  try{
@@ -65,6 +65,57 @@ function authPayload(data){
  if(data.access_token)return normalizeSession(data);
  return null;
 }
+function decodeJwtPayload(value){
+ try{
+  const part=String(value||'').split('.')[1];
+  if(!part)return null;
+  const normalized=part.replace(/-/g,'+').replace(/_/g,'/');
+  const padded=normalized+'='.repeat((4-normalized.length%4)%4);
+  return JSON.parse(decodeURIComponent(Array.from(atob(padded)).map(c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join('')));
+ }catch(_){return null;}
+}
+function normalizeFactors(data){
+ const all=Array.isArray(data)?data:Array.isArray(data&&data.all)?data.all:Array.isArray(data&&data.factors)?data.factors:[];
+ return{
+  all,
+  totp:all.filter(x=>(x.factor_type||x.type)==='totp'),
+  phone:all.filter(x=>(x.factor_type||x.type)==='phone')
+ };
+}
+const mfa={
+ async listFactors(){
+  const data=normalizeFactors(await request('/auth/v1/factors'));
+  mfaFactorCount=data.all.filter(x=>x.status==='verified').length;
+  return{data,error:null};
+ },
+ async enroll(options){
+  const body={factor_type:(options&&options.factorType)||'totp'};
+  if(options&&options.friendlyName)body.friendly_name=String(options.friendlyName);
+  const data=await request('/auth/v1/factors',{method:'POST',body});
+  return{data,error:null};
+ },
+ async challenge(options){
+  const factorId=String(options&&options.factorId||'');
+  if(!factorId)throw new Error('mfa_factor_missing');
+  const data=await request('/auth/v1/factors/'+encodeURIComponent(factorId)+'/challenge',{method:'POST',body:{}});
+  return{data,error:null};
+ },
+ async verify(options){
+  const factorId=String(options&&options.factorId||''),challengeId=String(options&&options.challengeId||''),code=String(options&&options.code||'').trim();
+  if(!factorId||!challengeId||!/^[0-9]{6}$/.test(code))throw new Error('mfa_invalid_code');
+  const data=await request('/auth/v1/factors/'+encodeURIComponent(factorId)+'/verify',{method:'POST',body:{challenge_id:challengeId,code}});
+  const next=authPayload(data);
+  if(next)persist(next);
+  mfaFactorCount=Math.max(1,mfaFactorCount);
+  return{data:errorSafeData(data),error:null};
+ },
+ async getAuthenticatorAssuranceLevel(){
+  const payload=decodeJwtPayload(session&&session.access_token),currentLevel=payload&&payload.aal||'aal1';
+  const factors=await mfa.listFactors(),verified=factors.data.all.some(x=>x.status==='verified');
+  return{data:{currentLevel,nextLevel:verified?'aal2':'aal1'},error:null};
+ }
+};
+function errorSafeData(data){return data&&typeof data==='object'?data:{};}
 async function sessionFromUrl(){
  try{
   const query=new URLSearchParams(root.location&&root.location.search||'');
@@ -132,14 +183,17 @@ const auth={
   const body={email:String(credentials.email||'').trim(),password:String(credentials.password||'')};
   if(credentials.options&&credentials.options.data)body.data=credentials.options.data;
   const response=await fetch(URL+'/auth/v1/signup',{method:'POST',headers:headers(null),body:JSON.stringify(body)});
-  const data=await decode(response),next=authPayload(data);if(next){persist(next);notify('SIGNED_IN');}
-  return{data:{session:next,user:(next&&next.user)||data.user||null},error:null};
+  const data=await decode(response),next=authPayload(data),returnedUser=(next&&next.user)||data.user||null;
+  if(!next&&returnedUser&&Array.isArray(returnedUser.identities)&&returnedUser.identities.length===0){const e=new Error('user_already_exists');e.code='user_already_exists';throw e;}
+  if(next){persist(next);notify('SIGNED_IN');}
+  return{data:{session:next,user:returnedUser},error:null};
  },
  async signOut(){
   try{if(session&&session.access_token)await request('/auth/v1/logout',{method:'POST'});}catch(_){}
   persist(null);notify('SIGNED_OUT');return{error:null};
  },
- async getSession(){return{data:{session},error:null};}
+ async getSession(){return{data:{session},error:null};},
+ mfa
 };
 function queryString(params){
  if(typeof params==='string')return params.replace(/^\?/,'');
@@ -156,7 +210,7 @@ function toHealthGoUser(user){
  if(!user)return null;
  const providers=(user.identities||[]).map(x=>({providerId:(x.provider||'email')+'.com'}));
  if(!providers.length)providers.push({providerId:'password'});
- return{uid:user.id,email:user.email||'',providerData:providers,multiFactor:{enrolledFactors:[]},raw:user};
+ return{uid:user.id,email:user.email||'',providerData:providers,multiFactor:{enrolledFactors:Array.from({length:mfaFactorCount},(_,i)=>({uid:'mfa-'+i}))},raw:user};
 }
 root.HealthGoSupabase={url:URL,publishableKey:KEY,auth,db,request,toHealthGoUser,hasSession(){return!!(session&&session.access_token);},get session(){return session;}};
 })(typeof window!=='undefined'?window:globalThis);
