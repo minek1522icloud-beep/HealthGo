@@ -28,7 +28,8 @@ function injectStyle(){
  '.hg2-challenge{display:grid;gap:8px}.hg2-challenge-head{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}.hg2-member{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid var(--border)}.hg2-member:first-child{border-top:0}.hg2-avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--soft);font-weight:850}.hg2-grow{min-width:0;flex:1}.hg2-grow b,.hg2-grow small{display:block;overflow-wrap:anywhere}.hg2-grow small{color:var(--muted);margin-top:2px}.hg2-permissions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}'+
  '.hg2-empty{text-align:center;padding:22px 12px;color:var(--muted)}.hg2-empty strong{display:block;color:var(--text);font-size:15px;margin-bottom:5px}.hg2-notification{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:13px 0;border-top:1px solid var(--border)}.hg2-notification:first-child{border-top:0}.hg2-unread{font-weight:750}.hg2-note{padding:11px 12px;border-radius:12px;background:var(--soft);color:var(--muted);font-size:12px;line-height:1.5}'+
  '.hg2-section-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}.hg2-section-title h3{margin:0}.hg2-section-title p{margin:4px 0 0;color:var(--muted);font-size:12px}.hg2-dialog-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);display:grid;place-items:center;padding:18px;z-index:2000}.hg2-dialog{width:min(480px,100%);max-height:90vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px}.hg2-dialog input{width:100%;box-sizing:border-box;margin:10px 0}.hg2-dialog-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.hg2-dialog-open{overflow:hidden}'+
- '@media(max-width:600px){.hg2-card{padding:14px}.hg2-summary{grid-template-columns:1fr 1fr}.hg2-notification{grid-template-columns:1fr}.hg2-family-hero,.hg2-family-invite{grid-template-columns:1fr}.hg2-family-actions{justify-content:flex-start}.hg2-family-qr{width:170px;height:170px;margin:auto}}';
+ '.hg2-family-shell{display:grid;gap:14px}.hg2-family-welcome{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:14px;align-items:stretch}.hg2-family-main{padding:22px;border-radius:18px;background:linear-gradient(145deg,#111827,#1f2937);color:#fff;min-width:0}.hg2-family-main h3{font-size:24px;margin:0 0 7px}.hg2-family-main p{margin:0;color:#d1d5db;line-height:1.55}.hg2-family-role-card{padding:18px;border-radius:18px;border:1px solid var(--border);background:var(--card);display:grid;gap:12px;align-content:start}.hg2-family-role-icon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:var(--soft);font-size:24px}.hg2-family-role-card h4{margin:0;font-size:17px}.hg2-family-role-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.hg2-family-role-pill{display:inline-flex;width:max-content;max-width:100%;padding:6px 10px;border-radius:999px;background:#ecfdf5;color:#047857;font-weight:850;font-size:11px}.hg2-family-action-card{display:grid;gap:13px}.hg2-family-action-card h3{margin:0}.hg2-family-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.hg2-family-actions .btn{min-height:40px}.hg2-family-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:2px}.hg2-family-step{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--soft)}.hg2-family-step-num{width:28px;height:28px;flex:0 0 28px;border-radius:9px;background:#111827;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:900}.hg2-family-name{font-size:24px;font-weight:900;letter-spacing:-.4px}.hg2-family-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.hg2-family-invite{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:18px;align-items:center;margin-top:12px;padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--soft)}.hg2-family-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:25px;font-weight:900;letter-spacing:4px;margin:7px 0;overflow-wrap:anywhere}.hg2-family-qr{width:178px;height:178px;padding:5px;background:#fff;border-radius:13px;display:grid;place-items:center}.hg2-family-qr img,.hg2-family-qr canvas{max-width:168px!important;max-height:168px!important}.hg2-family-member-card{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 0;border-top:1px solid var(--border)}.hg2-family-member-card:first-of-type{border-top:0}.hg2-family-member-card .hg2-avatar{width:44px;height:44px}.hg2-family-danger{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}.hg2-family-loading{padding:28px;text-align:center}.hg2-family-loading b{display:block;margin-bottom:5px}.hg2-family-warning{padding:12px 13px;border-radius:12px;background:#fff7ed;color:#9a3412;font-size:12px;line-height:1.5}'+
+ '@media(max-width:600px){.hg2-card{padding:14px}.hg2-summary{grid-template-columns:1fr 1fr}.hg2-notification{grid-template-columns:1fr}.hg2-family-welcome,.hg2-family-invite{grid-template-columns:1fr}.hg2-family-steps{grid-template-columns:1fr}.hg2-family-actions{justify-content:flex-start}.hg2-family-qr{width:178px;height:178px;margin:auto}.hg2-family-member-card{grid-template-columns:44px minmax(0,1fr)}.hg2-family-member-card>.btn{grid-column:1/-1;width:100%}}';
  document.head.appendChild(s);
 }
 function ensurePage(id,title,desc){
@@ -116,27 +117,87 @@ function notificationPage(){var p=ensurePage('notifications','🔔 Powiadomienia
 function scopes(value){var names={HEALTH_ACTIVITY:'Aktywność',HEALTH_SLEEP:'Sen',HEALTH_HEART_RATE:'Tętno',DEVICE_STATUS:'Stan urządzenia',LOCATION_APPROXIMATE:'Lokalizacja przybliżona',LOCATION_PRECISE:'Lokalizacja dokładna',ACHIEVEMENTS:'Osiągnięcia',CHALLENGE_PROGRESS:'Wyzwania',NOTIFICATIONS:'Powiadomienia'};return Object.keys(value||{}).filter(function(k){return value[k]===true}).map(function(k){return names[k]||k})}
 function familyRole(role){return role==='guardian'?'Rodzic / opiekun':role==='child'?'Dziecko':role==='member'?'Członek':'Członek'}
 function renderFamily(){
- var page=familyPage(),root=q('#hg2FamilyRoot',page),s=Services.state,f=s.family||{members:[],permissions:[],locations:[]};root.replaceChildren();
- if(!f.id){
-  var welcome=el('section','hg2-card'),hero=el('div','hg2-family-hero'),copy=el('div');copy.append(el('div','hg2-family-name','Twoja rodzina w HealthGo'),el('p','hg2-meta','Utwórz nową rodzinę albo dołącz do istniejącej kodem lub po zeskanowaniu QR.'));
-  var actions=el('div','hg2-family-actions'),accountType=s.profile&&s.profile.accountType||'standard';
-  if(accountType==='guardian')actions.append(btn('Utwórz rodzinę',createFamily,false),btn('Dołącz kodem',joinFamily,true));
-  else actions.appendChild(btn('Dołącz do rodziny',joinFamily,false));
-  hero.append(copy,actions);welcome.appendChild(hero);
-  if(accountType==='child')welcome.appendChild(el('div','hg2-note','Konto dziecka nie może utworzyć rodziny ani zmienić się w konto dorosłego. Do rodziny dołącza kodem lub QR od rodzica/opiekuna.'));
-  else if(accountType==='standard')welcome.appendChild(el('div','hg2-note','To jest konto zwykłe. Rodzinę może utworzyć wyłącznie konto Rodzica / Opiekuna wybrane podczas pierwszej konfiguracji.'));
-  var steps=el('div');[['1','Utwórz rodzinę','Nadaj jej nazwę i utwórz prywatną przestrzeń.'],['2','Wygeneruj zaproszenie','HealthGo tworzy jednorazowy kod i QR ważny przez 30 minut.'],['3','Zeskanuj i dołącz','Druga osoba skanuje QR aparatem albo wpisuje kod.']].forEach(function(x){var row=el('div','hg2-family-step'),n=el('div','hg2-family-step-num',x[0]),txt=el('div','hg2-grow');txt.append(el('b','',x[1]),el('small','',x[2]));row.append(n,txt);steps.appendChild(row)});welcome.appendChild(steps);root.appendChild(welcome);return;
+ var page=familyPage(),root=q('#hg2FamilyRoot',page),s=Services.state,f=s.family||{members:[],permissions:[],locations:[]};
+ root.className='hg2-family-shell';root.replaceChildren();
+
+ if(!s.profile){
+  var loading=el('section','hg2-card hg2-family-loading');
+  loading.append(el('b','',s.loading?'Wczytuję typ konta…':'Nie udało się odczytać profilu.'),el('span','hg2-meta',s.loading?'Za chwilę pokażę właściwe opcje Rodziny.':'Odśwież HealthGo i zaloguj się ponownie, jeśli problem nie zniknie.'));
+  root.appendChild(loading);return;
  }
- var summary=el('section','hg2-card'),hero=el('div','hg2-family-hero'),left=el('div'),right=el('div','hg2-family-actions');
- left.append(el('div','hg2-family-name',f.name||'Moja rodzina'),el('div','hg2-meta','Prywatna przestrzeń HealthGo Family'));
- var badges=el('div','hg2-family-badges');badges.append(el('span','tag','Połączono'),el('span','hg2-status',(f.members||[]).length+' członków'),el('span','hg2-status',familyRole(f.callerRole||((f.members||[]).find(function(m){return (m.uid||m.id)===s.uid})||{}).role)));left.appendChild(badges);
- if(f.callerRole==='guardian'||(!f.callerRole&&s.profile&&s.profile.accountType!=='child'))right.appendChild(btn('＋ Zaproś osobę',createInvite,false));
- right.appendChild(btn('↻ Odśwież',function(){Services.initialize()},true));hero.append(left,right);summary.appendChild(hero);root.appendChild(summary);
- var members=el('section','hg2-card'),mh=el('div','hg2-section-title'),mc=el('div');mc.append(el('h3','','Członkowie rodziny'),el('p','','Role i data dołączenia są zapisane w HealthGo Family.'));mh.appendChild(mc);members.appendChild(mh);
- (f.members||[]).forEach(function(m){var uid=m.uid||m.id||'',row=el('div','hg2-member'),avatar=el('div','hg2-avatar',(m.nickname||m.displayName||'H').slice(0,1).toUpperCase()),copy=el('div','hg2-grow'),name=(m.nickname||m.displayName||(uid===s.uid?'Ty':'Członek rodziny'));copy.append(el('b','',name+(uid===s.uid?' · Ty':'')),el('small','',m.joinedAt?'Dołączono '+date(m.joinedAt):'Członek HealthGo'));copy.appendChild(el('span','hg2-member-role',familyRole(m.role)));var grant=(f.permissions||[]).find(function(p){return p.childUid===uid&&p.guardianUid===s.uid});if(grant){var ps=el('div','hg2-permissions'),labels=scopes(grant.scopes);labels.forEach(function(x){ps.appendChild(el('span','hg2-permission',x))});if(labels.length)copy.appendChild(ps)}if(m.role==='child'&&f.callerRole==='guardian')row.appendChild(btn('Uprawnienia',function(){editPermissions(uid)},true));row.append(avatar,copy);members.appendChild(row)});
- if(!(f.members||[]).length)members.appendChild(empty('Brak członków','Wygeneruj zaproszenie, aby dodać pierwszą osobę.'));root.appendChild(members);
- var safety=el('section','hg2-card'),sh=el('div','hg2-section-title'),sc=el('div');sc.append(el('h3','','Zaproszenia i bezpieczeństwo'),el('p','','Kody są jednorazowe, wygasają i powinny być udostępniane tylko osobom, które znasz.'));sh.appendChild(sc);safety.appendChild(sh);
- if(f.callerRole==='guardian'){
+
+ var accountType=s.profile.accountType||'standard';
+ var role=f.callerRole||(accountType==='guardian'?'guardian':accountType==='child'?'child':'member');
+ var roleLabel=accountType==='guardian'?'Rodzic / opiekun':accountType==='child'?'Dziecko':'Konto zwykłe';
+ var roleIcon=accountType==='guardian'?'🛡️':accountType==='child'?'🧸':'👤';
+
+ var welcome=el('div','hg2-family-welcome');
+ var intro=el('section','hg2-family-main');
+ intro.append(el('h3','',f.id?(f.name||'Twoja rodzina'):'HealthGo Family'),el('p','',f.id?'Rodzina jest połączona z Twoim kontem. Tutaj zarządzasz członkami, zaproszeniami i uprawnieniami.':'Rodzic lub opiekun tworzy rodzinę. Pozostałe konta dołączają bezpiecznym, jednorazowym kodem lub przez QR.'));
+ var roleCard=el('section','hg2-family-role-card');
+ roleCard.append(el('div','hg2-family-role-icon',roleIcon),el('span','hg2-family-role-pill',roleLabel),el('h4','',s.profile.nickname||'Konto HealthGo'));
+ if(accountType==='guardian')roleCard.appendChild(el('p','','To konto może utworzyć HealthGo Family, generować zaproszenia i zarządzać uprawnieniami dziecka.'));
+ else if(accountType==='child')roleCard.appendChild(el('p','','To konto może dołączyć do rodziny kodem od rodzica lub opiekuna. Nie może samo utworzyć rodziny.'));
+ else roleCard.appendChild(el('p','','To konto może dołączyć do istniejącej rodziny. Tworzenie rodziny jest dostępne dla konta Rodzica / Opiekuna.'));
+ welcome.append(intro,roleCard);root.appendChild(welcome);
+
+ if(!f.id){
+  var action=el('section','hg2-card hg2-family-action-card');
+  if(accountType==='guardian'){
+   action.append(el('div','hg2-section-title'));
+   var title=q('.hg2-section-title',action),copy=el('div');
+   copy.append(el('h3','','Utwórz swoją rodzinę'),el('p','','Nadaj jej nazwę. Po utworzeniu od razu dostaniesz możliwość wygenerowania kodu i QR dla kolejnej osoby.'));
+   title.appendChild(copy);
+   var actions=el('div','hg2-family-actions');
+   actions.appendChild(btn('＋ Utwórz rodzinę',createFamily,false));
+   action.appendChild(actions);
+  }else{
+   var title2=el('div','hg2-section-title'),copy2=el('div');
+   copy2.append(el('h3','','Dołącz do rodziny'),el('p','',accountType==='child'?'Poproś rodzica lub opiekuna o kod albo zeskanuj jego QR.':'Wpisz kod zaproszenia otrzymany od opiekuna rodziny.'));
+   title2.appendChild(copy2);action.appendChild(title2);
+   var actions2=el('div','hg2-family-actions');actions2.appendChild(btn('Dołącz do rodziny',joinFamily,false));action.appendChild(actions2);
+  }
+
+  var steps=el('div','hg2-family-steps');
+  var stepData=accountType==='guardian'
+   ?[['1','Utwórz rodzinę','Nadaj jej nazwę.'],['2','Wygeneruj zaproszenie','Kod i QR są jednorazowe.'],['3','Dodaj członka','Druga osoba loguje się i dołącza.']]
+   :[['1','Odbierz kod','Kod daje rodzic lub opiekun.'],['2','Wpisz albo zeskanuj','HealthGo sprawdzi zaproszenie.'],['3','Gotowe','Konto pojawi się w rodzinie.']];
+  stepData.forEach(function(x){var row=el('div','hg2-family-step'),n=el('div','hg2-family-step-num',x[0]),txt=el('div','hg2-grow');txt.append(el('b','',x[1]),el('small','',x[2]));row.append(n,txt);steps.appendChild(row)});
+  action.appendChild(steps);
+  if(accountType==='guardian')action.appendChild(el('div','hg2-note','Na koncie Rodzica / Opiekuna przycisk „Dołącz” nie jest pokazywany jako główna akcja. To konto tworzy własną rodzinę.'));
+  root.appendChild(action);return;
+ }
+
+ var summary=el('section','hg2-card'),summaryHead=el('div','hg2-section-title'),left=el('div'),right=el('div','hg2-family-actions');
+ left.append(el('div','hg2-family-name',f.name||'Moja rodzina'),el('div','hg2-meta','HealthGo Family · prywatna przestrzeń rodzinna'));
+ var badges=el('div','hg2-family-badges');
+ badges.append(el('span','tag','● Połączono'),el('span','hg2-status',(f.members||[]).length+' '+((f.members||[]).length===1?'członek':'członków')),el('span','hg2-status',familyRole(role)));
+ left.appendChild(badges);summaryHead.append(left,right);summary.appendChild(summaryHead);
+ if(role==='guardian')right.appendChild(btn('＋ Zaproś osobę',createInvite,false));
+ right.appendChild(btn('↻ Odśwież',function(){Services.initialize()},true));
+ root.appendChild(summary);
+
+ var members=el('section','hg2-card'),mh=el('div','hg2-section-title'),mc=el('div');
+ mc.append(el('h3','','Członkowie rodziny'),el('p','','Każde konto ma własną rolę. Uprawnieniami dziecka zarządza opiekun.'));
+ mh.appendChild(mc);members.appendChild(mh);
+ var familyMembers=f.members||[];
+ if(!familyMembers.length)members.appendChild(empty('Brak członków','Wygeneruj zaproszenie, aby dodać kolejną osobę.'));
+ familyMembers.forEach(function(m){
+  var uid=m.uid||m.id||'',row=el('div','hg2-family-member-card'),avatar=el('div','hg2-avatar',(m.nickname||m.displayName||'H').slice(0,1).toUpperCase()),memberCopy=el('div','hg2-grow');
+  var name=m.nickname||m.displayName||(uid===s.uid?'Ty':'Członek rodziny');
+  memberCopy.append(el('b','',name+(uid===s.uid?' · Ty':'')),el('small','',(m.joinedAt?'Dołączono '+date(m.joinedAt)+' · ':'')+familyRole(m.role)));
+  var grant=(f.permissions||[]).find(function(p){return p.childUid===uid&&p.guardianUid===s.uid});
+  if(grant){var ps=el('div','hg2-permissions');scopes(grant.scopes).forEach(function(x){ps.appendChild(el('span','hg2-permission',x))});if(ps.childNodes.length)memberCopy.appendChild(ps)}
+  row.append(avatar,memberCopy);
+  if(m.role==='child'&&role==='guardian')row.appendChild(btn('Uprawnienia',function(){editPermissions(uid)},true));
+  members.appendChild(row);
+ });
+ root.appendChild(members);
+
+ var safety=el('section','hg2-card'),sh=el('div','hg2-section-title'),sc=el('div');
+ sc.append(el('h3','','Zaproszenia'),el('p','',role==='guardian'?'Wygeneruj jednorazowy kod i QR. Zaproszenie wygasa automatycznie.':'Zaproszenia tworzy Rodzic / Opiekun.'));
+ sh.appendChild(sc);safety.appendChild(sh);
+ if(role==='guardian'){
   var saved=readFamilyInvite();
   if(saved){
    var inviteBox=el('div','hg2-family-invite'),inviteCopy=el('div'),qr=el('div','hg2-family-qr');
@@ -145,9 +206,13 @@ function renderFamily(){
    inviteTools.append(btn('Kopiuj kod',function(){copyText(saved.code)},true),btn('Kopiuj link',function(){copyText(familyInviteUrl(saved.code))},true),btn('Nowy kod i QR',createInvite,false));
    inviteCopy.appendChild(inviteTools);inviteBox.append(inviteCopy,qr);safety.appendChild(inviteBox);
    if(window.QRCode)new QRCode(qr,{text:familyInviteUrl(saved.code),width:168,height:168,correctLevel:QRCode.CorrectLevel.M});
-  }else safety.append(btn('Wygeneruj kod i QR',createInvite,false));
+  }else{
+   var inviteActions=el('div','hg2-family-actions');inviteActions.appendChild(btn('Wygeneruj kod i QR',createInvite,false));safety.appendChild(inviteActions);
+  }
+ }else{
+  safety.appendChild(el('div','hg2-note','Aby dodać kolejną osobę, poproś opiekuna tej rodziny o wygenerowanie zaproszenia.'));
  }
- safety.appendChild(el('div','hg2-note','Skan QR nie przekazuje danych zdrowotnych ani lokalizacji. Dołącza wyłącznie konto do wybranej rodziny po zalogowaniu do HealthGo.'));
+ safety.appendChild(el('div','hg2-note','Kod i QR służą tylko do dołączenia konta do rodziny. Nie przesyłają automatycznie danych zdrowotnych ani lokalizacji.'));
  var danger=el('div','hg2-family-danger');danger.appendChild(btn('Opuść rodzinę',leaveFamily,true));safety.appendChild(danger);root.appendChild(safety);
 }
 function renderNotifications(){
