@@ -664,8 +664,13 @@ function configureHealthGoPermissions() {
         webContents?.getURL?.() ||
         "";
 
+      const allowedPermission =
+        permission === "geolocation" ||
+        permission === "bluetooth" ||
+        permission === "bluetoothScanning";
+
       callback(
-        permission === "geolocation" &&
+        allowedPermission &&
         isHealthGoOrigin(origin)
       );
     }
@@ -678,8 +683,13 @@ function configureHealthGoPermissions() {
         webContents?.getURL?.() ||
         "";
 
+      const allowedPermission =
+        permission === "geolocation" ||
+        permission === "bluetooth" ||
+        permission === "bluetoothScanning";
+
       return (
-        permission === "geolocation" &&
+        allowedPermission &&
         isHealthGoOrigin(origin)
       );
     }
@@ -1257,6 +1267,158 @@ function createWindow(
 
   mainWindow.setMenu(
     null
+  );
+
+  // ========================================
+  // BLUETOOTH DEVICE PICKER
+  // ========================================
+
+  const bluetoothDevices =
+    new Map();
+
+  let bluetoothCallback =
+    null;
+
+  let bluetoothPickerTimer =
+    null;
+
+  let bluetoothPickerOpen =
+    false;
+
+  mainWindow.webContents.on(
+    "select-bluetooth-device",
+    (event, deviceList, callback) => {
+      event.preventDefault();
+
+      bluetoothCallback =
+        callback;
+
+      for (const device of deviceList || []) {
+        if (
+          device &&
+          device.deviceId
+        ) {
+          bluetoothDevices.set(
+            device.deviceId,
+            device
+          );
+        }
+      }
+
+      if (bluetoothPickerOpen) {
+        return;
+      }
+
+      if (bluetoothPickerTimer) {
+        clearTimeout(
+          bluetoothPickerTimer
+        );
+      }
+
+      bluetoothPickerTimer =
+        setTimeout(
+          async () => {
+            const devices =
+              Array.from(
+                bluetoothDevices.values()
+              )
+                .filter(
+                  (device) =>
+                    device.deviceName
+                )
+                .slice(
+                  0,
+                  8
+                );
+
+            if (!devices.length) {
+              bluetoothDevices.clear();
+
+              const cb =
+                bluetoothCallback;
+
+              bluetoothCallback =
+                null;
+
+              if (cb) {
+                cb("");
+              }
+
+              return;
+            }
+
+            bluetoothPickerOpen =
+              true;
+
+            const buttons =
+              devices
+                .map(
+                  (device) =>
+                    device.deviceName
+                )
+                .concat(
+                  "Anuluj"
+                );
+
+            try {
+              const result =
+                await dialog.showMessageBox(
+                  mainWindow,
+                  {
+                    type:
+                      "question",
+
+                    title:
+                      "HealthGo · Bluetooth",
+
+                    message:
+                      "Wybierz urządzenie",
+
+                    detail:
+                      "HealthGo połączy się tylko z urządzeniem, które wybierzesz.",
+
+                    buttons,
+
+                    cancelId:
+                      buttons.length -
+                      1,
+
+                    defaultId:
+                      0,
+
+                    noLink:
+                      true
+                  }
+                );
+
+              const cb =
+                bluetoothCallback;
+
+              bluetoothCallback =
+                null;
+
+              if (cb) {
+                const selected =
+                  devices[
+                    result.response
+                  ];
+
+                cb(
+                  selected
+                    ? selected.deviceId
+                    : ""
+                );
+              }
+            } finally {
+              bluetoothDevices.clear();
+
+              bluetoothPickerOpen =
+                false;
+            }
+          },
+          900
+        );
+    }
   );
 
   // ========================================
