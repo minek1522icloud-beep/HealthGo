@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='healthgo-pwa-v2-supabase-20261004';
+const CACHE_NAME='healthgo-pwa-v2-google-pkce-20261004';
 const CORE=['./','./index.html','./manifest.webmanifest','./healthgo-pro.js','./supabase-client.js','./core/achievement-engine.js','./core/health-data.js','./healthgo-services.js','./healthgo-v2-ui.js'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{for(const url of CORE){try{await cache.add(url);}catch(_){}}}));
@@ -12,6 +12,7 @@ self.addEventListener('activate',event=>{
 self.addEventListener('fetch',event=>{
  const req=event.request;if(req.method!=='GET')return;
  const url=new URL(req.url);if(url.origin!==self.location.origin)return;
+ if(url.pathname.startsWith('/auth/')||url.searchParams.has('code')||url.searchParams.has('error'))return;
  // Cache only the static shell. Never persist API responses or another account's data.
  if(url.pathname.startsWith('/api/')||url.pathname.endsWith('/version.json'))return;
  const isShell=req.mode==='navigate'||/\.(?:html|js|css|png|ico|webmanifest)$/.test(url.pathname);

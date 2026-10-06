@@ -3,7 +3,8 @@ const {
   BrowserWindow,
   Menu,
   dialog,
-  session
+  session,
+  shell
 } = require("electron");
 
 const path = require("path");
@@ -25,6 +26,9 @@ const {
 app.setAppUserModelId("com.healthgo.app");
 
 let mainWindow = null;
+const desktopOAuth = require('./desktop-oauth.cjs').createDesktopOAuth(
+  url => shell.openExternal(url), () => mainWindow
+);
 let webServer = null;
 let aiServer = null;
 let ollamaProcess = null;
@@ -250,6 +254,12 @@ function startWebServer() {
                   `http://127.0.0.1:${PORT}`
                 );
 
+              if (requestUrl.pathname === '/auth/callback') {
+                const ok = req.method === 'GET' && desktopOAuth.callback(requestUrl);
+                res.writeHead(ok ? 200 : 400, {'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer'});
+                res.end(ok ? 'Wróć do HealthGo. Możesz zamknąć tę kartę.' : 'Ta próba logowania wygasła. Rozpocznij ponownie w HealthGo.');
+                return;
+              }
               let pathname =
                 decodeURIComponent(
                   requestUrl.pathname
@@ -1201,6 +1211,7 @@ function createWindow(
     .webContents
     .setWindowOpenHandler(
       ({ url }) => {
+        if (desktopOAuth.launch(url)) return { action: 'deny' };
         const allowed =
           isAllowedAuthPopupUrl(
             url

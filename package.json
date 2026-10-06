@@ -32,7 +32,8 @@
       "icon.png",
       "icon.ico",
       "package.json",
-      "desktop-security.cjs"
+      "desktop-security.cjs",
+      "desktop-oauth.cjs"
     ],
     "win": {
       "icon": "icon.ico",
