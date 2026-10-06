@@ -254,6 +254,25 @@ function startWebServer() {
                   `http://127.0.0.1:${PORT}`
                 );
 
+              const tileMatch = requestUrl.pathname.match(/^\/map-tiles\/(\d+)\/(\d+)\/(\d+)\.png$/);
+              if (tileMatch && req.method === 'GET') {
+                const [, z, x, y] = tileMatch;
+                const tileUrl = `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+                fetch(tileUrl, {headers:{'User-Agent':'HealthGo/1.0 (desktop map)'}})
+                  .then(async (upstream) => {
+                    if (!upstream.ok) throw new Error('OSM_TILE_'+upstream.status);
+                    const data = Buffer.from(await upstream.arrayBuffer());
+                    res.writeHead(200, {'Content-Type':'image/png','Cache-Control':'public, max-age=86400'});
+                    res.end(data);
+                  })
+                  .catch((error) => {
+                    console.error('HealthGo map tile:', error.message);
+                    if (!res.headersSent) res.writeHead(502, {'Content-Type':'text/plain; charset=utf-8'});
+                    res.end('Map tile unavailable');
+                  });
+                return;
+              }
+
               if (requestUrl.pathname === '/auth/callback') {
                 const ok = req.method === 'GET' && desktopOAuth.callback(requestUrl);
                 res.writeHead(ok ? 200 : 400, {'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store','Referrer-Policy':'no-referrer'});
