@@ -4,7 +4,7 @@ const D=window.HealthGoData,Engine=window.HealthGoEngine,S=window.HealthGoSupaba
 const events=new EventTarget(),subscribers=new Set();
 let generation=0,pollTimer=null,initializing=null;
 const emptyFamily=()=>({id:null,members:[],permissions:[],locations:[],devices:[],audit:[],invites:[],projections:{}});
-const empty=()=>({uid:null,profile:null,engine:null,health:null,healthDays:[],syncEvents:[],notifications:[],family:emptyFamily(),online:navigator.onLine,backendAvailable:false,error:null,loading:false,privacy:null,locationSettings:{enabled:false,mode:'off'},session:null,cloudState:null});
+const empty=()=>({uid:null,profile:null,engine:null,health:null,healthDays:[],syncEvents:[],notifications:[],devices:[],family:emptyFamily(),online:navigator.onLine,backendAvailable:false,error:null,loading:false,privacy:null,locationSettings:{enabled:false,mode:'off'},session:null,cloudState:null});
 let state=empty();
 
 function emit(type,detail){events.dispatchEvent(new CustomEvent(type,{detail}));}
@@ -16,6 +16,8 @@ function save(area,value){saveFor(area,state.uid,value);}
 function errorMessage(error){
  const raw=String(error&&((error.code)||(error.message))||'').toLowerCase();
  if(/unauth|jwt|token/.test(raw))return 'Zaloguj się ponownie, aby wykonać tę operację.';
+ if(/account-type-locked/.test(raw))return 'Typ konta jest zablokowany po pierwszej konfiguracji.';
+ if(/guardian-account-required/.test(raw))return 'Rodzinę może utworzyć tylko konto Rodzica / Opiekuna.';
  if(/permission|row-level|rls|denied/.test(raw))return 'Nie masz uprawnienia do tej operacji.';
  if(/rate|429|too many/.test(raw))return 'Za dużo prób. Poczekaj chwilę i spróbuj ponownie.';
  if(/invalid|violat|check constraint/.test(raw))return 'Sprawdź wprowadzone dane.';
@@ -98,13 +100,14 @@ async function initialize(){
    const profileRows=await S.db.select('profiles',{id:'eq.'+uid,limit:1});
    if(g!==generation||uid!==state.uid)return null;
    const profileRow=profileRows&&profileRows[0];state.profile=legacyProfile(profileRow);
-   const [ledger,activity,notes,cloud,loc,family]=await Promise.all([
+   const [ledger,activity,notes,cloud,loc,family,devices]=await Promise.all([
     S.db.select('xp_events',{user_id:'eq.'+uid,order:'created_at.asc',limit:1000}).catch(()=>[]),
     S.db.select('activity_daily',{user_id:'eq.'+uid,order:'activity_date.desc',limit:366}).catch(()=>[]),
     S.db.select('notifications',{user_id:'eq.'+uid,order:'created_at.desc',limit:100}).catch(()=>[]),
     selectOne('account_state',{user_id:'eq.'+uid}).catch(()=>null),
     selectOne('location_settings',{user_id:'eq.'+uid}).catch(()=>null),
-    S.db.rpc('healthgo_get_family_state',{}).catch(()=>emptyFamily())
+    S.db.rpc('healthgo_get_family_state',{}).catch(()=>emptyFamily()),
+    S.db.select('devices',{user_id:'eq.'+uid,order:'last_sync_at.desc',limit:50}).catch(()=>[])
    ]);
    if(g!==generation||uid!==state.uid)return null;
    state.family=family&&typeof family==='object'?Object.assign(emptyFamily(),family):emptyFamily();
@@ -114,6 +117,7 @@ async function initialize(){
    if(state.health){save('health',state.health);save('days',state.healthDays);}
    state.syncEvents=(activity||[]).slice(0,50).map(r=>({id:r.activity_date,source:r.source||'Supabase',day:r.activity_date,status:'synced',occurredAt:r.updated_at}));
    state.notifications=(notes||[]).map(n=>Object.assign({},n,{read:!!n.read_at,readAt:n.read_at,createdAt:n.created_at}));
+   state.devices=(devices||[]).map(d=>({id:d.id,externalId:d.external_id||'',name:d.name||'Urządzenie',platform:d.platform||'',deviceType:d.device_type||'',connectionType:d.connection_type||'',batteryLevel:d.battery_level,lastSyncAt:d.last_sync_at,lastConnectedAt:d.last_connected_at,lastDisconnectedAt:d.last_disconnected_at}));
    state.cloudState=cloud||null;state.settings=cloud&&cloud.settings_v3||null;
    state.locationSettings=loc?{enabled:!!loc.enabled,mode:loc.mode||'off',familySharing:!!loc.family_sharing,updatedAt:loc.updated_at}:{enabled:false,mode:'off'};
    state.backendAvailable=true;state.error=null;state.loading=false;
@@ -144,6 +148,7 @@ async function call(name,data){
   case 'createFamilyInvite':return rpc('healthgo_create_family_invite',{});
   case 'acceptFamilyInvite':{const r=await rpc('healthgo_accept_family_invite',{p_code:data.code});await initialize();return r;}
   case 'leaveFamily':{const r=await rpc('healthgo_leave_family',{});await initialize();return r;}
+  case 'registerDevice':{const r=await rpc('healthgo_register_device',{p_external_id:data.externalId,p_name:data.name,p_platform:data.platform||'web',p_device_type:data.deviceType||'bluetooth',p_connection_type:data.connectionType||'ble',p_battery_level:data.batteryLevel==null?null:Number(data.batteryLevel),p_connected:data.connected!==false});await initialize();return r;}
   case 'updateFamilyPermissions':{const r=await rpc('healthgo_update_family_permissions',{p_child_id:data.childUid,p_guardian_id:data.guardianUid,p_scopes:data.scopes||{}});await initialize();return r;}
   case 'updateLocationSettings':{const r=await rpc('healthgo_update_location_settings',{p_mode:data.mode||'off'});await initialize();return r;}
   case 'publishLocation':{const r=await rpc('healthgo_publish_location',{p_latitude:Number(data.latitude),p_longitude:Number(data.longitude),p_accuracy:Number(data.accuracyMeters)||0,p_device:data.device||'HealthGo'});await initialize();return r;}
