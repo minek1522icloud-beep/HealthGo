@@ -1248,7 +1248,6 @@ function createWindow(
     .webContents
     .setWindowOpenHandler(
       ({ url }) => {
-        if (desktopOAuth.launch(url)) return { action: 'deny' };
         const allowed =
           isAllowedAuthPopupUrl(
             url
