@@ -160,7 +160,11 @@ const auth={
   const verifier=randomToken();
   const challenge=base64url(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));
   const desktop=/Electron\//.test(root.navigator&&root.navigator.userAgent||'');
-  const redirect=root.location.origin+root.location.pathname;
+  let redirect=root.location.origin+root.location.pathname;
+  try{
+   const invite=new URLSearchParams(root.location.search||'').get('family_invite');
+   if(invite){const r=new URL(redirect);r.searchParams.set('family_invite',invite);redirect=r.toString();}
+  }catch(_){};
   const pending={verifier,created:Date.now()};
   sessionStorage.setItem(PKCE,JSON.stringify(pending));
   try{localStorage.setItem(PKCE,JSON.stringify(pending));}catch(_){}
