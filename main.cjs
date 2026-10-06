@@ -1332,6 +1332,41 @@ function createWindow(
           .setMenuBarVisibility(
             false
           );
+
+        const returnToMain = (event, url) => {
+          if (isHealthGoOrigin(url)) {
+            event.preventDefault();
+
+            if (
+              mainWindow &&
+              !mainWindow.isDestroyed()
+            ) {
+              mainWindow.loadURL(url);
+              mainWindow.show();
+              mainWindow.focus();
+            }
+
+            if (!childWindow.isDestroyed()) {
+              childWindow.close();
+            }
+
+            return;
+          }
+
+          if (!isAllowedAuthPopupUrl(url)) {
+            event.preventDefault();
+          }
+        };
+
+        childWindow.webContents.on(
+          "will-navigate",
+          returnToMain
+        );
+
+        childWindow.webContents.on(
+          "will-redirect",
+          returnToMain
+        );
       }
     );
 
