@@ -36,22 +36,14 @@ jobs:
                   }
                 },
                 "oauth_client": [],
-                "api_key": [
-                  {
-                    "current_key": "CI_ONLY_NOT_A_REAL_FIREBASE_KEY"
-                  }
-                ],
-                "services": {
-                  "appinvite_service": {
-                    "other_platform_oauth_client": []
-                  }
-                }
+                "api_key": [{"current_key":"CI_ONLY_NOT_A_REAL_FIREBASE_KEY"}],
+                "services": {"appinvite_service":{"other_platform_oauth_client":[]}}
               }
             ],
             "configuration_version": "1"
           }
           JSON
-      - name: Build and test Android (CI config is non-production)
+      - name: Build and test Android
         working-directory: mobile/android
         run: gradle --no-daemon :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
       - uses: actions/upload-artifact@v4
@@ -64,37 +56,15 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v6
-
       - name: Install XcodeGen
         run: brew install xcodegen
-
       - name: Generate Xcode project
         working-directory: mobile/ios
         run: xcodegen generate
-
-      - name: Resolve Swift packages
-        working-directory: mobile/ios
-        run: |
-          xcodebuild -resolvePackageDependencies \
-            -project HealthGoMobile.xcodeproj \
-            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages"
-
       - name: Build HealthGo for iPhone (unsigned)
         working-directory: mobile/ios
         run: |
-          xcodebuild \
-            -project HealthGoMobile.xcodeproj \
-            -scheme HealthGoMobile \
-            -configuration Debug \
-            -destination 'generic/platform=iOS' \
-            -derivedDataPath "$RUNNER_TEMP/HealthGoDeviceDerivedData" \
-            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages" \
-            SYMROOT="$RUNNER_TEMP/HealthGoBuild" \
-            OBJROOT="$RUNNER_TEMP/HealthGoIntermediates" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            build
-
+          xcodebuild             -project HealthGoMobile.xcodeproj             -scheme HealthGoMobile             -configuration Debug             -destination 'generic/platform=iOS'             -derivedDataPath "$RUNNER_TEMP/HealthGoDeviceDerivedData"             SYMROOT="$RUNNER_TEMP/HealthGoBuild"             OBJROOT="$RUNNER_TEMP/HealthGoIntermediates"             CODE_SIGNING_ALLOWED=NO             CODE_SIGNING_REQUIRED=NO             build
       - name: Package unsigned iPhone IPA
         working-directory: mobile/ios
         run: |
@@ -103,7 +73,6 @@ jobs:
           cp -R "$RUNNER_TEMP/HealthGoBuild/Debug-iphoneos/HealthGoMobile.app" HealthGoIpa/Payload/
           (cd HealthGoIpa && zip -qry ../HealthGo-unsigned.ipa Payload)
           test -s HealthGo-unsigned.ipa
-
       - name: Upload unsigned iPhone IPA
         uses: actions/upload-artifact@v4
         with:
@@ -111,25 +80,13 @@ jobs:
           path: mobile/ios/HealthGo-unsigned.ipa
           if-no-files-found: error
           retention-days: 7
-
       - name: Build HealthGo for iPhone Simulator
         working-directory: mobile/ios
         run: |
-          xcodebuild \
-            -project HealthGoMobile.xcodeproj \
-            -scheme HealthGoMobile \
-            -configuration Debug \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath "$RUNNER_TEMP/HealthGoSimulatorDerivedData" \
-            -clonedSourcePackagesDirPath "$RUNNER_TEMP/HealthGoPackages" \
-            SYMROOT="$RUNNER_TEMP/HealthGoSimBuild" \
-            OBJROOT="$RUNNER_TEMP/HealthGoSimIntermediates" \
-            CODE_SIGNING_ALLOWED=NO \
-            build
-
-      - name: Validate Firebase + HealthKit integration
+          xcodebuild             -project HealthGoMobile.xcodeproj             -scheme HealthGoMobile             -configuration Debug             -destination 'generic/platform=iOS Simulator'             -derivedDataPath "$RUNNER_TEMP/HealthGoSimulatorDerivedData"             SYMROOT="$RUNNER_TEMP/HealthGoSimBuild"             OBJROOT="$RUNNER_TEMP/HealthGoIntermediates"             CODE_SIGNING_ALLOWED=NO             build
+      - name: Validate Supabase + HealthKit integration
         run: |
           grep -q "HealthKit" mobile/ios/HealthGoMobile/HealthSync.swift
-          grep -q "FirebaseAuth" mobile/ios/HealthGoMobile/ContentView.swift
-          grep -q 'document("latest")' mobile/ios/HealthGoMobile/HealthSync.swift
-          grep -q "com.healthgo.HealthGoMobile" mobile/ios/HealthGoMobile/GoogleService-Info.plist
+          grep -q "oqrfapmdcofguwdvhbeo.supabase.co" mobile/ios/HealthGoMobile/HealthGoSession.swift
+          grep -q "activity_daily" mobile/ios/HealthGoMobile/HealthSync.swift
+          grep -q "heart_rate" mobile/ios/HealthGoMobile/HealthSync.swift
