@@ -47,7 +47,7 @@ input,select{width:100%;padding:12px;border:1px solid var(--border);border-radiu
 /* Separate full-screen authentication */
 .auth-screen{position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 20% 10%,rgba(59,130,246,.22),transparent 35%),linear-gradient(145deg,#07111f,#0b1730 55%,#0d2146);color:#fff;overflow:auto}.auth-screen.show{display:flex}.auth-shell{width:min(100%,980px);display:grid;grid-template-columns:1.05fr .95fr;border:1px solid rgba(255,255,255,.13);border-radius:32px;overflow:hidden;background:rgba(10,20,40,.78);box-shadow:0 35px 100px rgba(0,0,0,.45);backdrop-filter:blur(20px)}.auth-brand{padding:56px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(145deg,rgba(37,99,235,.30),rgba(14,165,233,.08))}.auth-logo{font-size:34px;font-weight:950;letter-spacing:-1px}.auth-logo span{color:#7dd3fc}.auth-brand h2{font-size:38px;line-height:1.05;margin:34px 0 14px}.auth-brand p{color:#cbd5e1;line-height:1.65}.auth-panel{padding:48px;background:rgba(255,255,255,.97);color:#111827}.auth-panel h2{font-size:28px;margin:0 0 8px}.auth-panel>p{color:#64748b;margin:0 0 26px}.auth-panel input{width:100%;box-sizing:border-box;margin:0 0 12px;padding:15px 16px;border:1px solid #dbe3ef;border-radius:14px;font:inherit;background:#fff}.auth-main-btn,.auth-google-btn,.auth-create-btn{width:100%;padding:14px 16px;border:0;border-radius:14px;font-weight:800;cursor:pointer}.auth-main-btn{background:#2563eb;color:#fff}.auth-google-btn{background:#fff;color:#111827;border:1px solid #dbe3ef}.auth-create-btn{background:#e8eef8;color:#172033}.auth-divider{display:flex;align-items:center;gap:12px;color:#94a3b8;font-size:12px;margin:18px 0}.auth-divider:before,.auth-divider:after{content:"";height:1px;background:#e2e8f0;flex:1}.auth-note{font-size:12px;color:#94a3b8;text-align:center;margin-top:18px}.app.auth-hidden,.mobile-nav.auth-hidden{display:none!important}@media(max-width:760px){.auth-screen{padding:0;align-items:stretch;background:linear-gradient(180deg,#07111f 0,#0b1730 30%,#f8fafc 30%,#f8fafc 100%)}.auth-shell{width:100%;min-height:100dvh;grid-template-columns:1fr;border:0;border-radius:0;background:#fff;box-shadow:none}.auth-brand{padding:34px 24px 26px;min-height:25vh}.auth-brand h2{font-size:27px;margin:18px 0 8px}.auth-brand p{font-size:14px;margin:0}.auth-panel{padding:30px 22px 42px;border-radius:28px 28px 0 0;margin-top:-18px;position:relative}.auth-panel input{font-size:16px;min-height:52px}.auth-main-btn,.auth-google-btn,.auth-create-btn{min-height:52px;font-size:15px}.splash-title{font-size:38px}.splash-mark{width:88px;height:88px;font-size:44px}}
 
-.google-g{display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;margin-right:10px;vertical-align:middle}.auth-google-btn{display:flex!important;align-items:center;justify-content:center;gap:0}.auth-main-btn,.auth-google-btn,.auth-create-btn{cursor:pointer;touch-action:manipulation}
+.google-g{display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;margin-right:10px;vertical-align:middle;font-size:20px;font-weight:950;line-height:1;background:conic-gradient(from -45deg,#4285f4 0 25%,#34a853 0 50%,#fbbc05 0 75%,#ea4335 0);-webkit-background-clip:text;background-clip:text;color:transparent}.auth-google-btn{display:flex!important;align-items:center;justify-content:center;gap:0}.auth-main-btn,.auth-google-btn,.auth-create-btn{cursor:pointer;touch-action:manipulation}
 .google-g{display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;margin-right:10px;vertical-align:middle}.auth-google-btn{display:flex!important;align-items:center;justify-content:center;gap:0}.auth-main-btn,.auth-google-btn,.auth-create-btn{cursor:pointer;touch-action:manipulation;pointer-events:auto!important}.auth-panel,.auth-shell{pointer-events:auto!important}
 
 /* HealthGo AI workspace */
@@ -310,6 +310,7 @@ body[data-hosted-mobile="1"] .mobile-ai-note{display:block}
 body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{background:rgba(47,47,47,.98)}
 
 
+.auth-mfa-backdrop{position:fixed;inset:0;z-index:7000;display:grid;place-items:center;padding:20px;background:rgba(2,6,23,.72);backdrop-filter:blur(10px)}.auth-mfa-card{width:min(460px,100%);max-height:90vh;overflow:auto;background:#fff;color:#172033;border-radius:22px;padding:24px;box-shadow:0 28px 90px rgba(0,0,0,.35)}.auth-mfa-card h2{margin:0 0 8px;font-size:23px}.auth-mfa-card p{color:#64748b;line-height:1.5}.auth-mfa-card input{width:100%;box-sizing:border-box;padding:14px 15px;border:1px solid #dbe3ef;border-radius:13px;font-size:18px;letter-spacing:4px;text-align:center}.auth-mfa-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}.auth-mfa-actions button{padding:11px 14px;border-radius:11px;font-weight:800}.auth-mfa-primary{background:#2563eb;color:#fff}.auth-mfa-secondary{background:#eef2f7;color:#334155}.auth-mfa-qr{display:block;width:210px;height:210px;max-width:100%;margin:14px auto;background:#fff;border-radius:14px}.auth-mfa-secret{font-family:ui-monospace,Consolas,monospace;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px;word-break:break-all;font-size:12px}.auth-mfa-error{min-height:18px;color:#b91c1c;font-size:13px;margin-top:8px}
 html.hg-session-known #authScreen{display:none!important}
 </style>
 <script src="./core/achievement-engine.js"></script>
@@ -342,7 +343,7 @@ html.hg-session-known #authScreen{display:none!important}
       <div style="height:10px"></div>
       <button id="createAccountBtn" type="button" class="auth-create-btn" onclick="createAccount()">Utwórz konto HealthGo</button>
       <div class="auth-divider">lub</div>
-      <button id="googleLoginBtn" type="button" class="auth-google-btn" onclick="loginGoogle()">Kontynuuj z Google</button>
+      <button id="googleLoginBtn" type="button" class="auth-google-btn" onclick="loginGoogle()"><span class="google-g" aria-hidden="true">G</span><span>Kontynuuj z Google</span></button>
       <div id="authStatus" role="status" aria-live="polite" style="display:none;margin-top:14px;padding:11px 12px;border-radius:12px;background:#eff6ff;color:#1e40af;font-size:13px;text-align:left"></div><div class="auth-note">Twoje konto działa na komputerze i urządzeniach mobilnych.</div>
     </div>
   </div>
@@ -1918,15 +1919,108 @@ function showApp(){
  document.querySelector('.app')?.classList.remove('auth-hidden');
  document.querySelector('.mobile-nav')?.classList.remove('auth-hidden');
 }
+function authMfaCard(title,copy){
+ const back=document.createElement('div');back.className='auth-mfa-backdrop';
+ const card=document.createElement('div');card.className='auth-mfa-card';
+ const h=document.createElement('h2');h.textContent=title;
+ const p=document.createElement('p');p.textContent=copy;
+ card.append(h,p);back.appendChild(card);document.body.appendChild(back);
+ return{back,card,close(){back.remove();}};
+}
+function askEnableMfa(){
+ return new Promise(resolve=>{
+  const ui=authMfaCard('🔐 Logowanie dwuetapowe','Czy chcesz dodatkowo zabezpieczyć konto 6-cyfrowym kodem z aplikacji uwierzytelniającej?');
+  const actions=document.createElement('div');actions.className='auth-mfa-actions';
+  const later=document.createElement('button');later.className='auth-mfa-secondary';later.textContent='Nie teraz';
+  const yes=document.createElement('button');yes.className='auth-mfa-primary';yes.textContent='Włącz 2FA';
+  later.onclick=()=>{ui.close();resolve(false)};yes.onclick=()=>{ui.close();resolve(true)};
+  actions.append(later,yes);ui.card.appendChild(actions);
+ });
+}
+function mfaQrSource(value){
+ const raw=String(value||'');
+ if(raw.startsWith('data:'))return raw;
+ if(raw.trim().startsWith('<svg'))return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(raw);
+ return raw;
+}
+async function enrollMfa(){
+ const enrolled=await auth.mfa.enroll({factorType:'totp',friendlyName:'HealthGo'});
+ const factor=enrolled&&enrolled.data;if(!factor||!factor.id)throw new Error('mfa_enroll_failed');
+ const ui=authMfaCard('Włącz 2FA','Zeskanuj kod QR w Google Authenticator, Microsoft Authenticator lub innej aplikacji TOTP. Potem wpisz 6-cyfrowy kod.');
+ const qr=document.createElement('img');qr.className='auth-mfa-qr';qr.alt='Kod QR do logowania dwuetapowego';qr.src=mfaQrSource(factor.totp&&factor.totp.qr_code);
+ const secret=document.createElement('div');secret.className='auth-mfa-secret';secret.textContent='Klucz awaryjny: '+String(factor.totp&&factor.totp.secret||'');
+ const input=document.createElement('input');input.inputMode='numeric';input.autocomplete='one-time-code';input.maxLength=6;input.placeholder='000000';
+ const error=document.createElement('div');error.className='auth-mfa-error';
+ const actions=document.createElement('div');actions.className='auth-mfa-actions';
+ const cancel=document.createElement('button');cancel.className='auth-mfa-secondary';cancel.textContent='Anuluj';
+ const enable=document.createElement('button');enable.className='auth-mfa-primary';enable.textContent='Potwierdź kod';
+ actions.append(cancel,enable);ui.card.append(qr,secret,input,error,actions);
+ return await new Promise(resolve=>{
+  cancel.onclick=()=>{ui.close();resolve(false)};
+  enable.onclick=async()=>{
+   const code=input.value.trim();if(!/^[0-9]{6}$/.test(code)){error.textContent='Wpisz dokładnie 6 cyfr.';return;}
+   enable.disabled=true;error.textContent='Sprawdzam kod…';
+   try{
+    const challenge=await auth.mfa.challenge({factorId:factor.id});
+    await auth.mfa.verify({factorId:factor.id,challengeId:challenge.data.id,code});
+    ui.close();resolve(true);
+   }catch(e){error.textContent='Kod jest nieprawidłowy albo wygasł. Spróbuj ponownie.';enable.disabled=false;}
+  };
+ });
+}
+async function challengeMfa(){
+ const factors=await auth.mfa.listFactors();
+ const factor=(factors.data.totp||[]).find(x=>x.status==='verified')||(factors.data.all||[]).find(x=>x.status==='verified');
+ if(!factor)throw new Error('mfa_factor_missing');
+ const ui=authMfaCard('🔐 Kod potwierdzający','To konto ma włączone logowanie dwuetapowe. Wpisz 6-cyfrowy kod z aplikacji uwierzytelniającej.');
+ const input=document.createElement('input');input.inputMode='numeric';input.autocomplete='one-time-code';input.maxLength=6;input.placeholder='000000';
+ const error=document.createElement('div');error.className='auth-mfa-error';
+ const actions=document.createElement('div');actions.className='auth-mfa-actions';
+ const logout=document.createElement('button');logout.className='auth-mfa-secondary';logout.textContent='Wyloguj';
+ const verify=document.createElement('button');verify.className='auth-mfa-primary';verify.textContent='Potwierdź';
+ actions.append(logout,verify);ui.card.append(input,error,actions);
+ return await new Promise(resolve=>{
+  logout.onclick=async()=>{ui.close();await auth.signOut();resolve(false)};
+  verify.onclick=async()=>{
+   const code=input.value.trim();if(!/^[0-9]{6}$/.test(code)){error.textContent='Wpisz dokładnie 6 cyfr.';return;}
+   verify.disabled=true;error.textContent='Sprawdzam kod…';
+   try{
+    const challenge=await auth.mfa.challenge({factorId:factor.id});
+    await auth.mfa.verify({factorId:factor.id,challengeId:challenge.data.id,code});
+    ui.close();resolve(true);
+   }catch(e){error.textContent='Nieprawidłowy kod. Spróbuj ponownie.';verify.disabled=false;}
+  };
+ });
+}
+async function finishMfaStep(uid){
+ if(!auth||!auth.mfa)return true;
+ const levels=await auth.mfa.getAuthenticatorAssuranceLevel();
+ if(levels.data.currentLevel==='aal1'&&levels.data.nextLevel==='aal2'){
+  status('Wymagany kod logowania dwuetapowego…');
+  return await challengeMfa();
+ }
+ const key='healthgo_mfa_offer_'+uid;
+ if(sessionStorage.getItem(key)!=='1'){
+  sessionStorage.setItem(key,'1');
+  if(await askEnableMfa()){
+   const enabled=await enrollMfa();
+   if(enabled)status('Logowanie dwuetapowe zostało włączone.');
+  }
+ }
+ return true;
+}
 async function busy(button,action){
  if(button)button.disabled=true;
  try{await action();}catch(e){status(clean(e),true);}finally{if(button)button.disabled=false;const p=document.getElementById('loginPass');if(p)p.value='';}
 }
 let handlingUid=null;
 async function handleSession(session){
- const user=session&&session.user?HealthGoSupabase.toHealthGoUser(session.user):null;
- if(!user){handlingUid=null;HealthGoServices.stop();showAuth();return;}
- const uid=user.uid;if(handlingUid===uid&&HealthGoServices.state.uid===uid)return;handlingUid=uid;
+ if(!session||!session.user){handlingUid=null;HealthGoServices.stop();showAuth();return;}
+ const uid=session.user.id;
+ if(handlingUid===uid&&HealthGoServices.state.uid===uid)return;
+ if(!(await finishMfaStep(uid)))return;
+ const user=HealthGoSupabase.toHealthGoUser(session.user);
+ handlingUid=uid;
  status('Sprawdzanie konta…');
  await HealthGoServices.start(user);
  if(!HealthGoSupabase.auth.currentUser||HealthGoSupabase.auth.currentUser.id!==uid)return;
@@ -1941,7 +2035,7 @@ else{
 }
 window.loginGoogle=()=>busy(document.getElementById('googleLoginBtn'),async()=>{
  if(!auth)throw new Error('sdk-unavailable');
- await auth.signInWithGoogle();status('Dokończ logowanie w przeglądarce. Następnie wróć do HealthGo.');
+ await auth.signInWithGoogle();status('Otworzyłem okno Google. Wybierz konto i dokończ logowanie.');
 });
 window.loginDemo=()=>busy(document.getElementById('emailLoginBtn'),async()=>{
  if(!auth)throw new Error('sdk-unavailable');status('Logowanie…');
