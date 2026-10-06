@@ -46,6 +46,17 @@ function healthRow(row){
   source:row.source||'Supabase',day:row.activity_date,timestamp:row.updated_at,updatedAt:row.updated_at
  }):null;
 }
+function deviceRow(row){
+ if(!row)return null;
+ return{id:row.id,externalId:row.external_id||'',name:row.name||'Urządzenie',platform:row.platform||'',deviceType:row.device_type||'',connectionType:row.connection_type||'',batteryLevel:row.battery_level,lastSyncAt:row.last_sync_at,lastConnectedAt:row.last_connected_at,lastDisconnectedAt:row.last_disconnected_at};
+}
+async function refreshDevices(){
+ if(!state.uid||!S||!S.hasSession())return[];
+ const uid=state.uid,rows=await S.db.select('devices',{user_id:'eq.'+uid,order:'last_sync_at.desc',limit:50});
+ if(uid!==state.uid)return[];
+ state.devices=(rows||[]).map(deviceRow).filter(Boolean);
+ emit('DEVICES_UPDATED',state.devices);notify();return state.devices;
+}
 function rebuildEngine(rows,profile){
  let engine=null;
  try{engine=Engine&&Engine.createState?Engine.createState(null,new Date().toISOString()):null;}catch(_){}
@@ -121,7 +132,7 @@ async function initialize(){
    if(state.health){save('health',state.health);save('days',state.healthDays);}
    state.syncEvents=(activity||[]).slice(0,50).map(r=>({id:r.activity_date,source:r.source||'Supabase',day:r.activity_date,status:'synced',occurredAt:r.updated_at}));
    state.notifications=(notes||[]).map(n=>Object.assign({},n,{read:!!n.read_at,readAt:n.read_at,createdAt:n.created_at}));
-   state.devices=(devices||[]).map(d=>({id:d.id,externalId:d.external_id||'',name:d.name||'Urządzenie',platform:d.platform||'',deviceType:d.device_type||'',connectionType:d.connection_type||'',batteryLevel:d.battery_level,lastSyncAt:d.last_sync_at,lastConnectedAt:d.last_connected_at,lastDisconnectedAt:d.last_disconnected_at}));
+   state.devices=(devices||[]).map(deviceRow).filter(Boolean);
    state.cloudState=cloud||null;state.settings=cloud&&cloud.settings_v3||null;
    state.locationSettings=loc?{enabled:!!loc.enabled,mode:loc.mode||'off',familySharing:!!loc.family_sharing,updatedAt:loc.updated_at}:{enabled:false,mode:'off'};
    state.backendAvailable=true;state.error=null;state.loading=false;
@@ -204,7 +215,7 @@ async function flush(){
  for(const event of queue.slice()){if(uid!==state.uid)return;try{await call('recordProgressEvent',event);queue.splice(queue.findIndex(x=>x.id===event.id),1);save('outbox',queue);}catch(_){break;}}
 }
 async function markNotificationRead(id){if(!state.uid)return;await rpc('healthgo_mark_notification_read',{p_notification_id:id});await initialize();}
-const api={events,get state(){return state;},subscribe(fn){subscribers.add(fn);fn(state);return()=>subscribers.delete(fn);},start,stop,initialize,call,record,refreshHealth,refreshEngine,markNotificationRead,loadFamilyProjections(){return initialize();},syncCloudState,loadCloudState,
+const api={events,get state(){return state;},subscribe(fn){subscribers.add(fn);fn(state);return()=>subscribers.delete(fn);},start,stop,initialize,call,record,refreshHealth,refreshDevices,refreshEngine,markNotificationRead,loadFamilyProjections(){return initialize();},syncCloudState,loadCloudState,
  refreshLegacy(){if(!state.engine&&Engine&&typeof loadProgress==='function'){state.engine=Engine.migrateLegacy(loadProgress(),new Date().toISOString());state.legacyPreview=true;notify();}},
  setTitle(titleId){return call('updateProfilePreferences',{titleId});},errorMessage};
 window.HealthGoServices=api;
