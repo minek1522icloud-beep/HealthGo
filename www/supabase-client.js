@@ -69,8 +69,8 @@ async function sessionFromUrl(){
  try{
   const query=new URLSearchParams(root.location&&root.location.search||'');
   if(query.has('code')||query.has('error')){
-   let pending;try{pending=JSON.parse(sessionStorage.getItem(PKCE)||'null');}catch(_){}
-   sessionStorage.removeItem(PKCE);
+   let pending;try{pending=JSON.parse(sessionStorage.getItem(PKCE)||localStorage.getItem(PKCE)||'null');}catch(_){}
+   sessionStorage.removeItem(PKCE);try{localStorage.removeItem(PKCE);}catch(_){}
    root.history.replaceState(null,'',root.location.pathname);
    if(query.has('error'))throw new Error('google_cancelled');
    if(!pending||Date.now()-pending.created>600000)throw new Error('google_expired');
@@ -106,7 +106,9 @@ const auth={
   const challenge=base64url(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));
   const desktop=/Electron\//.test(root.navigator&&root.navigator.userAgent||'');
   const redirect=desktop?'http://127.0.0.1:5500/auth/callback?attempt='+randomToken():root.location.origin+root.location.pathname;
-  sessionStorage.setItem(PKCE,JSON.stringify({verifier,created:Date.now()}));
+  const pending={verifier,created:Date.now()};
+  sessionStorage.setItem(PKCE,JSON.stringify(pending));
+  try{localStorage.setItem(PKCE,JSON.stringify(pending));}catch(_){}
   const params=new URLSearchParams({provider:'google',redirect_to:redirect,code_challenge:challenge,code_challenge_method:'s256'});
   const target=URL+'/auth/v1/authorize?'+params;
   if(desktop)root.open(target,'_blank');else root.location.assign(target);
