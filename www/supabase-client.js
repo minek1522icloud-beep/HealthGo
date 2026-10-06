@@ -105,7 +105,7 @@ const auth={
   const verifier=randomToken();
   const challenge=base64url(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))));
   const desktop=/Electron\//.test(root.navigator&&root.navigator.userAgent||'');
-  const redirect=desktop?'http://127.0.0.1:5500/auth/callback?attempt='+randomToken():root.location.origin+root.location.pathname;
+  const redirect=root.location.origin+root.location.pathname;
   const pending={verifier,created:Date.now()};
   sessionStorage.setItem(PKCE,JSON.stringify(pending));
   try{localStorage.setItem(PKCE,JSON.stringify(pending));}catch(_){}
