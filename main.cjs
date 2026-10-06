@@ -443,12 +443,28 @@ function startWebServer() {
 
 const AI_PORT = 8787;
 const OLLAMA_BASE_URL = "http://127.0.0.1:11434";
-const OLLAMA_MODEL = "qwen3:4b";
+const OLLAMA_MODEL = process.env.HEALTHGO_OLLAMA_MODEL || "qwen3:4b";
+let activeOllamaModel = OLLAMA_MODEL;
 
 function sleep(ms) {
   return new Promise(
     (resolve) => setTimeout(resolve, ms)
   );
+}
+
+async function chooseOllamaModel() {
+  try {
+    const response = await fetch(OLLAMA_BASE_URL + "/api/tags");
+    if (!response.ok) return OLLAMA_MODEL;
+    const data = await response.json();
+    const names = Array.isArray(data.models) ? data.models.map(m => String(m.name || m.model || '')).filter(Boolean) : [];
+    const exact = names.find(n => n === OLLAMA_MODEL);
+    if (exact) return exact;
+    const preferred = names.find(n => /^qwen/i.test(n)) || names.find(n => /llama|gemma|mistral|phi/i.test(n)) || names[0];
+    return preferred || OLLAMA_MODEL;
+  } catch (_) {
+    return OLLAMA_MODEL;
+  }
 }
 
 async function isOllamaRunning() {
@@ -720,6 +736,8 @@ async function askLocalOllama(data) {
   const ready =
     await ensureOllamaRunning();
 
+  activeOllamaModel = await chooseOllamaModel();
+
   if (!ready) {
     throw new Error(
       "OLLAMA_NOT_RUNNING"
@@ -796,7 +814,7 @@ async function askLocalOllama(data) {
             JSON.stringify(
               {
                 model:
-                  OLLAMA_MODEL,
+                  activeOllamaModel,
 
                 stream:
                   false,
@@ -930,7 +948,7 @@ function startAIServer() {
                   bridge: true,
                   ollama,
                   model:
-                    OLLAMA_MODEL
+                    activeOllamaModel
                 },
                 origin
               );
@@ -1012,7 +1030,7 @@ function startAIServer() {
                 404
               ) {
                 message =
-                  "Model qwen3:4b nie jest dostępny w Ollamie.";
+                  "Wybrany model AI nie jest dostępny w Ollamie.";
               }
 
               aiWriteJson(
