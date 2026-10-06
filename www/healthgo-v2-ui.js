@@ -162,7 +162,20 @@ async function shareCurrentLocation(){
  if(!navigator.geolocation){await dialog('Lokalizacja niedostępna','To urządzenie nie udostępnia lokalizacji przeglądarce.');return}
  try{var position=await new Promise(function(resolve,reject){navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:settings.mode==='precise',timeout:12000,maximumAge:30000})});var payload={latitude:position.coords.latitude,longitude:position.coords.longitude,accuracyMeters:position.coords.accuracy,device:navigator.userAgent&&/iPhone|iPad/i.test(navigator.userAgent)?'iPhone':/Android/i.test(navigator.userAgent)?'Android':'Urządzenie HealthGo'};if(settings.mode==='approximate'&&Data&&Data.coarsenLocation)payload=Object.assign(payload,Data.coarsenLocation(payload));await Services.call('publishLocation',payload);await dialog('Lokalizacja zaktualizowana','HealthGo zapisał tylko lokalizację dozwoloną przez wybrany tryb.');await Services.initialize()}catch(_){await dialog('Nie udało się pobrać lokalizacji','Sprawdź uprawnienia lokalizacji urządzenia i spróbuj ponownie.')}
 }
-function renderAll(){ensureCards();renderBackpack();renderChallenges();renderActivity();renderDevices();renderFamily();renderSettings()}
+function renderPresentationCards(){
+ var page=q('#start');if(!page)return;
+ var box=q('#hg2PresentationCards',page);
+ if(!box){box=el('section','hg2-grid');box.id='hg2PresentationCards';box.style.marginTop='14px';page.appendChild(box)}
+ box.replaceChildren();
+ var engine=currentEngine(),level=engine?Engine.getLevel(engine.totalXp||0):{level:1},challenges=engine?Engine.viewChallenges(engine,new Date().toISOString()):[];
+ var completed=challenges.filter(function(x){return x.status==='completed'}).length;
+ var score=Math.min(100,Math.round(Math.min(40,(level.level-1)*4)+Math.min(40,completed*8)+(Services.state.health?20:0)));
+ var scoreCard=el('article','hg2-card'),scoreHead=el('div','hg2-section-title'),scoreCopy=el('div');
+ scoreCopy.append(el('h3','','✨ HealthGo Score'),el('p','','Wynik postępu w aplikacji — poziom, ukończone wyzwania i synchronizacja. To nie jest ocena zdrowia ani wyglądu.'));
+ scoreHead.appendChild(scoreCopy);scoreCard.append(scoreHead,el('div','hg2-stat'));q('.hg2-stat',scoreCard).append(el('small','','Dzisiejszy postęp'),el('b','',score+' / 100'),progress(score));box.appendChild(scoreCard);
+ var sos=el('article','hg2-card'),sosHead=el('div','hg2-section-title'),sosCopy=el('div');sosCopy.append(el('h3','','🆘 SOS'),el('p','','Szybki ekran pomocy. HealthGo nie udaje, że wysłał alarm, jeśli telefon tego nie potwierdzi.'));sosHead.appendChild(sosCopy);sos.append(sosHead,btn('Otwórz SOS',async function(){await dialog('SOS — pomoc','Jeśli jesteś w bezpośrednim niebezpieczeństwie, skontaktuj się z numerem alarmowym 112 albo z zaufaną osobą dorosłą. HealthGo nie wysłał automatycznie żadnej wiadomości.');},false));box.appendChild(sos);
+}
+function renderAll(){ensureCards();renderBackpack();renderChallenges();renderActivity();renderDevices();renderFamily();renderSettings();renderPresentationCards()}
 
 injectStyle();familyPage();addNav();ensureCards();
 window.HealthGoV2UI={ready:true,render:renderAll,renderFamily:renderFamily,renderBackpack:renderBackpack,renderChallenges:renderChallenges,renderNotifications:renderNotifications};
