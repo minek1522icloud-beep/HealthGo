@@ -28,8 +28,8 @@ function injectStyle(){
  '.hg2-challenge{display:grid;gap:8px}.hg2-challenge-head{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}.hg2-member{display:flex;align-items:center;gap:11px;padding:11px 0;border-top:1px solid var(--border)}.hg2-member:first-child{border-top:0}.hg2-avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--soft);font-weight:850}.hg2-grow{min-width:0;flex:1}.hg2-grow b,.hg2-grow small{display:block;overflow-wrap:anywhere}.hg2-grow small{color:var(--muted);margin-top:2px}.hg2-permissions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}'+
  '.hg2-empty{text-align:center;padding:22px 12px;color:var(--muted)}.hg2-empty strong{display:block;color:var(--text);font-size:15px;margin-bottom:5px}.hg2-notification{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:13px 0;border-top:1px solid var(--border)}.hg2-notification:first-child{border-top:0}.hg2-unread{font-weight:750}.hg2-note{padding:11px 12px;border-radius:12px;background:var(--soft);color:var(--muted);font-size:12px;line-height:1.5}'+
  '.hg2-section-title{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}.hg2-section-title h3{margin:0}.hg2-section-title p{margin:4px 0 0;color:var(--muted);font-size:12px}.hg2-dialog-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);display:grid;place-items:center;padding:18px;z-index:2000}.hg2-dialog{width:min(480px,100%);max-height:90vh;overflow:auto;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px}.hg2-dialog input{width:100%;box-sizing:border-box;margin:10px 0}.hg2-dialog-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.hg2-dialog-open{overflow:hidden}'+
- '.hg2-family-shell{display:grid;gap:14px}.hg2-family-welcome{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:14px;align-items:stretch}.hg2-family-main{padding:22px;border-radius:18px;background:linear-gradient(145deg,#111827,#1f2937);color:#fff;min-width:0}.hg2-family-main h3{font-size:24px;margin:0 0 7px}.hg2-family-main p{margin:0;color:#d1d5db;line-height:1.55}.hg2-family-role-card{padding:18px;border-radius:18px;border:1px solid var(--border);background:var(--card);display:grid;gap:12px;align-content:start}.hg2-family-role-icon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:var(--soft);font-size:24px}.hg2-family-role-card h4{margin:0;font-size:17px}.hg2-family-role-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.hg2-family-role-pill{display:inline-flex;width:max-content;max-width:100%;padding:6px 10px;border-radius:999px;background:#ecfdf5;color:#047857;font-weight:850;font-size:11px}.hg2-family-action-card{display:grid;gap:13px}.hg2-family-action-card h3{margin:0}.hg2-family-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.hg2-family-actions .btn{min-height:40px}.hg2-family-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:2px}.hg2-family-step{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--soft)}.hg2-family-step-num{width:28px;height:28px;flex:0 0 28px;border-radius:9px;background:#111827;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:900}.hg2-family-name{font-size:24px;font-weight:900;letter-spacing:-.4px}.hg2-family-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.hg2-family-invite{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:18px;align-items:center;margin-top:12px;padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--soft)}.hg2-family-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:25px;font-weight:900;letter-spacing:4px;margin:7px 0;overflow-wrap:anywhere}.hg2-family-qr{width:178px;height:178px;padding:5px;background:#fff;border-radius:13px;display:grid;place-items:center}.hg2-family-qr img,.hg2-family-qr canvas{max-width:168px!important;max-height:168px!important}.hg2-family-member-card{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 0;border-top:1px solid var(--border)}.hg2-family-member-card:first-of-type{border-top:0}.hg2-family-member-card .hg2-avatar{width:44px;height:44px}.hg2-family-danger{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}.hg2-family-loading{padding:28px;text-align:center}.hg2-family-loading b{display:block;margin-bottom:5px}.hg2-family-warning{padding:12px 13px;border-radius:12px;background:#fff7ed;color:#9a3412;font-size:12px;line-height:1.5}'+
- '@media(max-width:600px){.hg2-card{padding:14px}.hg2-summary{grid-template-columns:1fr 1fr}.hg2-notification{grid-template-columns:1fr}.hg2-family-welcome,.hg2-family-invite{grid-template-columns:1fr}.hg2-family-steps{grid-template-columns:1fr}.hg2-family-actions{justify-content:flex-start}.hg2-family-qr{width:178px;height:178px;margin:auto}.hg2-family-member-card{grid-template-columns:44px minmax(0,1fr)}.hg2-family-member-card>.btn{grid-column:1/-1;width:100%}}';
+ '.hg2-family-shell{display:grid;gap:14px}.hg2-family-welcome{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:14px;align-items:stretch}.hg2-family-main{padding:22px;border-radius:18px;background:linear-gradient(145deg,#111827,#1f2937);color:#fff;min-width:0}.hg2-family-main h3{font-size:24px;margin:0 0 7px}.hg2-family-main p{margin:0;color:#d1d5db;line-height:1.55}.hg2-family-role-card{padding:18px;border-radius:18px;border:1px solid var(--border);background:var(--card);display:grid;gap:12px;align-content:start}.hg2-family-role-icon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:var(--soft);font-size:24px}.hg2-family-role-card h4{margin:0;font-size:17px}.hg2-family-role-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.hg2-family-role-pill{display:inline-flex;width:max-content;max-width:100%;padding:6px 10px;border-radius:999px;background:#ecfdf5;color:#047857;font-weight:850;font-size:11px}.hg2-family-action-card{display:grid;gap:13px}.hg2-family-action-card h3{margin:0}.hg2-family-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.hg2-family-actions .btn{min-height:40px}.hg2-family-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:2px}.hg2-family-step{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:13px;background:var(--soft)}.hg2-family-step-num{width:28px;height:28px;flex:0 0 28px;border-radius:9px;background:#111827;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:900}.hg2-family-name{font-size:24px;font-weight:900;letter-spacing:-.4px}.hg2-family-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.hg2-family-invite{display:block;margin-top:12px;padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--soft)}.hg2-family-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:25px;font-weight:900;letter-spacing:4px;margin:7px 0;overflow-wrap:anywhere}.hg2-family-member-card{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;padding:13px 0;border-top:1px solid var(--border)}.hg2-family-member-card:first-of-type{border-top:0}.hg2-family-member-card .hg2-avatar{width:44px;height:44px}.hg2-family-danger{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}.hg2-family-loading{padding:28px;text-align:center}.hg2-family-loading b{display:block;margin-bottom:5px}.hg2-family-warning{padding:12px 13px;border-radius:12px;background:#fff7ed;color:#9a3412;font-size:12px;line-height:1.5}'+
+ '@media(max-width:600px){.hg2-card{padding:14px}.hg2-summary{grid-template-columns:1fr 1fr}.hg2-notification{grid-template-columns:1fr}.hg2-family-welcome{grid-template-columns:1fr}.hg2-family-steps{grid-template-columns:1fr}.hg2-family-actions{justify-content:flex-start}.hg2-family-member-card{grid-template-columns:44px minmax(0,1fr)}.hg2-family-member-card>.btn{grid-column:1/-1;width:100%}}';
  document.head.appendChild(s);
 }
 function ensurePage(id,title,desc){
@@ -133,7 +133,7 @@ function renderFamily(){
 
  var welcome=el('div','hg2-family-welcome');
  var intro=el('section','hg2-family-main');
- intro.append(el('h3','',f.id?(f.name||'Twoja rodzina'):'HealthGo Family'),el('p','',f.id?'Rodzina jest połączona z Twoim kontem. Tutaj zarządzasz członkami, zaproszeniami i uprawnieniami.':'Rodzic lub opiekun tworzy rodzinę. Pozostałe konta dołączają bezpiecznym, jednorazowym kodem lub przez QR.'));
+ intro.append(el('h3','',f.id?(f.name||'Twoja rodzina'):'HealthGo Family'),el('p','',f.id?'Rodzina jest połączona z Twoim kontem. Tutaj zarządzasz członkami, zaproszeniami i uprawnieniami.':'Rodzic lub opiekun tworzy rodzinę. Pozostałe konta dołączają bezpiecznym kodem rodzinnym.'));
  var roleCard=el('section','hg2-family-role-card');
  roleCard.append(el('div','hg2-family-role-icon',roleIcon),el('span','hg2-family-role-pill',roleLabel),el('h4','',s.profile.nickname||'Konto HealthGo'));
  if(accountType==='guardian')roleCard.appendChild(el('p','','To konto może utworzyć HealthGo Family, generować zaproszenia i zarządzać uprawnieniami dziecka.'));
@@ -146,22 +146,22 @@ function renderFamily(){
   if(accountType==='guardian'){
    action.append(el('div','hg2-section-title'));
    var title=q('.hg2-section-title',action),copy=el('div');
-   copy.append(el('h3','','Utwórz swoją rodzinę'),el('p','','Nadaj jej nazwę. Po utworzeniu od razu dostaniesz możliwość wygenerowania kodu i QR dla kolejnej osoby.'));
+   copy.append(el('h3','','Utwórz swoją rodzinę'),el('p','','Nadaj jej nazwę. Po utworzeniu od razu dostaniesz możliwość wygenerowania kodu rodzinnego dla kolejnej osoby.'));
    title.appendChild(copy);
    var actions=el('div','hg2-family-actions');
    actions.appendChild(btn('＋ Utwórz rodzinę',createFamily,false));
    action.appendChild(actions);
   }else{
    var title2=el('div','hg2-section-title'),copy2=el('div');
-   copy2.append(el('h3','','Dołącz do rodziny'),el('p','',accountType==='child'?'Poproś rodzica lub opiekuna o kod albo zeskanuj jego QR.':'Wpisz kod zaproszenia otrzymany od opiekuna rodziny.'));
+   copy2.append(el('h3','','Dołącz do rodziny'),el('p','',accountType==='child'?'Poproś rodzica lub opiekuna o kod rodzinny.':'Wpisz kod zaproszenia otrzymany od opiekuna rodziny.'));
    title2.appendChild(copy2);action.appendChild(title2);
    var actions2=el('div','hg2-family-actions');actions2.appendChild(btn('Dołącz do rodziny',joinFamily,false));action.appendChild(actions2);
   }
 
   var steps=el('div','hg2-family-steps');
   var stepData=accountType==='guardian'
-   ?[['1','Utwórz rodzinę','Nadaj jej nazwę.'],['2','Wygeneruj zaproszenie','Kod i QR są jednorazowe.'],['3','Dodaj członka','Druga osoba loguje się i dołącza.']]
-   :[['1','Odbierz kod','Kod daje rodzic lub opiekun.'],['2','Wpisz albo zeskanuj','HealthGo sprawdzi zaproszenie.'],['3','Gotowe','Konto pojawi się w rodzinie.']];
+   ?[['1','Utwórz rodzinę','Nadaj jej nazwę.'],['2','Wygeneruj kod','HealthGo utworzy kod rodzinny.'],['3','Dodaj członka','Druga osoba wpisuje kod i dołącza.']]
+   :[['1','Odbierz kod','Kod daje rodzic lub opiekun.'],['2','Wpisz kod','HealthGo sprawdzi zaproszenie.'],['3','Gotowe','Konto pojawi się w rodzinie.']];
   stepData.forEach(function(x){var row=el('div','hg2-family-step'),n=el('div','hg2-family-step-num',x[0]),txt=el('div','hg2-grow');txt.append(el('b','',x[1]),el('small','',x[2]));row.append(n,txt);steps.appendChild(row)});
   action.appendChild(steps);
   if(accountType==='guardian')action.appendChild(el('div','hg2-note','Na koncie Rodzica / Opiekuna przycisk „Dołącz” nie jest pokazywany jako główna akcja. To konto tworzy własną rodzinę.'));
@@ -194,25 +194,37 @@ function renderFamily(){
  });
  root.appendChild(members);
 
+ var locations=el('section','hg2-card'),lh=el('div','hg2-section-title'),lc=el('div');
+ lc.append(el('h3','','Lokalizacja członków'),el('p','','HealthGo pokazuje nazwę użytkownika i stan udostępniania — bez wyświetlania identyfikatora konta.'));
+ lh.appendChild(lc);locations.appendChild(lh);
+ var locationRows=f.locations||[];
+ if(!locationRows.length)locations.appendChild(empty('Brak udostępnionej lokalizacji','Gdy członek rodziny udostępni lokalizację za zgodą urządzenia, pojawi się tutaj jego nazwa.'));
+ locationRows.forEach(function(loc){
+  var row=el('div','hg2-family-member-card'),avatar=el('div','hg2-avatar',(loc.nickname||'U').slice(0,1).toUpperCase()),copy=el('div','hg2-grow');
+  copy.append(el('b','',loc.nickname||'Użytkownik HealthGo'),el('small','',(loc.timestamp?'Udostępniono '+date(loc.timestamp):'Lokalizacja udostępniona')+(loc.device?' · '+loc.device:'')));
+  row.append(avatar,copy);locations.appendChild(row);
+ });
+ if(s.locationSettings&&s.locationSettings.enabled)locations.appendChild(btn('Udostępnij moją lokalizację',shareCurrentLocation,true));
+ root.appendChild(locations);
+
  var safety=el('section','hg2-card'),sh=el('div','hg2-section-title'),sc=el('div');
- sc.append(el('h3','','Zaproszenia'),el('p','',role==='guardian'?'Wygeneruj jednorazowy kod i QR. Zaproszenie wygasa automatycznie.':'Zaproszenia tworzy Rodzic / Opiekun.'));
+ sc.append(el('h3','','Kod rodzinny'),el('p','',role==='guardian'?'Wygeneruj prosty kod rodzinny. Kod wygasa automatycznie po 30 minutach.':'Kod rodzinny tworzy Rodzic / Opiekun.'));
  sh.appendChild(sc);safety.appendChild(sh);
  if(role==='guardian'){
   var saved=readFamilyInvite();
   if(saved){
-   var inviteBox=el('div','hg2-family-invite'),inviteCopy=el('div'),qr=el('div','hg2-family-qr');
-   inviteCopy.append(el('small','hg2-meta','Aktualny kod rodzinny'),el('div','hg2-family-code',saved.code),el('p','hg2-meta','Ważny do '+date(saved.expiresAt)+'.'));
+   var inviteBox=el('div','hg2-family-invite'),inviteCopy=el('div');
+   inviteCopy.append(el('small','hg2-meta','Aktualny kod rodzinny'),el('div','hg2-family-code',saved.code),el('p','hg2-meta','Ważny do '+date(saved.expiresAt)+'. Przekaż ten kod osobie, która ma dołączyć.'));
    var inviteTools=el('div','hg2-toolbar');
-   inviteTools.append(btn('Kopiuj kod',function(){copyText(saved.code)},true),btn('Kopiuj link',function(){copyText(familyInviteUrl(saved.code))},true),btn('Nowy kod i QR',createInvite,false));
-   inviteCopy.appendChild(inviteTools);inviteBox.append(inviteCopy,qr);safety.appendChild(inviteBox);
-   if(window.QRCode)new QRCode(qr,{text:familyInviteUrl(saved.code),width:168,height:168,correctLevel:QRCode.CorrectLevel.M});
+   inviteTools.append(btn('Kopiuj kod',function(){copyText(saved.code)},true),btn('Wygeneruj nowy kod',createInvite,false));
+   inviteCopy.appendChild(inviteTools);inviteBox.appendChild(inviteCopy);safety.appendChild(inviteBox);
   }else{
-   var inviteActions=el('div','hg2-family-actions');inviteActions.appendChild(btn('Wygeneruj kod i QR',createInvite,false));safety.appendChild(inviteActions);
+   var inviteActions=el('div','hg2-family-actions');inviteActions.appendChild(btn('Wygeneruj kod rodzinny',createInvite,false));safety.appendChild(inviteActions);
   }
  }else{
-  safety.appendChild(el('div','hg2-note','Aby dodać kolejną osobę, poproś opiekuna tej rodziny o wygenerowanie zaproszenia.'));
+  safety.appendChild(el('div','hg2-note','Aby dodać kolejną osobę, poproś opiekuna tej rodziny o wygenerowanie kodu rodzinnego.'));
  }
- safety.appendChild(el('div','hg2-note','Kod i QR służą tylko do dołączenia konta do rodziny. Nie przesyłają automatycznie danych zdrowotnych ani lokalizacji.'));
+ safety.appendChild(el('div','hg2-note','Kod rodzinny służy tylko do dołączenia konta do rodziny. Nie udostępnia automatycznie danych zdrowotnych ani lokalizacji.'));
  var danger=el('div','hg2-family-danger');danger.appendChild(btn('Opuść rodzinę',leaveFamily,true));safety.appendChild(danger);root.appendChild(safety);
 }
 function renderNotifications(){
@@ -236,14 +248,7 @@ function dialog(title,copy,field){
 async function createFamily(){
  var name=await dialog('Utwórz rodzinę','Nadaj rodzinie krótką nazwę, którą zobaczą jej członkowie.',{placeholder:'Np. Rodzina Kosteckich',maxLength:60});
  if(!name)return;
- try{await Services.call('createFamily',{name:name});await Services.initialize();await dialog('Rodzina utworzona','Gotowe. Teraz możesz wygenerować kod QR i zaprosić kolejną osobę.')}catch(e){await dialog('Nie udało się utworzyć rodziny',e.message)}
-}
-function familyInviteUrl(code){
- var base='https://minek1522icloud-beep.github.io/HealthGo/';
- try{
-  if(location.protocol==='https:'&&location.hostname&&location.hostname!=='127.0.0.1'&&location.hostname!=='localhost')base=location.origin+location.pathname;
- }catch(_){}
- var u=new URL(base,location.href);u.searchParams.set('family_invite',String(code||''));return u.toString();
+ try{await Services.call('createFamily',{name:name});await Services.initialize();await dialog('Rodzina utworzona','Gotowe. Teraz możesz wygenerować kod rodzinny i zaprosić kolejną osobę.')}catch(e){await dialog('Nie udało się utworzyć rodziny',e.message)}
 }
 async function copyText(value){
  try{await navigator.clipboard.writeText(value);return true}catch(_){}
@@ -252,14 +257,12 @@ async function copyText(value){
 async function inviteDialog(r){
  return new Promise(function(resolve){
   var back=el('div','hg2-dialog-backdrop'),box=el('div','hg2-dialog');box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');
-  var code=String(r.code||''),url=familyInviteUrl(code),expires=r.expiresAt?date(r.expiresAt):'za około 30 minut';
-  box.append(el('h3','','📱 Zaproszenie do rodziny'),el('p','','Zeskanuj QR aparatem telefonu albo wpisz kod. Zaproszenie jest jednorazowe i wygasa '+expires+'.'));
-  var wrap=el('div','hg2-family-invite'),copy=el('div'),qr=el('div','hg2-family-qr');
-  copy.append(el('small','hg2-meta','Kod rodzinny'),el('div','hg2-family-code',code),el('p','hg2-meta','Po zeskanowaniu HealthGo otworzy stronę dołączenia do tej rodziny.'));
-  var tools=el('div','hg2-toolbar');
-  tools.append(btn('Kopiuj kod',async function(){await copyText(code);},true),btn('Kopiuj link',async function(){await copyText(url);},true));
-  copy.appendChild(tools);wrap.append(copy,qr);box.appendChild(wrap);
-  if(window.QRCode){new QRCode(qr,{text:url,width:168,height:168,correctLevel:QRCode.CorrectLevel.M})}else{qr.appendChild(el('div','hg2-note','QR nie załadował się. Użyj kodu powyżej.'))}
+  var code=String(r.code||''),expires=r.expiresAt?date(r.expiresAt):'za około 30 minut';
+  box.append(el('h3','','🔑 Kod rodzinny'),el('p','','Przekaż ten kod osobie, która ma dołączyć do rodziny. Kod jest jednorazowy i wygasa '+expires+'.'));
+  var wrap=el('div','hg2-family-invite'),copy=el('div');
+  copy.append(el('small','hg2-meta','Kod rodzinny'),el('div','hg2-family-code',code),el('p','hg2-meta','Druga osoba wpisuje ten kod w HealthGo → Rodzina → Dołącz do rodziny.'));
+  var tools=el('div','hg2-toolbar');tools.append(btn('Kopiuj kod',async function(){await copyText(code);},true));
+  copy.appendChild(tools);wrap.appendChild(copy);box.appendChild(wrap);
   var actions=el('div','hg2-dialog-actions');function close(){back.remove();document.body.classList.remove('hg2-dialog-open');resolve(true)}
   actions.append(btn('Gotowe',close,false));box.appendChild(actions);back.appendChild(box);document.body.appendChild(back);document.body.classList.add('hg2-dialog-open');
  });
@@ -269,7 +272,7 @@ function readFamilyInvite(){try{var x=JSON.parse(localStorage.getItem(familyInvi
 function saveFamilyInvite(value){try{localStorage.setItem(familyInviteStorageKey(),JSON.stringify(value))}catch(_){}}
 async function createInvite(){try{var r=await Services.call('createFamilyInvite',{});if(!r||!r.code)throw new Error('Nie udało się utworzyć kodu.');saveFamilyInvite({code:r.code,expiresAt:r.expiresAt});renderFamily();await inviteDialog(r)}catch(e){await dialog('Nie udało się utworzyć zaproszenia',e.message)}}
 async function joinFamily(){
- var code=await dialog('Dołącz do rodziny','Wpisz jednorazowy kod z zaproszenia. Możesz też zeskanować QR aparatem telefonu.',{placeholder:'Kod rodzinny',maxLength:32});
+ var code=await dialog('Dołącz do rodziny','Wpisz kod rodzinny otrzymany od rodzica lub opiekuna.',{placeholder:'Kod rodzinny',maxLength:32});
  if(!code)return;
  try{await Services.call('acceptFamilyInvite',{code:code});await Services.initialize();await dialog('Dołączono do rodziny','Gotowe. To konto jest teraz członkiem HealthGo Family.')}catch(e){await dialog('Nie udało się połączyć konta',e.message)}
 }
@@ -285,7 +288,7 @@ async function consumeFamilyInviteFromUrl(){
  try{
   if(history&&history.replaceState){var u=new URL(location.href);u.searchParams.delete('family_invite');history.replaceState(null,'',u.pathname+(u.search||'')+(u.hash||''))}
   if(Services.state.family&&Services.state.family.id){await dialog('Masz już rodzinę','To konto należy już do HealthGo Family.');return}
-  var ok=await dialog('Dołączyć do rodziny?','Ten QR zawiera jednorazowe zaproszenie do HealthGo Family.');
+  var ok=await dialog('Dołączyć do rodziny?','Ten kod zawiera zaproszenie do HealthGo Family.');
   if(!ok)return;
   await Services.call('acceptFamilyInvite',{code:code});await Services.initialize();go('family');await dialog('Dołączono do rodziny','Gotowe. Zaproszenie zostało wykorzystane.');
  }catch(e){await dialog('Zaproszenie nie działa',e.message)}
@@ -321,5 +324,5 @@ function renderAll(){ensureCards();renderBackpack();renderChallenges();renderAct
 
 injectStyle();familyPage();notificationPage();addNav();ensureCards();
 window.HealthGoV2UI={ready:true,render:renderAll,renderFamily:renderFamily,renderBackpack:renderBackpack,renderChallenges:renderChallenges,renderNotifications:renderNotifications};
-Services.subscribe(function(){renderAll();consumeFamilyInviteFromUrl()});renderAll();consumeFamilyInviteFromUrl();
+Services.subscribe(function(){renderAll()});renderAll();
 })();
