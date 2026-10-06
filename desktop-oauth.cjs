@@ -19,7 +19,6 @@ function createDesktopOAuth(openExternal,getWindow){
    pending=null;
    const target=new URL('http://127.0.0.1:5500/index.html');
    target.searchParams.set(code?'code':'error',code||'access_denied');
-   target.searchParams.set('oauth_return','1');
    win.loadURL(target.href);win.show();win.focus();return true;
   }
  };
