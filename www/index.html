@@ -1088,11 +1088,10 @@ async function askAI(){
  const q=input.value.trim(),photo=aiPendingPhoto;if(!q&&!photo)return;
  window.healthGoAIRequestBusy=true;
  const btn=document.getElementById('aiSendBtn');if(btn)btn.disabled=true;
- let typing=null;
+ let typing=null,imageData=null;
  try{
    aiSyncHistoryFromDom();
    if(q)aiAddMessage('user','<p>'+aiEscape(q)+'</p>');
-   let imageData=null;
    if(photo){
      aiAddMessage('user','<p>📷 Dodałem zdjęcie: <b>'+aiEscape(photo.name)+'</b></p>');
      try{imageData=await aiFileToDataUrl(photo)}catch(_){imageData=null}
