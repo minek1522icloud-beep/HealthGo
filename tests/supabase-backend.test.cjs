@@ -162,3 +162,19 @@ test('AI retries locally and keeps Ollama model loaded across questions',()=>{
   assert.match(main,/medium:\s*\{[\s\S]*?maxTokens:\s*320/);
   assert.match(main,/high:\s*\{[\s\S]*?maxTokens:\s*700/);
 });
+
+
+test('cloud-first AI and visible other-member stats',()=>{
+  const html=fs.readFileSync('www/index.html','utf8');
+  const ai=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
+  const ui=fs.readFileSync('www/healthgo-v2-ui.js','utf8');
+  assert.match(html,/AI Cloud łączy się/);
+  assert.match(html,/healthGoAITimed\(askHealthGoMobileAI/);
+  assert.match(html,/AI lokalne — tryb awaryjny/);
+  assert.match(ai,/gemini-3\.5-flash-lite/);
+  assert.match(ai,/gemini-3\.8-flash/);
+  assert.match(ai,/level==='average'/);
+  assert.match(ai,/level==='medium'/);
+  assert.match(ui,/uid!==s\.uid/);
+  assert.match(ui,/Statystyki rodziny/);
+});
