@@ -68,6 +68,29 @@ const server = http.createServer(async (req, res) => {
 
     const data = JSON.parse(body || "{}");
     const message = String(data.message || "").trim();
+    const responseMode = ["average", "medium", "high"].includes(String(data.responseMode || ""))
+      ? String(data.responseMode)
+      : "average";
+    const responseProfile = {
+      average: {
+        history: 6,
+        maxTokens: 220,
+        timeoutMs: 55_000,
+        instruction: "Odpowiadaj krótko i konkretnie. Zwykle 2–5 zdań. Priorytetem jest szybka odpowiedź bez zbędnego rozwijania."
+      },
+      medium: {
+        history: 10,
+        maxTokens: 420,
+        timeoutMs: 85_000,
+        instruction: "Odpowiadaj z umiarkowaną ilością szczegółów. Wyjaśnij najważniejsze powody i kroki, ale unikaj niepotrzebnego rozwlekania."
+      },
+      high: {
+        history: 12,
+        maxTokens: 760,
+        timeoutMs: 120_000,
+        instruction: "Odpowiadaj dokładniej i bardziej szczegółowo. Sprawdź założenia, wyjaśnij istotne kroki i uwzględnij ważne zastrzeżenia."
+      }
+    }[responseMode];
 
     if (!message) {
       return json(res, 400, {
@@ -77,7 +100,7 @@ const server = http.createServer(async (req, res) => {
 
     const history = Array.isArray(data.history)
       ? data.history
-          .slice(-12)
+          .slice(-responseProfile.history)
           .filter(
             (item) =>
               item &&
@@ -97,7 +120,7 @@ const server = http.createServer(async (req, res) => {
     const controller = new AbortController();
     const timeout = setTimeout(
       () => controller.abort(),
-      120000
+      responseProfile.timeoutMs
     );
 
     let response;
@@ -112,6 +135,9 @@ const server = http.createServer(async (req, res) => {
         body: JSON.stringify({
           model: MODEL,
           stream: false,
+          options: {
+            num_predict: responseProfile.maxTokens
+          },
           messages: [
             {
               role: "system",
@@ -120,7 +146,8 @@ const server = http.createServer(async (req, res) => {
                 "Odpowiadaj jasno i po polsku, chyba że użytkownik poprosi o inny język. " +
                 "Pomagasz w nauce, technologii, programowaniu, grach, planowaniu i funkcjach HealthGo. " +
                 "Nie udawaj, że widzisz dane lub obrazy, których model nie otrzymał. " +
-                "W sprawach zdrowotnych podawaj wyłącznie ogólne, ostrożne informacje i zachęcaj do kontaktu z zaufaną osobą dorosłą lub specjalistą, gdy sytuacja tego wymaga."
+                "W sprawach zdrowotnych podawaj wyłącznie ogólne, ostrożne informacje i zachęcaj do kontaktu z zaufaną osobą dorosłą lub specjalistą, gdy sytuacja tego wymaga. " +
+                responseProfile.instruction
             },
             ...history,
             {
