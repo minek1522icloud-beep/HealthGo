@@ -81,3 +81,26 @@ test('account type setup is one-shot and devices refresh from Supabase',()=>{
   assert.match(devices,/Odśwież z bazy/);
   assert.match(devices,/Supabase · tabela devices/);
 });
+
+
+test('family locations render on map with account names',()=>{
+  const html=fs.readFileSync('www/index.html','utf8');
+  assert.match(html,/function renderFamilyLocationsOnMap\(\)/);
+  assert.match(html,/family\.locations/);
+  assert.match(html,/loc\.nickname/);
+  assert.match(html,/bindTooltip\(healthGoEscape\(name\)/);
+  assert.match(html,/showFamilyOnMap\(\)/);
+});
+
+test('HealthGo AI exposes response effort modes and sends them to both backends',()=>{
+  const html=fs.readFileSync('www/index.html','utf8');
+  const server=fs.readFileSync('healthgo-ai-server.mjs','utf8');
+  const mobile=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
+  assert.match(html,/Przeciętny/);
+  assert.match(html,/Średni/);
+  assert.match(html,/Wysoki/);
+  assert.match(html,/responseMode:aiResponseMode/);
+  assert.match(server,/responseProfile/);
+  assert.match(server,/num_predict:\s*responseProfile\.maxTokens/);
+  assert.match(mobile,/generationConfig:\{maxOutputTokens\}/);
+});
