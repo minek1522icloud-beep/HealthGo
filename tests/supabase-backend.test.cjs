@@ -133,9 +133,9 @@ test('optional 2FA prompt is dismissible and map uses profile markers',()=>{
   assert.match(html,/healthgo-profile-marker/);
 });
 
-test('desktop cloud AI uses Firebase App Check',()=>{
+test('hosted mobile uses App Check while localhost Electron avoids production attestation',()=>{
   const entry=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
+  assert.match(entry,/desktopLocal/);
   assert.match(entry,/initializeAppCheck\(aiApp/);
-  assert.match(entry,/await getToken\(appCheck,false\)/);
-  assert.doesNotMatch(entry,/desktopLocal/);
+  assert.match(entry,/if\(!desktopLocal\)/);
 });
