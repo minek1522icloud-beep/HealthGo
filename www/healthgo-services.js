@@ -21,6 +21,8 @@ function errorMessage(error){
  if(/invite-invalid-or-expired/.test(raw))return 'Kod zaproszenia jest nieprawidłowy albo wygasł. Poproś opiekuna o nowy kod.';
  if(/already-in-another-family/.test(raw))return 'To konto należy już do innej rodziny HealthGo.';
  if(/guardian-required-before-leaving/.test(raw))return 'Najpierw dodaj drugiego opiekuna. Ostatni opiekun nie może opuścić rodziny z innymi członkami.';
+ if(/invalid-member|member-not-found/.test(raw))return 'Nie znaleziono tego członka w Twojej rodzinie.';
+ if(/member-cannot-grant|member-can-only-revoke-own/.test(raw))return 'Nowe uprawnienia może nadać opiekun. Członek może tylko ograniczyć własne udostępnianie.';
  if(/profile-not-found/.test(raw))return 'Nie udało się odczytać profilu konta. Zaloguj się ponownie.';
  if(/permission|row-level|rls|denied/.test(raw))return 'Nie masz uprawnienia do tej operacji.';
  if(/rate|429|too many/.test(raw))return 'Za dużo prób. Poczekaj chwilę i spróbuj ponownie.';
