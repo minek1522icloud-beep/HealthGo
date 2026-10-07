@@ -28,7 +28,7 @@ data class BleConnection(
     val supportsDeviceInfo:Boolean
 )
 
-class BluetoothWatchManager(context:Context){
+class BluetoothWatchManager(private val context:Context){
     private val manager=context.getSystemService(BluetoothManager::class.java)
     private val adapter:BluetoothAdapter? get()=manager?.adapter
     private var activeGatt:BluetoothGatt?=null
