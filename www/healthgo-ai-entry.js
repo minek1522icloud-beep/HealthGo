@@ -73,10 +73,14 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
         if(appCheck){
           try{
             await getToken(appCheck,false);
-          }catch(error){
-            const code=String((error&&error.code)||'app-check/token-error');
-            const text=String((error&&error.message)||error||'App Check error');
-            throw new Error('APP_CHECK_ERROR '+code+' '+text);
+          }catch(firstError){
+            try{
+              await getToken(appCheck,true);
+            }catch(error){
+              const code=String((error&&error.code)||(firstError&&firstError.code)||'app-check/token-error');
+              const text=String((error&&error.message)||error||(firstError&&firstError.message)||firstError||'App Check error');
+              throw new Error('APP_CHECK_ERROR '+code+' '+text);
+            }
           }
         }
 
