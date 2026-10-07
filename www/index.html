@@ -335,6 +335,7 @@ html.hg-session-known #authScreen{display:none!important}
 <script src="./core/achievement-engine.js"></script>
 <script src="./core/health-data.js"></script>
 <link rel="stylesheet" href="./healthgo-v2.css">
+<link rel="stylesheet" href="./healthgo-mobile-suite.css">
 </head>
 <body style="background:#07111f">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -1001,6 +1002,15 @@ function aiLocalAnswer(q){
  return {html:'<b>Łączenie z pełnym HealthGo AI…</b><p>Do odpowiedzi na pytania ogólne potrzebne jest połączenie z serwerem AI.</p>',actions:[]};
 }
 let aiHistory=[];
+window.healthGoAIRequestBusy=false;
+function aiSyncHistoryFromDom(){
+ const box=document.getElementById('aiMessages');if(!box){aiHistory=[];return aiHistory;}
+ aiHistory=Array.from(box.querySelectorAll('.ai-msg')).filter(function(row){return !row.querySelector('.ai-typing');}).map(function(row){
+  const bubble=row.querySelector('.ai-bubble'),text=(bubble&&bubble.textContent||'').trim();
+  return text?{role:row.classList.contains('user')?'user':'assistant',content:text}:null;
+ }).filter(Boolean).slice(-40);
+ return aiHistory;
+}
 async function aiFileToDataUrl(file){
  return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)});
 }
@@ -1073,40 +1083,37 @@ async function requestLocalHealthGoAI(payload,timeoutMs){
 async function askAI(){
  const requestSession=window.HealthGoServices?.state,requestUid=requestSession?.uid;
  const sessionActive=()=>window.HealthGoServices?.state===requestSession&&window.HealthGoServices?.state.uid===requestUid;
- if(!requestUid)return;
+ if(!requestUid||window.healthGoAIRequestBusy)return;
  const input=document.getElementById('aiInput');if(!input)return;
- const q=input.value.trim();const photo=aiPendingPhoto;
- if(!q&&!photo)return;
-
- if(q)aiAddMessage('user','<p>'+aiEscape(q)+'</p>');
- let imageData=null;
- if(photo){
-   aiAddMessage('user','<p>📷 Dodałem zdjęcie: <b>'+aiEscape(photo.name)+'</b></p>');
-   try{imageData=await aiFileToDataUrl(photo)}catch(_){imageData=null}
-   if(!sessionActive())return;
-   aiRemovePhoto();
- }
- input.value='';aiGrowInput(input);
-
+ const q=input.value.trim(),photo=aiPendingPhoto;if(!q&&!photo)return;
+ window.healthGoAIRequestBusy=true;
  const btn=document.getElementById('aiSendBtn');if(btn)btn.disabled=true;
- const typing=aiShowTyping();
-
+ let typing=null;
  try{
-   let answer='';
+   aiSyncHistoryFromDom();
+   if(q)aiAddMessage('user','<p>'+aiEscape(q)+'</p>');
+   let imageData=null;
+   if(photo){
+     aiAddMessage('user','<p>📷 Dodałem zdjęcie: <b>'+aiEscape(photo.name)+'</b></p>');
+     try{imageData=await aiFileToDataUrl(photo)}catch(_){imageData=null}
+     if(!sessionActive())return;
+     aiRemovePhoto();
+   }
+   input.value='';aiGrowInput(input);
+   typing=aiShowTyping();
 
+   let answer='';
    if(isHostedMobileHealthGo()){
-     aiSetConnection(true,'AI łączy się…');
-     answer=await askHealthGoMobileAI(q,imageData);
+     const mobileTimeout=aiResponseMode==='average'?18000:aiResponseMode==='medium'?30000:45000;
+     aiSetConnection(true,'AI Mobile łączy się…');
+     answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData),mobileTimeout);
    }else{
      let cloudError=null,localError=null;
      const cloudTimeout=aiResponseMode==='average'?12000:aiResponseMode==='medium'?22000:35000;
      try{
        aiSetConnection(true,'AI Cloud łączy się…');
        answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData),cloudTimeout);
-     }catch(error){
-       cloudError=error;
-     }
-
+     }catch(error){cloudError=error;}
      if(!answer){
        const historyLimit=aiResponseMode==='average'?4:aiResponseMode==='medium'?8:12;
        const payload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,responseMode:aiResponseMode,history:aiHistory.slice(-historyLimit)};
@@ -1114,22 +1121,16 @@ async function askAI(){
        try{
          aiSetConnection(true,'AI lokalne — tryb awaryjny…');
          answer=await requestLocalHealthGoAI(payload,aiResponseMode==='average'?9000:aiResponseMode==='medium'?18000:30000);
-       }catch(error){
-         localError=error;
-       }
+       }catch(error){localError=error;}
      }
-
      if(!answer){
-       const combined=new Error('CLOUD_AND_LOCAL_AI_UNAVAILABLE');
-       combined.cloudError=cloudError;
-       combined.localError=localError;
-       throw combined;
+       const combined=new Error('CLOUD_AND_LOCAL_AI_UNAVAILABLE');combined.cloudError=cloudError;combined.localError=localError;throw combined;
      }
    }
 
    if(!sessionActive())return;
    if(!answer)throw new Error('EMPTY_AI_RESPONSE');
-   if(typing)typing.remove();
+   if(typing){typing.remove();typing=null;}
    aiAddMessage('assistant',aiTextToHtml(answer));
    aiHistory.push({role:'user',content:q||'[zdjęcie]'},{role:'assistant',content:answer});
    if(aiHistory.length>40)aiHistory=aiHistory.slice(-40);
@@ -1137,32 +1138,40 @@ async function askAI(){
    awardChallenge('ai_first');
  }catch(err){
    if(!sessionActive())return;
-   console.warn('HealthGo AI: request unavailable');
-   if(typing)typing.remove();
-   aiSetConnection(false,'AI chwilowo niedostępne');
-
-   let detail='Spróbuj ponownie za chwilę.';
+   if(typing){typing.remove();typing=null;}
    const msg=String((err&&err.message)||err||'');
+   console.warn('HealthGo AI: request unavailable',msg);
+   if(isHostedMobileHealthGo()&&!imageData){
+     try{
+       const fallback=aiLocalReply(q||'');
+       if(fallback&&fallback.html&&!/Łączenie z pełnym HealthGo AI/i.test(fallback.html)){
+         aiSetConnection(false,'AI offline · tryb podstawowy');
+         aiAddMessage('assistant',fallback.html);
+         const fallbackText=(new DOMParser().parseFromString(fallback.html,'text/html').body.textContent||'').trim();
+         aiHistory.push({role:'user',content:q||'[pytanie]'},{role:'assistant',content:fallbackText});
+         if(aiHistory.length>40)aiHistory=aiHistory.slice(-40);
+         return;
+       }
+     }catch(_){}
+   }
+   aiSetConnection(false,'AI chwilowo niedostępne');
+   let detail='Spróbuj ponownie za chwilę.';
    if(isHostedMobileHealthGo()){
-     if(/APP_CHECK_ERROR/i.test(msg)){
-       detail='Nie udało się potwierdzić dostępu do AI. Uruchom aplikację ponownie.';
-     }else if(/quota|resource-exhausted|429/i.test(msg)){
-       detail='Limit AI został chwilowo wykorzystany. Spróbuj ponownie później.';
-     }else if(/network|fetch|offline/i.test(msg)){
-       detail='Nie udało się połączyć z AI. Sprawdź internet i spróbuj ponownie.';
-     }else if(/AI_REQUEST_ERROR|403|404|permission|failed-precondition/i.test(msg)){
-       detail='AI jest chwilowo niedostępne. Spróbuj ponownie później.';
-     }else if(/MOBILE_AI_INIT_ERROR/i.test(msg)){
-       detail='Moduł AI nie uruchomił się poprawnie. Uruchom aplikację ponownie.';
-     }else if(/MOBILE_AI_SDK_NOT_READY/i.test(msg)){
-       detail='Moduł AI nie załadował się poprawnie. Zamknij HealthGo, uruchom go ponownie i spróbuj jeszcze raz.';
-     }
+     if(/AI_TIMEOUT/i.test(msg))detail='AI nie odpowiedziało na czas. Spróbuj ponownie — aplikacja nie powinna się już zawiesić.';
+     else if(/APP_CHECK_ERROR/i.test(msg))detail='Nie udało się potwierdzić dostępu do AI. Uruchom aplikację ponownie.';
+     else if(/quota|resource-exhausted|429/i.test(msg))detail='Limit AI został chwilowo wykorzystany. Spróbuj ponownie później.';
+     else if(/network|fetch|offline/i.test(msg))detail='Nie udało się połączyć z AI. Sprawdź internet i spróbuj ponownie.';
+     else if(/AI_REQUEST_ERROR|403|404|permission|failed-precondition/i.test(msg))detail='AI jest chwilowo niedostępne. Spróbuj ponownie później.';
+     else if(/MOBILE_AI_INIT_ERROR/i.test(msg))detail='Moduł AI nie uruchomił się poprawnie. Uruchom aplikację ponownie.';
+     else if(/MOBILE_AI_SDK_NOT_READY/i.test(msg))detail='Moduł AI nie załadował się poprawnie. Zamknij HealthGo, uruchom go ponownie i spróbuj jeszcze raz.';
    }else{
      detail='Nie udało się połączyć ani z lokalnym AI, ani z zapasowym AI w chmurze. Sprawdź internet i spróbuj ponownie.';
      if(err&&err.name==='AbortError')detail='AI nie odpowiedziało na czas. Spróbuj ponownie za chwilę.';
    }
    aiAddMessage('assistant','<b>Nie mam teraz połączenia z AI.</b><p>'+aiEscape(detail)+'</p>');
  }finally{
+   window.healthGoAIRequestBusy=false;
+   if(typing&&typing.isConnected)typing.remove();
    if(sessionActive()){if(btn)btn.disabled=false;input.focus();}
  }
 }
@@ -2169,16 +2178,25 @@ async function finishMfaStep(uid){
   status('Wymagany kod logowania dwuetapowego…');
   return await challengeMfa();
  }
- const key='healthgo_mfa_offer_'+uid;
- if(sessionStorage.getItem(key)!=='1'){
-  sessionStorage.setItem(key,'1');
-  if(await askEnableMfa()){
-   const enabled=await enrollMfa();
-   if(enabled)status('Logowanie dwuetapowe zostało włączone.');
-  }
- }
  return true;
 }
+window.HealthGoMFASettings={
+ async status(){
+  if(!auth||!auth.mfa)return{enabled:false,count:0};
+  const factors=await auth.mfa.listFactors();
+  const verified=(factors.data.all||[]).filter(function(x){return x.status==='verified';});
+  return{enabled:verified.length>0,count:verified.length,factors:verified};
+ },
+ async enable(){if(!auth||!auth.mfa)throw new Error('mfa_unavailable');return await enrollMfa();},
+ async disable(){
+  if(!auth||!auth.mfa||typeof auth.mfa.unenroll!=='function')throw new Error('mfa_unavailable');
+  const factors=await auth.mfa.listFactors();
+  const verified=(factors.data.all||[]).filter(function(x){return x.status==='verified';});
+  for(const factor of verified)await auth.mfa.unenroll({factorId:factor.id});
+  return true;
+ }
+};
+
 async function busy(button,action){
  if(button)button.disabled=true;
  try{await action();}catch(e){status(clean(e),true);}finally{if(button)button.disabled=false;const p=document.getElementById('loginPass');if(p)p.value='';}
@@ -2229,8 +2247,9 @@ document.getElementById('loginPass')?.addEventListener('keydown',e=>{if(e.key===
 let currentId=null,currentUid=null,observer=null;
 const legacyKey='healthgo_ai_conversations_v1';
 function key(){return 'healthgo_ai_conversations_v2_'+(currentUid||'signed-out');}
-function all(){if(!currentUid)return [];try{const data=JSON.parse(localStorage.getItem(key())||'[]');return Array.isArray(data)?data:[];}catch(_){return [];}}
-function put(list){if(currentUid)localStorage.setItem(key(),JSON.stringify(list));}
+function persistEnabled(){return typeof window.healthGoShouldPersistAIHistory!=='function'||window.healthGoShouldPersistAIHistory();}
+function all(){if(!currentUid||!persistEnabled())return [];try{const data=JSON.parse(localStorage.getItem(key())||'[]');return Array.isArray(data)?data:[];}catch(_){return [];}}
+function put(list){if(currentUid&&persistEnabled())localStorage.setItem(key(),JSON.stringify(list));}
 function root(){return document.getElementById('aiMessages');}
 function collect(){return Array.from(root()?.querySelectorAll('.ai-msg')||[]).map(row=>({role:row.classList.contains('user')?'user':'assistant',text:row.querySelector('.ai-bubble')?.textContent||''}));}
 function render(){
@@ -2262,7 +2281,7 @@ function migrate(){
   });put(list);
  }catch(_){}
 }
-window.aiNewChat=()=>{save();fresh();};
+window.aiNewChat=()=>{if(window.healthGoAIRequestBusy)return;save();fresh();try{aiHistory=[];}catch(_){};};
 HealthGoServices.events.addEventListener('SESSION_CHANGED',event=>{
  observer?.disconnect();currentUid=event.detail?.uid||null;currentId=null;root()?.replaceChildren();migrate();
  const list=all();if(list.length)load(list[0].id);else if(currentUid)fresh();else render();
@@ -2285,5 +2304,6 @@ window.addEventListener('beforeunload',save);
 </script>
 <script src="./healthgo-pro.js"></script>
 <script src="./healthgo-v2-ui.js"></script>
+<script src="./healthgo-mobile-suite.js"></script>
 </body>
 </html>
