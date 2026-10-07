@@ -109,17 +109,18 @@ test('HealthGo AI exposes response effort modes and sends them to both backends'
 });
 
 
-test('Windows AI falls back to cloud bundle and family stats are for another member',()=>{
+test('Windows AI uses the bundled cloud client with local fallback and other-member stats',()=>{
   const html=fs.readFileSync('www/index.html','utf8');
   const ui=fs.readFileSync('www/healthgo-v2-ui.js','utf8');
   const workflow=fs.readFileSync('.github/workflows/windows-release.yml','utf8');
-  assert.match(html,/answer=await askHealthGoMobileAI\(q,imageData\)/);
-  assert.match(html,/LOCAL_AND_CLOUD_AI_UNAVAILABLE/);
+  assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData\)/);
+  assert.match(html,/CLOUD_AND_LOCAL_AI_UNAVAILABLE/);
   assert.match(html,/healthgo-ai-bundle\.js\?v=9/);
   assert.match(workflow,/Zbuduj pakiet HealthGo Cloud AI/);
   assert.match(workflow,/healthgo-ai-bundle\.js/);
   assert.doesNotMatch(ui,/Moje statystyki/);
-  assert.match(ui,/btn\('Statystyki',function\(\)\{viewFamilyMemberStats\(uid\)\}/);
+  assert.match(ui,/btn\('Statystyki',async function\(\)/);
+  assert.match(ui,/viewFamilyMemberStats\(uid\)/);
 });
 
 
