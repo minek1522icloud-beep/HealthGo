@@ -14,7 +14,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: healthgo-windows-release-v3
+  group: healthgo-windows-release-v4
   cancel-in-progress: true
 
 jobs:
