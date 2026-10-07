@@ -113,6 +113,13 @@ const mfa={
   mfaFactorCount=Math.max(1,mfaFactorCount);
   return{data:errorSafeData(data),error:null};
  },
+ async unenroll(options){
+  const factorId=String(options&&options.factorId||'');
+  if(!factorId)throw new Error('mfa_factor_missing');
+  await request('/auth/v1/factors/'+encodeURIComponent(factorId),{method:'DELETE'});
+  mfaFactorCount=Math.max(0,mfaFactorCount-1);
+  return{data:{id:factorId},error:null};
+ },
  async getAuthenticatorAssuranceLevel(){
   const payload=decodeJwtPayload(session&&session.access_token),currentLevel=payload&&payload.aal||'aal1';
   const factors=await mfa.listFactors(),verified=factors.data.all.some(x=>x.status==='verified');
