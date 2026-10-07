@@ -765,13 +765,13 @@ async function askLocalOllama(data) {
   const ready =
     await ensureOllamaRunning();
 
-  activeOllamaModel = await chooseOllamaModel();
-
   if (!ready) {
     throw new Error(
       "OLLAMA_NOT_RUNNING"
     );
   }
+
+  activeOllamaModel = await chooseOllamaModel();
 
   const message =
     String(
@@ -787,22 +787,22 @@ async function askLocalOllama(data) {
 
   const responseProfile = {
     average: {
-      history: 6,
-      maxTokens: 220,
-      timeoutMs: 55000,
+      history: 4,
+      maxTokens: 140,
+      timeoutMs: 45000,
       instruction:
         "Odpowiadaj krótko i konkretnie. Zwykle 2–5 zdań. Priorytetem jest szybka odpowiedź bez zbędnego rozwijania."
     },
     medium: {
-      history: 10,
-      maxTokens: 420,
-      timeoutMs: 85000,
+      history: 8,
+      maxTokens: 320,
+      timeoutMs: 75000,
       instruction:
         "Odpowiadaj z umiarkowaną ilością szczegółów. Wyjaśnij najważniejsze powody i kroki, ale unikaj niepotrzebnego rozwlekania."
     },
     high: {
       history: 12,
-      maxTokens: 760,
+      maxTokens: 700,
       timeoutMs: 120000,
       instruction:
         "Odpowiadaj dokładniej i bardziej szczegółowo. Sprawdź założenia, wyjaśnij istotne kroki i uwzględnij ważne zastrzeżenia."
@@ -878,6 +878,9 @@ async function askLocalOllama(data) {
 
                 stream:
                   false,
+
+                keep_alive:
+                  "10m",
 
                 options: {
                   num_predict:
