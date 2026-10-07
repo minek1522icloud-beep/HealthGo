@@ -192,8 +192,6 @@ function renderFamily(){
   if(m.role==='child'&&role==='guardian'){
    row.appendChild(btn('Statystyki',function(){viewFamilyMemberStats(uid)},false));
    row.appendChild(btn('Uprawnienia',function(){editPermissions(uid)},true));
-  }else if(uid===s.uid){
-   row.appendChild(btn('Moje statystyki',function(){viewFamilyMemberStats(uid)},true));
   }
   members.appendChild(row);
  });
