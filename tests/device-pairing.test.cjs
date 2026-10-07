@@ -7,7 +7,8 @@ test('web device pairing uses real Bluetooth capabilities and iPhone native hand
   const devices=fs.readFileSync('www/healthgo-devices.js','utf8');
   assert.match(devices,/navigator\.bluetooth\.requestDevice/);
   assert.match(devices,/optionalServices:\['battery_service','heart_rate','device_information'\]/);
-  assert.match(devices,/healthgo:\/\/connect-bluetooth/);
+  assert.match(devices,/return 'healthgo:\/\/'\+host/);
+  assert.match(devices,/'connect-bluetooth'/);
   assert.match(devices,/startNotifications\(\)/);
   assert.match(devices,/heart_rate_measurement/);
   assert.match(devices,/battery_level/);
