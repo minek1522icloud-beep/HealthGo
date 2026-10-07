@@ -86,5 +86,5 @@ jobs:
         with:
           node-version: "24"
       - run: npm install --prefix tests/browser --ignore-scripts
-      - run: node tests/browser/node_modules/playwright/cli.js install --with-deps chromium
+      - run: node tests/browser/node_modules/playwright/cli.js install chromium
       - run: node --test tests/browser/*.test.cjs
