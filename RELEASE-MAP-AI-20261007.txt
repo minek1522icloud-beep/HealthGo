@@ -1,1 +1,2 @@
 HealthGo release marker: family account names on Map + AI response modes (Przeciętny / Średni / Wysoki).
+Mobile map + family stats release retry 2026-10-07.
