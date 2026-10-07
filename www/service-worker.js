@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='healthgo-pwa-v5-family-code-devices-db-20261006';
+const CACHE_NAME='healthgo-pwa-v6-family-location-controls-20261007';
 const CORE=['./','./index.html','./manifest.webmanifest','./healthgo-pro.js','./supabase-client.js','./core/achievement-engine.js','./core/health-data.js','./healthgo-services.js','./healthgo-v2-ui.js','./healthgo-devices.js'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{for(const url of CORE){try{await cache.add(url);}catch(_){}}}));
