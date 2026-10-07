@@ -204,7 +204,22 @@ function renderFamily(){
   copy.append(el('b','',loc.nickname||'Użytkownik HealthGo'),el('small','',(loc.timestamp?'Udostępniono '+date(loc.timestamp):'Lokalizacja udostępniona')+(loc.device?' · '+loc.device:'')));
   row.append(avatar,copy);locations.appendChild(row);
  });
- if(s.locationSettings&&s.locationSettings.enabled)locations.appendChild(btn('Udostępnij moją lokalizację',shareCurrentLocation,true));
+ var locSettings=s.locationSettings||{enabled:false,mode:'off'},locActions=el('div','hg2-family-actions');
+ if(!locSettings.enabled||locSettings.mode==='off'){
+  locActions.append(
+   btn('Włącz przybliżoną',function(){setLocationMode('approximate')},true),
+   btn('Włącz dokładną',function(){setLocationMode('precise')},false)
+  );
+ }else{
+  var activeMode=locSettings.mode==='precise'?'Dokładna':'Przybliżona';
+  locations.appendChild(el('div','hg2-note','Aktualny tryb lokalizacji: '+activeMode+'.'));
+  locActions.append(
+   btn('Udostępnij moją lokalizację',shareCurrentLocation,false),
+   btn(locSettings.mode==='precise'?'Zmień na przybliżoną':'Zmień na dokładną',function(){setLocationMode(locSettings.mode==='precise'?'approximate':'precise')},true),
+   btn('Wyłącz lokalizację',function(){setLocationMode('off')},true)
+  );
+ }
+ locations.appendChild(locActions);
  root.appendChild(locations);
 
  var safety=el('section','hg2-card'),sh=el('div','hg2-section-title'),sc=el('div');
