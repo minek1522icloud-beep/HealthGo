@@ -32,6 +32,8 @@ class BluetoothWatchManager(private val context:Context){
     private val manager=context.getSystemService(BluetoothManager::class.java)
     private val adapter:BluetoothAdapter? get()=manager?.adapter
     private var activeGatt:BluetoothGatt?=null
+    private var currentConnection:BleConnection?=null
+    var onDisconnected:((BleConnection)->Unit)?=null
 
     companion object{
         private val BATTERY_SERVICE=UUID.fromString("0000180f-0000-1000-8000-00805f9b34fb")
@@ -81,16 +83,16 @@ class BluetoothWatchManager(private val context:Context){
                 if(finished)return
                 finished=true
                 activeGatt=gatt
-                continuation.resume(
-                    BleConnection(
-                        name=watch.name,
-                        address=watch.address,
-                        batteryLevel=batteryLevel,
-                        supportsHeartRate=heart,
-                        supportsBattery=battery,
-                        supportsDeviceInfo=info
-                    )
+                val connection=BleConnection(
+                    name=watch.name,
+                    address=watch.address,
+                    batteryLevel=batteryLevel,
+                    supportsHeartRate=heart,
+                    supportsBattery=battery,
+                    supportsDeviceInfo=info
                 )
+                currentConnection=connection
+                continuation.resume(connection)
             }
             fun fail(gatt:BluetoothGatt?,message:String){
                 if(finished)return
@@ -110,7 +112,15 @@ class BluetoothWatchManager(private val context:Context){
                             if(!gatt.discoverServices())fail(gatt,"Nie udało się odczytać usług zegarka.")
                         }
                         BluetoothProfile.STATE_DISCONNECTED->{
-                            if(!finished)fail(gatt,"Połączenie z zegarkiem zostało przerwane.")
+                            if(!finished){
+                                fail(gatt,"Połączenie z zegarkiem zostało przerwane.")
+                            }else{
+                                val old=currentConnection
+                                currentConnection=null
+                                activeGatt=null
+                                runCatching{gatt.close()}
+                                if(old!=null)onDisconnected?.invoke(old)
+                            }
                         }
                     }
                 }
@@ -156,8 +166,12 @@ class BluetoothWatchManager(private val context:Context){
     @SuppressLint("MissingPermission")
     fun disconnect(){
         val gatt=activeGatt
-        activeGatt=null
-        runCatching{gatt?.disconnect()}
-        runCatching{gatt?.close()}
+        if(gatt==null){
+            val old=currentConnection
+            currentConnection=null
+            if(old!=null)onDisconnected?.invoke(old)
+            return
+        }
+        runCatching{gatt.disconnect()}
     }
 }
