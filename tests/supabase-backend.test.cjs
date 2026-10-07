@@ -139,3 +139,26 @@ test('hosted mobile uses App Check while localhost Electron avoids production at
   assert.match(entry,/initializeAppCheck\(aiApp/);
   assert.match(entry,/if\(!desktopLocal\)/);
 });
+
+
+test('family member stats support standard members',()=>{
+  const ui=fs.readFileSync('www/healthgo-v2-ui.js','utf8');
+  const sql=fs.readFileSync('supabase/migrations/20261007_family_member_stats_permissions.sql','utf8');
+  assert.match(ui,/uid!==s\.uid&&role==='guardian'&&m\.role!=='guardian'/);
+  assert.match(ui,/btn\('Statystyki'/);
+  assert.match(ui,/Uprawnienia członka/);
+  assert.match(sql,/target_role in \('child','member'\)/i);
+  assert.match(sql,/caller_role in \('guardian','child','member'\)/i);
+});
+
+test('AI retries locally and keeps Ollama model loaded across questions',()=>{
+  const html=fs.readFileSync('www/index.html','utf8');
+  const main=fs.readFileSync('main.cjs','utf8');
+  assert.match(html,/for\(let attempt=0;attempt<2&&!answer;attempt\+\+\)/);
+  assert.match(html,/AI lokalne — ponawiam/);
+  assert.match(html,/requestLocalHealthGoAI/);
+  assert.match(main,/keep_alive:\s*\n?\s*"10m"/);
+  assert.match(main,/average:\s*\{[\s\S]*?maxTokens:\s*140/);
+  assert.match(main,/medium:\s*\{[\s\S]*?maxTokens:\s*320/);
+  assert.match(main,/high:\s*\{[\s\S]*?maxTokens:\s*700/);
+});
