@@ -1043,6 +1043,22 @@ function aiSetConnection(ok,label){
  if(!badge)return;
  badge.innerHTML='<span style="background:'+(ok?'#4ade80':'#fbbf24')+'"></span> '+aiEscape(label|| (ok?'AI online':'AI offline'));
 }
+async function requestLocalHealthGoAI(payload,timeoutMs){
+ const controller=new AbortController();
+ const timeout=setTimeout(()=>controller.abort(),timeoutMs);
+ try{
+   const res=await fetch(aiEndpoint(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
+   const data=await res.json().catch(()=>({}));
+   if(!res.ok||!data.answer){
+     const error=new Error(data.error||'AI_BACKEND_UNAVAILABLE');
+     error.status=res.status;
+     throw error;
+   }
+   return data.answer;
+ }finally{
+   clearTimeout(timeout);
+ }
+}
 async function askAI(){
  const requestSession=window.HealthGoServices?.state,requestUid=requestSession?.uid;
  const sessionActive=()=>window.HealthGoServices?.state===requestSession&&window.HealthGoServices?.state.uid===requestUid;
@@ -1072,20 +1088,23 @@ async function askAI(){
      answer=await askHealthGoMobileAI(q,imageData);
    }else{
      let localError=null;
-     const controller=new AbortController();
-     const timeoutMs=aiResponseMode==='average'?12000:aiResponseMode==='medium'?25000:45000;
-     const timeout=setTimeout(()=>controller.abort(),timeoutMs);
-     try{
-       const historyLimit=aiResponseMode==='average'?8:aiResponseMode==='medium'?14:20;
-       const payload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,responseMode:aiResponseMode,history:aiHistory.slice(-historyLimit)};
-       if(imageData)payload.image=imageData;
-       const res=await fetch(aiEndpoint(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
-       const data=await res.json().catch(()=>({}));
-       if(!res.ok||!data.answer)throw new Error(data.error||'AI_BACKEND_UNAVAILABLE');
-       answer=data.answer;
-     }catch(error){
-       localError=error;
-     }finally{clearTimeout(timeout)}
+     const historyLimit=aiResponseMode==='average'?6:aiResponseMode==='medium'?10:16;
+     const basePayload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,responseMode:aiResponseMode,history:aiHistory.slice(-historyLimit)};
+     if(imageData)basePayload.image=imageData;
+     const timeouts=aiResponseMode==='average'?[25000,35000]:aiResponseMode==='medium'?[45000,65000]:[70000,100000];
+
+     for(let attempt=0;attempt<2&&!answer;attempt++){
+       try{
+         aiSetConnection(true,attempt===0?'AI lokalne łączy się…':'AI lokalne — ponawiam…');
+         const payload=Object.assign({},basePayload);
+         if(attempt===1)payload.history=aiHistory.slice(aiResponseMode==='average'?-2:aiResponseMode==='medium'?-6:-10);
+         answer=await requestLocalHealthGoAI(payload,timeouts[attempt]);
+       }catch(error){
+         localError=error;
+         if(attempt===0)await new Promise(r=>setTimeout(r,700));
+       }
+     }
+
      if(!answer){
        aiSetConnection(true,'AI Cloud łączy się…');
        try{
