@@ -121,3 +121,21 @@ test('Windows AI falls back to cloud bundle and family stats are for another mem
   assert.doesNotMatch(ui,/Moje statystyki/);
   assert.match(ui,/btn\('Statystyki',function\(\)\{viewFamilyMemberStats\(uid\)\}/);
 });
+
+
+test('optional 2FA prompt is dismissible and map uses profile markers',()=>{
+  const html=fs.readFileSync('www/index.html','utf8');
+  assert.match(html,/auth-mfa-close/);
+  assert.match(html,/dismissible:true/);
+  assert.match(html,/event\.target===back/);
+  assert.match(html,/function healthGoProfileIcon\(/);
+  assert.match(html,/L\.divIcon\(/);
+  assert.match(html,/healthgo-profile-marker/);
+});
+
+test('desktop cloud AI uses Firebase App Check',()=>{
+  const entry=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
+  assert.match(entry,/initializeAppCheck\(aiApp/);
+  assert.match(entry,/await getToken\(appCheck,false\)/);
+  assert.doesNotMatch(entry,/desktopLocal/);
+});
