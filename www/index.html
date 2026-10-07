@@ -1065,8 +1065,9 @@ async function askAI(){
      aiSetConnection(true,'AI łączy się…');
      answer=await askHealthGoMobileAI(q,imageData);
    }else{
+     let localError=null;
      const controller=new AbortController();
-     const timeoutMs=aiResponseMode==='average'?50000:aiResponseMode==='medium'?80000:120000;
+     const timeoutMs=aiResponseMode==='average'?12000:aiResponseMode==='medium'?25000:45000;
      const timeout=setTimeout(()=>controller.abort(),timeoutMs);
      try{
        const historyLimit=aiResponseMode==='average'?8:aiResponseMode==='medium'?14:20;
@@ -1076,7 +1077,20 @@ async function askAI(){
        const data=await res.json().catch(()=>({}));
        if(!res.ok||!data.answer)throw new Error(data.error||'AI_BACKEND_UNAVAILABLE');
        answer=data.answer;
+     }catch(error){
+       localError=error;
      }finally{clearTimeout(timeout)}
+     if(!answer){
+       aiSetConnection(true,'AI Cloud łączy się…');
+       try{
+         answer=await askHealthGoMobileAI(q,imageData);
+       }catch(cloudError){
+         const combined=new Error('LOCAL_AND_CLOUD_AI_UNAVAILABLE');
+         combined.localError=localError;
+         combined.cloudError=cloudError;
+         throw combined;
+       }
+     }
    }
 
    if(!sessionActive())return;
@@ -1110,8 +1124,8 @@ async function askAI(){
        detail='Moduł AI nie załadował się poprawnie. Zamknij HealthGo, uruchom go ponownie i spróbuj jeszcze raz.';
      }
    }else{
-     detail='HealthGo nie połączył się z lokalnym modelem AI. Aplikacja próbuje uruchomić Ollamę automatycznie — spróbuj ponownie za chwilę.';
-     if(err&&err.name==='AbortError')detail='Serwer AI nie odpowiedział na czas. Spróbuj ponownie za chwilę.';
+     detail='Nie udało się połączyć ani z lokalnym AI, ani z zapasowym AI w chmurze. Sprawdź internet i spróbuj ponownie.';
+     if(err&&err.name==='AbortError')detail='AI nie odpowiedziało na czas. Spróbuj ponownie za chwilę.';
    }
    aiAddMessage('assistant','<b>Nie mam teraz połączenia z AI.</b><p>'+aiEscape(detail)+'</p>');
  }finally{
@@ -2201,12 +2215,11 @@ window.addEventListener('beforeunload',save);
 
 <script>
 (function(){
-  if(!isHostedMobileHealthGo())return;
   const s=document.createElement('script');
-  s.src='./healthgo-ai-bundle.js?v=8';
+  s.src='./healthgo-ai-bundle.js?v=9';
   s.async=true;
   s.onerror=function(){
-    window.healthGoMobileAIInitError='BUNDLE_LOAD_ERROR Nie udało się załadować lokalnego pakietu HealthGo AI.';
+    window.healthGoMobileAIInitError='BUNDLE_LOAD_ERROR Nie udało się załadować pakietu HealthGo AI.';
   };
   document.head.appendChild(s);
 })();
