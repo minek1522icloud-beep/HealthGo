@@ -32,6 +32,7 @@ final class BluetoothWatchManager: NSObject, ObservableObject {
     @Published private(set) var heartRate: Int?
 
     var onConnected: ((BluetoothConnectionInfo) -> Void)?
+    var onDisconnected: ((BluetoothConnectionInfo) -> Void)?
 
     private var central: CBCentralManager!
     private var peripherals: [UUID: CBPeripheral] = [:]
@@ -39,6 +40,7 @@ final class BluetoothWatchManager: NSObject, ObservableObject {
     private var supportsHeartRate = false
     private var supportsBattery = false
     private var supportsDeviceInfo = false
+    private var currentConnectionInfo: BluetoothConnectionInfo?
 
     private let batteryService = CBUUID(string:"180F")
     private let batteryCharacteristic = CBUUID(string:"2A19")
@@ -93,6 +95,7 @@ final class BluetoothWatchManager: NSObject, ObservableObject {
         connectedName=nil
         batteryLevel=nil
         heartRate=nil
+        currentConnectionInfo=nil
         supportsHeartRate=false
         supportsBattery=false
         supportsDeviceInfo=false
@@ -135,16 +138,16 @@ final class BluetoothWatchManager: NSObject, ObservableObject {
             status=text+"."
         }
 
-        onConnected?(
-            BluetoothConnectionInfo(
-                id:active.identifier,
-                name:safeName,
-                batteryLevel:batteryLevel,
-                supportsHeartRate:supportsHeartRate,
-                supportsBattery:supportsBattery,
-                supportsDeviceInfo:supportsDeviceInfo
-            )
+        let info=BluetoothConnectionInfo(
+            id:active.identifier,
+            name:safeName,
+            batteryLevel:batteryLevel,
+            supportsHeartRate:supportsHeartRate,
+            supportsBattery:supportsBattery,
+            supportsDeviceInfo:supportsDeviceInfo
         )
+        currentConnectionInfo=info
+        onConnected?(info)
     }
 
     private func parseHeartRate(_ data:Data) -> Int? {
@@ -207,11 +210,14 @@ extension BluetoothWatchManager: CBCentralManagerDelegate {
         error:Error?
     ) {
         if active?.identifier == peripheral.identifier {
+            let old=currentConnectionInfo
             connectedName=nil
             active=nil
             batteryLevel=nil
             heartRate=nil
+            currentConnectionInfo=nil
             status=error == nil ? "Zegarek Bluetooth rozłączony." : "Połączenie z zegarkiem zostało przerwane."
+            if let old { onDisconnected?(old) }
         }
     }
 }
