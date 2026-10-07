@@ -189,7 +189,12 @@ function renderFamily(){
   var grant=(f.permissions||[]).find(function(p){return p.childUid===uid&&p.guardianUid===s.uid});
   if(grant){var ps=el('div','hg2-permissions');scopes(grant.scopes).forEach(function(x){ps.appendChild(el('span','hg2-permission',x))});if(ps.childNodes.length)memberCopy.appendChild(ps)}
   row.append(avatar,memberCopy);
-  if(m.role==='child'&&role==='guardian')row.appendChild(btn('Uprawnienia',function(){editPermissions(uid)},true));
+  if(m.role==='child'&&role==='guardian'){
+   row.appendChild(btn('Statystyki',function(){viewFamilyMemberStats(uid)},false));
+   row.appendChild(btn('Uprawnienia',function(){editPermissions(uid)},true));
+  }else if(uid===s.uid){
+   row.appendChild(btn('Moje statystyki',function(){viewFamilyMemberStats(uid)},true));
+  }
   members.appendChild(row);
  });
  root.appendChild(members);
@@ -309,6 +314,39 @@ async function consumeFamilyInviteFromUrl(){
  }catch(e){await dialog('Zaproszenie nie działa',e.message)}
 }
 async function setLocationMode(mode){try{await Services.call('updateLocationSettings',{enabled:mode!=='off',mode:mode,familySharing:mode!=='off'});await Services.initialize()}catch(e){await dialog('Nie udało się zmienić lokalizacji',e.message)}}
+function familyHealthValue(value,suffix){
+ return value==null||value===''?'Brak danych':String(Math.round(Number(value)))+(suffix||'');
+}
+async function viewFamilyMemberStats(memberUid){
+ var s=Services.state,f=s.family||{},member=(f.members||[]).find(function(m){return (m.uid||m.id)===memberUid});
+ if(!member){await dialog('Nie znaleziono użytkownika','Odśwież HealthGo i spróbuj ponownie.');return}
+ try{
+  var data=await Services.call('getFamilyMemberHealth',{memberUid:memberUid}),perms=data&&data.permissions||{};
+  await new Promise(function(resolve){
+   var back=el('div','hg2-dialog-backdrop'),box=el('div','hg2-dialog');box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');
+   box.append(el('h3','', '📊 '+(data.nickname||member.nickname||'Użytkownik HealthGo')),
+              el('p','', 'Pokazuję wyłącznie dane udostępnione temu opiekunowi w HealthGo Family.'));
+   var grid=el('div','hg2-stats');
+   if(perms.activity){
+    [['Kroki',familyHealthValue(data.steps,'')],['Dystans',data.distanceMeters==null?'Brak danych':(Number(data.distanceMeters)/1000).toFixed(1)+' km'],['Aktywność',familyHealthValue(data.activeMinutes,' min')]].forEach(function(item){
+      var card=el('div','hg2-stat');card.append(el('small','',item[0]),el('b','',item[1]));grid.appendChild(card);
+    });
+   }
+   if(perms.sleep){
+    var sleep=el('div','hg2-stat');sleep.append(el('small','','Sen'),el('b','',familyHealthValue(data.sleepMinutes,' min')));grid.appendChild(sleep);
+   }
+   if(perms.heartRate){
+    var heart=el('div','hg2-stat');heart.append(el('small','','Tętno'),el('b','',familyHealthValue(data.heartRate,' bpm')));grid.appendChild(heart);
+   }
+   if(!grid.childNodes.length)box.appendChild(el('div','hg2-note','Brak udostępnionych statystyk. Włącz odpowiednie uprawnienia dla tego członka rodziny.'));
+   else box.appendChild(grid);
+   if(data.activityDate||data.updatedAt)box.appendChild(el('div','hg2-meta','Dane z '+(data.activityDate||date(data.updatedAt))+(data.source?' · '+data.source:'')));
+   var actions=el('div','hg2-dialog-actions');
+   function close(){back.remove();document.body.classList.remove('hg2-dialog-open');resolve()}
+   actions.append(btn('Zamknij',close,true));box.appendChild(actions);back.appendChild(box);document.body.appendChild(back);document.body.classList.add('hg2-dialog-open');
+  });
+ }catch(e){await dialog('Nie udało się pobrać statystyk',e.message)}
+}
 async function editPermissions(childUid,revokeOnly,knownGrant){
  var s=Services.state,grant=knownGrant||(s.family.permissions||[]).find(function(p){return p.childUid===childUid&&p.guardianUid===s.uid})||{};
  var values=Object.assign({},grant.scopes||{}),labels={HEALTH_ACTIVITY:'Aktywność',HEALTH_SLEEP:'Sen',HEALTH_HEART_RATE:'Tętno',DEVICE_STATUS:'Stan urządzenia',LOCATION_APPROXIMATE:'Lokalizacja przybliżona',LOCATION_PRECISE:'Lokalizacja dokładna',CHALLENGE_PROGRESS:'Wyzwania',ACHIEVEMENTS:'Osiągnięcia',NOTIFICATIONS:'Powiadomienia'};
