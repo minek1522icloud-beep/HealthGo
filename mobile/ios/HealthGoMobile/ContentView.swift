@@ -138,6 +138,24 @@ struct ContentView: View {
                     }
                 }
 
+                bluetooth.onDisconnected={ info in
+                    Task { @MainActor in
+                        guard session.isAuthenticated else { return }
+                        do {
+                            try await session.registerDevice(
+                                externalId:"ble-"+info.id.uuidString.lowercased(),
+                                name:info.name,
+                                deviceType:"wearable",
+                                connectionType:"ble",
+                                batteryLevel:info.batteryLevel,
+                                connected:false
+                            )
+                        } catch {
+                            status="Zegarek rozłączono, ale nie udało się zaktualizować stanu na koncie."
+                        }
+                    }
+                }
+
                 await session.restore()
                 email=session.email
                 if session.isAuthenticated {
