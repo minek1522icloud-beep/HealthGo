@@ -148,7 +148,7 @@ test('family member stats support standard members',()=>{
   assert.match(ui,/btn\('Statystyki'/);
   assert.match(ui,/Uprawnienia członka/);
   assert.match(sql,/target_role in \('child','member'\)/i);
-  assert.match(sql,/caller_role in \('guardian','child','member'\)/i);
+  assert.match(sql,/caller_role not in \('guardian','child','member'\)/i);
 });
 
 test('AI retries locally and keeps Ollama model loaded across questions',()=>{
