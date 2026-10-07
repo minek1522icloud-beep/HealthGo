@@ -58,6 +58,17 @@ jobs:
           "tag=v$version" >> $env:GITHUB_OUTPUT
       - name: Zainstaluj zależności
         run: npm ci
+      - name: Zbuduj pakiet HealthGo Cloud AI
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "desktop-ai-build" | Out-Null
+          Copy-Item "www/healthgo-ai-entry.js" "desktop-ai-build/entry.js"
+          Push-Location "desktop-ai-build"
+          npm init -y | Out-Null
+          npm install --no-package-lock --no-save firebase@12.19.0 esbuild@0.25.10
+          npx esbuild entry.js --bundle --format=iife --platform=browser --target=es2020 --minify --outfile=../www/healthgo-ai-bundle.js
+          Pop-Location
+          if (-not (Test-Path "www/healthgo-ai-bundle.js")) { throw "Brak pakietu HealthGo Cloud AI" }
       - name: Zbuduj instalator
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
