@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com; connect-src 'self' https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>HealthGo</title>
 <meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -352,7 +352,7 @@ html.hg-session-known #authScreen{display:none!important}
     <div class="auth-brand">
       <div class="auth-logo">❤️ Health<span>Go</span></div>
       <h2>Witaj w swoim HealthGo.</h2>
-      <p>Zaloguj się, aby przejść do swojego planu dnia, aktywności, mapy, gier i pozostałych funkcji aplikacji.</p>
+      <p>Zaloguj się na telefonie, aby przejść do planu dnia, aktywności, mapy, HealthGo AI i pozostałych funkcji aplikacji.</p>
     </div>
     <div class="auth-panel">
       <h2>Zaloguj się</h2>
@@ -364,7 +364,7 @@ html.hg-session-known #authScreen{display:none!important}
       <button id="createAccountBtn" type="button" class="auth-create-btn" onclick="createAccount()">Utwórz konto HealthGo</button>
       <div class="auth-divider">lub</div>
       <button id="googleLoginBtn" type="button" class="auth-google-btn" onclick="loginGoogle()"><span class="google-g" aria-hidden="true">G</span><span>Kontynuuj z Google</span></button>
-      <div id="authStatus" role="status" aria-live="polite" style="display:none;margin-top:14px;padding:11px 12px;border-radius:12px;background:#eff6ff;color:#1e40af;font-size:13px;text-align:left"></div><div class="auth-note">Twoje konto działa na komputerze i urządzeniach mobilnych.</div>
+      <div id="authStatus" role="status" aria-live="polite" style="display:none;margin-top:14px;padding:11px 12px;border-radius:12px;background:#eff6ff;color:#1e40af;font-size:13px;text-align:left"></div><div class="auth-note">HealthGo jest projektowane przede wszystkim jako aplikacja na telefon.</div>
     </div>
   </div>
 </div>
