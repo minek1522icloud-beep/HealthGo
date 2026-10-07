@@ -30,10 +30,12 @@ test('mobile suite adds child account, privacy, notifications, offline, appearan
     'settingsSecurityPro','settingsAppearancePro','settingsEmergencyPro','settingsOfflinePro',
     'settingsAIPro','settingsMorePro'
   ]) assert.match(suite,new RegExp(id));
-  assert.match(suite,/\['start','🏠','Start'\]/);
-  assert.match(suite,/\['family','👨‍👩‍👧','Rodzina'\]/);
-  assert.match(suite,/\['activity','❤️','Aktywność'\]/);
-  assert.match(suite,/\['settings','profile','Profil'\]/);
+  const navStart=suite.indexOf('function setupMobileNav');
+  const navEnd=suite.indexOf('function updateProfileIcon',navStart);
+  assert.ok(navStart>=0&&navEnd>navStart);
+  const nav=suite.slice(navStart,navEnd);
+  assert.doesNotMatch(nav,/replaceChildren/);
+  assert.match(nav,/Zachowujemy oryginalny pasek mobilny/);
 });
 
 test('mobile suite settings can sync through HealthGo services',()=>{
