@@ -189,9 +189,15 @@ function renderFamily(){
   var grant=(f.permissions||[]).find(function(p){return p.childUid===uid&&p.guardianUid===s.uid});
   if(grant){var ps=el('div','hg2-permissions');scopes(grant.scopes).forEach(function(x){ps.appendChild(el('span','hg2-permission',x))});if(ps.childNodes.length)memberCopy.appendChild(ps)}
   row.append(avatar,memberCopy);
-  if(uid!==s.uid&&role==='guardian'&&m.role!=='guardian'){
-   row.appendChild(btn('Statystyki',function(){viewFamilyMemberStats(uid)},false));
-   row.appendChild(btn('Uprawnienia',function(){editPermissions(uid)},true));
+  if(uid!==s.uid){
+   row.appendChild(btn('Statystyki',async function(){
+    if(role!=='guardian'){
+      await dialog('Statystyki rodziny','Statystyki innej osoby może otworzyć konto Rodzica / Opiekuna, jeśli ta osoba ma udostępnione odpowiednie dane.');
+      return;
+    }
+    await viewFamilyMemberStats(uid);
+   },false));
+   if(role==='guardian'&&m.role!=='guardian')row.appendChild(btn('Uprawnienia',function(){editPermissions(uid)},true));
   }
   members.appendChild(row);
  });
