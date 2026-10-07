@@ -52,6 +52,22 @@ class MainActivity:ComponentActivity(){
         session=HealthGoSession(this)
         sync=HealthSync(this)
         bluetooth=BluetoothWatchManager(this)
+        bluetooth.onDisconnected={ connection->
+            lifecycleScope.launch{
+                runCatching{
+                    if(session.isAuthenticated){
+                        session.registerDevice(
+                            externalId="ble-${connection.address}",
+                            name=connection.name,
+                            deviceType="wearable",
+                            connectionType="ble",
+                            batteryLevel=connection.batteryLevel,
+                            connected=false
+                        )
+                    }
+                }
+            }
+        }
 
         val box=LinearLayout(this).apply{
             orientation=LinearLayout.VERTICAL
@@ -82,11 +98,15 @@ class MainActivity:ComponentActivity(){
             text="Rozłącz zegarek"
             setOnClickListener{
                 bluetooth.disconnect()
-                status.text="Zegarek Bluetooth rozłączony."
+                status.text="Rozłączam zegarek Bluetooth…"
             }
         })
 
-        setContentView(box)
+        val scroll=ScrollView(this).apply{
+            isFillViewport=true
+            addView(box)
+        }
+        setContentView(scroll)
 
         if(session.isAuthenticated){
             email.setText(session.email)
