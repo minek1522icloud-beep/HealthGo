@@ -778,6 +778,37 @@ async function askLocalOllama(data) {
       data.message || ""
     ).trim();
 
+  const responseMode =
+    ["average", "medium", "high"].includes(
+      String(data.responseMode || "")
+    )
+      ? String(data.responseMode)
+      : "average";
+
+  const responseProfile = {
+    average: {
+      history: 6,
+      maxTokens: 220,
+      timeoutMs: 55000,
+      instruction:
+        "Odpowiadaj krótko i konkretnie. Zwykle 2–5 zdań. Priorytetem jest szybka odpowiedź bez zbędnego rozwijania."
+    },
+    medium: {
+      history: 10,
+      maxTokens: 420,
+      timeoutMs: 85000,
+      instruction:
+        "Odpowiadaj z umiarkowaną ilością szczegółów. Wyjaśnij najważniejsze powody i kroki, ale unikaj niepotrzebnego rozwlekania."
+    },
+    high: {
+      history: 12,
+      maxTokens: 760,
+      timeoutMs: 120000,
+      instruction:
+        "Odpowiadaj dokładniej i bardziej szczegółowo. Sprawdź założenia, wyjaśnij istotne kroki i uwzględnij ważne zastrzeżenia."
+    }
+  }[responseMode];
+
   if (!message) {
     throw new Error(
       "EMPTY_MESSAGE"
@@ -787,7 +818,7 @@ async function askLocalOllama(data) {
   const history =
     Array.isArray(data.history)
       ? data.history
-          .slice(-12)
+          .slice(-responseProfile.history)
           .filter(
             (item) =>
               item &&
@@ -820,7 +851,7 @@ async function askLocalOllama(data) {
   const timeout =
     setTimeout(
       () => controller.abort(),
-      120000
+      responseProfile.timeoutMs
     );
 
   try {
@@ -848,6 +879,11 @@ async function askLocalOllama(data) {
                 stream:
                   false,
 
+                options: {
+                  num_predict:
+                    responseProfile.maxTokens
+                },
+
                 messages: [
                   {
                     role:
@@ -858,7 +894,8 @@ async function askLocalOllama(data) {
                       "Odpowiadaj jasno i po polsku, chyba że użytkownik poprosi o inny język. " +
                       "Pomagasz w nauce, technologii, programowaniu, grach, planowaniu i funkcjach HealthGo. " +
                       "Nie udawaj, że widzisz dane lub obrazy, których model nie otrzymał. " +
-                      "W sprawach zdrowotnych podawaj wyłącznie ogólne, ostrożne informacje."
+                      "W sprawach zdrowotnych podawaj wyłącznie ogólne, ostrożne informacje. " +
+                      responseProfile.instruction
                   },
 
                   ...history,
