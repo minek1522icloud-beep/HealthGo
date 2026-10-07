@@ -281,18 +281,14 @@ function renderHome(){
 }
 
 function setupMobileNav(){
- const nav=document.getElementById('mobileNav');if(!nav||nav.dataset.mobileSuite==='1')return;
- nav.dataset.mobileSuite='1';nav.replaceChildren();
- [['start','🏠','Start'],['family','👨‍👩‍👧','Rodzina'],['ai','🤖','AI'],['activity','❤️','Aktywność'],['settings','profile','Profil']].forEach(function(item,index){
-  const b=el('button');b.type='button';b.dataset.mobilePage=item[0];if(index===0)b.classList.add('active');
-  const icon=item[1]==='profile'?el('span','mobile-nav-icon hg-mobile-profile-icon','H'):el('span','mobile-nav-icon',item[1]);
-  const label=el('span','mobile-nav-label',item[2]);b.append(icon,label);b.addEventListener('click',function(){if(window.mobileGo)window.mobileGo(item[0]);else if(window.go)window.go(item[0]);});nav.appendChild(b);
- });
- updateProfileIcon();
+ const nav=document.getElementById('mobileNav');
+ if(!nav)return;
+ // Zachowujemy oryginalny pasek mobilny z index.html.
+ // Ten moduł nie może nadpisywać kolejności ani dodawać własnych zakładek.
+ nav.removeAttribute('data-mobile-suite');
 }
 function updateProfileIcon(){
- const icon=document.querySelector('#mobileNav [data-mobile-page="settings"] .hg-mobile-profile-icon');if(!icon)return;
- const source=document.getElementById('topAvatar')||document.getElementById('sidebarAvatar');icon.textContent=(source&&source.textContent||Services.state.profile&&Services.state.profile.nickname||'H').trim().slice(0,1).toUpperCase()||'H';
+ // Oryginalny pasek nie używa sztucznie dodawanego avatara.
 }
 function renderAll(){
  if(!uid())return;

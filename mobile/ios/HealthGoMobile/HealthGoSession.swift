@@ -188,6 +188,33 @@ final class HealthGoSession: ObservableObject {
         HealthGoSecureStore.clear()
     }
 
+    func registerDevice(
+        externalId:String,
+        name:String,
+        deviceType:String="wearable",
+        connectionType:String="ble",
+        batteryLevel:Int?=nil,
+        connected:Bool=true
+    ) async throws {
+        guard isAuthenticated else {
+            throw NSError(domain:"HealthGo",code:28,userInfo:[NSLocalizedDescriptionKey:"Zaloguj się do HealthGo."])
+        }
+        let endpoint=baseURL.appending(path:"/rest/v1/rpc/healthgo_register_device")
+        var request=try await authorizedRequest(url:endpoint)
+        request.httpMethod="POST"
+        request.httpBody=try JSONSerialization.data(withJSONObject:[
+            "p_external_id":externalId,
+            "p_name":name,
+            "p_platform":"iOS",
+            "p_device_type":deviceType,
+            "p_connection_type":connectionType,
+            "p_battery_level":batteryLevel ?? NSNull(),
+            "p_connected":connected
+        ])
+        let (data,response)=try await URLSession.shared.data(for:request)
+        try Self.requireSuccess(data:data,response:response)
+    }
+
     func authorizedRequest(url: URL) async throws -> URLRequest {
         if expiresAt <= Int(Date().timeIntervalSince1970)+60 {
             try await refresh()

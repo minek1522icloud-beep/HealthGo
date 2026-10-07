@@ -78,8 +78,9 @@ test('account type setup is one-shot and devices refresh from Supabase',()=>{
   assert.match(html,/setupAccountSaving/);
   assert.match(services,/async function refreshDevices\(\)/);
   assert.match(services,/S\.db\.select\('devices'/);
-  assert.match(devices,/Odśwież z bazy/);
-  assert.match(devices,/Supabase · tabela devices/);
+  assert.match(devices,/Odśwież listę/);
+  assert.match(devices,/Services\.refreshDevices/);
+  assert.match(devices,/Urządzenia zapisane na koncie HealthGo/);
 });
 
 
@@ -115,7 +116,7 @@ test('Windows AI uses the bundled cloud client with local fallback and other-mem
   const workflow=fs.readFileSync('.github/workflows/windows-release.yml','utf8');
   assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData\)/);
   assert.match(html,/CLOUD_AND_LOCAL_AI_UNAVAILABLE/);
-  assert.match(html,/healthgo-ai-bundle\.js\?v=9/);
+  assert.match(html,/healthgo-ai-bundle\.js\?v=10/);
   assert.match(workflow,/Zbuduj pakiet HealthGo Cloud AI/);
   assert.match(workflow,/healthgo-ai-bundle\.js/);
   assert.doesNotMatch(ui,/Moje statystyki/);
@@ -136,9 +137,13 @@ test('optional 2FA prompt is dismissible and map uses profile markers',()=>{
 
 test('hosted mobile uses App Check while localhost Electron avoids production attestation',()=>{
   const entry=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
+  const html=fs.readFileSync('www/index.html','utf8');
   assert.match(entry,/desktopLocal/);
   assert.match(entry,/initializeAppCheck\(aiApp/);
   assert.match(entry,/if\(!desktopLocal\)/);
+  assert.match(entry,/getToken\(appCheck,true\)/);
+  assert.match(html,/healthGoLoadAIBundle/);
+  assert.match(html,/healthgo-ai-bundle\.js\?v=10/);
 });
 
 

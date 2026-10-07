@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='healthgo-pwa-v11-mobile-suite-ai-stability-20261007';
+const CACHE_NAME='healthgo-pwa-v12-device-pairing-nav-fix-20261007';
 const CORE=['./','./index.html','./manifest.webmanifest','./healthgo-pro.js','./supabase-client.js','./core/achievement-engine.js','./core/health-data.js','./healthgo-services.js','./healthgo-v2-ui.js','./healthgo-mobile-suite.js','./healthgo-mobile-suite.css','./healthgo-devices.js'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(async cache=>{for(const url of CORE){try{await cache.add(url);}catch(_){}}}));

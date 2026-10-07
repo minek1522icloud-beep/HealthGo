@@ -7,6 +7,9 @@ if(!Services)return;
 let activeDevice=null;
 let activeServer=null;
 let batteryLevel=null;
+let heartRate=null;
+let activeCapabilities=[];
+let heartCharacteristic=null;
 
 function el(tag,cls,text){
   const node=document.createElement(tag);
@@ -24,9 +27,9 @@ function button(label,handler,secondary){
 
 function platform(){
   const ua=navigator.userAgent||'';
-  if(/Windows/i.test(ua))return 'Windows';
   if(/Android/i.test(ua))return 'Android';
   if(/iPhone|iPad|iPod/i.test(ua))return 'iOS';
+  if(/Windows/i.test(ua))return 'Windows';
   if(/Mac/i.test(ua))return 'macOS';
   return 'Web';
 }
@@ -35,33 +38,47 @@ function isIOS(){
   return /iPhone|iPad|iPod/i.test(navigator.userAgent||'');
 }
 
-function appleHealthDevice(){
-  return (Services.state.devices||[]).find(d=>d.connectionType==='healthkit'||/apple health/i.test(String(d.name||'')))||null;
+function isAndroid(){
+  return /Android/i.test(navigator.userAgent||'');
 }
 
-async function openAppleHealth(){
+function nativeLink(host){
+  return 'healthgo://'+host;
+}
+
+function openNative(host,fallback){
   const status=document.getElementById('hgRealDeviceStatus');
-  if(!Services.state.uid){
-    if(status)status.textContent='Najpierw zaloguj się do HealthGo.';
-    return;
-  }
-  if(!isIOS()){
-    if(status)status.textContent='Apple Health jest dostępne w natywnej aplikacji HealthGo na iPhonie.';
-    return;
-  }
-  if(status)status.textContent='Otwieram HealthGo i systemowe uprawnienia Apple Health…';
   const started=Date.now();
-  try{window.location.href='healthgo://connect-health';}catch(_){}
+  try{window.location.href=nativeLink(host)}catch(_){}
   setTimeout(()=>{
     if(document.visibilityState==='visible'&&Date.now()-started>1200&&status){
-      status.textContent='Safari nie ma bezpośredniego dostępu do Apple Health. Zainstaluj natywną aplikację HealthGo na iPhonie, a potem kliknij ponownie.';
+      status.textContent=fallback;
     }
-  },1800);
+  },1700);
+}
+
+function openNativeBluetooth(){
+  openNative(
+    'connect-bluetooth',
+    'Na iPhonie bezpośrednie łączenie zegarka działa w natywnej aplikacji HealthGo. Otwórz zainstalowane HealthGo i wybierz „Szukaj zegarka”.'
+  );
+}
+
+function openHealthPlatform(){
+  const status=document.getElementById('hgRealDeviceStatus');
+  if(isIOS()){
+    openNative(
+      'connect-health',
+      'Safari nie ma dostępu do systemowych danych zdrowotnych. Otwórz natywną aplikację HealthGo na iPhonie.'
+    );
+    return;
+  }
+  if(status)status.textContent='Na Androidzie dane zegarka mogą trafiać do Health Connect. Otwórz natywną aplikację HealthGo i wybierz „Połącz dane zdrowotne”.';
 }
 
 function deviceType(name){
   const n=String(name||'').toLowerCase();
-  if(/watch|band|fit|garmin|polar|amazfit|galaxy|mi band|huawei/i.test(n))return 'wearable';
+  if(/watch|band|fit|garmin|polar|amazfit|galaxy|mi band|huawei|zegarek|opaska/i.test(n))return 'wearable';
   return 'bluetooth';
 }
 
@@ -69,6 +86,14 @@ function fmt(value){
   if(!value)return '—';
   const d=new Date(value);
   return Number.isFinite(d.getTime())?d.toLocaleString('pl-PL',{dateStyle:'medium',timeStyle:'short'}):'—';
+}
+
+function withTimeout(promise,ms,label){
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label||'TIMEOUT')),ms)})
+  ]).finally(()=>clearTimeout(timer));
 }
 
 async function saveDevice(device,connected,battery){
@@ -86,19 +111,66 @@ async function saveDevice(device,connected,battery){
 
 async function readBattery(server){
   try{
-    const service=await server.getPrimaryService('battery_service');
-    const characteristic=await service.getCharacteristic('battery_level');
-    const value=await characteristic.readValue();
+    const service=await withTimeout(server.getPrimaryService('battery_service'),5000,'BATTERY_SERVICE_TIMEOUT');
+    const characteristic=await withTimeout(service.getCharacteristic('battery_level'),5000,'BATTERY_CHARACTERISTIC_TIMEOUT');
+    const value=await withTimeout(characteristic.readValue(),5000,'BATTERY_READ_TIMEOUT');
     return value.getUint8(0);
   }catch(_){
     return null;
   }
 }
 
+function parseHeartRate(value){
+  if(!value||value.byteLength<2)return null;
+  const flags=value.getUint8(0),is16=(flags&1)!==0;
+  return is16&&value.byteLength>=3?value.getUint16(1,true):value.getUint8(1);
+}
+
+function onHeartRate(event){
+  try{
+    const value=parseHeartRate(event.target.value);
+    if(Number.isFinite(value)&&value>0&&value<300){
+      heartRate=value;
+      render();
+    }
+  }catch(_){}
+}
+
+async function setupHeartRate(server){
+  try{
+    const service=await withTimeout(server.getPrimaryService('heart_rate'),5000,'HEART_SERVICE_TIMEOUT');
+    const characteristic=await withTimeout(service.getCharacteristic('heart_rate_measurement'),5000,'HEART_CHARACTERISTIC_TIMEOUT');
+    characteristic.removeEventListener?.('characteristicvaluechanged',onHeartRate);
+    characteristic.addEventListener?.('characteristicvaluechanged',onHeartRate);
+    await withTimeout(characteristic.startNotifications(),5000,'HEART_NOTIFY_TIMEOUT');
+    heartCharacteristic=characteristic;
+    return true;
+  }catch(_){
+    heartCharacteristic=null;
+    return false;
+  }
+}
+
+async function detectCapabilities(server){
+  const caps=[];
+  const battery=await readBattery(server);
+  if(battery!=null)caps.push('bateria');
+  const hr=await setupHeartRate(server);
+  if(hr)caps.push('tętno');
+  try{
+    await withTimeout(server.getPrimaryService('device_information'),3500,'DEVICE_INFO_TIMEOUT');
+    caps.push('informacje o urządzeniu');
+  }catch(_){}
+  return{caps,battery};
+}
+
 async function handleDisconnected(){
   const device=activeDevice;
   activeServer=null;
   batteryLevel=null;
+  heartRate=null;
+  activeCapabilities=[];
+  heartCharacteristic=null;
   if(device){
     try{await saveDevice(device,false,null)}catch(_){}
   }
@@ -106,12 +178,14 @@ async function handleDisconnected(){
 }
 
 async function connectDevice(device){
-  if(!device||!device.gatt)throw new Error('To urządzenie nie udostępnia połączenia GATT.');
+  if(!device||!device.gatt)throw new Error('To urządzenie nie udostępnia połączenia BLE/GATT.');
   activeDevice=device;
   device.removeEventListener?.('gattserverdisconnected',handleDisconnected);
   device.addEventListener?.('gattserverdisconnected',handleDisconnected);
-  activeServer=await device.gatt.connect();
-  batteryLevel=await readBattery(activeServer);
+  activeServer=await withTimeout(device.gatt.connect(),15000,'Połączenie Bluetooth przekroczyło limit czasu.');
+  const capabilities=await detectCapabilities(activeServer);
+  activeCapabilities=capabilities.caps;
+  batteryLevel=capabilities.battery;
   await saveDevice(device,true,batteryLevel);
   render();
   return device;
@@ -123,16 +197,21 @@ async function requestBluetooth(){
     if(status)status.textContent='Najpierw zaloguj się do HealthGo.';
     return;
   }
+
   if(isIOS()){
-    await openAppleHealth();
-    return;
-  }
-  if(!navigator.bluetooth||typeof navigator.bluetooth.requestDevice!=='function'){
-    if(status)status.textContent='Ta przeglądarka nie udostępnia Web Bluetooth. Użyj HealthGo na Windowsie lub zgodnej przeglądarki na Androidzie.';
+    if(status)status.textContent='Otwieram natywne skanowanie Bluetooth HealthGo…';
+    openNativeBluetooth();
     return;
   }
 
-  if(status)status.textContent='Szukam urządzeń Bluetooth…';
+  if(!navigator.bluetooth||typeof navigator.bluetooth.requestDevice!=='function'){
+    if(status)status.textContent=isAndroid()
+      ?'Ta przeglądarka nie udostępnia Web Bluetooth. Użyj zgodnej przeglądarki lub natywnej aplikacji HealthGo.'
+      :'Ta przeglądarka nie udostępnia Web Bluetooth.';
+    return;
+  }
+
+  if(status)status.textContent='Szukam zegarków i opasek Bluetooth…';
   try{
     const device=await navigator.bluetooth.requestDevice({
       acceptAllDevices:true,
@@ -140,7 +219,11 @@ async function requestBluetooth(){
     });
     if(status)status.textContent='Łączę z '+(device.name||'urządzeniem')+'…';
     await connectDevice(device);
-    if(status)status.textContent='Połączono z '+(device.name||'urządzeniem')+'.';
+    if(status){
+      status.textContent=activeCapabilities.length
+        ?'Połączono z '+(device.name||'urządzeniem')+'. Obsługiwane: '+activeCapabilities.join(', ')+'.'
+        :'Połączono z '+(device.name||'urządzeniem')+'. Zegarek nie udostępnia standardowych usług BLE; dane mogą wymagać aplikacji producenta lub systemu zdrowotnego.';
+    }
   }catch(error){
     const message=String(error&&error.message||'');
     if(status)status.textContent=/cancel|cancelled|user cancelled|notfound/i.test(message)
@@ -153,37 +236,49 @@ async function refreshDatabaseDevices(){
   const status=document.getElementById('hgRealDeviceStatus');
   if(!Services.state.uid){if(status)status.textContent='Najpierw zaloguj się do HealthGo.';return;}
   try{
-    if(status)status.textContent='Odświeżam urządzenia z bazy HealthGo…';
+    if(status)status.textContent='Odświeżam urządzenia z konta HealthGo…';
     const rows=typeof Services.refreshDevices==='function'?await Services.refreshDevices():[];
-    if(status)status.textContent='Baza HealthGo odświeżona · '+rows.length+' '+(rows.length===1?'urządzenie':'urządzeń')+'.';
-  }catch(error){
-    if(status)status.textContent='Nie udało się odświeżyć urządzeń z bazy.';
+    if(status)status.textContent='Lista urządzeń odświeżona · '+rows.length+' '+(rows.length===1?'urządzenie':'urządzeń')+'.';
+  }catch(_){
+    if(status)status.textContent='Nie udało się odświeżyć urządzeń z konta.';
   }
 }
 
 async function reconnectGranted(){
   const status=document.getElementById('hgRealDeviceStatus');
+  if(isIOS()){
+    openNativeBluetooth();
+    return;
+  }
   if(!navigator.bluetooth||typeof navigator.bluetooth.getDevices!=='function'){
-    if(status)status.textContent='Ta wersja nie pozwala automatycznie odczytać wcześniej zatwierdzonych urządzeń.';
+    if(status)status.textContent='Ta wersja przeglądarki nie pozwala automatycznie odczytać wcześniej zatwierdzonych urządzeń.';
     return;
   }
   try{
     const granted=await navigator.bluetooth.getDevices();
     if(!granted.length){
-      if(status)status.textContent='Nie ma wcześniej zatwierdzonych urządzeń. Kliknij „Połącz urządzenie”.';
+      if(status)status.textContent='Nie ma wcześniej zatwierdzonych urządzeń. Kliknij „Połącz zegarek”.';
       return;
     }
     const saved=Services.state.devices||[];
     const selected=granted.find(d=>saved.some(s=>s.externalId===d.id))||granted[0];
     if(status)status.textContent='Łączę ponownie z '+(selected.name||'urządzeniem')+'…';
     await connectDevice(selected);
-    if(status)status.textContent='Połączono ponownie.';
+    if(status)status.textContent='Połączono ponownie z '+(selected.name||'urządzeniem')+'.';
   }catch(error){
-    if(status)status.textContent='Ponowne połączenie nie powiodło się.';
+    if(status)status.textContent='Ponowne połączenie nie powiodło się: '+String(error&&error.message||'błąd Bluetooth');
   }
 }
 
 async function disconnectCurrent(){
+  try{
+    if(heartCharacteristic){
+      heartCharacteristic.removeEventListener?.('characteristicvaluechanged',onHeartRate);
+      await heartCharacteristic.stopNotifications?.().catch(()=>{});
+    }
+  }catch(_){}
+  heartCharacteristic=null;
+
   if(activeDevice&&activeDevice.gatt&&activeDevice.gatt.connected){
     activeDevice.gatt.disconnect();
     return;
@@ -194,6 +289,8 @@ async function disconnectCurrent(){
   activeDevice=null;
   activeServer=null;
   batteryLevel=null;
+  heartRate=null;
+  activeCapabilities=[];
   render();
 }
 
@@ -218,58 +315,61 @@ function render(){
   if(!root)return;
   root.replaceChildren();
 
-  const ios=isIOS();
-  const healthKit=appleHealthDevice();
+  const connected=!!(activeServer&&activeServer.connected);
   const header=el('div','between');
   const copy=el('div');
   copy.append(
-    el('h3','',ios?'❤️ Apple Health i zegarek':'📡 Prawdziwe połączenie urządzenia'),
-    el('p','muted',ios
-      ?'Na iPhonie HealthGo otwiera natywną aplikację i prawdziwe uprawnienia Apple Health. Tętno, kroki i sen są odczytywane tylko po Twojej zgodzie.'
-      :'HealthGo używa systemowego wyboru Bluetooth i zapisuje tylko urządzenie, które sam wybierzesz.')
+    el('h3','',isIOS()?'⌚ Zegarek i dane zdrowotne':'⌚ Połącz zegarek'),
+    el('p','muted',isIOS()
+      ?'Na iPhonie zwykły zegarek łączy się przez natywny moduł Bluetooth HealthGo. Dane systemowe można osobno synchronizować z aplikacji Zdrowie.'
+      :'Wybierz zegarek z systemowego okna Bluetooth. HealthGo zapisuje wyłącznie urządzenie, które sam wybierzesz.')
   );
-  const badge=el('span','tag',ios?(healthKit?'Połączono':'Niepołączono'):(activeServer&&activeServer.connected?'Połączono':'Niepołączono'));
-  header.append(copy,badge);
+  header.append(copy,el('span','tag',connected?'Połączono':'Gotowe'));
   root.appendChild(header);
 
   const controls=el('div','row');
   controls.style.marginTop='12px';
-  if(ios){
-    controls.append(
-      button('Połącz Apple Health',openAppleHealth,false),
-      button('Odśwież dane zdrowotne',()=>Services.refreshHealth(),true),
-      button('Odśwież z bazy',refreshDatabaseDevices,true)
-    );
-  }else{
-    controls.append(
-      button('Połącz urządzenie',requestBluetooth,false),
-      button('Połącz ponownie',reconnectGranted,true),
-      button('Odśwież z bazy',refreshDatabaseDevices,true)
-    );
-    if(activeDevice)controls.appendChild(button('Rozłącz',disconnectCurrent,true));
-  }
+  controls.append(
+    button('Połącz zegarek',requestBluetooth,false),
+    button('Połącz ponownie',reconnectGranted,true),
+    button('Dane zdrowotne',openHealthPlatform,true),
+    button('Odśwież listę',refreshDatabaseDevices,true)
+  );
+  if(activeDevice)controls.appendChild(button('Rozłącz',disconnectCurrent,true));
   root.appendChild(controls);
 
-  const status=el('div','muted',ios
-    ?(healthKit
-      ?'Apple Health jest połączone z tym kontem. HealthGo pokazuje tylko dane faktycznie udostępnione przez iPhone lub zegarek.'
-      :'Kliknij „Połącz Apple Health”. iPhone otworzy natywną aplikację HealthGo i systemowe okno uprawnień.')
-    :(activeServer&&activeServer.connected
-      ?'Aktywne: '+(activeDevice?.name||'Urządzenie Bluetooth')+(batteryLevel==null?'':' · bateria '+batteryLevel+'%')
-      :'Kliknij „Połącz urządzenie”, aby otworzyć prawdziwy wybór Bluetooth.'));
+  const status=el('div','muted',
+    connected
+      ?'Aktywne: '+(activeDevice?.name||'Urządzenie Bluetooth')+
+        (batteryLevel==null?'':' · bateria '+batteryLevel+'%')+
+        (heartRate==null?'':' · tętno '+heartRate+' bpm')
+      :isIOS()
+        ?'Kliknij „Połącz zegarek”. HealthGo otworzy natywny moduł Bluetooth na iPhonie.'
+        :'Kliknij „Połącz zegarek”, aby otworzyć prawdziwy wybór Bluetooth.'
+  );
   status.id='hgRealDeviceStatus';
+  status.setAttribute('role','status');
+  status.setAttribute('aria-live','polite');
   status.style.marginTop='10px';
   root.appendChild(status);
+
+  if(connected){
+    const capabilities=el('div','settings-note',
+      activeCapabilities.length
+        ?'Standardowe funkcje wykryte przez HealthGo: '+activeCapabilities.join(', ')+'.'
+        :'Połączenie Bluetooth działa, ale urządzenie nie udostępnia standardowych usług baterii/tętna. To typowe dla części zegarków korzystających z własnej aplikacji producenta.'
+    );
+    capabilities.style.marginTop='10px';
+    root.appendChild(capabilities);
+  }
 
   const saved=Services.state.devices||[];
   const list=el('div');
   list.style.marginTop='14px';
   if(!saved.length){
-    const empty=el('div','settings-note','Nie zapisano jeszcze żadnego urządzenia na tym koncie.');
-    list.appendChild(empty);
+    list.appendChild(el('div','settings-note','Nie zapisano jeszcze żadnego urządzenia na tym koncie.'));
   }else{
-    const title=el('b','', 'Urządzenia z bazy HealthGo');
-    list.appendChild(title);
+    list.appendChild(el('b','','Urządzenia zapisane na koncie HealthGo'));
     saved.forEach(d=>{
       const row=el('div','hg2-member');
       const avatar=el('div','hg2-avatar',d.deviceType==='wearable'?'⌚':'📡');
@@ -286,15 +386,9 @@ function render(){
   }
   root.appendChild(list);
 
-  const databaseInfo=el('div','settings-note','Źródło listy: Supabase · tabela devices · '+saved.length+' '+(saved.length===1?'rekord':'rekordów')+'. HealthGo nie dopisuje tutaj przykładowych urządzeń.');
-  databaseInfo.style.marginTop='12px';
-  root.appendChild(databaseInfo);
-
   const info=el('div','settings-note');
   info.style.marginTop='12px';
-  info.textContent=ios
-    ?'Apple Watch i inne zgodne źródła zapisują dane w Apple Health. HealthGo może odczytać kroki, sen i ostatni dostępny pomiar tętna wyłącznie po systemowej zgodzie. Safari samo nie ma dostępu do HealthKit.'
-    :'Bluetooth potwierdza prawdziwe połączenie z urządzeniem. Kroki, sen i tętno są pobierane tylko wtedy, gdy urządzenie lub system zdrowotny rzeczywiście udostępnia te dane — HealthGo nie tworzy fikcyjnych pomiarów.';
+  info.textContent='HealthGo nie może obiecać pełnych danych z każdego zegarka. Jeśli urządzenie udostępnia standardowe BLE, aplikacja może wykryć połączenie, baterię i usługę tętna. Kroki, sen i inne dane często są przekazywane przez Health Connect, aplikację Zdrowie lub aplikację producenta.';
   root.appendChild(info);
 }
 
@@ -304,7 +398,9 @@ window.HealthGoDevices={
   reconnect:reconnectGranted,
   disconnect:disconnectCurrent,
   get activeDevice(){return activeDevice;},
-  get connected(){return !!(activeServer&&activeServer.connected);}
+  get connected(){return !!(activeServer&&activeServer.connected);},
+  get capabilities(){return activeCapabilities.slice();},
+  get heartRate(){return heartRate;}
 };
 render();
 })();

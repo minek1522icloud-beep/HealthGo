@@ -1022,12 +1022,25 @@ function aiTextToHtml(text){
  return '<p>'+safe.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')+'</p>';
 }
 async function waitForHealthGoMobileAI(){
- const start=Date.now();
- while(Date.now()-start<12000){
-   if(window.healthGoMobileAI&&typeof window.healthGoMobileAI.ask==='function')return window.healthGoMobileAI;
-   if(window.healthGoMobileAIInitError)throw new Error('MOBILE_AI_INIT_ERROR '+window.healthGoMobileAIInitError);
-   await new Promise(r=>setTimeout(r,120));
+ let lastError='';
+ for(let attempt=0;attempt<2;attempt++){
+   const start=Date.now();
+   while(Date.now()-start<10000){
+     if(window.healthGoMobileAI&&typeof window.healthGoMobileAI.ask==='function')return window.healthGoMobileAI;
+     if(window.healthGoMobileAIInitError){lastError=String(window.healthGoMobileAIInitError);break;}
+     await new Promise(r=>setTimeout(r,120));
+   }
+   if(attempt===0&&typeof window.healthGoLoadAIBundle==='function'){
+     try{
+       window.healthGoMobileAIInitError='';
+       await window.healthGoLoadAIBundle(true);
+       continue;
+     }catch(error){
+       lastError=String((error&&error.message)||error||lastError);
+     }
+   }
  }
+ if(lastError)throw new Error('MOBILE_AI_INIT_ERROR '+lastError);
  throw new Error('MOBILE_AI_SDK_NOT_READY');
 }
 function healthGoAIAccountType(){
@@ -2292,13 +2305,33 @@ window.addEventListener('beforeunload',save);
 
 <script>
 (function(){
-  const s=document.createElement('script');
-  s.src='./healthgo-ai-bundle.js?v=9';
-  s.async=true;
-  s.onerror=function(){
-    window.healthGoMobileAIInitError='BUNDLE_LOAD_ERROR Nie udało się załadować pakietu HealthGo AI.';
+  let loading=null;
+  let sequence=0;
+  window.healthGoLoadAIBundle=function(force){
+    if(window.healthGoMobileAI&&typeof window.healthGoMobileAI.ask==='function'&&!force)return Promise.resolve(true);
+    if(loading&&!force)return loading;
+    if(force){
+      document.querySelectorAll('script[data-healthgo-ai-bundle="1"]').forEach(function(node){node.remove()});
+      try{delete window.healthGoMobileAI}catch(_){window.healthGoMobileAI=null}
+    }
+    window.healthGoMobileAIInitError='';
+    const run=++sequence;
+    loading=new Promise(function(resolve,reject){
+      const script=document.createElement('script');
+      script.dataset.healthgoAiBundle='1';
+      script.src='./healthgo-ai-bundle.js?v=10&r='+run;
+      script.async=true;
+      script.onload=function(){resolve(true)};
+      script.onerror=function(){
+        const error='BUNDLE_LOAD_ERROR Nie udało się załadować pakietu HealthGo AI.';
+        window.healthGoMobileAIInitError=error;
+        reject(new Error(error));
+      };
+      document.head.appendChild(script);
+    }).finally(function(){loading=null});
+    return loading;
   };
-  document.head.appendChild(s);
+  window.healthGoLoadAIBundle(false).catch(function(){});
 })();
 </script>
 <script src="./healthgo-pro.js"></script>
