@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://*.googleusercontent.com; connect-src 'self' https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com; connect-src 'self' https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HealthGo</title>
 <meta name="theme-color" content="#ffffff">
@@ -193,9 +193,10 @@ body:has(#map.active) .top{margin-bottom:8px}
 .map-place-actions{display:flex;gap:7px;margin-top:8px}.map-place-actions button{padding:7px 9px;border-radius:9px;background:#eef2ff;color:#3730a3;font-size:11px;font-weight:800}
 .map-user-dot{width:18px;height:18px;border-radius:50%;background:#2563eb;border:4px solid #fff;box-shadow:0 0 0 2px rgba(37,99,235,.35)}
 @media(max-width:900px){
- body:has(#map.active) .main{padding:8px 8px 76px}
- #map{height:calc(100dvh - 122px)}
- .map-workspace{min-height:480px;border-radius:12px}
+ body:has(#map.active) .main{padding:6px 6px calc(74px + env(safe-area-inset-bottom))}
+ body:has(#map.active) .top{height:52px;margin-bottom:4px}
+ #map{height:calc(100dvh - 60px - env(safe-area-inset-bottom));min-height:420px}
+ .map-workspace{min-height:0;height:100%;border-radius:12px}
  .map-toolbar-row{flex-wrap:wrap}
  .map-address-wrap{order:0;flex-basis:100%}
  .map-bar-btn{flex:1 1 auto;font-size:12px;padding:9px 10px}
@@ -921,7 +922,7 @@ function go(page){
  document.getElementById('title').textContent=titles[page]||'HealthGo';
  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
  window.scrollTo({top:0,behavior:'smooth'});
- if(page==='map')setTimeout(()=>{initHealthGoMap();renderFamilyLocationsOnMap()},60);
+ if(page==='map')setTimeout(()=>{initHealthGoMap();renderFamilyLocationsOnMap();refreshHealthGoMapSize()},120);
  if(page==='plan')setTimeout(renderPlanDay,20);
  if(page==='start')setTimeout(()=>{renderTodayPlanPreview();renderProgressUI()},20);
  if(page==='challenges')setTimeout(renderProgressUI,20);
@@ -1152,10 +1153,17 @@ function showFamilyOnMap(){
  mapStatus('Pokazuję udostępnione lokalizacje rodziny z nazwami kont.');
 }
 
+function refreshHealthGoMapSize(){
+ if(!healthGoMap)return;
+ requestAnimationFrame(function(){
+   try{healthGoMap.invalidateSize({pan:false})}catch(_){}
+   setTimeout(function(){try{healthGoMap.invalidateSize({pan:false})}catch(_){}},120);
+ });
+}
 function initHealthGoMap(){
  const el=document.getElementById('healthgoMap');if(!el)return;
  if(typeof L!=='undefined'&&L.Icon&&L.Icon.Default){L.Icon.Default.mergeOptions({iconRetinaUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',iconUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',shadowUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'});}
- if(healthGoMap){renderFamilyLocationsOnMap();setTimeout(()=>healthGoMap.invalidateSize(),50);return}
+ if(healthGoMap){renderFamilyLocationsOnMap();refreshHealthGoMapSize();return}
  if(typeof L==='undefined'){mapStatus('Nie udało się załadować mapy. Sprawdź internet i uruchom HealthGo ponownie.');return}
 
  healthGoMap=L.map('healthgoMap',{zoomControl:true}).setView([51.9194,19.1451],6);
@@ -1178,8 +1186,12 @@ function initHealthGoMap(){
  const address=document.getElementById('mapAddressInput');
  if(address)address.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();searchMapAddress()}});
 
- setTimeout(()=>healthGoMap.invalidateSize(),100);
+ refreshHealthGoMapSize();
 }
+
+if(window.visualViewport)window.visualViewport.addEventListener('resize',function(){if(document.getElementById('map')?.classList.contains('active'))refreshHealthGoMapSize()});
+window.addEventListener('orientationchange',function(){setTimeout(function(){if(document.getElementById('map')?.classList.contains('active'))refreshHealthGoMapSize()},180)});
+window.addEventListener('resize',function(){if(document.getElementById('map')?.classList.contains('active'))refreshHealthGoMapSize()});
 
 function selectMapCategory(category,btn){
  healthGoCategory=category;
