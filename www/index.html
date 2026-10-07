@@ -313,6 +313,17 @@ body[data-dark="1"] .pwa-install-hint,body[data-dark="1"] .mobile-more-sheet{bac
 
 .auth-mfa-backdrop{position:fixed;inset:0;z-index:7000;display:grid;place-items:center;padding:20px;background:rgba(2,6,23,.72);backdrop-filter:blur(10px)}.auth-mfa-card{width:min(460px,100%);max-height:90vh;overflow:auto;background:#fff;color:#172033;border-radius:22px;padding:24px;box-shadow:0 28px 90px rgba(0,0,0,.35)}.auth-mfa-card h2{margin:0 0 8px;font-size:23px}.auth-mfa-card p{color:#64748b;line-height:1.5}.auth-mfa-card input{width:100%;box-sizing:border-box;padding:14px 15px;border:1px solid #dbe3ef;border-radius:13px;font-size:18px;letter-spacing:4px;text-align:center}.auth-mfa-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}.auth-mfa-actions button{padding:11px 14px;border-radius:11px;font-weight:800}.auth-mfa-primary{background:#2563eb;color:#fff}.auth-mfa-secondary{background:#eef2f7;color:#334155}.auth-mfa-qr{display:block;width:210px;height:210px;max-width:100%;margin:14px auto;background:#fff;border-radius:14px}.auth-mfa-secret{font-family:ui-monospace,Consolas,monospace;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px;word-break:break-all;font-size:12px}.auth-mfa-error{min-height:18px;color:#b91c1c;font-size:13px;margin-top:8px}
 html.hg-session-known #authScreen{display:none!important}
+
+.ai-response-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px 5px;flex-wrap:wrap}
+.ai-response-label{font-size:12px;font-weight:800;color:#64748b}
+.ai-response-modes{display:flex;gap:4px;padding:3px;background:#eef2f7;border:1px solid #e2e8f0;border-radius:12px}
+.ai-response-mode{background:transparent;color:#475569;padding:7px 10px;border-radius:9px;font-size:12px;font-weight:800;white-space:nowrap}
+.ai-response-mode.active{background:#fff;color:#111827;box-shadow:0 1px 4px rgba(15,23,42,.12)}
+.ai-response-hint{width:100%;font-size:11px;color:#64748b;text-align:right}
+.healthgo-family-name-tooltip{background:#111827!important;color:#fff!important;border:0!important;border-radius:9px!important;padding:5px 8px!important;font-weight:850!important;font-size:12px!important;box-shadow:0 4px 14px rgba(15,23,42,.22)!important}
+.healthgo-family-name-tooltip:before{border-top-color:#111827!important}
+@media(max-width:600px){.ai-response-bar{align-items:flex-start}.ai-response-modes{width:100%}.ai-response-mode{flex:1;padding:7px 5px}.ai-response-hint{text-align:left}}
+
 </style>
 <script src="./core/achievement-engine.js"></script>
 <script src="./core/health-data.js"></script>
@@ -451,6 +462,15 @@ html.hg-session-known #authScreen{display:none!important}
       </div>
 
       <div id="aiAttachmentPreview" class="ai-attachment-preview"></div>
+      <div class="ai-response-bar" aria-label="Tryb odpowiedzi AI">
+        <span class="ai-response-label">Tryb odpowiedzi</span>
+        <div class="ai-response-modes">
+          <button class="ai-response-mode active" data-response-mode="average" type="button" onclick="aiSetResponseMode('average',this)">Przeciętny</button>
+          <button class="ai-response-mode" data-response-mode="medium" type="button" onclick="aiSetResponseMode('medium',this)">Średni</button>
+          <button class="ai-response-mode" data-response-mode="high" type="button" onclick="aiSetResponseMode('high',this)">Wysoki</button>
+        </div>
+        <span id="aiResponseHint" class="ai-response-hint">Szybsza, krótsza odpowiedź</span>
+      </div>
       <div class="ai-composer">
         <div class="ai-composer-tools">
           <button type="button" onclick="document.getElementById('aiPhotoInput').click()" title="Dodaj zdjęcie">📷</button>
@@ -475,6 +495,7 @@ html.hg-session-known #authScreen{display:none!important}
         </div>
         <button class="map-bar-btn" type="button" onclick="searchMapAddress()">Szukaj adresu</button>
         <button class="map-bar-btn" type="button" onclick="useMyLocation()">📍 Moje położenie</button>
+        <button class="map-bar-btn" type="button" onclick="showFamilyOnMap()">👨‍👩‍👧 Rodzina</button>
         <button id="mapSearchBtn" class="map-bar-btn primary" type="button" onclick="searchMapPlaces()">🔎 Szukaj w tym obszarze</button>
       </div>
       <div class="map-categories" aria-label="Kategorie miejsc">
@@ -900,7 +921,7 @@ function go(page){
  document.getElementById('title').textContent=titles[page]||'HealthGo';
  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
  window.scrollTo({top:0,behavior:'smooth'});
- if(page==='map')setTimeout(initHealthGoMap,60);
+ if(page==='map')setTimeout(()=>{initHealthGoMap();renderFamilyLocationsOnMap()},60);
  if(page==='plan')setTimeout(renderPlanDay,20);
  if(page==='start')setTimeout(()=>{renderTodayPlanPreview();renderProgressUI()},20);
  if(page==='challenges')setTimeout(renderProgressUI,20);
@@ -917,6 +938,7 @@ function modal(title,text,action='OK'){
 }
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 let aiMode='assistant';
+let aiResponseMode=(()=>{try{const saved=localStorage.getItem('healthgo.ai.responseMode');return ['average','medium','high'].includes(saved)?saved:'average'}catch(_){return 'average'}})();
 let aiPendingPhoto=null;
 function aiEscape(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fillAI(t){const el=document.getElementById('aiInput');if(!el)return;el.value=t;aiGrowInput(el);el.focus()}
@@ -937,6 +959,15 @@ function aiSetMode(mode,btn){
  const data={assistant:['HealthGo AI','Zapytaj o wszystko — szkołę, technologię, gry, planowanie i HealthGo','Napisz dowolne pytanie…'],plan:['Plan dnia','Pomogę uporządkować Twój dzień','Np. ułóż mi plan po szkole…'],food:['Jedzenie','Pomysły na posiłki i przepisy','Np. co mogę zrobić z jajek i pieczywa?'],activity:['Aktywność','Pomysły na bezpieczny ruch i zabawę','Np. co mogę zrobić dziś na dworze?'],explore:['Odkrywaj','Pomysły na miejsca i wyjścia','Np. gdzie warto pójść z rodziną?']};
  const d=data[mode]||data.assistant;document.getElementById('aiModeTitle').textContent=d[0];document.getElementById('aiModeSub').textContent=d[1];document.getElementById('aiInput').placeholder=d[2];document.getElementById('aiInput').focus();
 }
+function aiSetResponseMode(mode,btn){
+ if(!['average','medium','high'].includes(mode))mode='average';
+ aiResponseMode=mode;
+ try{localStorage.setItem('healthgo.ai.responseMode',mode)}catch(_){}
+ document.querySelectorAll('.ai-response-mode').forEach(b=>b.classList.toggle('active',b.dataset.responseMode===mode));
+ const hint=document.getElementById('aiResponseHint');
+ if(hint)hint.textContent=mode==='average'?'Szybsza, krótsza odpowiedź':mode==='medium'?'Więcej szczegółów, normalna szybkość':'Najdokładniejsza odpowiedź — może potrwać dłużej';
+}
+setTimeout(()=>aiSetResponseMode(aiResponseMode),0);
 function aiQuick(text){fillAI(text);askAI()}
 function aiNewChat(){aiClearChat();document.getElementById('aiInput').focus()}
 function aiClearChat(){
@@ -990,7 +1021,8 @@ async function askHealthGoMobileAI(message,imageData){
  return await api.ask({
    message:message||'Opisz i przeanalizuj załączone zdjęcie.',
    mode:aiMode,
-   history:aiHistory.slice(-12),
+   responseMode:aiResponseMode,
+   history:aiHistory.slice(aiResponseMode==='average'?-6:aiResponseMode==='medium'?-10:-12),
    imageData:imageData||null,
    accountType:healthGoAIAccountType()
  });
@@ -1033,9 +1065,11 @@ async function askAI(){
      answer=await askHealthGoMobileAI(q,imageData);
    }else{
      const controller=new AbortController();
-     const timeout=setTimeout(()=>controller.abort(),90000);
+     const timeoutMs=aiResponseMode==='average'?50000:aiResponseMode==='medium'?80000:120000;
+     const timeout=setTimeout(()=>controller.abort(),timeoutMs);
      try{
-       const payload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,history:aiHistory.slice(-20)};
+       const historyLimit=aiResponseMode==='average'?8:aiResponseMode==='medium'?14:20;
+       const payload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,responseMode:aiResponseMode,history:aiHistory.slice(-historyLimit)};
        if(imageData)payload.image=imageData;
        const res=await fetch(aiEndpoint(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal});
        const data=await res.json().catch(()=>({}));
@@ -1083,16 +1117,45 @@ async function askAI(){
    if(sessionActive()){if(btn)btn.disabled=false;input.focus();}
  }
 }
-let healthGoMap=null,healthGoPlacesLayer=null,healthGoLocationLayer=null,healthGoCategory='all',healthGoMapBusy=false;
+let healthGoMap=null,healthGoPlacesLayer=null,healthGoLocationLayer=null,healthGoFamilyLayer=null,healthGoMapFamilySubscription=null,healthGoCategory='all',healthGoMapBusy=false;
 const healthGoCategoryLabels={all:'Wszystkie miejsca',restaurants:'Restauracje',shops:'Sklepy',gyms:'Siłownie',pharmacies:'Apteki',cafes:'Kawiarnie',parks:'Parki',other:'Inne miejsca'};
 
 function mapStatus(text){const el=document.getElementById('mapSearchStatus');if(el)el.textContent=text}
 function toggleMapResults(show){const p=document.getElementById('mapResultsPanel');if(p)p.classList.toggle('show',!!show)}
+function healthGoFamilyLocations(){
+ const rows=window.HealthGoServices?.state?.family?.locations;
+ return Array.isArray(rows)?rows:[];
+}
+function renderFamilyLocationsOnMap(){
+ if(!healthGoMap||!healthGoFamilyLayer||typeof L==='undefined')return;
+ healthGoFamilyLayer.clearLayers();
+ healthGoFamilyLocations().forEach(function(loc){
+   const lat=Number(loc.latitude),lon=Number(loc.longitude);
+   if(!Number.isFinite(lat)||!Number.isFinite(lon))return;
+   const name=String(loc.nickname||'Użytkownik HealthGo');
+   const marker=L.marker([lat,lon]).addTo(healthGoFamilyLayer);
+   marker.bindTooltip(healthGoEscape(name),{permanent:true,direction:'top',offset:[0,-14],className:'healthgo-family-name-tooltip'});
+   const when=loc.timestamp?new Date(loc.timestamp).toLocaleString('pl-PL'):'Brak czasu aktualizacji';
+   const mode=loc.mode==='precise'?'Dokładna':'Przybliżona';
+   marker.bindPopup('<b>👤 '+healthGoEscape(name)+'</b><br>Lokalizacja: '+mode+'<br>Aktualizacja: '+healthGoEscape(when));
+   const accuracy=Number(loc.accuracyMeters);
+   if(Number.isFinite(accuracy)&&accuracy>0)L.circle([lat,lon],{radius:Math.min(Math.max(accuracy,20),5000),weight:1,fillOpacity:.04}).addTo(healthGoFamilyLayer);
+ });
+}
+function showFamilyOnMap(){
+ initHealthGoMap();if(!healthGoMap)return;
+ renderFamilyLocationsOnMap();
+ const points=healthGoFamilyLocations().map(loc=>[Number(loc.latitude),Number(loc.longitude)]).filter(p=>Number.isFinite(p[0])&&Number.isFinite(p[1]));
+ if(!points.length){mapStatus('Nikt z rodziny nie udostępnia teraz lokalizacji albo nie masz do niej uprawnienia.');return}
+ if(points.length===1)healthGoMap.setView(points[0],15,{animate:true});
+ else healthGoMap.fitBounds(points,{padding:[45,45],maxZoom:16});
+ mapStatus('Pokazuję udostępnione lokalizacje rodziny z nazwami kont.');
+}
 
 function initHealthGoMap(){
  const el=document.getElementById('healthgoMap');if(!el)return;
  if(typeof L!=='undefined'&&L.Icon&&L.Icon.Default){L.Icon.Default.mergeOptions({iconRetinaUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',iconUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',shadowUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'});}
- if(healthGoMap){setTimeout(()=>healthGoMap.invalidateSize(),50);return}
+ if(healthGoMap){renderFamilyLocationsOnMap();setTimeout(()=>healthGoMap.invalidateSize(),50);return}
  if(typeof L==='undefined'){mapStatus('Nie udało się załadować mapy. Sprawdź internet i uruchom HealthGo ponownie.');return}
 
  healthGoMap=L.map('healthgoMap',{zoomControl:true}).setView([51.9194,19.1451],6);
@@ -1106,6 +1169,11 @@ function initHealthGoMap(){
 
  healthGoPlacesLayer=L.layerGroup().addTo(healthGoMap);
  healthGoLocationLayer=L.layerGroup().addTo(healthGoMap);
+ healthGoFamilyLayer=L.layerGroup().addTo(healthGoMap);
+ renderFamilyLocationsOnMap();
+ if(!healthGoMapFamilySubscription&&window.HealthGoServices&&typeof HealthGoServices.subscribe==='function'){
+   healthGoMapFamilySubscription=HealthGoServices.subscribe(function(){renderFamilyLocationsOnMap()});
+ }
 
  const address=document.getElementById('mapAddressInput');
  if(address)address.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();searchMapAddress()}});
@@ -1190,7 +1258,9 @@ function useMyLocation(){
      const lat=pos.coords.latitude,lon=pos.coords.longitude,acc=(Number.isFinite(pos.coords.accuracy)?pos.coords.accuracy:null);
      if(healthGoLocationLayer)healthGoLocationLayer.clearLayers();
      const marker=L.marker([lat,lon]).addTo(healthGoLocationLayer);
-     marker.bindPopup('<b>📍 Twoje położenie</b><br>'+(acc===null?'Dokładność niedostępna':'Dokładność około '+Math.round(acc)+' m')).openPopup();
+     const myName=String(window.HealthGoServices?.state?.profile?.nickname||'Moje konto');
+     marker.bindTooltip(healthGoEscape(myName),{permanent:true,direction:'top',offset:[0,-14],className:'healthgo-family-name-tooltip'});
+     marker.bindPopup('<b>📍 '+healthGoEscape(myName)+'</b><br>'+(acc===null?'Dokładność niedostępna':'Dokładność około '+Math.round(acc)+' m')).openPopup();
      if(acc!==null)L.circle([lat,lon],{radius:acc,weight:1,fillOpacity:.08}).addTo(healthGoLocationLayer);
      healthGoMap.setView([lat,lon],16,{animate:true});
      mapStatus('Pokazuję Twoje położenie. Lokalizacja została użyta po Twojej zgodzie.');
