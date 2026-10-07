@@ -7,8 +7,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: healthgo-validation-${{ github.ref }}-${{ github.workflow }}
-  cancel-in-progress: true
+  group: healthgo-validation-${{ github.run_id }}
+  cancel-in-progress: false
 jobs:
   unit:
     runs-on: ubuntu-latest
