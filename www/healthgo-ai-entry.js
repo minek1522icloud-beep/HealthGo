@@ -14,10 +14,14 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
     };
 
     const aiApp=initializeApp(firebaseConfig,'healthgo-mobile-ai');
-    const appCheck=initializeAppCheck(aiApp,{
-      provider:new ReCaptchaEnterpriseProvider('6LejMdktAAAAAH1fKJ0wcrsG_WLjImYUHyNjpXMR'),
-      isTokenAutoRefreshEnabled:true
-    });
+    const desktopLocal=/^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+    let appCheck=null;
+    if(!desktopLocal){
+      appCheck=initializeAppCheck(aiApp,{
+        provider:new ReCaptchaEnterpriseProvider('6LejMdktAAAAAH1fKJ0wcrsG_WLjImYUHyNjpXMR'),
+        isTokenAutoRefreshEnabled:true
+      });
+    }
     const ai=getAI(aiApp,{backend:new GoogleAIBackend()});
 
     function systemInstruction(accountType){
@@ -66,12 +70,14 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
 
     window.healthGoMobileAI={
       async ask({message,mode,history,imageData,accountType,responseMode}){
-        try{
-          await getToken(appCheck,false);
-        }catch(error){
-          const code=String((error&&error.code)||'app-check/token-error');
-          const text=String((error&&error.message)||error||'App Check error');
-          throw new Error('APP_CHECK_ERROR '+code+' '+text);
+        if(appCheck){
+          try{
+            await getToken(appCheck,false);
+          }catch(error){
+            const code=String((error&&error.code)||'app-check/token-error');
+            const text=String((error&&error.message)||error||'App Check error');
+            throw new Error('APP_CHECK_ERROR '+code+' '+text);
+          }
         }
 
         const level=['average','medium','high'].includes(responseMode)?responseMode:'average';
