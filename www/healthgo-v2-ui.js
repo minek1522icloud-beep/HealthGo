@@ -178,7 +178,7 @@ function renderFamily(){
  root.appendChild(summary);
 
  var members=el('section','hg2-card'),mh=el('div','hg2-section-title'),mc=el('div');
- mc.append(el('h3','','Członkowie rodziny'),el('p','','Każde konto ma własną rolę. Uprawnieniami dziecka zarządza opiekun.'));
+ mc.append(el('h3','','Członkowie rodziny'),el('p','','Każde konto ma własną rolę. Opiekun może zarządzać udostępnianiem statystyk innych członków rodziny.'));
  mh.appendChild(mc);members.appendChild(mh);
  var familyMembers=f.members||[];
  if(!familyMembers.length)members.appendChild(empty('Brak członków','Wygeneruj zaproszenie, aby dodać kolejną osobę.'));
@@ -189,7 +189,7 @@ function renderFamily(){
   var grant=(f.permissions||[]).find(function(p){return p.childUid===uid&&p.guardianUid===s.uid});
   if(grant){var ps=el('div','hg2-permissions');scopes(grant.scopes).forEach(function(x){ps.appendChild(el('span','hg2-permission',x))});if(ps.childNodes.length)memberCopy.appendChild(ps)}
   row.append(avatar,memberCopy);
-  if(m.role==='child'&&role==='guardian'){
+  if(uid!==s.uid&&role==='guardian'&&m.role!=='guardian'){
    row.appendChild(btn('Statystyki',function(){viewFamilyMemberStats(uid)},false));
    row.appendChild(btn('Uprawnienia',function(){editPermissions(uid)},true));
   }
@@ -348,7 +348,7 @@ async function viewFamilyMemberStats(memberUid){
 async function editPermissions(childUid,revokeOnly,knownGrant){
  var s=Services.state,grant=knownGrant||(s.family.permissions||[]).find(function(p){return p.childUid===childUid&&p.guardianUid===s.uid})||{};
  var values=Object.assign({},grant.scopes||{}),labels={HEALTH_ACTIVITY:'Aktywność',HEALTH_SLEEP:'Sen',HEALTH_HEART_RATE:'Tętno',DEVICE_STATUS:'Stan urządzenia',LOCATION_APPROXIMATE:'Lokalizacja przybliżona',LOCATION_PRECISE:'Lokalizacja dokładna',CHALLENGE_PROGRESS:'Wyzwania',ACHIEVEMENTS:'Osiągnięcia',NOTIFICATIONS:'Powiadomienia'};
- await new Promise(function(resolve){var back=el('div','hg2-dialog-backdrop'),box=el('div','hg2-dialog');box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.append(el('h3','',revokeOnly?'Ogranicz udostępnianie':'Uprawnienia dziecka'),el('p','',revokeOnly?'Możesz wyłączyć dostęp do wybranych danych. Włączenie nowego dostępu wymaga opiekuna.':'Wybierz dane dostępne dla tego opiekuna. Lokalizacja telefonu nadal musi być osobno włączona na urządzeniu dziecka.'));
+ await new Promise(function(resolve){var back=el('div','hg2-dialog-backdrop'),box=el('div','hg2-dialog');box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.append(el('h3','',revokeOnly?'Ogranicz udostępnianie':'Uprawnienia członka'),el('p','',revokeOnly?'Możesz wyłączyć dostęp do wybranych danych. Włączenie nowego dostępu wymaga opiekuna.':'Wybierz dane, które ten opiekun może zobaczyć. Lokalizacja urządzenia nadal musi być osobno włączona przez użytkownika.'));
   Object.keys(labels).forEach(function(key){var line=el('label','hg2-member'),input=el('input');input.type='checkbox';input.checked=values[key]===true;if(revokeOnly&&!input.checked)input.disabled=true;var copy=el('div','hg2-grow');copy.append(el('b','',labels[key]),el('small','',key.indexOf('LOCATION_')===0?'Lokalizacja nie uruchamia się potajemnie; telefon musi mieć zgodę i aktywne udostępnianie.':'Dostęp można później cofnąć.'));line.append(input,copy);box.appendChild(line);input.addEventListener('change',function(){values[key]=input.checked})});
   var actions=el('div','hg2-dialog-actions');function close(v){back.remove();document.body.classList.remove('hg2-dialog-open');resolve(v)}actions.append(btn('Anuluj',function(){close(false)},true),btn('Zapisz',async function(){try{await Services.call('updateFamilyPermissions',{childUid:childUid,guardianUid:grant.guardianUid||s.uid,scopes:values});close(true);await Services.initialize()}catch(e){var note=el('div','hg2-note',e.message);box.insertBefore(note,actions)}},false));box.appendChild(actions);back.appendChild(box);document.body.appendChild(back);document.body.classList.add('hg2-dialog-open');
  });
