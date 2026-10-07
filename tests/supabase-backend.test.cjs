@@ -95,6 +95,7 @@ test('family locations render on map with account names',()=>{
 test('HealthGo AI exposes response effort modes and sends them to both backends',()=>{
   const html=fs.readFileSync('www/index.html','utf8');
   const server=fs.readFileSync('healthgo-ai-server.mjs','utf8');
+  const main=fs.readFileSync('main.cjs','utf8');
   const mobile=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
   assert.match(html,/Przeciętny/);
   assert.match(html,/Średni/);
@@ -102,5 +103,7 @@ test('HealthGo AI exposes response effort modes and sends them to both backends'
   assert.match(html,/responseMode:aiResponseMode/);
   assert.match(server,/responseProfile/);
   assert.match(server,/num_predict:\s*responseProfile\.maxTokens/);
+  assert.match(main,/responseProfile/);
+  assert.match(main,/num_predict:\s*\n?\s*responseProfile\.maxTokens/);
   assert.match(mobile,/generationConfig:\{maxOutputTokens\}/);
 });
