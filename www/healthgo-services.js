@@ -165,6 +165,7 @@ async function call(name,data){
   case 'leaveFamily':{const r=await rpc('healthgo_leave_family',{});await initialize();return r;}
   case 'registerDevice':{const r=await rpc('healthgo_register_device',{p_external_id:data.externalId,p_name:data.name,p_platform:data.platform||'web',p_device_type:data.deviceType||'bluetooth',p_connection_type:data.connectionType||'ble',p_battery_level:data.batteryLevel==null?null:Number(data.batteryLevel),p_connected:data.connected!==false});await initialize();return r;}
   case 'updateFamilyPermissions':{const r=await rpc('healthgo_update_family_permissions',{p_child_id:data.childUid,p_guardian_id:data.guardianUid,p_scopes:data.scopes||{}});await initialize();return r;}
+  case 'getFamilyMemberHealth':return rpc('healthgo_get_family_member_health',{p_member_id:data.memberUid});
   case 'updateLocationSettings':{const r=await rpc('healthgo_update_location_settings',{p_mode:data.mode||'off'});await initialize();return r;}
   case 'publishLocation':{const r=await rpc('healthgo_publish_location',{p_latitude:Number(data.latitude),p_longitude:Number(data.longitude),p_accuracy:Number(data.accuracyMeters)||0,p_device:data.device||'HealthGo'});await initialize();return r;}
   case 'exportOwnData':return{exportedAt:new Date().toISOString(),profile:state.profile,engine:state.engine,health:state.health,privacy:state.privacy,locationSettings:state.locationSettings,cloudState:state.cloudState};
