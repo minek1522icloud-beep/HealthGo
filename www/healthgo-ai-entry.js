@@ -35,14 +35,20 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
       return common.join(' ');
     }
 
-    function buildPrompt(message,mode,history){
+    function buildPrompt(message,mode,history,responseMode){
       const modeNames={assistant:'Asystent',plan:'Plan dnia',food:'Jedzenie',activity:'Aktywność',explore:'Odkrywanie'};
+      const responseNames={
+        average:'Przeciętny — odpowiedź krótka i szybka, zwykle 2–5 zdań.',
+        medium:'Średni — umiarkowana ilość szczegółów.',
+        high:'Wysoki — odpowiedź dokładniejsza i bardziej szczegółowa.'
+      };
       const recent=(Array.isArray(history)?history:[]).slice(-10).map(x=>{
         const role=x&&x.role==='assistant'?'HealthGo AI':'Użytkownik';
         return role+': '+String((x&&x.content)||'').slice(0,1200);
       }).join('\n');
       return [
         'Tryb: '+(modeNames[mode]||'Asystent')+'.',
+        'Poziom odpowiedzi: '+(responseNames[responseMode]||responseNames.average),
         recent?'Ostatnia część rozmowy:\n'+recent:'',
         'Nowa wiadomość użytkownika:\n'+message
       ].filter(Boolean).join('\n\n');
@@ -59,7 +65,7 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
     }
 
     window.healthGoMobileAI={
-      async ask({message,mode,history,imageData,accountType}){
+      async ask({message,mode,history,imageData,accountType,responseMode}){
         try{
           await getToken(appCheck,false);
         }catch(error){
@@ -68,7 +74,9 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
           throw new Error('APP_CHECK_ERROR '+code+' '+text);
         }
 
-        const prompt=buildPrompt(String(message||''),mode,history);
+        const level=['average','medium','high'].includes(responseMode)?responseMode:'average';
+        const prompt=buildPrompt(String(message||''),mode,history,level);
+        const maxOutputTokens=level==='average'?280:level==='medium'?520:900;
         const parts=[prompt];
         const img=imagePart(imageData);
         if(img)parts.push(img);
@@ -79,7 +87,8 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
           try{
             const model=getGenerativeModel(ai,{
               model:modelName,
-              systemInstruction:systemInstruction(accountType)
+              systemInstruction:systemInstruction(accountType),
+              generationConfig:{maxOutputTokens}
             });
             const result=await model.generateContent(parts);
             const answer=result&&result.response&&result.response.text?result.response.text():'';
