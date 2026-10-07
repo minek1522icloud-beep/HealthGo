@@ -78,8 +78,9 @@ test('account type setup is one-shot and devices refresh from Supabase',()=>{
   assert.match(html,/setupAccountSaving/);
   assert.match(services,/async function refreshDevices\(\)/);
   assert.match(services,/S\.db\.select\('devices'/);
-  assert.match(devices,/Odśwież z bazy/);
-  assert.match(devices,/Supabase · tabela devices/);
+  assert.match(devices,/Odśwież listę/);
+  assert.match(devices,/Services\.refreshDevices/);
+  assert.match(devices,/Urządzenia zapisane na koncie HealthGo/);
 });
 
 
