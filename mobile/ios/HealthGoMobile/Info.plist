@@ -6,6 +6,8 @@
     <string>HealthGo</string>
     <key>NSHealthShareUsageDescription</key>
     <string>HealthGo odczytuje po Twojej zgodzie kroki, dystans, sen i tętno z Apple Health, aby synchronizować je z Twoim kontem.</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>HealthGo używa Bluetooth po Twojej zgodzie, aby wyszukać i połączyć wybrany zegarek lub opaskę sportową.</string>
     <key>CFBundleURLTypes</key>
     <array>
         <dict>
