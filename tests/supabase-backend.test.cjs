@@ -86,7 +86,7 @@ test('account type setup is one-shot and devices refresh from Supabase',()=>{
 test('family locations render on map with account names',()=>{
   const html=fs.readFileSync('www/index.html','utf8');
   assert.match(html,/function renderFamilyLocationsOnMap\(\)/);
-  assert.match(html,/family\.locations/);
+  assert.match(html,/family\?\.locations|family\.locations/);
   assert.match(html,/loc\.nickname/);
   assert.match(html,/bindTooltip\(healthGoEscape\(name\)/);
   assert.match(html,/showFamilyOnMap\(\)/);
