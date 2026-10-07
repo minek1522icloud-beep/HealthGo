@@ -161,6 +161,7 @@ async function call(name,data){
   case 'configureAccount':{const r=await rpc('healthgo_configure_account',{p_nickname:data.nickname,p_account_type:data.accountType});await initialize();return r;}
   case 'recordProgressEvent':{const r=await rpc('healthgo_record_progress_event',{p_event_id:data.id,p_event_type:data.type,p_payload:data.payload||{}});await refreshEngine();return r;}
   case 'updateProfilePreferences':await syncCloudState({selectedTitle:data.titleId});return{ok:true};
+  case 'updateSettings':{const settings=data&&data.settings&&typeof data.settings==='object'?data.settings:{};await syncCloudState({settingsV3:settings});state.settings=settings;notify();return{ok:true};}
   case 'createFamily':{const r=await rpc('healthgo_create_family_named',{p_name:data.name||null});await initialize();return r;}
   case 'createFamilyInvite':return rpc('healthgo_create_family_invite',{});
   case 'acceptFamilyInvite':{const r=await rpc('healthgo_accept_family_invite',{p_code:data.code});await initialize();return r;}
