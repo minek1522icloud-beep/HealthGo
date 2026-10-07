@@ -325,6 +325,12 @@ html.hg-session-known #authScreen{display:none!important}
 .healthgo-family-name-tooltip:before{border-top-color:#111827!important}
 @media(max-width:600px){.ai-response-bar{align-items:flex-start}.ai-response-modes{width:100%}.ai-response-mode{flex:1;padding:7px 5px}.ai-response-hint{text-align:left}}
 
+
+.auth-mfa-card{position:relative}
+.auth-mfa-close{position:absolute;top:10px;right:10px;width:30px;height:30px;border:0;border-radius:50%;background:#eef2f7;color:#334155;font-size:18px;font-weight:900;display:grid;place-items:center;cursor:pointer}
+.healthgo-profile-marker{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#111827;color:#fff;border:3px solid #fff;box-shadow:0 4px 14px rgba(15,23,42,.28);font-weight:900;font-size:14px;overflow:hidden}
+.healthgo-profile-marker img{width:100%;height:100%;object-fit:cover}
+.healthgo-profile-marker.me{background:#2563eb}
 </style>
 <script src="./core/achievement-engine.js"></script>
 <script src="./core/health-data.js"></script>
@@ -1141,6 +1147,19 @@ function healthGoFamilyLocations(){
  const rows=window.HealthGoServices?.state?.family?.locations;
  return Array.isArray(rows)?rows:[];
 }
+function healthGoProfileIcon(name,isMe,avatarUrl){
+ const safeName=String(name||'Użytkownik HealthGo');
+ const initial=(safeName.trim().charAt(0)||'U').toUpperCase();
+ const content=avatarUrl?'<img src="'+healthGoEscape(String(avatarUrl))+'" alt="">':healthGoEscape(initial);
+ return L.divIcon({
+   className:'',
+   html:'<div class="healthgo-profile-marker'+(isMe?' me':'')+'">'+content+'</div>',
+   iconSize:[38,38],
+   iconAnchor:[19,19],
+   popupAnchor:[0,-22],
+   tooltipAnchor:[0,-22]
+ });
+}
 function renderFamilyLocationsOnMap(){
  if(!healthGoMap||!healthGoFamilyLayer||typeof L==='undefined')return;
  healthGoFamilyLayer.clearLayers();
@@ -1148,7 +1167,7 @@ function renderFamilyLocationsOnMap(){
    const lat=Number(loc.latitude),lon=Number(loc.longitude);
    if(!Number.isFinite(lat)||!Number.isFinite(lon))return;
    const name=String(loc.nickname||'Użytkownik HealthGo');
-   const marker=L.marker([lat,lon]).addTo(healthGoFamilyLayer);
+   const marker=L.marker([lat,lon],{icon:healthGoProfileIcon(name,false,loc.avatarUrl||loc.avatar_url||'')}).addTo(healthGoFamilyLayer);
    marker.bindTooltip(healthGoEscape(name),{permanent:true,direction:'top',offset:[0,-14],className:'healthgo-family-name-tooltip'});
    const when=loc.timestamp?new Date(loc.timestamp).toLocaleString('pl-PL'):'Brak czasu aktualizacji';
    const mode=loc.mode==='precise'?'Dokładna':'Przybliżona';
@@ -1283,8 +1302,9 @@ function useMyLocation(){
    function(pos){
      const lat=pos.coords.latitude,lon=pos.coords.longitude,acc=(Number.isFinite(pos.coords.accuracy)?pos.coords.accuracy:null);
      if(healthGoLocationLayer)healthGoLocationLayer.clearLayers();
-     const marker=L.marker([lat,lon]).addTo(healthGoLocationLayer);
-     const myName=String(window.HealthGoServices?.state?.profile?.nickname||'Moje konto');
+     const myProfile=window.HealthGoServices?.state?.profile||{};
+     const myName=String(myProfile.nickname||'Moje konto');
+     const marker=L.marker([lat,lon],{icon:healthGoProfileIcon(myName,true,myProfile.avatarUrl||myProfile.avatar_url||'')}).addTo(healthGoLocationLayer);
      marker.bindTooltip(healthGoEscape(myName),{permanent:true,direction:'top',offset:[0,-14],className:'healthgo-family-name-tooltip'});
      marker.bindPopup('<b>📍 '+healthGoEscape(myName)+'</b><br>'+(acc===null?'Dokładność niedostępna':'Dokładność około '+Math.round(acc)+' m')).openPopup();
      if(acc!==null)L.circle([lat,lon],{radius:acc,weight:1,fillOpacity:.08}).addTo(healthGoLocationLayer);
@@ -2030,21 +2050,32 @@ function showApp(){
  document.querySelector('.app')?.classList.remove('auth-hidden');
  document.querySelector('.mobile-nav')?.classList.remove('auth-hidden');
 }
-function authMfaCard(title,copy){
+function authMfaCard(title,copy,options){
+ options=options||{};
  const back=document.createElement('div');back.className='auth-mfa-backdrop';
  const card=document.createElement('div');card.className='auth-mfa-card';
  const h=document.createElement('h2');h.textContent=title;
  const p=document.createElement('p');p.textContent=copy;
+ let dismissHandler=null;
+ const api={back,card,close(){back.remove();},onDismiss(fn){dismissHandler=fn;}};
+ if(options.dismissible){
+   const close=document.createElement('button');close.type='button';close.className='auth-mfa-close';close.setAttribute('aria-label','Zamknij');close.textContent='×';
+   close.onclick=()=>{if(dismissHandler)dismissHandler();else api.close();};
+   card.appendChild(close);
+   back.addEventListener('click',event=>{if(event.target===back){if(dismissHandler)dismissHandler();else api.close();}});
+ }
  card.append(h,p);back.appendChild(card);document.body.appendChild(back);
- return{back,card,close(){back.remove();}};
+ return api;
 }
 function askEnableMfa(){
  return new Promise(resolve=>{
-  const ui=authMfaCard('🔐 Logowanie dwuetapowe','Czy chcesz dodatkowo zabezpieczyć konto 6-cyfrowym kodem z aplikacji uwierzytelniającej?');
+  const ui=authMfaCard('🔐 Logowanie dwuetapowe','Czy chcesz dodatkowo zabezpieczyć konto 6-cyfrowym kodem z aplikacji uwierzytelniającej?',{dismissible:true});
   const actions=document.createElement('div');actions.className='auth-mfa-actions';
   const later=document.createElement('button');later.className='auth-mfa-secondary';later.textContent='Nie teraz';
   const yes=document.createElement('button');yes.className='auth-mfa-primary';yes.textContent='Włącz 2FA';
-  later.onclick=()=>{ui.close();resolve(false)};yes.onclick=()=>{ui.close();resolve(true)};
+  let finished=false;
+  const dismiss=()=>{if(finished)return;finished=true;ui.close();resolve(false)};
+  ui.onDismiss(dismiss);later.onclick=dismiss;yes.onclick=()=>{if(finished)return;finished=true;ui.close();resolve(true)};
   actions.append(later,yes);ui.card.appendChild(actions);
  });
 }
