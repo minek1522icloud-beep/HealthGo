@@ -1043,6 +1043,17 @@ function aiSetConnection(ok,label){
  if(!badge)return;
  badge.innerHTML='<span style="background:'+(ok?'#4ade80':'#fbbf24')+'"></span> '+aiEscape(label|| (ok?'AI online':'AI offline'));
 }
+async function healthGoAITimed(promise,timeoutMs){
+ let timer;
+ try{
+   return await Promise.race([
+     promise,
+     new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('AI_TIMEOUT')),timeoutMs)})
+   ]);
+ }finally{
+   if(timer)clearTimeout(timer);
+ }
+}
 async function requestLocalHealthGoAI(payload,timeoutMs){
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),timeoutMs);
@@ -1087,34 +1098,32 @@ async function askAI(){
      aiSetConnection(true,'AI łączy się…');
      answer=await askHealthGoMobileAI(q,imageData);
    }else{
-     let localError=null;
-     const historyLimit=aiResponseMode==='average'?6:aiResponseMode==='medium'?10:16;
-     const basePayload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,responseMode:aiResponseMode,history:aiHistory.slice(-historyLimit)};
-     if(imageData)basePayload.image=imageData;
-     const timeouts=aiResponseMode==='average'?[25000,35000]:aiResponseMode==='medium'?[45000,65000]:[70000,100000];
+     let cloudError=null,localError=null;
+     const cloudTimeout=aiResponseMode==='average'?12000:aiResponseMode==='medium'?22000:35000;
+     try{
+       aiSetConnection(true,'AI Cloud łączy się…');
+       answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData),cloudTimeout);
+     }catch(error){
+       cloudError=error;
+     }
 
-     for(let attempt=0;attempt<2&&!answer;attempt++){
+     if(!answer){
+       const historyLimit=aiResponseMode==='average'?4:aiResponseMode==='medium'?8:12;
+       const payload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,responseMode:aiResponseMode,history:aiHistory.slice(-historyLimit)};
+       if(imageData)payload.image=imageData;
        try{
-         aiSetConnection(true,attempt===0?'AI lokalne łączy się…':'AI lokalne — ponawiam…');
-         const payload=Object.assign({},basePayload);
-         if(attempt===1)payload.history=aiHistory.slice(aiResponseMode==='average'?-2:aiResponseMode==='medium'?-6:-10);
-         answer=await requestLocalHealthGoAI(payload,timeouts[attempt]);
+         aiSetConnection(true,'AI lokalne — tryb awaryjny…');
+         answer=await requestLocalHealthGoAI(payload,aiResponseMode==='average'?9000:aiResponseMode==='medium'?18000:30000);
        }catch(error){
          localError=error;
-         if(attempt===0)await new Promise(r=>setTimeout(r,700));
        }
      }
 
      if(!answer){
-       aiSetConnection(true,'AI Cloud łączy się…');
-       try{
-         answer=await askHealthGoMobileAI(q,imageData);
-       }catch(cloudError){
-         const combined=new Error('LOCAL_AND_CLOUD_AI_UNAVAILABLE');
-         combined.localError=localError;
-         combined.cloudError=cloudError;
-         throw combined;
-       }
+       const combined=new Error('CLOUD_AND_LOCAL_AI_UNAVAILABLE');
+       combined.cloudError=cloudError;
+       combined.localError=localError;
+       throw combined;
      }
    }
 
