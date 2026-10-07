@@ -87,24 +87,38 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
         const img=imagePart(imageData);
         if(img)parts.push(img);
 
-        const models=['gemini-3.8-flash','gemini-3.5-flash-lite'];
+        const models=level==='average'
+          ? ['gemini-3.5-flash-lite','gemini-3.8-flash','gemini-3.5-flash']
+          : level==='medium'
+          ? ['gemini-3.8-flash','gemini-3.5-flash','gemini-3.5-flash-lite']
+          : ['gemini-3.8-flash','gemini-3.5-flash'];
         let lastError=null;
         for(const modelName of models){
-          try{
-            const model=getGenerativeModel(ai,{
-              model:modelName,
-              systemInstruction:systemInstruction(accountType),
-              generationConfig:{maxOutputTokens}
-            });
-            const result=await model.generateContent(parts);
-            const answer=result&&result.response&&result.response.text?result.response.text():'';
-            if(!answer)throw new Error('EMPTY_AI_RESPONSE');
-            return answer;
-          }catch(error){
-            lastError=error;
-            const msg=String((error&&error.message)||error||'');
-            const code=String((error&&error.code)||'');
-            if(!/404|not.?found|model|unavailable|unsupported|failed-precondition/i.test(msg+' '+code))break;
+          for(let attempt=0;attempt<2;attempt++){
+            try{
+              const model=getGenerativeModel(ai,{
+                model:modelName,
+                systemInstruction:systemInstruction(accountType),
+                generationConfig:{maxOutputTokens}
+              });
+              const result=await model.generateContent(parts);
+              const answer=result&&result.response&&result.response.text?result.response.text():'';
+              if(!answer)throw new Error('EMPTY_AI_RESPONSE');
+              return answer;
+            }catch(error){
+              lastError=error;
+              const msg=String((error&&error.message)||error||'');
+              const code=String((error&&error.code)||'');
+              const transient=/429|resource-exhausted|quota|500|502|503|504|unavailable|network|fetch|timeout/i.test(msg+' '+code);
+              const modelIssue=/404|not.?found|model|unsupported|failed-precondition/i.test(msg+' '+code);
+              if(attempt===0&&transient){
+                await new Promise(r=>setTimeout(r,level==='average'?350:700));
+                continue;
+              }
+              if(modelIssue||transient)break;
+              attempt=2;
+              break;
+            }
           }
         }
 
