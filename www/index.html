@@ -1265,12 +1265,35 @@ async function askAI(){
            const response=await fetch('/api/ai/status',{cache:'no-store'});
            if(!response.ok)throw Error('LOCAL_STATUS_UNAVAILABLE');
            const status=await response.json();
-           const message=status.localAvailable
-             ?(status.installedModels>0
-                ?'Lokalne AI działa. Model: '+(status.localModel||'wykryty')+'.'
-                :'Ollama działa, ale nie ma pobranego modelu AI.')
-             :'Lokalna Ollama jest wyłączona albo nie jest zainstalowana.';
-           button.textContent=message;
+           if(!status.localAvailable){
+             button.textContent='Ollama jest wyłączona albo niezainstalowana.';
+           }else if(!status.installedModels){
+             button.textContent='Ollama działa, ale nie ma pobranego modelu AI.';
+           }else{
+             button.textContent='Model '+(status.localModel||'wykryty')+' jest zainstalowany. Testuję odpowiedź…';
+             const controller=new AbortController();
+             const timeout=setTimeout(()=>controller.abort(),70000);
+             try{
+               const probe=await fetch('/api/ai',{
+                 method:'POST',
+                 headers:{'Content-Type':'application/json'},
+                 body:JSON.stringify({message:'Odpowiedz jednym słowem: OK.',mode:'assistant',responseMode:'average',history:[]}),
+                 signal:controller.signal
+               });
+               const result=await probe.json().catch(()=>({}));
+               if(probe.ok&&typeof result.answer==='string'&&result.answer.trim()){
+                 button.textContent='Test udany — model rzeczywiście odpowiada.';
+               }else{
+                 const diagnosis=window.HealthGoAIDiagnostics?.classify(
+                   {message:result.error||'LOCAL_ERROR',code:result.code||'LOCAL_ERROR',status:probe.status},'LOCAL');
+                 button.textContent='Model nie odpowiedział: '+(diagnosis?.code||'LOCAL_ERROR')+'.';
+               }
+             }catch(error){
+               button.textContent=error?.name==='AbortError'
+                 ?'Test modelu przekroczył 70 sekund.'
+                 :'Błąd testu lokalnego AI — sprawdź połączenie z Ollamą.';
+             }finally{clearTimeout(timeout)}
+           }
          }catch(_){button.textContent='Nie mogę odczytać stanu lokalnego AI.'}
          finally{button.disabled=false}
        });
