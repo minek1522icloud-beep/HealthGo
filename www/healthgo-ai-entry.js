@@ -80,10 +80,18 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
       let firstError;
       for(let attempt=0;attempt<2;attempt++){
         try{
-          const result=await Promise.race([
-            getToken(appCheck,attempt===1),
-            new Promise((_,reject)=>setTimeout(()=>reject(new Error('APP_CHECK_TIMEOUT')),14000))
-          ]);
+          let timer=null;
+          let result;
+          try{
+            result=await Promise.race([
+              getToken(appCheck,attempt===1),
+              new Promise((_,reject)=>{
+                timer=setTimeout(()=>reject(new Error('APP_CHECK_TIMEOUT')),14000);
+              })
+            ]);
+          }finally{
+            if(timer)clearTimeout(timer);
+          }
           if(!result||!result.token)throw new Error('APP_CHECK_EMPTY_TOKEN');
           return;
         }catch(error){
