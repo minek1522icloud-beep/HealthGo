@@ -2,7 +2,7 @@
 'use strict';
 function errorText(error){
  if(!error)return '';
- return String(error.message||error.error||error.code||error).slice(0,800);
+ return (String(error.message||error.error||error)+' '+String(error.code||'')).slice(0,800);
 }
 function classify(error,kind){
  const text=errorText(error).toLowerCase();
