@@ -44,6 +44,7 @@ function loadSuite(){
  const cloud=Services.state&&Services.state.settings&&Services.state.settings.mobileSuite||{};
  suite=deepMerge(DEFAULTS,deepMerge(cloud,readLocal()));
  applyAppearance();
+ applyOfflinePreference();
  return suite;
 }
 async function persistSuite(){
@@ -55,9 +56,21 @@ async function persistSuite(){
  try{localStorage.setItem('healthgo_settings_v3_uid_'+uid(),JSON.stringify(base));}catch(_){}
  try{await Services.call('updateSettings',{settings:base});}catch(_){}
 }
+function applyOfflinePreference(){
+ if(!('serviceWorker' in navigator))return;
+ navigator.serviceWorker.ready.then(function(reg){
+  const worker=navigator.serviceWorker.controller||reg.active;
+  if(worker)worker.postMessage({type:'HEALTHGO_OFFLINE_CACHE',enabled:suite.privacy.offlineCache!==false});
+ }).catch(function(){});
+}
 function setPath(group,key,value){
  if(!suite[group]||typeof suite[group]!=='object')suite[group]={};
  suite[group][key]=value;
+ if(group==='privacy'&&key==='offlineCache')applyOfflinePreference();
+ if(group==='ai'&&key==='history'&&value===false){
+  // Disabling chat history must remove previously persisted conversations, too.
+  try{localStorage.removeItem(aiKey());}catch(_){}
+ }
  persistSuite();
  scheduleRender();
 }
@@ -178,8 +191,8 @@ function renderPrivacy(){
  if(!body)return;body.replaceChildren();
  const child=Services.state.profile&&Services.state.profile.accountType==='child';
  body.append(
-  toggleRow('Synchronizacja z chmurą','Zapisuj ustawienia i wspierane dane konta w HealthGo Cloud.',suite.privacy.cloudSync,function(v){setPath('privacy','cloudSync',v);},child),
-  toggleRow('Pamięć offline','Pozwól aplikacji przechować statyczne pliki aplikacji, aby mogła otworzyć się bez internetu.',suite.privacy.offlineCache,function(v){setPath('privacy','offlineCache',v);})
+  toggleRow('Synchronizacja ustawień','Synchronizuj preferencje aplikacji między urządzeniami. Dane zdrowotne i uprawnienia rodziny mają osobne ustawienia.',suite.privacy.cloudSync,function(v){setPath('privacy','cloudSync',v);},child),
+  toggleRow('Pamięć offline','Przechowuj pliki interfejsu w pamięci telefonu. Wyłączenie usuwa zapisane pliki aplikacji, ale nie dane Twojego konta.',suite.privacy.offlineCache,function(v){setPath('privacy','offlineCache',v);})
  );
  const location=Services.state.locationSettings||{},note=el('div','hg-mobile-note','Lokalizacja: '+(location.enabled?(location.mode==='precise'?'dokładna':'przybliżona'):'wyłączona')+'. Uprawnienia lokalizacji nadal kontroluje system telefonu.');
  body.appendChild(note);
@@ -247,12 +260,18 @@ window.healthGoShouldPersistAIHistory=shouldPersistAIHistory;
 function renderAISettings(){
  const body=ensureSection('settingsAIPro','HealthGo AI','Historia, tryby odpowiedzi i prywatność rozmów na telefonie.','AI');
  if(!body)return;body.replaceChildren();
- body.append(toggleRow('Historia rozmów','Zapisuj listę rozmów lokalnie na tym urządzeniu.',suite.ai.history,function(v){setPath('ai','history',v);}));
+ body.append(toggleRow('Historia rozmów','Zapisuj rozmowy tylko na tym urządzeniu. Wyłączenie usuwa wcześniejszą zapisaną historię.',suite.ai.history,function(v){setPath('ai','history',v);}));
  const note=el('div','hg-mobile-note','Tryby AI: Przeciętny, Średni i Wysoki. Historia jest przypisywana do zalogowanego konta na tym urządzeniu.');
  body.appendChild(note);
  const actions=el('div','hg-mobile-actions');
  actions.append(button('Nowa rozmowa',function(){if(window.aiNewChat)window.aiNewChat();if(window.go)window.go('ai');},false));
- actions.append(button('Usuń lokalną historię',function(){if(!confirm('Usunąć lokalną historię rozmów AI na tym urządzeniu?'))return;try{localStorage.removeItem(aiKey());}catch(_){};if(window.aiNewChat)window.aiNewChat();},true));
+ actions.append(button('Usuń lokalną historię',function(){
+  if(!confirm('Usunąć lokalną historię rozmów AI na tym urządzeniu?'))return;
+  if(typeof window.healthGoClearAIHistory==='function'){
+    const ok=window.healthGoClearAIHistory();
+    if(!ok)alert('Nie udało się usunąć historii. Zakończ bieżącą odpowiedź AI i spróbuj ponownie.');
+  }else alert('Funkcja historii AI jeszcze się nie uruchomiła.');
+ },true));
  body.appendChild(actions);
 }
 
@@ -276,7 +295,7 @@ function renderHome(){
  const steps=metricSum(days,'steps'),sources=[...new Set(days.map(function(d){return d&&d.source;}).filter(Boolean))];
  week.append(el('p','','Ostatnie 7 dni'),el('div','hg-mobile-kpi',steps?steps.toLocaleString('pl-PL')+' kroków':'Brak danych'),el('div','hg-mobile-sub','Neutralne podsumowanie zapisanych danych'));
  const devices=Services.state.devices||[],latest=devices[0];
- device.append(el('p','','Urządzenia'),el('div','hg-mobile-kpi',devices.length?devices.length+' połączonych':'Brak urządzeń'),el('div','hg-mobile-sub',latest&&latest.lastSyncAt?'Ostatnia synchronizacja: '+new Date(latest.lastSyncAt).toLocaleString('pl-PL'):sources.length?'Źródło: '+sources.join(', '):'Brak synchronizacji'));
+ device.append(el('p','','Urządzenia'),el('div','hg-mobile-kpi',devices.length?devices.length+' zapisanych':'Brak urządzeń'),el('div','hg-mobile-sub',latest&&latest.lastSyncAt?'Ostatnia synchronizacja: '+new Date(latest.lastSyncAt).toLocaleString('pl-PL'):sources.length?'Źródło: '+sources.join(', '):'Brak synchronizacji'));
  grid.append(week,device);root.appendChild(grid);
 }
 
