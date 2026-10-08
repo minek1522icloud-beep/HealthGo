@@ -116,7 +116,7 @@ test('Windows AI uses the bundled cloud client with local fallback and other-mem
   const workflow=fs.readFileSync('.github/workflows/windows-release.yml','utf8');
   assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData\)/);
   assert.match(html,/CLOUD_AND_LOCAL_AI_UNAVAILABLE/);
-  assert.match(html,/healthgo-ai-bundle\.js\?v=12/);
+  assert.match(html,/healthgo-ai-bundle\.js\?v=13/);
   assert.match(workflow,/Zbuduj pakiet HealthGo Cloud AI/);
   assert.match(workflow,/healthgo-ai-bundle\.js/);
   assert.doesNotMatch(ui,/Moje statystyki/);
@@ -143,7 +143,7 @@ test('hosted mobile uses App Check while localhost Electron avoids production at
   assert.match(entry,/if\(!desktopLocal\)/);
   assert.match(entry,/getToken\(appCheck,attempt===1\)/);
   assert.match(html,/healthGoLoadAIBundle/);
-  assert.match(html,/healthgo-ai-bundle\.js\?v=12/);
+  assert.match(html,/healthgo-ai-bundle\.js\?v=13/);
 });
 
 
