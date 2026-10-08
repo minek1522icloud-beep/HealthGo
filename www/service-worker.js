@@ -1,6 +1,8 @@
 'use strict';
-const CACHE_NAME='healthgo-pwa-v17-on-device-ai-20261008';
-const CORE=['./','./index.html','./manifest.webmanifest','./healthgo-pro.js','./supabase-client.js','./core/achievement-engine.js','./core/health-data.js','./healthgo-services.js','./healthgo-v2-ui.js','./healthgo-mobile-suite.js','./healthgo-mobile-suite.css','./healthgo-offline-ai.css','./healthgo-offline-ai.js','./healthgo-offline-ai-worker.js','./healthgo-devices.js'];
+const CACHE_NAME='healthgo-pwa-v18-ios-crash-recovery-20261008';
+// The 850+ KB local AI worker and model weights must never be downloaded
+// while opening HealthGo. Install them only after user consent in AI.
+const CORE=['./','./index.html','./manifest.webmanifest','./healthgo-pro.js','./supabase-client.js','./core/achievement-engine.js','./core/health-data.js','./healthgo-services.js','./healthgo-v2-ui.js','./healthgo-mobile-suite.js','./healthgo-mobile-suite.css','./healthgo-offline-ai.css','./healthgo-offline-ai.js','./recovery.html','./healthgo-devices.js'];
 const PREFERENCES_CACHE='healthgo-preferences-v1';
 const OFFLINE_DISABLED='./offline-disabled';
 let offlinePreference=null;

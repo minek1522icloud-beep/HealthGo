@@ -949,9 +949,14 @@ window.healthGoRunningVersion=healthGoRunningVersion;
 function setupMobilePWA(){
  if(isHostedMobileHealthGo())document.body.dataset.hostedMobile='1';
  if('serviceWorker' in navigator&&location.protocol==='https:'){
-  navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'}).then(reg=>{
-    reg.update().catch(()=>{});
-  }).catch(e=>console.warn('HealthGo PWA:',e));
+  // Mobile Safari can terminate the page when service worker installation,
+  // Firebase initialization, and the first app render overlap. Delay the
+  // update until the shell has had time to render and handle navigation.
+  setTimeout(()=>{
+   navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'}).then(reg=>{
+     reg.update().catch(()=>{});
+   }).catch(e=>console.warn('HealthGo PWA:',e));
+  },3500);
  }
  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();healthGoDeferredInstallPrompt=e;showPwaInstallHint()});
  window.addEventListener('appinstalled',()=>dismissPwaInstall());
@@ -2635,7 +2640,9 @@ window.addEventListener('beforeunload',save);
     }).finally(function(){loading=null});
     return loading;
   };
-  window.healthGoLoadAIBundle(false).catch(function(){});
+  // Avoid initializing Firebase AI + reCAPTCHA during the first Safari render.
+  // waitForHealthGoMobileAI() loads this bundle only after a chat request.
+  // Optional phone WebGPU AI is likewise loaded only after explicit consent.
 })();
 </script>
 <script src="./healthgo-pro.js"></script>
