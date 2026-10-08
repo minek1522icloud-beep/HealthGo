@@ -57,9 +57,13 @@ jobs:
               raise SystemExit('Missing/duplicated HealthGo build marker')
           index.write_text(html.replace(original, '<meta name="healthgo-build" content="' + os.environ['GITHUB_SHA'] + '">'), encoding='utf-8')
           PY
+          python3 scripts/build-safe-mobile.py www/index.html www/safe.html
           printf '{"version":"%s","deployedAt":"%s"}\n' "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > www/version.json
           test -s www/healthgo-ai-bundle.js
           test -s www/healthgo-offline-ai-worker.js
+          test -s www/safe.html
+          test -s www/diagnostics.html
+          grep -q 'healthgo-safe-mode' www/safe.html
           grep -q "$GITHUB_SHA" www/index.html
           grep -q "$GITHUB_SHA" www/version.json
 
