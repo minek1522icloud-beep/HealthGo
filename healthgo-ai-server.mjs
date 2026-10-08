@@ -1,4 +1,7 @@
 import http from "node:http";
+import {createRequire} from "node:module";
+const require=createRequire(import.meta.url);
+const {normalizeLocalAIResponse}=require("./local-ai-response.cjs");
 
 const PORT = 8787;
 const OLLAMA_URL = "http://127.0.0.1:11434/api/chat";
@@ -135,6 +138,7 @@ const server = http.createServer(async (req, res) => {
         body: JSON.stringify({
           model: MODEL,
           stream: false,
+          think: false,
           options: {
             num_predict: responseProfile.maxTokens
           },
@@ -145,6 +149,7 @@ const server = http.createServer(async (req, res) => {
                 "Jesteś HealthGo AI. " +
                 "Odpowiadaj jasno i po polsku, chyba że użytkownik poprosi o inny język. " +
                 "Pomagasz w nauce, technologii, programowaniu, grach, planowaniu i funkcjach HealthGo. " +
+                "Odpowiadaj wyłącznie gotową odpowiedzią. Nie przedstawiaj roboczych rozważań ani komentarzy do instrukcji. " +
                 "Nie udawaj, że widzisz dane lub obrazy, których model nie otrzymał. " +
                 "W sprawach zdrowotnych podawaj wyłącznie ogólne, ostrożne informacje i zachęcaj do kontaktu z zaufaną osobą dorosłą lub specjalistą, gdy sytuacja tego wymaga. " +
                 responseProfile.instruction
@@ -172,14 +177,11 @@ const server = http.createServer(async (req, res) => {
       }, origin);
     }
 
-    const answer =
-      result?.message?.content?.trim();
-
-    return json(res, 200, {
-      answer:
-        answer ||
-        "Nie udało mi się przygotować odpowiedzi."
-    }, origin);
+    const answer=normalizeLocalAIResponse(result?.message?.content);
+    if (!answer) {
+      return json(res,503,{error:"Model nie zwrócił gotowej odpowiedzi.",code:"OLLAMA_DRAFT_RESPONSE"},origin);
+    }
+    return json(res,200,{answer},origin);
   } catch (error) {
     console.error("Błąd HealthGo AI:", error);
 
