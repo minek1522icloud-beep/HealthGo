@@ -117,6 +117,9 @@ test('Real LLM worker is built on GitHub Pages from Transformers.js and model fi
  assert.match(html,/navigator\.onLine===false/);
  assert.match(html,/healthgo-offline-ai\.js/);
  assert.match(workflow,/@huggingface\/transformers@3\.8\.1/);
+ assert.match(workflow,/cp www\/healthgo-offline-ai-worker\.entry\.js mobile-build\/worker\.entry\.js/);
+ assert.match(workflow,/npx esbuild worker\.entry\.js --bundle --format=esm/);
+ assert.doesNotMatch(workflow,/esbuild \.\.\/www\/healthgo-offline-ai-worker\.entry\.js/);
  assert.match(workflow,/--outfile=\.\.\/www\/healthgo-offline-ai-worker\.js/);
  assert.match(sw,/healthgo-pwa-v17-on-device-ai-20261008/);
 });
