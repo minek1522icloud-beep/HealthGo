@@ -2298,11 +2298,19 @@ function save(){
 function load(id){
  const item=all().find(x=>x.id===id);if(!item)return;
  window.healthGoAIConversationEpoch=(window.healthGoAIConversationEpoch||0)+1;
+ window.healthGoAIRequestBusy=false;
+ window.healthGoAIRequestToken=null;
+ const send=document.getElementById('aiSendBtn');if(send)send.disabled=false;
  currentId=id;const box=root();if(!box)return;box.replaceChildren();
  for(const message of item.messages||[]){const row=document.createElement('div'),bubble=document.createElement('div');row.className='ai-msg '+(message.role==='user'?'user':'assistant');bubble.className='ai-bubble';bubble.textContent=String(message.text||'');row.appendChild(bubble);box.appendChild(row);}
  render();box.scrollTop=box.scrollHeight;
 }
-function fresh(){window.healthGoAIConversationEpoch=(window.healthGoAIConversationEpoch||0)+1;currentId='chat_'+crypto.randomUUID();root()?.replaceChildren();const list=all();list.unshift({id:currentId,title:'Nowa rozmowa',messages:[],updated:Date.now()});put(list);render();}
+function fresh(){
+ window.healthGoAIConversationEpoch=(window.healthGoAIConversationEpoch||0)+1;
+ window.healthGoAIRequestBusy=false;
+ window.healthGoAIRequestToken=null;
+ const send=document.getElementById('aiSendBtn');if(send)send.disabled=false;
+ currentId='chat_'+crypto.randomUUID();root()?.replaceChildren();const list=all();list.unshift({id:currentId,title:'Nowa rozmowa',messages:[],updated:Date.now()});put(list);render();}
 function migrate(){
  if(!currentUid||window.healthGoLegacyOwnerUid!==currentUid||localStorage.getItem(key()))return;
  try{
@@ -2315,6 +2323,15 @@ function migrate(){
  }catch(_){}
 }
 window.aiNewChat=()=>{if(window.healthGoAIRequestBusy)return;save();fresh();try{aiHistory=[];}catch(_){};};
+window.healthGoClearAIHistory=()=>{
+ if(window.healthGoAIRequestBusy||!currentUid)return false;
+ try{localStorage.removeItem(key())}catch(_){return false}
+ currentId=null;
+ root()?.replaceChildren();
+ fresh();
+ try{aiHistory=[];}catch(_){}
+ return true;
+};
 HealthGoServices.events.addEventListener('SESSION_CHANGED',event=>{
  window.healthGoAISessionEpoch=(window.healthGoAISessionEpoch||0)+1;
  window.healthGoAIRequestBusy=false;
