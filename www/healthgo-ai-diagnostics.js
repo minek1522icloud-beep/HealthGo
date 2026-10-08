@@ -22,7 +22,7 @@ function classify(error,kind){
   if(/network|offline|fetch|failed to fetch/.test(text))return{code:'CLOUD_NETWORK',label:'Nie udało się połączyć z usługą AI w internecie.'};
   return{code:'CLOUD_ERROR',label:'Usługa chmurowa nie odpowiedziała poprawnie.'};
  }
- if(/ollama_no_models|ollama_model_missing|wybrany model|nie ma zainstalowanego modelu/i.test(text)||status===404)
+ if(/ollama_no_models|ollama_instruct_required|ollama_model_missing|wybrany model|nie ma zainstalowanego modelu/i.test(text)||status===404)
   return{code:'LOCAL_MODEL',label:'Lokalna Ollama nie ma pobranego zgodnego modelu AI.'};
  if(/ollama_empty_response/i.test(text))
   return{code:'LOCAL_EMPTY_RESPONSE',label:'Model zakończył generowanie, ale nie zwrócił odpowiedzi.'};
