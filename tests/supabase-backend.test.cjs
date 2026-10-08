@@ -164,9 +164,9 @@ test('AI uses cloud first and keeps Ollama as the persistent fallback',()=>{
   assert.match(html,/AI lokalne — tryb awaryjny/);
   assert.match(html,/requestLocalHealthGoAI/);
   assert.match(main,/keep_alive:\s*\n?\s*"10m"/);
-  assert.match(main,/average:\s*\{[\s\S]*?maxTokens:\s*140/);
-  assert.match(main,/medium:\s*\{[\s\S]*?maxTokens:\s*320/);
-  assert.match(main,/high:\s*\{[\s\S]*?maxTokens:\s*700/);
+  assert.match(main,/average:\s*\{[\s\S]*?maxTokens:\s*420/);
+  assert.match(main,/medium:\s*\{[\s\S]*?maxTokens:\s*900/);
+  assert.match(main,/high:\s*\{[\s\S]*?maxTokens:\s*1600/);
 });
 
 

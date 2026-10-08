@@ -306,6 +306,12 @@ function startWebServer() {
                     } else if (error?.status === 404) {
                       code = 'OLLAMA_MODEL_MISSING';
                       message = 'Wybrany model AI nie jest dostępny w Ollamie.';
+                    } else if (error?.message === 'OLLAMA_EMPTY_RESPONSE') {
+                      code = 'OLLAMA_EMPTY_RESPONSE';
+                      message = 'Model AI zakończył generowanie bez treści odpowiedzi.';
+                    } else if (error?.status >= 500) {
+                      code = 'OLLAMA_SERVER_ERROR';
+                      message = 'Silnik Ollama zgłosił błąd przetwarzania modelu.';
                     } else if (error?.name === 'AbortError') {
                       status = 504;
                       code = 'LOCAL_TIMEOUT';
@@ -837,22 +843,22 @@ async function askLocalOllama(data) {
   const responseProfile = {
     average: {
       history: 4,
-      maxTokens: 140,
-      timeoutMs: 45000,
+      maxTokens: 420,
+      timeoutMs: 60000,
       instruction:
         "Odpowiadaj krótko i konkretnie. Zwykle 2–5 zdań. Priorytetem jest szybka odpowiedź bez zbędnego rozwijania."
     },
     medium: {
       history: 8,
-      maxTokens: 320,
-      timeoutMs: 75000,
+      maxTokens: 900,
+      timeoutMs: 90000,
       instruction:
         "Odpowiadaj z umiarkowaną ilością szczegółów. Wyjaśnij najważniejsze powody i kroki, ale unikaj niepotrzebnego rozwlekania."
     },
     high: {
       history: 12,
-      maxTokens: 700,
-      timeoutMs: 120000,
+      maxTokens: 1600,
+      timeoutMs: 135000,
       instruction:
         "Odpowiadaj dokładniej i bardziej szczegółowo. Sprawdź założenia, wyjaśnij istotne kroki i uwzględnij ważne zastrzeżenia."
     }
@@ -928,6 +934,12 @@ async function askLocalOllama(data) {
                 stream:
                   false,
 
+                // Qwen3 models can spend their short output allowance on
+                // hidden reasoning and return an empty message.content.
+                // Ollama supports think:false for normal chat replies.
+                think:
+                  false,
+
                 keep_alive:
                   "10m",
 
@@ -957,8 +969,8 @@ async function askLocalOllama(data) {
                       "user",
 
                     content:
-                      message +
-                      imageNote
+                      (/^qwen3(?:[:.-]|$)/i.test(activeOllamaModel)
+                        ? "/no_think\n" : "") + message + imageNote
                   }
                 ]
               }
@@ -990,9 +1002,10 @@ async function askLocalOllama(data) {
       result?.message?.content?.trim();
 
     if (!answer) {
-      throw new Error(
-        "EMPTY_OLLAMA_ANSWER"
-      );
+      const error = new Error("OLLAMA_EMPTY_RESPONSE");
+      error.reason = result?.done_reason || "unknown";
+      console.warn("HealthGo AI: Ollama returned empty content, completion reason:", error.reason);
+      throw error;
     }
 
     return answer;
