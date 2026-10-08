@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>HealthGo — diagnostyka iPhone</title>
+<style>
+*{box-sizing:border-box}body{font:16px -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;margin:0;background:#f3f7fe;color:#17243a;padding:20px;min-height:100dvh}
+main{margin:12px auto;max-width:460px;background:#fff;border:1px solid #d9e4f6;border-radius:24px;padding:22px;box-shadow:0 14px 40px #153a6712}
+.brand{color:#2563eb;font-weight:850;font-size:13px}h1{font-size:23px;margin:14px 0 8px}p{color:#4b5b74;line-height:1.52;font-size:14px}
+a,button{display:block;width:100%;text-align:center;text-decoration:none;font:750 15px -apple-system,BlinkMacSystemFont,Arial,sans-serif;line-height:1.4;padding:14px;border-radius:13px;border:0;background:#2563eb;color:#fff;margin-top:12px}
+a.secondary,button.secondary{background:#eaf1ff;color:#2346a7}
+#report{white-space:pre-wrap;overflow-wrap:anywhere;color:#234165;font:13px ui-monospace,SFMono-Regular,Consolas,monospace;line-height:1.65;background:#f7faff;border-radius:12px;padding:14px}
+.note{font-size:12px;color:#65728a}
+</style>
+</head>
+<body>
+<main>
+<div class="brand">❤ HEALTHGO · DIAGNOSTYKA</div>
+<h1>Sprawdź iPhone’a</h1>
+<p>Ta strona nie włącza czatu AI, mapy, Bluetooth ani dużych dodatków. Dzięki temu możemy sprawdzić, dlaczego pełne HealthGo zamyka się w Safari.</p>
+<div id="report" role="status" aria-live="polite">Uruchamiam krótki test…</div>
+<a href="./safe.html?hg_safe=1" id="safe">Otwórz HealthGo w trybie bezpiecznym</a>
+<a class="secondary" href="./recovery.html">Wyczyść stare pliki HealthGo</a>
+<button class="secondary" id="copy" type="button">Skopiuj wynik testu</button>
+<p class="note">Tryb bezpieczny tymczasowo nie uruchamia niektórych dodatków i mapy. Nie usuwa konta ani zapisanych danych. Zrób zdjęcie ekranu z wynikiem i prześlij je w rozmowie.</p>
+</main>
+<script>
+(async function(){
+ const output=document.getElementById('report');
+ let lines=['Diagnostyka HealthGo','Strona testowa: OK'];
+ const add=line=>{lines.push(line);output.textContent=lines.join('\n')};
+ try{
+  add('Safari/WebKit: '+(/iPhone|iPad|iPod/i.test(navigator.userAgent)?'iPhone / iPad':'inne urządzenie'));
+  add('Tryb aplikacji: '+((window.navigator.standalone||window.matchMedia?.('(display-mode: standalone)').matches)?'ekran główny':'przeglądarka'));
+  add('Worker: '+('Worker' in window?'dostępny':'niedostępny'));
+  add('WebGPU: '+(navigator.gpu?'dostępny':'niedostępny'));
+  add('Połączenie: '+(navigator.onLine?'online':'offline'));
+  add('Service worker: '+(navigator.serviceWorker?.controller?'aktywny':'brak lub nieaktywny'));
+  try{
+   const response=await Promise.race([
+    fetch('./version.json?diagnostic='+Date.now(),{cache:'no-store'}),
+    new Promise((_,reject)=>setTimeout(()=>reject(Error('timeout')),8000))
+   ]);
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const data=await response.json();
+   add('Wersja serwera: '+String(data.version||'brak').slice(0,12));
+  }catch(error){add('Wersja serwera: błąd połączenia ('+String(error.message||error).slice(0,40)+')')}
+  add('Test zakończony. Otwórz tryb bezpieczny.');
+ }catch(error){add('Błąd diagnostyki: '+String(error.message||error).slice(0,80))}
+ document.getElementById('copy').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText(lines.join('\n'));document.getElementById('copy').textContent='Skopiowano';}
+  catch(_){document.getElementById('copy').textContent='Zrób zdjęcie wyniku';}
+ });
+})();
+</script>
+</body>
+</html>
