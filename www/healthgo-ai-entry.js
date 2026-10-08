@@ -75,43 +75,80 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
       return {inlineData:{data:dataUrl.slice(comma+1),mimeType:mime}};
     }
 
-    async function requireAppCheck(){
+    function notifyStage(onStatus,stage){
+      if(typeof onStatus==='function'){
+        try{onStatus(stage)}catch(_){}
+      }
+    }
+    async function boundedAppCheck(promise,signal,limitMs){
+      if(signal?.aborted)throw new Error('AI_CANCELLED');
+      let timer=null,abortHandler=null;
+      try{
+        return await Promise.race([
+          promise,
+          new Promise((_,reject)=>{
+            timer=setTimeout(()=>reject(new Error('APP_CHECK_TIMEOUT')),limitMs);
+            if(signal){
+              abortHandler=()=>reject(new Error('AI_CANCELLED'));
+              signal.addEventListener('abort',abortHandler,{once:true});
+            }
+          })
+        ]);
+      }finally{
+        if(timer)clearTimeout(timer);
+        if(signal&&abortHandler)signal.removeEventListener('abort',abortHandler);
+      }
+    }
+    async function requireAppCheck(signal,onStatus){
       if(!appCheck)return;
-      let firstError;
+      notifyStage(onStatus,'Sprawdzam zabezpieczenie App Check…');
       for(let attempt=0;attempt<2;attempt++){
         try{
-          let timer=null;
-          let result;
-          try{
-            result=await Promise.race([
-              getToken(appCheck,attempt===1),
-              new Promise((_,reject)=>{
-                timer=setTimeout(()=>reject(new Error('APP_CHECK_TIMEOUT')),14000);
-              })
-            ]);
-          }finally{
-            if(timer)clearTimeout(timer);
-          }
+          const result=await boundedAppCheck(getToken(appCheck,attempt===1),signal,11000);
           if(!result||!result.token)throw new Error('APP_CHECK_EMPTY_TOKEN');
+          notifyStage(onStatus,'Zabezpieczenie gotowe. Łączę z Gemini…');
           return;
         }catch(error){
-          firstError=error;
+          if(signal?.aborted)throw new Error('AI_CANCELLED');
           if(attempt===1){
-            const code=String((error&&error.code)||(firstError&&firstError.code)||'app-check/token-error');
-            const message=String((error&&error.message)||error||'token-error');
-            // Never weaken App Check or switch to an unauthenticated AI endpoint.
-            throw new Error('APP_CHECK_ERROR '+code+' '+message.slice(0,300));
+            const code=String(error?.code||'app-check/token-error');
+            const msg=String(error?.message||'Brak tokenu App Check');
+            throw new Error('APP_CHECK_ERROR '+code+' '+msg.slice(0,220));
           }
         }
       }
     }
+    async function requestGemini(model,parts,limitMs,outerSignal){
+      if(outerSignal?.aborted)throw new Error('AI_CANCELLED');
+      const controller=new AbortController();
+      let timedOut=false;
+      const onOuterAbort=()=>controller.abort();
+      if(outerSignal)outerSignal.addEventListener('abort',onOuterAbort,{once:true});
+      const timeout=setTimeout(()=>{
+        timedOut=true;
+        controller.abort();
+      },limitMs);
+      try{
+        return await model.generateContent(parts,{
+          signal:controller.signal,
+          timeout:limitMs
+        });
+      }catch(error){
+        if(outerSignal?.aborted)throw new Error('AI_CANCELLED');
+        if(timedOut)throw new Error('AI_PROVIDER_TIMEOUT');
+        throw error;
+      }finally{
+        clearTimeout(timeout);
+        if(outerSignal)outerSignal.removeEventListener('abort',onOuterAbort);
+      }
+    }
     window.healthGoMobileAI={
       async diagnose(){
-        await requireAppCheck();
+        await requireAppCheck(null,null);
         return {appCheck:'ready',firebaseApp:aiApp.name};
       },
-      async ask({message,mode,history,imageData,accountType,responseMode}){
-        await requireAppCheck();
+      async ask({message,mode,history,imageData,accountType,responseMode,signal,onStatus}){
+        await requireAppCheck(signal,onStatus);
 
         const level=['average','medium','high'].includes(responseMode)?responseMode:'average';
         const prompt=buildPrompt(String(message||''),mode,history,level);
@@ -131,43 +168,43 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
           : ['gemini-3.8-flash','gemini-3.5-flash'];
         let lastError=null;
         for(const modelName of models){
-          for(let attempt=0;attempt<2;attempt++){
-            try{
-              const model=getGenerativeModel(ai,{
-                model:modelName,
-                systemInstruction:systemInstruction(accountType),
-                generationConfig:{maxOutputTokens}
-              });
-              const result=await model.generateContent(parts);
-              const answer=result&&result.response&&result.response.text?result.response.text():'';
-              if(!answer)throw new Error('EMPTY_AI_RESPONSE');
-              return answer;
-            }catch(error){
-              lastError=error;
-              const msg=String((error&&error.message)||error||'');
-              const code=String((error&&error.code)||'');
-              const details=msg+' '+code;
-              const permissionIssue=/permission-denied|unauthenticated|api-key-not-valid|invalid-api-key|403|401|app.check|recaptcha|billing/i.test(details);
-              const transient=/429|resource-exhausted|quota|500|502|503|504|unavailable|network|fetch|timeout/i.test(details);
-              const modelIssue=/404|not.?found|model|unsupported|failed-precondition/i.test(details);
-              if(permissionIssue)throw new Error('AI_AUTH_ERROR '+details);
-              // On rate limiting, trying several models immediately multiplies
-              // unsuccessful requests. Report the limit instead.
-              if(/429|resource-exhausted|quota/i.test(details))throw new Error('AI_RATE_LIMIT '+details);
-              if(attempt===0&&transient){
-                await new Promise(r=>setTimeout(r,level==='average'?500:1000));
-                continue;
-              }
-              if(modelIssue||transient)break;
-              attempt=2;
-              break;
-            }
+          if(signal?.aborted)throw new Error('AI_CANCELLED');
+          notifyStage(onStatus,'Generuję odpowiedź w Gemini…');
+          try{
+            const model=getGenerativeModel(ai,{
+              model:modelName,
+              systemInstruction:systemInstruction(accountType),
+              generationConfig:{maxOutputTokens}
+            });
+            // SDK defaults to 180s. Use a real AbortSignal and per-request
+            // timeout so an unresponsive Gemini request cannot hang on mobile.
+            const limit=level==='average'?23000:level==='medium'?33000:45000;
+            const result=await requestGemini(model,parts,limit,signal);
+            const answer=String(result?.response?.text?.()||'').trim();
+            if(!answer)throw new Error('EMPTY_AI_RESPONSE');
+            notifyStage(onStatus,'Odpowiedź gotowa.');
+            return answer;
+          }catch(error){
+            if(signal?.aborted||/AI_CANCELLED/.test(String(error?.message||'')))throw new Error('AI_CANCELLED');
+            lastError=error;
+            const msg=String(error?.message||error||'');
+            const code=String(error?.code||'');
+            const details=msg+' '+code;
+            if(/permission-denied|unauthenticated|api-key-not-valid|invalid-api-key|403|401|app.check|recaptcha|billing/i.test(details))
+              throw new Error('AI_AUTH_ERROR '+details.slice(0,280));
+            if(/429|resource-exhausted|quota/i.test(details))
+              throw new Error('AI_RATE_LIMIT '+details.slice(0,280));
+            const unavailable=/404|not.?found|unsupported|failed-precondition|500|502|503|504|unavailable|AI_PROVIDER_TIMEOUT|network|fetch|timeout/i.test(details);
+            if(!unavailable)break;
+            // One fallback to a compatible stable model, never an unbounded
+            // retry storm or another request after a real cancellation.
+            notifyStage(onStatus,'Ten model nie odpowiedział. Próbuję modelu zapasowego…');
           }
         }
 
-        const code=String((lastError&&lastError.code)||'ai/request-failed');
-        const text=String((lastError&&lastError.message)||lastError||'AI request failed');
-        throw new Error('AI_REQUEST_ERROR '+code+' '+text);
+        const code=String(lastError?.code||'ai/request-failed');
+        const err=String(lastError?.message||lastError||'AI request failed');
+        throw new Error('AI_REQUEST_ERROR '+code+' '+err.slice(0,280));
       }
     };
 
