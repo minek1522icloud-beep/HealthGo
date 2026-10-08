@@ -1,0 +1,113 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+
+function setup(){
+  const source=fs.readFileSync('www/healthgo-ai-entry.js','utf8')
+    .replace(/^import .*;\s*$/gm,'');
+  const apps=[],prompts=[],events=[];
+  let appCheckInit=0,modelCalls=0,forceRefresh=0,onceFailure=true,failQuota=false;
+  const win={dispatchEvent:e=>events.push(e.type)};
+  const app={name:'healthgo-mobile-ai'};
+  const env={
+    window:win,
+    location:{hostname:'minek1522icloud-beep.github.io'},
+    console:{error:()=>{}},
+    Event:class{constructor(type){this.type=type}},
+    setTimeout,clearTimeout,
+    initializeApp:(_config,name)=>{
+      if(apps.some(a=>a.name===name))throw Error('firebase-app-duplicate');
+      app.name=name;apps.push(app);return app;
+    },
+    getApps:()=>apps,
+    ReCaptchaEnterpriseProvider:class{constructor(key){this.key=key}},
+    initializeAppCheck:firebaseApp=>{
+      appCheckInit++;
+      if(appCheckInit>1)throw Error('app-check-already-initialized');
+      return {app:firebaseApp};
+    },
+    getToken:async (_app,force)=>{
+      if(force)forceRefresh++;
+      if(onceFailure&&!force){onceFailure=false;throw Error('expired-app-check-token')}
+      return {token:'test-app-check-token'};
+    },
+    GoogleAIBackend:class{},
+    getAI:()=>({backend:'mock'}),
+    getGenerativeModel:(_ai,options)=>({
+      async generateContent(parts){
+        modelCalls++;
+        prompts.push({parts,options});
+        if(failQuota)throw Error('429 resource-exhausted');
+        return {response:{text:()=>String('Odpowiedź '+modelCalls)}};
+      }
+    })
+  };
+  return{
+    window:win,prompts,events,
+    load(){vm.runInNewContext(source,env,{filename:'healthgo-ai-entry.js'})},
+    stats(){return{appCheckInit,modelCalls,forceRefresh}},
+    rateLimit(){failQuota=true}
+  };
+}
+
+test('AI handles several messages, remembers context and keeps all five modes available',async()=>{
+  const sdk=setup();sdk.load();
+  const messages=[
+    {message:'Cześć',mode:'assistant',responseMode:'average'},
+    {message:'Ułóż mi plan',mode:'plan',responseMode:'medium'},
+    {message:'Co można ugotować?',mode:'food',responseMode:'high'},
+    {message:'Pomysł na spacer',mode:'activity',responseMode:'average'},
+    {message:'Co można odkryć?',mode:'explore',responseMode:'medium'}
+  ];
+  let history=[];
+  for(const message of messages){
+    const result=await sdk.window.healthGoMobileAI.ask({...message,accountType:'child',history});
+    assert.match(result,/Odpowiedź \d+/);
+    history.push({role:'user',content:message.message},{role:'assistant',content:result});
+  }
+  assert.equal(sdk.stats().appCheckInit,1);
+  assert.equal(sdk.stats().modelCalls,5);
+  assert.equal(sdk.stats().forceRefresh,1);
+  assert.match(String(sdk.prompts[1].parts[0]),/Użytkownik: Cześć/);
+  assert.match(String(sdk.prompts[2].parts[0]),/Tryb: Jedzenie/);
+  assert.match(String(sdk.prompts[3].parts[0]),/Tryb: Aktywność/);
+  assert.match(String(sdk.prompts[4].parts[0]),/Tryb: Odkrywanie/);
+});
+
+test('AI bundle can initialize twice without duplicating Firebase App Check',async()=>{
+  const sdk=setup();sdk.load();
+  sdk.load();
+  assert.equal(sdk.stats().appCheckInit,1);
+  assert.deepEqual(sdk.events,['healthgo-mobile-ai-ready','healthgo-mobile-ai-ready']);
+  const answer=await sdk.window.healthGoMobileAI.ask({
+    message:'Drugie uruchomienie AI',mode:'assistant',responseMode:'average',history:[]
+  });
+  assert.match(answer,/Odpowiedź/);
+  assert.equal(sdk.window.healthGoMobileAIInitError,'');
+});
+
+test('rate limiting does not trigger a storm of calls to fallback models',async()=>{
+  const sdk=setup();sdk.load();sdk.rateLimit();
+  await assert.rejects(
+    sdk.window.healthGoMobileAI.ask({message:'Cześć',mode:'assistant',responseMode:'average',history:[]}),
+    /AI_RATE_LIMIT/
+  );
+  assert.equal(sdk.stats().modelCalls,1);
+});
+
+test('chat history deletion, session isolation and cache preferences stay connected to actual handlers',()=>{
+  const html=fs.readFileSync('www/index.html','utf8');
+  const suite=fs.readFileSync('www/healthgo-mobile-suite.js','utf8');
+  const sw=fs.readFileSync('www/service-worker.js','utf8');
+  assert.match(html,/window\.healthGoClearAIHistory=/);
+  assert.match(html,/window\.healthGoAISessionEpoch=/);
+  assert.match(html,/healthGoAIRequestToken===requestToken/);
+  assert.match(html,/ai-system-message/);
+  assert.match(suite,/window\.healthGoClearAIHistory\(\)/);
+  assert.match(suite,/applyOfflinePreference/);
+  assert.match(sw,/HEALTHGO_OFFLINE_CACHE/);
+  assert.match(sw,/caches\.delete\(CACHE_NAME\)/);
+  assert.doesNotMatch(suite.slice(suite.indexOf('function setupMobileNav'),suite.indexOf('function updateProfileIcon')),/replaceChildren\(/);
+});
