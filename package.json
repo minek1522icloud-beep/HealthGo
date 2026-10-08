@@ -33,6 +33,7 @@
       "icon.ico",
       "package.json",
       "desktop-security.cjs",
+      "desktop-update-scheduler.cjs",
       "desktop-oauth.cjs"
     ],
     "win": {
