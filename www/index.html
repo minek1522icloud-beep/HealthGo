@@ -1138,6 +1138,7 @@ async function requestLocalHealthGoAI(payload,timeoutMs){
    if(!res.ok||!data.answer){
      const error=new Error(data.error||'AI_BACKEND_UNAVAILABLE');
      error.status=res.status;
+     error.code=data.code||'LOCAL_ERROR';
      throw error;
    }
    return data.answer;
@@ -1179,7 +1180,8 @@ async function askAI(){
      answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData),mobileTimeout);
    }else{
      let cloudError=null,localError=null;
-     const cloudTimeout=aiResponseMode==='average'?12000:aiResponseMode==='medium'?22000:35000;
+     // Desktop cloud requests may need extra time for first-run initialization.
+     const cloudTimeout=aiResponseMode==='average'?28000:aiResponseMode==='medium'?45000:70000;
      try{
        aiSetConnection(true,'AI Cloud łączy się…');
        answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData),cloudTimeout);
@@ -1190,7 +1192,8 @@ async function askAI(){
        if(imageData)payload.image=imageData;
        try{
          aiSetConnection(true,'AI lokalne — tryb awaryjny…');
-         answer=await requestLocalHealthGoAI(payload,aiResponseMode==='average'?9000:aiResponseMode==='medium'?18000:30000);
+         // The local fallback can have a cold start; do not cut it off after 9 seconds.
+         answer=await requestLocalHealthGoAI(payload,aiResponseMode==='average'?65000:aiResponseMode==='medium'?95000:140000);
        }catch(error){localError=error;}
      }
      if(!answer){
@@ -1210,7 +1213,9 @@ async function askAI(){
    if(!sessionActive())return;
    if(typing){typing.remove();typing=null;}
    const msg=String((err&&err.message)||err||'');
-   console.warn('HealthGo AI: request unavailable',msg);
+   console.warn('HealthGo AI: request unavailable',msg,
+     err&&err.cloudError?String(err.cloudError.code||err.cloudError.status||err.cloudError.message||''):'',
+     err&&err.localError?String(err.localError.code||err.localError.status||err.localError.message||''):'');
    if(isHostedMobileHealthGo()&&!imageData){
      try{
        const fallback=aiLocalReply(q||'');
@@ -1235,11 +1240,43 @@ async function askAI(){
      else if(/MOBILE_AI_INIT_ERROR/i.test(msg))detail='Moduł AI nie uruchomił się poprawnie. Uruchom aplikację ponownie.';
      else if(/MOBILE_AI_SDK_NOT_READY/i.test(msg))detail='Moduł AI nie załadował się poprawnie. Zamknij HealthGo, uruchom go ponownie i spróbuj jeszcze raz.';
    }else{
-     detail='Nie udało się połączyć ani z lokalnym AI, ani z zapasowym AI w chmurze. Sprawdź internet i spróbuj ponownie.';
-     if(err&&err.name==='AbortError')detail='AI nie odpowiedziało na czas. Spróbuj ponownie za chwilę.';
+     const diag=window.HealthGoAIDiagnostics?.summarize(err?.cloudError,err?.localError);
+     detail=diag
+       ?'Chmura: '+diag.cloud.label+' Lokalny model: '+diag.local.label
+       :'Nie udało się połączyć z chmurą ani z lokalnym AI. Sprawdź połączenie i konfigurację usług.';
    }
    const errorRow=aiAddMessage('assistant','<b>Nie mam teraz połączenia z AI.</b><p>'+aiEscape(detail)+'</p>');
-   if(errorRow)errorRow.classList.add('ai-system-message');
+   if(errorRow){
+     errorRow.classList.add('ai-system-message');
+     if(!isHostedMobileHealthGo()){
+       const diag=window.HealthGoAIDiagnostics?.summarize(err?.cloudError,err?.localError);
+       if(diag){
+         const label=document.createElement('p');
+         label.className='muted';
+         label.textContent='Kod diagnostyczny: '+diag.code;
+         errorRow.querySelector('.ai-bubble')?.appendChild(label);
+       }
+       const button=document.createElement('button');
+       button.type='button';button.className='btn secondary';
+       button.textContent='Sprawdź lokalne AI';
+       button.addEventListener('click',async()=>{
+         button.disabled=true;button.textContent='Sprawdzam lokalne AI…';
+         try{
+           const response=await fetch('/api/ai/status',{cache:'no-store'});
+           if(!response.ok)throw Error('LOCAL_STATUS_UNAVAILABLE');
+           const status=await response.json();
+           const message=status.localAvailable
+             ?(status.installedModels>0
+                ?'Lokalne AI działa. Model: '+(status.localModel||'wykryty')+'.'
+                :'Ollama działa, ale nie ma pobranego modelu AI.')
+             :'Lokalna Ollama jest wyłączona albo nie jest zainstalowana.';
+           button.textContent=message;
+         }catch(_){button.textContent='Nie mogę odczytać stanu lokalnego AI.'}
+         finally{button.disabled=false}
+       });
+       errorRow.querySelector('.ai-bubble')?.appendChild(button);
+     }
+   }
  }finally{
    if(typing&&typing.isConnected)typing.remove();
    if(window.healthGoAIRequestToken===requestToken){
@@ -2127,6 +2164,7 @@ window.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<script src="./healthgo-ai-diagnostics.js"></script>
 <script src="./supabase-client.js"></script>
 <script src="./healthgo-services.js"></script>
 <script src="./healthgo-devices.js"></script>
