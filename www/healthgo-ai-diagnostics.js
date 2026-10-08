@@ -26,6 +26,8 @@ function classify(error,kind){
   return{code:'LOCAL_MODEL',label:'Lokalna Ollama nie ma pobranego zgodnego modelu AI.'};
  if(/ollama_empty_response/i.test(text))
   return{code:'LOCAL_EMPTY_RESPONSE',label:'Model zakończył generowanie, ale nie zwrócił odpowiedzi.'};
+ if(/ollama_draft_response/i.test(text))
+  return{code:'LOCAL_DRAFT_RESPONSE',label:'Model nie zwrócił gotowej odpowiedzi. Spróbuj ponownie.'};
  if(/ollama_server_error/i.test(text))
   return{code:'LOCAL_SERVER',label:'Silnik lokalnego modelu zwrócił błąd. Sprawdź dostępne zasoby komputera.'};
  if(/ollama_not_running|ollama_not_installed|ollama nie jest|program ollama/.test(text))
