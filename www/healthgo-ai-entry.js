@@ -181,7 +181,7 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
             });
             // SDK defaults to 180s. Use a real AbortSignal and per-request
             // timeout so an unresponsive Gemini request cannot hang on mobile.
-            const limit=level==='average'?23000:level==='medium'?33000:45000;
+            const limit=level==='average'?18000:level==='medium'?26000:36000;
             const result=await requestGemini(model,parts,limit,signal);
             const answer=String(result?.response?.text?.()||'').trim();
             if(!answer)throw new Error('EMPTY_AI_RESPONSE');
