@@ -19,7 +19,7 @@ test('mobile AI prevents double sends, restores current chat context and uses a 
   assert.match(html,/window\.healthGoAIRequestBusy=false/);
   assert.match(html,/if\(!requestUid\|\|window\.healthGoAIRequestBusy\)return/);
   assert.match(html,/function aiSyncHistoryFromDom\(\)/);
-  assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData\),mobileTimeout\)/);
+  assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData,\{/);
   assert.match(html,/AI offline · tryb podstawowy/);
 });
 
@@ -48,5 +48,5 @@ test('offline worker includes new mobile suite assets',()=>{
   const sw=fs.readFileSync('www/service-worker.js','utf8');
   assert.match(sw,/healthgo-mobile-suite\.js/);
   assert.match(sw,/healthgo-mobile-suite\.css/);
-  assert.match(sw,/update-verified/);
+  assert.match(sw,/mobile-ai-20261008/);
 });

@@ -8,7 +8,7 @@ function setup(){
   const source=fs.readFileSync('www/healthgo-ai-entry.js','utf8')
     .replace(/^import .*;\s*$/gm,'');
   const apps=[],prompts=[],events=[];
-  let appCheckInit=0,modelCalls=0,forceRefresh=0,onceFailure=true,failQuota=false;
+  let appCheckInit=0,modelCalls=0,forceRefresh=0,onceFailure=true,failQuota=false,appCheckFails=false;
   const win={dispatchEvent:e=>events.push(e.type)};
   const app={name:'healthgo-mobile-ai'};
   const env={
@@ -30,6 +30,7 @@ function setup(){
     },
     getToken:async (_app,force)=>{
       if(force)forceRefresh++;
+      if(appCheckFails)throw Object.assign(Error('recaptcha invalid-domain'),{code:'appCheck/recaptcha-error'});
       if(onceFailure&&!force){onceFailure=false;throw Error('expired-app-check-token')}
       return {token:'test-app-check-token'};
     },
@@ -48,7 +49,8 @@ function setup(){
     window:win,prompts,events,
     load(){vm.runInNewContext(source,env,{filename:'healthgo-ai-entry.js'})},
     stats(){return{appCheckInit,modelCalls,forceRefresh}},
-    rateLimit(){failQuota=true}
+    rateLimit(){failQuota=true},
+    failAppCheck(){appCheckFails=true}
   };
 }
 
@@ -110,4 +112,42 @@ test('chat history deletion, session isolation and cache preferences stay connec
   assert.match(sw,/HEALTHGO_OFFLINE_CACHE/);
   assert.match(sw,/caches\.delete\(CACHE_NAME\)/);
   assert.doesNotMatch(suite.slice(suite.indexOf('function setupMobileNav'),suite.indexOf('function updateProfileIcon')),/replaceChildren\(/);
+});
+
+test('Phone AI diagnoses App Check without making a generation request',async()=>{
+ const sdk=setup();sdk.load();
+ const ready=await sdk.window.healthGoMobileAI.diagnose();
+ assert.equal(ready.appCheck,'ready');
+ assert.equal(sdk.stats().modelCalls,0);
+ sdk.failAppCheck();
+ await assert.rejects(
+  sdk.window.healthGoMobileAI.ask({message:'Cześć',mode:'assistant',history:[]}),
+  /APP_CHECK_ERROR appCheck\/recaptcha-error/
+ );
+ assert.equal(sdk.stats().modelCalls,0);
+});
+
+test('Mobile error guidance distinguishes domain attestation from Gemini/provider errors',()=>{
+ const html=fs.readFileSync('www/index.html','utf8');
+ const entry=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
+ assert.match(html,/function healthGoMobileErrorCode\(error\)/);
+ assert.match(html,/MOBILE_APP_CHECK/);
+ assert.match(html,/Kod diagnostyczny:/);
+ assert.match(html,/Sprawdź połączenie AI/);
+ assert.match(html,/Firebase App Check nie potwierdził dostępu/);
+ assert.match(html,/mode:requestMode,responseMode:requestLevel,history:requestHistory/);
+ assert.match(entry,/async diagnose\(\)/);
+ assert.match(entry,/getToken\(appCheck,attempt===1\)/);
+});
+
+test('Mobile keeps modes, navigation and offline rules intact',()=>{
+ const entry=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
+ const html=fs.readFileSync('www/index.html','utf8');
+ assert.match(entry,/gemini-3\.5-flash-lite/);
+ assert.match(entry,/gemini-3\.8-flash/);
+ assert.match(html,/data-mobile-page="map"/);
+ assert.match(html,/data-mobile-page="plan"/);
+ assert.match(html,/data-mobile-page="more"/);
+ const sw=fs.readFileSync('www/service-worker.js','utf8');
+ assert.match(sw,/healthgo-pwa-v15-mobile-ai-20261008/);
 });

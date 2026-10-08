@@ -1098,13 +1098,16 @@ async function waitForHealthGoMobileAI(){
 function healthGoAIAccountType(){
  try{return typeof loadHealthGoProfile==='function'?(loadHealthGoProfile().accountType||'standard'):'standard'}catch(_){return 'standard'}
 }
-async function askHealthGoMobileAI(message,imageData){
+async function askHealthGoMobileAI(message,imageData,options){
  const api=await waitForHealthGoMobileAI();
+ const level=options?.responseMode||aiResponseMode;
+ const mode=options?.mode||aiMode;
+ const history=Array.isArray(options?.history)?options.history:aiHistory;
  return await api.ask({
    message:message||'Opisz i przeanalizuj załączone zdjęcie.',
-   mode:aiMode,
-   responseMode:aiResponseMode,
-   history:aiHistory.slice(aiResponseMode==='average'?-6:aiResponseMode==='medium'?-10:-12),
+   mode,
+   responseMode:level,
+   history:history.slice(level==='average'?-6:level==='medium'?-10:-12),
    imageData:imageData||null,
    accountType:healthGoAIAccountType()
  });
@@ -1146,6 +1149,17 @@ async function requestLocalHealthGoAI(payload,timeoutMs){
    clearTimeout(timeout);
  }
 }
+function healthGoMobileErrorCode(error){
+ const raw=String((error&&error.message)||error||'');
+ if(/APP_CHECK_ERROR|app.check|recaptcha|APP_CHECK_TIMEOUT/i.test(raw))return 'MOBILE_APP_CHECK';
+ if(/AI_AUTH_ERROR|403|401|permission-denied|unauthenticated/i.test(raw))return 'MOBILE_ACCESS';
+ if(/AI_RATE_LIMIT|429|resource-exhausted|quota/i.test(raw))return 'MOBILE_RATE_LIMIT';
+ if(/MOBILE_AI_INIT_ERROR|BUNDLE_LOAD_ERROR|MOBILE_AI_SDK_NOT_READY/i.test(raw))return 'MOBILE_SDK';
+ if(/AI_TIMEOUT|timeout|AbortError/i.test(raw))return 'MOBILE_TIMEOUT';
+ if(/AI_REQUEST_ERROR|model|404|failed-precondition/i.test(raw))return 'MOBILE_PROVIDER';
+ if(/network|offline|failed to fetch/i.test(raw))return 'MOBILE_NETWORK';
+ return 'MOBILE_UNKNOWN';
+}
 async function askAI(){
  const requestUid=window.HealthGoServices?.state?.uid;
  const sessionEpoch=window.healthGoAISessionEpoch||0;
@@ -1163,6 +1177,7 @@ async function askAI(){
  let typing=null,imageData=null;
  try{
    aiSyncHistoryFromDom();
+   const requestMode=aiMode,requestLevel=aiResponseMode,requestHistory=aiHistory.slice();
    if(q)aiAddMessage('user','<p>'+aiEscape(q)+'</p>');
    if(photo){
      aiAddMessage('user','<p>📷 Dodałem zdjęcie: <b>'+aiEscape(photo.name)+'</b></p>');
@@ -1175,9 +1190,11 @@ async function askAI(){
 
    let answer='';
    if(isHostedMobileHealthGo()){
-     const mobileTimeout=aiResponseMode==='average'?35000:aiResponseMode==='medium'?55000:85000;
+     const mobileTimeout=requestLevel==='average'?45000:requestLevel==='medium'?65000:90000;
      aiSetConnection(true,'AI Mobile łączy się…');
-     answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData),mobileTimeout);
+     answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData,{
+       mode:requestMode,responseMode:requestLevel,history:requestHistory
+     }),mobileTimeout);
    }else{
      let cloudError=null,localError=null;
      // Desktop is hosted at localhost: Firebase's production App Check cannot
@@ -1232,13 +1249,14 @@ async function askAI(){
    aiSetConnection(false,'AI chwilowo niedostępne');
    let detail='Spróbuj ponownie za chwilę.';
    if(isHostedMobileHealthGo()){
-     if(/AI_TIMEOUT/i.test(msg))detail='AI nie odpowiedziało na czas. Spróbuj ponownie — aplikacja nie powinna się już zawiesić.';
-     else if(/APP_CHECK_ERROR/i.test(msg))detail='Nie udało się potwierdzić dostępu do AI. Uruchom aplikację ponownie.';
-     else if(/quota|resource-exhausted|429/i.test(msg))detail='Limit AI został chwilowo wykorzystany. Spróbuj ponownie później.';
-     else if(/network|fetch|offline/i.test(msg))detail='Nie udało się połączyć z AI. Sprawdź internet i spróbuj ponownie.';
-     else if(/AI_REQUEST_ERROR|403|404|permission|failed-precondition/i.test(msg))detail='AI jest chwilowo niedostępne. Spróbuj ponownie później.';
-     else if(/MOBILE_AI_INIT_ERROR/i.test(msg))detail='Moduł AI nie uruchomił się poprawnie. Uruchom aplikację ponownie.';
-     else if(/MOBILE_AI_SDK_NOT_READY/i.test(msg))detail='Moduł AI nie załadował się poprawnie. Zamknij HealthGo, uruchom go ponownie i spróbuj jeszcze raz.';
+     const code=healthGoMobileErrorCode(err);
+     if(code==='MOBILE_APP_CHECK')detail='Firebase App Check nie potwierdził dostępu. Administrator HealthGo musi sprawdzić domenę strony i klucz reCAPTCHA Enterprise w Firebase/Google Cloud.';
+     else if(code==='MOBILE_ACCESS')detail='Firebase AI Logic odrzucił uprawnienia aplikacji. Administrator musi sprawdzić ustawienia App Check i usługi AI.';
+     else if(code==='MOBILE_RATE_LIMIT')detail='Usługa AI osiągnęła limit zapytań. Spróbuj później.';
+     else if(code==='MOBILE_NETWORK')detail='Telefon nie może połączyć się z usługą AI. Sprawdź internet.';
+     else if(code==='MOBILE_TIMEOUT')detail='Usługa AI nie odpowiedziała w wyznaczonym czasie. Spróbuj ponownie.';
+     else if(code==='MOBILE_PROVIDER')detail='Usługa Gemini odrzuciła zapytanie. Sprawdź dostępność modeli i konfigurację Firebase AI Logic.';
+     else if(code==='MOBILE_SDK')detail='Moduł AI nie załadował się. Sprawdź połączenie i spróbuj ponownie uruchomić HealthGo.';
    }else{
      const diag=window.HealthGoAIDiagnostics?.summarize(err?.cloudError,err?.localError);
      detail=diag
@@ -1248,6 +1266,30 @@ async function askAI(){
    const errorRow=aiAddMessage('assistant','<b>Nie mam teraz połączenia z AI.</b><p>'+aiEscape(detail)+'</p>');
    if(errorRow){
      errorRow.classList.add('ai-system-message');
+     if(isHostedMobileHealthGo()){
+       const code=healthGoMobileErrorCode(err);
+       const label=document.createElement('p');
+       label.className='muted';
+       label.textContent='Kod diagnostyczny: '+code;
+       errorRow.querySelector('.ai-bubble')?.appendChild(label);
+       const control=document.createElement('button');
+       control.type='button';
+       control.className='btn secondary';
+       control.textContent='Sprawdź połączenie AI';
+       control.addEventListener('click',async()=>{
+         control.disabled=true;
+         control.textContent='Sprawdzam App Check…';
+         try{
+           const sdk=await waitForHealthGoMobileAI();
+           await sdk.diagnose();
+           control.textContent='App Check działa. Teraz sprawdź usługę AI, wysyłając nowe pytanie.';
+         }catch(error){
+           const diagnostic=healthGoMobileErrorCode(error);
+           control.textContent='Sprawdzanie nieudane: '+diagnostic;
+         }finally{control.disabled=false;}
+       });
+       errorRow.querySelector('.ai-bubble')?.appendChild(control);
+     }
      if(!isHostedMobileHealthGo()){
        const diag=window.HealthGoAIDiagnostics?.summarize(err?.cloudError,err?.localError);
        if(diag){
@@ -2510,7 +2552,7 @@ window.addEventListener('beforeunload',save);
     loading=new Promise(function(resolve,reject){
       const script=document.createElement('script');
       script.dataset.healthgoAiBundle='1';
-      script.src='./healthgo-ai-bundle.js?v=11&r='+run;
+      script.src='./healthgo-ai-bundle.js?v=12&r='+run;
       script.async=true;
       script.onload=function(){resolve(true)};
       script.onerror=function(){

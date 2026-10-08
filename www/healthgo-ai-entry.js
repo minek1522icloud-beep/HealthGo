@@ -75,21 +75,43 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
       return {inlineData:{data:dataUrl.slice(comma+1),mimeType:mime}};
     }
 
-    window.healthGoMobileAI={
-      async ask({message,mode,history,imageData,accountType,responseMode}){
-        if(appCheck){
+    async function requireAppCheck(){
+      if(!appCheck)return;
+      let firstError;
+      for(let attempt=0;attempt<2;attempt++){
+        try{
+          let timer=null;
+          let result;
           try{
-            await getToken(appCheck,false);
-          }catch(firstError){
-            try{
-              await getToken(appCheck,true);
-            }catch(error){
-              const code=String((error&&error.code)||(firstError&&firstError.code)||'app-check/token-error');
-              const text=String((error&&error.message)||error||(firstError&&firstError.message)||firstError||'App Check error');
-              throw new Error('APP_CHECK_ERROR '+code+' '+text);
-            }
+            result=await Promise.race([
+              getToken(appCheck,attempt===1),
+              new Promise((_,reject)=>{
+                timer=setTimeout(()=>reject(new Error('APP_CHECK_TIMEOUT')),14000);
+              })
+            ]);
+          }finally{
+            if(timer)clearTimeout(timer);
+          }
+          if(!result||!result.token)throw new Error('APP_CHECK_EMPTY_TOKEN');
+          return;
+        }catch(error){
+          firstError=error;
+          if(attempt===1){
+            const code=String((error&&error.code)||(firstError&&firstError.code)||'app-check/token-error');
+            const message=String((error&&error.message)||error||'token-error');
+            // Never weaken App Check or switch to an unauthenticated AI endpoint.
+            throw new Error('APP_CHECK_ERROR '+code+' '+message.slice(0,300));
           }
         }
+      }
+    }
+    window.healthGoMobileAI={
+      async diagnose(){
+        await requireAppCheck();
+        return {appCheck:'ready',firebaseApp:aiApp.name};
+      },
+      async ask({message,mode,history,imageData,accountType,responseMode}){
+        await requireAppCheck();
 
         const level=['average','medium','high'].includes(responseMode)?responseMode:'average';
         const prompt=buildPrompt(String(message||''),mode,history,level);
@@ -100,10 +122,12 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
         const img=imagePart(imageData);
         if(img)parts.push(img);
 
+        // Only officially supported, stable Firebase AI Logic model identifiers.
+        // Keep quick mode economical; high mode prefers the higher-quality Flash.
         const models=level==='average'
-          ? ['gemini-3.5-flash-lite','gemini-3.8-flash','gemini-3.5-flash']
+          ? ['gemini-3.5-flash-lite','gemini-3.5-flash']
           : level==='medium'
-          ? ['gemini-3.8-flash','gemini-3.5-flash','gemini-3.5-flash-lite']
+          ? ['gemini-3.5-flash','gemini-3.8-flash']
           : ['gemini-3.8-flash','gemini-3.5-flash'];
         let lastError=null;
         for(const modelName of models){
