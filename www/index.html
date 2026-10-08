@@ -1198,14 +1198,20 @@ async function askAI(){
 
    let answer='';
    if(isHostedMobileHealthGo()){
+     const statusText=document.createElement('p');
+     statusText.className='muted ai-request-status';
+     statusText.textContent='Przygotowuję połączenie…';
+     typing?.querySelector('.ai-bubble')?.appendChild(statusText);
      const mobileTimeout=requestLevel==='average'?52000:requestLevel==='medium'?75000:100000;
      aiSetConnection(true,'AI Mobile · przygotowuję połączenie…');
      answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData,{
        mode:requestMode,responseMode:requestLevel,history:requestHistory,
        signal:mobileController.signal,
        onStatus:stage=>{
-         if(sessionActive()&&window.healthGoAIRequestToken===requestToken)
+         if(sessionActive()&&window.healthGoAIRequestToken===requestToken){
            aiSetConnection(true,'AI Mobile · '+stage);
+           if(statusText.isConnected)statusText.textContent=stage;
+         }
        }
      }),mobileTimeout,mobileController);
    }else{
@@ -1246,7 +1252,7 @@ async function askAI(){
    console.warn('HealthGo AI: request unavailable',msg,
      err&&err.cloudError?String(err.cloudError.code||err.cloudError.status||err.cloudError.message||''):'',
      err&&err.localError?String(err.localError.code||err.localError.status||err.localError.message||''):'');
-   if(isHostedMobileHealthGo()&&!imageData){
+   if(isHostedMobileHealthGo()&&!imageData&&navigator.onLine===false){
      try{
        const fallback=aiLocalReply(q||'');
        if(fallback&&fallback.html&&!/Łączenie z pełnym HealthGo AI/i.test(fallback.html)){
