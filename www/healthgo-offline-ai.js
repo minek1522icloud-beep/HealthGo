@@ -155,10 +155,18 @@
       const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});
       setupPending={resolve,reject,promise};
       current.postMessage({type:'install',id});
-      const result=await Promise.race([
-        promise,
-        new Promise((_,no)=>setTimeout(()=>no(new Error('LOCAL_INSTALL_TIMEOUT')),8*60*1000))
-      ]);
+      let installTimer=null;
+      let result;
+      try{
+        result=await Promise.race([
+          promise,
+          new Promise((_,no)=>{
+            installTimer=setTimeout(()=>no(new Error('LOCAL_INSTALL_TIMEOUT')),8*60*1000);
+          })
+        ]);
+      }finally{
+        if(installTimer)clearTimeout(installTimer);
+      }
       if(navigator.storage?.persist){
         try{await navigator.storage.persist();}catch(_){}
       }
