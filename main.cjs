@@ -12,6 +12,7 @@ const fs = require("fs");
 const http = require("http");
 const { spawn } = require("child_process");
 const { autoUpdater } = require("electron-updater");
+const { normalizeLocalAIResponse } = require("./local-ai-response.cjs");
 const { createAutomaticUpdateChecks } = require("./desktop-update-scheduler.cjs");
 const {
   isHealthGoOrigin,
@@ -312,6 +313,9 @@ function startWebServer() {
                     } else if (error?.message === 'OLLAMA_EMPTY_RESPONSE') {
                       code = 'OLLAMA_EMPTY_RESPONSE';
                       message = 'Model AI zakończył generowanie bez treści odpowiedzi.';
+                    } else if (error?.message === 'OLLAMA_DRAFT_RESPONSE') {
+                      code = 'OLLAMA_DRAFT_RESPONSE';
+                      message = 'Model zwrócił roboczy tekst zamiast gotowej odpowiedzi.';
                     } else if (error?.status >= 500) {
                       code = 'OLLAMA_SERVER_ERROR';
                       message = 'Silnik Ollama zgłosił błąd przetwarzania modelu.';
@@ -890,12 +894,12 @@ async function askLocalOllama(data) {
             (item) => ({
               role: item.role,
               content:
-                item.content.slice(
-                  0,
-                  4000
-                )
+                (item.role === "assistant"
+                  ? normalizeLocalAIResponse(item.content)
+                  : item.content).slice(0,4000)
             })
           )
+          .filter(item => item.content.length > 0)
       : [];
 
   const imageNote =
@@ -913,7 +917,10 @@ async function askLocalOllama(data) {
     );
 
   try {
-    const response =
+    // A model may return only unmarked English drafting text. Retry once
+    // without exposing that draft to the user or conversation history.
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const response =
       await fetch(
         OLLAMA_BASE_URL +
           "/api/chat",
@@ -962,7 +969,10 @@ async function askLocalOllama(data) {
                       "Pomagasz w nauce, technologii, programowaniu, grach, planowaniu i funkcjach HealthGo. " +
                       "Nie udawaj, że widzisz dane lub obrazy, których model nie otrzymał. " +
                       "W sprawach zdrowotnych podawaj wyłącznie ogólne, ostrożne informacje. " +
-                      responseProfile.instruction
+                      responseProfile.instruction +
+                      " Podawaj wyłącznie końcową odpowiedź dla użytkownika. " +
+                      "Nie omawiaj własnego procesu pisania, nie cytuj poleceń ani reguł systemowych. " +
+                      (attempt ? "Odpowiedz bezpośrednio, najlepiej jednym krótkim zdaniem po polsku." : "")
                   },
 
                   ...history,
@@ -972,8 +982,7 @@ async function askLocalOllama(data) {
                       "user",
 
                     content:
-                      (/^qwen3(?:[:.-]|$)/i.test(activeOllamaModel)
-                        ? "/no_think\n" : "") + message + imageNote
+                      message + imageNote
                   }
                 ]
               }
@@ -1001,17 +1010,20 @@ async function askLocalOllama(data) {
       throw error;
     }
 
-    const answer =
-      result?.message?.content?.trim();
-
+    const answer = normalizeLocalAIResponse(result?.message?.content);
     if (!answer) {
-      const error = new Error("OLLAMA_EMPTY_RESPONSE");
-      error.reason = result?.done_reason || "unknown";
-      console.warn("HealthGo AI: Ollama returned empty content, completion reason:", error.reason);
+      const code = String(result?.message?.content || '').trim()
+        ? 'OLLAMA_DRAFT_RESPONSE'
+        : 'OLLAMA_EMPTY_RESPONSE';
+      console.warn('HealthGo AI: model returned no safe final answer; retry:', attempt === 0, 'reason:', result?.done_reason || 'unknown');
+      if (attempt === 0) continue;
+      const error = new Error(code);
+      error.reason = result?.done_reason || 'unknown';
       throw error;
     }
-
     return answer;
+    }
+    throw new Error('OLLAMA_EMPTY_RESPONSE');
   } finally {
     clearTimeout(timeout);
   }

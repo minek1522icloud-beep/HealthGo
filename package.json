@@ -34,6 +34,7 @@
       "package.json",
       "desktop-security.cjs",
       "desktop-update-scheduler.cjs",
+      "local-ai-response.cjs",
       "desktop-oauth.cjs"
     ],
     "win": {
