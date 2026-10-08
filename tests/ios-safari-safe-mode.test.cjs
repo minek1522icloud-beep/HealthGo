@@ -28,7 +28,7 @@ test('Pages builds an opt-in lightweight HealthGo shell preserving account code'
   assert.match(safe,/HealthGoSupabase/);
   assert.match(safe,/HealthGoServices/);
   assert.match(safe,/id="aiMessages"/);
-  assert.match(safe,/id="hg-safe-note"/);
+  assert.match(safe,/note\.id='hg-safe-note'/);
   assert.doesNotMatch(safe,/<script src="\.\/healthgo-(?:v2-ui|mobile-suite|pro|devices|offline-ai)\.js"/);
   assert.doesNotMatch(safe,/<script src="https:\/\/unpkg\.com\/leaflet@/);
   assert.doesNotMatch(safe,/if \(typeof setupMobilePWA === 'function'\) setupMobilePWA\(\);/);
