@@ -122,7 +122,7 @@ test('Phone AI diagnoses App Check without making a generation request',async()=
  sdk.failAppCheck();
  await assert.rejects(
   sdk.window.healthGoMobileAI.ask({message:'Cześć',mode:'assistant',history:[]}),
-  /APP_CHECK_ERROR appCheck\\/recaptcha-error/
+  /APP_CHECK_ERROR appCheck\/recaptcha-error/
  );
  assert.equal(sdk.stats().modelCalls,0);
 });
@@ -130,21 +130,21 @@ test('Phone AI diagnoses App Check without making a generation request',async()=
 test('Mobile error guidance distinguishes domain attestation from Gemini/provider errors',()=>{
  const html=fs.readFileSync('www/index.html','utf8');
  const entry=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
- assert.match(html,/function healthGoMobileErrorCode\\(error\\)/);
+ assert.match(html,/function healthGoMobileErrorCode\(error\)/);
  assert.match(html,/MOBILE_APP_CHECK/);
  assert.match(html,/Kod diagnostyczny:/);
  assert.match(html,/Sprawdź połączenie AI/);
  assert.match(html,/Firebase App Check nie potwierdził dostępu/);
  assert.match(html,/mode:requestMode,responseMode:requestLevel,history:requestHistory/);
- assert.match(entry,/async diagnose\\(\\)/);
- assert.match(entry,/getToken\\(appCheck,attempt===1\\)/);
+ assert.match(entry,/async diagnose\(\)/);
+ assert.match(entry,/getToken\(appCheck,attempt===1\)/);
 });
 
 test('Mobile keeps modes, navigation and offline rules intact',()=>{
  const entry=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
  const html=fs.readFileSync('www/index.html','utf8');
- assert.match(entry,/gemini-3\\.5-flash-lite/);
- assert.match(entry,/gemini-3\\.8-flash/);
+ assert.match(entry,/gemini-3\.5-flash-lite/);
+ assert.match(entry,/gemini-3\.8-flash/);
  assert.match(html,/data-mobile-page="map"/);
  assert.match(html,/data-mobile-page="plan"/);
  assert.match(html,/data-mobile-page="more"/);
