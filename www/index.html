@@ -1202,7 +1202,7 @@ async function askAI(){
      statusText.className='muted ai-request-status';
      statusText.textContent='Przygotowuję połączenie…';
      typing?.querySelector('.ai-bubble')?.appendChild(statusText);
-     const mobileTimeout=requestLevel==='average'?52000:requestLevel==='medium'?75000:100000;
+     const mobileTimeout=requestLevel==='average'?45000:requestLevel==='medium'?65000:85000;
      aiSetConnection(true,'AI Mobile · przygotowuję połączenie…');
      answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData,{
        mode:requestMode,responseMode:requestLevel,history:requestHistory,
