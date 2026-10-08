@@ -23,7 +23,7 @@ test('Pages builds an opt-in lightweight HealthGo shell preserving account code'
   execFileSync('python3',['scripts/build-safe-mobile.py','www/index.html',output]);
   const src=fs.readFileSync('www/index.html','utf8');
   const safe=fs.readFileSync(output,'utf8');
-  assert.ok(safe.length<src.length);
+  assert.ok((safe.match(/<script src=/g)||[]).length < (src.match(/<script src=/g)||[]).length,'safe mode loads fewer executable modules');
   assert.match(safe,/name="healthgo-safe-mode" content="1"/);
   assert.match(safe,/HealthGoSupabase/);
   assert.match(safe,/HealthGoServices/);
