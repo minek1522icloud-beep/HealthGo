@@ -42,7 +42,7 @@ test('desktop AI has explicit status endpoint, missing Ollama feedback and reali
  assert.match(html,/Sprawdź lokalne AI/);
  assert.match(html,/await fetch\('\/api\/ai\/status'/);
  assert.match(html,/aiResponseMode==='average'\?65000/);
- assert.match(html,/const cloudTimeout=aiResponseMode==='average'\?28000/);
+ assert.match(html,/const cloudTimeout=aiResponseMode==='average'\?18000/);
 });
 
 test('desktop AI diagnostics leave the original map and mobile navigation untouched',()=>{

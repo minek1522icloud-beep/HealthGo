@@ -13,6 +13,7 @@ const http = require("http");
 const { spawn } = require("child_process");
 const { autoUpdater } = require("electron-updater");
 const { normalizeLocalAIResponse } = require("./local-ai-response.cjs");
+const { RECOMMENDED_MODEL, chooseConversationModel } = require("./desktop-ai-models.cjs");
 const { createAutomaticUpdateChecks } = require("./desktop-update-scheduler.cjs");
 const {
   isHealthGoOrigin,
@@ -281,12 +282,32 @@ function startWebServer() {
                       version: app.getVersion(),
                       localAvailable: ready,
                       installedModels: models.length,
-                      localModel: models.includes(OLLAMA_MODEL)?OLLAMA_MODEL:(models[0]||null)
+                      localModel: chooseConversationModel(models,OLLAMA_MODEL),
+                      recommendedModel: RECOMMENDED_MODEL,
+                      modelReady: !!chooseConversationModel(models,OLLAMA_MODEL),
+                      modelDownload: {...modelDownload}
                     }, '');
                   } catch (_) {
-                    aiWriteJson(res, 200, {desktop:true,version:app.getVersion(),localAvailable:false,installedModels:0,localModel:null}, '');
+                    aiWriteJson(res, 200, {desktop:true,version:app.getVersion(),localAvailable:false,installedModels:0,localModel:null,
+                      recommendedModel:RECOMMENDED_MODEL,modelReady:false,modelDownload:{...modelDownload}}, '');
                   }
                 })();
+                return;
+              }
+
+              if (requestUrl.pathname === '/api/ai/install-model' && req.method === 'POST') {
+                // Never allow a third-party page to silently trigger a multi-GB download.
+                const allowedOrigin=['http://127.0.0.1:5500','http://localhost:5500'].includes(String(req.headers.origin||''));
+                if(!allowedOrigin){
+                  aiWriteJson(res,403,{error:'Brak autoryzacji do pobrania modelu.'},'');
+                  return;
+                }
+                if(modelDownload.active){
+                  aiWriteJson(res,202,{started:true,model:RECOMMENDED_MODEL},'');
+                  return;
+                }
+                void pullRecommendedModel();
+                aiWriteJson(res,202,{started:true,model:RECOMMENDED_MODEL},'');
                 return;
               }
 
@@ -304,9 +325,9 @@ function startWebServer() {
                     if (error?.message === 'OLLAMA_NOT_RUNNING') {
                       code = 'OLLAMA_NOT_RUNNING';
                       message = 'Program Ollama nie jest uruchomiony lub zainstalowany.';
-                    } else if (error?.message === 'OLLAMA_NO_MODELS') {
-                      code = 'OLLAMA_NO_MODELS';
-                      message = 'Ollama nie ma zainstalowanego modelu AI.';
+                    } else if (error?.message === 'OLLAMA_NO_MODELS' || error?.message === 'OLLAMA_INSTRUCT_REQUIRED') {
+                      code = 'OLLAMA_INSTRUCT_REQUIRED';
+                      message = 'Lokalne AI wymaga modelu do zwykłych rozmów. Zainstaluj Qwen3 4B Instruct (około 2,5 GB).';
                     } else if (error?.status === 404) {
                       code = 'OLLAMA_MODEL_MISSING';
                       message = 'Wybrany model AI nie jest dostępny w Ollamie.';
@@ -519,7 +540,9 @@ function startWebServer() {
 
 const AI_PORT = 8787;
 const OLLAMA_BASE_URL = "http://127.0.0.1:11434";
-const OLLAMA_MODEL = process.env.HEALTHGO_OLLAMA_MODEL || "qwen3:4b";
+const OLLAMA_MODEL = process.env.HEALTHGO_OLLAMA_MODEL || RECOMMENDED_MODEL;
+const modelDownload={active:false,status:'',percent:0,error:'',success:false};
+let modelDownloadTask=null;
 let activeOllamaModel = OLLAMA_MODEL;
 
 function sleep(ms) {
@@ -528,21 +551,97 @@ function sleep(ms) {
   );
 }
 
-async function chooseOllamaModel() {
+async function getInstalledOllamaModels() {
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),4500);
   try {
-    const response = await fetch(OLLAMA_BASE_URL + "/api/tags");
-    if (!response.ok) return OLLAMA_MODEL;
-    const data = await response.json();
-    const names = Array.isArray(data.models) ? data.models.map(m => String(m.name || m.model || '')).filter(Boolean) : [];
-    if (!names.length) throw new Error('OLLAMA_NO_MODELS');
-    const exact = names.find(n => n === OLLAMA_MODEL);
-    if (exact) return exact;
-    const preferred = names.find(n => /^qwen/i.test(n)) || names.find(n => /llama|gemma|mistral|phi/i.test(n)) || names[0];
-    return preferred || OLLAMA_MODEL;
-  } catch (error) {
-    if (error?.message === 'OLLAMA_NO_MODELS') throw error;
-    return OLLAMA_MODEL;
-  }
+    const response=await fetch(OLLAMA_BASE_URL+'/api/tags',{signal:controller.signal});
+    if(!response.ok)throw new Error('OLLAMA_TAGS_FAILED');
+    const data=await response.json();
+    return Array.isArray(data.models)
+      ?data.models.map(item=>String(item.name||item.model||'')).filter(Boolean)
+      :[];
+  } finally { clearTimeout(timer); }
+}
+
+async function chooseOllamaModel() {
+  const names=await getInstalledOllamaModels();
+  if(!names.length)throw new Error('OLLAMA_NO_MODELS');
+  const choice=chooseConversationModel(names,OLLAMA_MODEL);
+  if(!choice)throw new Error('OLLAMA_INSTRUCT_REQUIRED');
+  return choice;
+}
+
+async function pullRecommendedModel() {
+  if(modelDownloadTask)return modelDownloadTask;
+  modelDownload.active=true;
+  modelDownload.status='Przygotowuję pobieranie modelu…';
+  modelDownload.percent=0;
+  modelDownload.error='';
+  modelDownload.success=false;
+
+  modelDownloadTask=(async()=>{
+    if(!await ensureOllamaRunning())throw new Error('OLLAMA_NOT_RUNNING');
+    const names=await getInstalledOllamaModels();
+    if(names.includes(RECOMMENDED_MODEL)){
+      modelDownload.percent=100;
+      modelDownload.status='Model jest już zainstalowany.';
+      modelDownload.success=true;
+      return;
+    }
+    const response=await fetch(OLLAMA_BASE_URL+'/api/pull',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:RECOMMENDED_MODEL,stream:true})
+    });
+    if(!response.ok||!response.body){
+      throw new Error('MODEL_DOWNLOAD_HTTP_'+response.status);
+    }
+    const reader=response.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer='';
+    let success=false;
+    let events=0;
+    function applyLine(line){
+      const text=line.trim();
+      if(!text)return;
+      const data=JSON.parse(text);
+      if(data.error)throw new Error('MODEL_DOWNLOAD_ERROR');
+      events++;
+      modelDownload.status=String(data.status||'Pobieranie modelu…').slice(0,100);
+      const total=Number(data.total||0),done=Number(data.completed||0);
+      if(total>0)modelDownload.percent=Math.max(0,Math.min(99,Math.floor(done/total*100)));
+      if(data.status==='success')success=true;
+    }
+    try {
+      while(true){
+        const {done,value}=await reader.read();
+        if(done)break;
+        buffer+=decoder.decode(value,{stream:true});
+        let pos;
+        while((pos=buffer.indexOf('\n'))>=0){
+          const line=buffer.slice(0,pos);buffer=buffer.slice(pos+1);
+          applyLine(line);
+        }
+      }
+      buffer+=decoder.decode();
+      if(buffer.trim())applyLine(buffer);
+    } finally { reader.releaseLock(); }
+    if(!success||events===0)throw new Error('MODEL_DOWNLOAD_INCOMPLETE');
+    const installed=await getInstalledOllamaModels();
+    if(!installed.includes(RECOMMENDED_MODEL))throw new Error('MODEL_INSTALL_NOT_CONFIRMED');
+    modelDownload.percent=100;
+    modelDownload.status='Model zainstalowany. HealthGo AI jest gotowe.';
+    modelDownload.success=true;
+  })().catch(error=>{
+    modelDownload.error=String(error?.message||'MODEL_DOWNLOAD_ERROR');
+    modelDownload.status='Nie udało się pobrać modelu. Sprawdź internet i miejsce na dysku.';
+    console.error('HealthGo local model download:',modelDownload.error);
+  }).finally(()=>{
+    modelDownload.active=false;
+    modelDownloadTask=null;
+  });
+  return modelDownloadTask;
 }
 
 async function isOllamaRunning() {

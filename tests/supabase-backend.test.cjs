@@ -157,11 +157,11 @@ test('family member stats support standard members',()=>{
   assert.match(sql,/caller_role not in \('guardian','child','member'\)/i);
 });
 
-test('AI uses cloud first and keeps Ollama as the persistent fallback',()=>{
+test('desktop AI uses functional local model before protected cloud fallback',()=>{
   const html=fs.readFileSync('www/index.html','utf8');
   const main=fs.readFileSync('main.cjs','utf8');
   assert.match(html,/healthGoAITimed\(askHealthGoMobileAI/);
-  assert.match(html,/AI lokalne — tryb awaryjny/);
+  assert.match(html,/AI lokalne — przygotowuję odpowiedź/);
   assert.match(html,/requestLocalHealthGoAI/);
   assert.match(main,/keep_alive:\s*\n?\s*"10m"/);
   assert.match(main,/average:\s*\{[\s\S]*?maxTokens:\s*420/);
@@ -170,13 +170,13 @@ test('AI uses cloud first and keeps Ollama as the persistent fallback',()=>{
 });
 
 
-test('cloud-first AI and visible other-member stats',()=>{
+test('local-first desktop AI and visible other-member stats',()=>{
   const html=fs.readFileSync('www/index.html','utf8');
   const ai=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
   const ui=fs.readFileSync('www/healthgo-v2-ui.js','utf8');
-  assert.match(html,/AI Cloud łączy się/);
+  assert.match(html,/AI Cloud — próba połączenia/);
   assert.match(html,/healthGoAITimed\(askHealthGoMobileAI/);
-  assert.match(html,/AI lokalne — tryb awaryjny/);
+  assert.match(html,/AI lokalne — przygotowuję odpowiedź/);
   assert.match(ai,/gemini-3\.5-flash-lite/);
   assert.match(ai,/gemini-3\.8-flash/);
   assert.match(ai,/level==='average'/);
