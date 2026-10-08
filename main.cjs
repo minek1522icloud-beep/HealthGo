@@ -254,6 +254,38 @@ function startWebServer() {
                   `http://127.0.0.1:${PORT}`
                 );
 
+              if (requestUrl.pathname === '/api/ai/status' && req.method === 'GET') {
+                (async () => {
+                  try {
+                    const ready = await isOllamaRunning();
+                    let models = [];
+                    if (ready) {
+                      const controller = new AbortController();
+                      const timer = setTimeout(() => controller.abort(), 2500);
+                      try {
+                        const response = await fetch(OLLAMA_BASE_URL + '/api/tags', {signal:controller.signal});
+                        if (response.ok) {
+                          const tags = await response.json();
+                          models = Array.isArray(tags.models)
+                            ? tags.models.map(m => String(m.name || m.model || '')).filter(Boolean)
+                            : [];
+                        }
+                      } catch (_) {} finally { clearTimeout(timer); }
+                    }
+                    aiWriteJson(res, 200, {
+                      desktop: true,
+                      version: app.getVersion(),
+                      localAvailable: ready,
+                      installedModels: models.length,
+                      localModel: models.includes(OLLAMA_MODEL)?OLLAMA_MODEL:(models[0]||null)
+                    }, '');
+                  } catch (_) {
+                    aiWriteJson(res, 200, {desktop:true,version:app.getVersion(),localAvailable:false,installedModels:0,localModel:null}, '');
+                  }
+                })();
+                return;
+              }
+
               if (requestUrl.pathname === '/api/ai' && req.method === 'POST') {
                 (async () => {
                   try {
@@ -263,11 +295,23 @@ function startWebServer() {
                   } catch (error) {
                     console.error('HealthGo AI same-origin:', error);
                     let status = 503;
-                    let message = error?.message === 'OLLAMA_NOT_RUNNING'
-                      ? 'Ollama nie jest uruchomiona lub nie jest zainstalowana.'
-                      : (error?.message || 'Nie udało się uruchomić HealthGo AI.');
-                    if (error?.name === 'AbortError') { status = 504; message = 'Model AI nie odpowiedział na czas.'; }
-                    aiWriteJson(res, status, {error: message}, '');
+                    let code = 'LOCAL_ERROR';
+                    let message = 'Lokalne HealthGo AI jest niedostępne.';
+                    if (error?.message === 'OLLAMA_NOT_RUNNING') {
+                      code = 'OLLAMA_NOT_RUNNING';
+                      message = 'Program Ollama nie jest uruchomiony lub zainstalowany.';
+                    } else if (error?.message === 'OLLAMA_NO_MODELS') {
+                      code = 'OLLAMA_NO_MODELS';
+                      message = 'Ollama nie ma zainstalowanego modelu AI.';
+                    } else if (error?.status === 404) {
+                      code = 'OLLAMA_MODEL_MISSING';
+                      message = 'Wybrany model AI nie jest dostępny w Ollamie.';
+                    } else if (error?.name === 'AbortError') {
+                      status = 504;
+                      code = 'LOCAL_TIMEOUT';
+                      message = 'Lokalny model AI nie odpowiedział na czas.';
+                    }
+                    aiWriteJson(res, status, {error: message, code}, '');
                   }
                 })();
                 return;
@@ -477,11 +521,13 @@ async function chooseOllamaModel() {
     if (!response.ok) return OLLAMA_MODEL;
     const data = await response.json();
     const names = Array.isArray(data.models) ? data.models.map(m => String(m.name || m.model || '')).filter(Boolean) : [];
+    if (!names.length) throw new Error('OLLAMA_NO_MODELS');
     const exact = names.find(n => n === OLLAMA_MODEL);
     if (exact) return exact;
     const preferred = names.find(n => /^qwen/i.test(n)) || names.find(n => /llama|gemma|mistral|phi/i.test(n)) || names[0];
     return preferred || OLLAMA_MODEL;
-  } catch (_) {
+  } catch (error) {
+    if (error?.message === 'OLLAMA_NO_MODELS') throw error;
     return OLLAMA_MODEL;
   }
 }
@@ -574,6 +620,7 @@ async function startOllamaOnce() {
   const executable =
     findOllamaExecutable();
 
+  let spawnFailed = false;
   try {
     const child = spawn(
       executable,
@@ -590,6 +637,7 @@ async function startOllamaOnce() {
     child.on(
       "error",
       (error) => {
+        spawnFailed = true;
         console.error(
           "HealthGo AI - błąd procesu Ollama:",
           error
@@ -621,6 +669,7 @@ async function startOllamaOnce() {
 
   for (let i = 0; i < 40; i += 1) {
     await sleep(500);
+    if (spawnFailed) return false;
 
     if (await isOllamaRunning()) {
       console.log(
