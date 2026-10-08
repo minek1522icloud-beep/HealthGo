@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com; connect-src 'self' https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="healthgo-build" content="development">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>HealthGo</title>
 <meta name="theme-color" content="#ffffff">
@@ -848,28 +849,73 @@ async function installHealthGoPwa(){
  const btn=document.getElementById('pwaInstallBtn');if(btn)btn.style.display='none';
 }
 let healthGoVersionCheckBusy=false;
-async function checkHealthGoMobileUpdate(){
- if(!isHostedMobileHealthGo()||healthGoVersionCheckBusy)return;
+function healthGoRunningVersion(){
+ return document.querySelector('meta[name="healthgo-build"]')?.getAttribute('content')||'development';
+}
+function healthGoUpdateStatus(message){
+ const note=document.getElementById('healthgoUpdateStatus');
+ if(note)note.textContent=message;
+}
+async function healthGoActivateNewVersion(remote,force){
+ // Keep the account/session and user data intact; replace only static shell assets.
+ // Block refresh loops if the server or network is still returning an old HTML shell.
+ const key='healthgo_last_update_attempt';
+ let last={};
+ try{last=JSON.parse(sessionStorage.getItem(key)||'{}')}catch(_){}
+ if(!force&&last.version===remote&&Date.now()-Number(last.at||0)<120000){
+  healthGoUpdateStatus('Nowa wersja jest dostępna. Zamknij HealthGo i otwórz aplikację ponownie.');
+  return false;
+ }
+ try{sessionStorage.setItem(key,JSON.stringify({version:remote,at:Date.now()}))}catch(_){}
+ healthGoUpdateStatus('Pobieram nową wersję HealthGo…');
+ if('serviceWorker' in navigator){
+  try{
+   const reg=await navigator.serviceWorker.getRegistration();
+   if(reg){
+    await reg.update();
+    if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});
+   }
+  }catch(error){console.warn('HealthGo update registration:',error)}
+ }
+ const url=new URL(location.href);
+ url.searchParams.set('hg_build',remote.slice(0,12));
+ location.replace(url.href);
+ return true;
+}
+async function checkHealthGoMobileUpdate(force=false){
+ if(healthGoVersionCheckBusy||(!force&&!isHostedMobileHealthGo()))return;
+ // Authentication callback parameters must not be dropped by auto-updating.
+ const params=new URLSearchParams(location.search);
+ if(params.has('code')||params.has('access_token')||params.has('error'))return;
  healthGoVersionCheckBusy=true;
  try{
-   const res=await fetch('./version.json?t='+Date.now(),{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
-   if(!res.ok)return;
-   const data=await res.json();
-   const remote=String(data.version||data.sha||'').trim();
-   if(!remote)return;
-   const key='healthgo_mobile_version';
-   const current=localStorage.getItem(key);
-   if(!current){localStorage.setItem(key,remote);return}
-   if(current!==remote){
-     localStorage.setItem(key,remote);
-     if('serviceWorker' in navigator){
-       try{const reg=await navigator.serviceWorker.getRegistration();if(reg)await reg.update()}catch(_){}
-     }
-     location.reload();
-   }
- }catch(e){console.warn('HealthGo update check:',e)}
- finally{healthGoVersionCheckBusy=false}
+  const res=await fetch('./version.json?t='+Date.now(),{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+  if(!res.ok){
+   healthGoUpdateStatus('Nie mogę sprawdzić wersji HealthGo ('+res.status+').');
+   return;
+  }
+  const data=await res.json();
+  const remote=String(data.version||data.sha||'').trim();
+  if(!/^[0-9a-f]{40}$/i.test(remote)){
+   healthGoUpdateStatus('Serwer nie udostępnia poprawnego numeru wersji.');
+   return;
+  }
+  const running=healthGoRunningVersion();
+  if(running===remote){
+   healthGoUpdateStatus('Aktualna wersja · '+remote.slice(0,8));
+   try{sessionStorage.removeItem('healthgo_last_update_attempt')}catch(_){}
+   return;
+  }
+  // A deployed page always contains its build SHA. Local/dev HTML is never
+  // accepted as proof that the latest version is actually running.
+  await healthGoActivateNewVersion(remote,force);
+ }catch(error){
+  console.warn('HealthGo update check:',error);
+  healthGoUpdateStatus('Nie udało się sprawdzić aktualizacji. Sprawdź internet.');
+ }finally{healthGoVersionCheckBusy=false}
 }
+window.healthGoCheckMobileUpdate=checkHealthGoMobileUpdate;
+window.healthGoRunningVersion=healthGoRunningVersion;
 function setupMobilePWA(){
  if(isHostedMobileHealthGo())document.body.dataset.hostedMobile='1';
  if('serviceWorker' in navigator&&location.protocol==='https:'){
@@ -880,7 +926,7 @@ function setupMobilePWA(){
  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();healthGoDeferredInstallPrompt=e;showPwaInstallHint()});
  window.addEventListener('appinstalled',()=>dismissPwaInstall());
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkHealthGoMobileUpdate()});
- window.addEventListener('online',checkHealthGoMobileUpdate);
+ window.addEventListener('online',()=>checkHealthGoMobileUpdate());
  setTimeout(checkHealthGoMobileUpdate,900);
  setInterval(checkHealthGoMobileUpdate,120000);
  setTimeout(showPwaInstallHint,2200);

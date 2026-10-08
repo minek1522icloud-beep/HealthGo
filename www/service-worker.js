@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='healthgo-pwa-v13-ai-multiturn-privacy-20261008';
+const CACHE_NAME='healthgo-pwa-v14-update-verified-20261008';
 const CORE=['./','./index.html','./manifest.webmanifest','./healthgo-pro.js','./supabase-client.js','./core/achievement-engine.js','./core/health-data.js','./healthgo-services.js','./healthgo-v2-ui.js','./healthgo-mobile-suite.js','./healthgo-mobile-suite.css','./healthgo-devices.js'];
 const PREFERENCES_CACHE='healthgo-preferences-v1';
 const OFFLINE_DISABLED='./offline-disabled';
@@ -11,6 +11,10 @@ async function offlineEnabled(){
  return offlinePreference;
 }
 self.addEventListener('message',event=>{
+ if(event.data?.type==='SKIP_WAITING'){
+  event.waitUntil(self.skipWaiting());
+  return;
+ }
  if(!event.data||event.data.type!=='HEALTHGO_OFFLINE_CACHE')return;
  event.waitUntil((async()=>{
   const enabled=event.data.enabled!==false;

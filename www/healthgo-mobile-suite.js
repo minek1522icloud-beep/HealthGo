@@ -283,6 +283,27 @@ function renderMore(){
   const b=el('button','hg-mobile-quick');b.type='button';b.append(el('span','',item[0]),document.createTextNode(item[1]));b.addEventListener('click',function(){if(window.mobileGo)window.mobileGo(item[2]);else if(window.go)window.go(item[2]);});grid.appendChild(b);
  });
  body.appendChild(grid);
+ const updates=el('div','hg-mobile-card');
+ updates.style.marginTop='12px';
+ updates.appendChild(el('h4','','Aktualizacje HealthGo'));
+ const version=window.healthGoRunningVersion
+   ?window.healthGoRunningVersion()
+   :(document.querySelector('meta[name="healthgo-build"]')?.content||'development');
+ updates.appendChild(el('div','hg-mobile-sub','Wersja uruchomiona na telefonie: '+(version==='development'?'wersja lokalna':version.slice(0,8))));
+ const state=el('div','hg-mobile-sub','');
+ state.id='healthgoUpdateStatus';
+ state.setAttribute('role','status');
+ state.style.marginTop='8px';
+ updates.appendChild(state);
+ updates.appendChild(button('Sprawdź i pobierz aktualizację',async function(){
+   if(typeof window.healthGoCheckMobileUpdate!=='function'){
+     state.textContent='Sprawdzanie aktualizacji nie jest dostępne w tej wersji.';
+     return;
+   }
+   state.textContent='Sprawdzam najnowszą wersję…';
+   await window.healthGoCheckMobileUpdate(true);
+ },false));
+ body.appendChild(updates);
 }
 
 function renderHome(){
