@@ -24,6 +24,10 @@ function classify(error,kind){
  }
  if(/ollama_no_models|ollama_model_missing|wybrany model|nie ma zainstalowanego modelu/i.test(text)||status===404)
   return{code:'LOCAL_MODEL',label:'Lokalna Ollama nie ma pobranego zgodnego modelu AI.'};
+ if(/ollama_empty_response/i.test(text))
+  return{code:'LOCAL_EMPTY_RESPONSE',label:'Model zakończył generowanie, ale nie zwrócił odpowiedzi.'};
+ if(/ollama_server_error/i.test(text))
+  return{code:'LOCAL_SERVER',label:'Silnik lokalnego modelu zwrócił błąd. Sprawdź dostępne zasoby komputera.'};
  if(/ollama_not_running|ollama_not_installed|ollama nie jest|program ollama/.test(text))
   return{code:'LOCAL_OLLAMA',label:'Lokalna usługa Ollama nie jest uruchomiona lub zainstalowana.'};
  if(/timeout|abort|nie odpowiedział na czas/.test(text))
