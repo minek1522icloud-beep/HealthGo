@@ -48,5 +48,5 @@ test('offline worker includes new mobile suite assets',()=>{
   const sw=fs.readFileSync('www/service-worker.js','utf8');
   assert.match(sw,/healthgo-mobile-suite\.js/);
   assert.match(sw,/healthgo-mobile-suite\.css/);
-  assert.match(sw,/mobile-ai-cancel-20261008/);
+  assert.match(sw,/on-device-ai-20261008/);
 });
