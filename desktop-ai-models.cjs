@@ -6,7 +6,7 @@ const DOWNLOAD_SIZE_BYTES=2500000000;
 // Qwen3:4b and qwen3:4b-thinking are thinking-only, so think:false does not
 // give direct answers. Never quietly fall back to those variants.
 function isThinkingOnlyModel(name){
-  return /^qwen3:(?:4b(?:-thinking(?:-|$))?|\d+b-thinking(?:-|$))/i.test(String(name||''));
+  return /^qwen3:(?:4b(?:$|-thinking(?:-|$))|\d+b-thinking(?:-|$))/i.test(String(name||''));
 }
 function isConversationModel(name){
   const model=String(name||'');
