@@ -106,7 +106,7 @@ test('Real LLM worker is built on GitHub Pages from Transformers.js and model fi
  assert.match(worker,/onnx-community\/Qwen2\.5-0\.5B-Instruct/);
  assert.match(worker,/dtype:'q4f16'/);
  assert.match(worker,/device:'webgpu'/);
- assert.match(worker,/progress_callback:progress/);
+ assert.match(worker,/progress_callback:\s*progress/);
  assert.match(worker,/const proof=await generator/);
  assert.match(worker,/report\('answer',\{id,answer:/);
  assert.match(html,/id="hgOfflineAiProgress"/);
