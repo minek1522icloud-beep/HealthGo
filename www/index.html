@@ -915,6 +915,7 @@ async function checkHealthGoMobileUpdate(force=false){
  }finally{healthGoVersionCheckBusy=false}
 }
 window.healthGoCheckMobileUpdate=checkHealthGoMobileUpdate;
+window.healthGoRunningVersion=healthGoRunningVersion;
 function setupMobilePWA(){
  if(isHostedMobileHealthGo())document.body.dataset.hostedMobile='1';
  if('serviceWorker' in navigator&&location.protocol==='https:'){
@@ -925,7 +926,7 @@ function setupMobilePWA(){
  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();healthGoDeferredInstallPrompt=e;showPwaInstallHint()});
  window.addEventListener('appinstalled',()=>dismissPwaInstall());
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkHealthGoMobileUpdate()});
- window.addEventListener('online',checkHealthGoMobileUpdate);
+ window.addEventListener('online',()=>checkHealthGoMobileUpdate());
  setTimeout(checkHealthGoMobileUpdate,900);
  setInterval(checkHealthGoMobileUpdate,120000);
  setTimeout(showPwaInstallHint,2200);
