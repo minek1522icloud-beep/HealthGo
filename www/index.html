@@ -1180,21 +1180,21 @@ async function askAI(){
      answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData),mobileTimeout);
    }else{
      let cloudError=null,localError=null;
-     // Desktop cloud requests may need extra time for first-run initialization.
-     const cloudTimeout=aiResponseMode==='average'?28000:aiResponseMode==='medium'?45000:70000;
+     // Desktop is hosted at localhost: Firebase's production App Check cannot
+     // attest it. Prefer the local, separately installed conversational model.
+     const historyLimit=aiResponseMode==='average'?4:aiResponseMode==='medium'?8:12;
+     const payload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,responseMode:aiResponseMode,history:aiHistory.slice(-historyLimit)};
+     if(imageData)payload.image=imageData;
      try{
-       aiSetConnection(true,'AI Cloud łączy się…');
-       answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData),cloudTimeout);
-     }catch(error){cloudError=error;}
+       aiSetConnection(true,'AI lokalne — przygotowuję odpowiedź…');
+       answer=await requestLocalHealthGoAI(payload,aiResponseMode==='average'?65000:aiResponseMode==='medium'?95000:140000);
+     }catch(error){localError=error;}
      if(!answer){
-       const historyLimit=aiResponseMode==='average'?4:aiResponseMode==='medium'?8:12;
-       const payload={message:q||'Opisz i przeanalizuj załączone zdjęcie.',mode:aiMode,responseMode:aiResponseMode,history:aiHistory.slice(-historyLimit)};
-       if(imageData)payload.image=imageData;
+       const cloudTimeout=aiResponseMode==='average'?18000:aiResponseMode==='medium'?30000:45000;
        try{
-         aiSetConnection(true,'AI lokalne — tryb awaryjny…');
-         // The local fallback can have a cold start; do not cut it off after 9 seconds.
-         answer=await requestLocalHealthGoAI(payload,aiResponseMode==='average'?65000:aiResponseMode==='medium'?95000:140000);
-       }catch(error){localError=error;}
+         aiSetConnection(true,'AI Cloud — próba połączenia…');
+         answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData),cloudTimeout);
+       }catch(error){cloudError=error;}
      }
      if(!answer){
        const combined=new Error('CLOUD_AND_LOCAL_AI_UNAVAILABLE');combined.cloudError=cloudError;combined.localError=localError;throw combined;
@@ -1267,8 +1267,8 @@ async function askAI(){
            const status=await response.json();
            if(!status.localAvailable){
              button.textContent='Ollama jest wyłączona albo niezainstalowana.';
-           }else if(!status.installedModels){
-             button.textContent='Ollama działa, ale nie ma pobranego modelu AI.';
+           }else if(!status.modelReady){
+             button.textContent='Brakuje modelu rozmowy. Potrzebny jest '+(status.recommendedModel||'Qwen3 Instruct')+'.';
            }else{
              button.textContent='Model '+(status.localModel||'wykryty')+' jest zainstalowany. Testuję odpowiedź…';
              const controller=new AbortController();
@@ -1298,6 +1298,48 @@ async function askAI(){
          finally{button.disabled=false}
        });
        errorRow.querySelector('.ai-bubble')?.appendChild(button);
+       if(diag?.local.code==='LOCAL_MODEL'&&/OLLAMA_INSTRUCT_REQUIRED|OLLAMA_NO_MODELS/.test(String(err?.localError?.code||''))){
+         const install=document.createElement('button');
+         install.type='button';
+         install.className='btn secondary';
+         install.textContent='Pobierz model rozmowy (~2,5 GB)';
+         install.style.marginTop='8px';
+         install.addEventListener('click',async()=>{
+           if(!confirm('HealthGo pobierze model Qwen3 4B Instruct (około 2,5 GB). To wymaga internetu i wolnego miejsca na dysku. Rozpocząć?'))return;
+           install.disabled=true;
+           install.textContent='Uruchamiam pobieranie modelu…';
+           try{
+             const started=await fetch('/api/ai/install-model',{
+               method:'POST',headers:{'Content-Type':'application/json'},body:'{}'
+             });
+             if(!started.ok)throw new Error('MODEL_INSTALL_NOT_ALLOWED');
+             for(let i=0;i<1200&&install.isConnected;i++){
+               await new Promise(resolve=>setTimeout(resolve,1600));
+               const check=await fetch('/api/ai/status',{cache:'no-store'});
+               if(!check.ok)throw new Error('MODEL_STATUS_FAILED');
+               const state=await check.json();
+               const download=state.modelDownload||{};
+               if(state.modelReady||download.success){
+                 install.textContent='Model gotowy! Wyślij teraz pytanie ponownie.';
+                 return;
+               }
+               if(!download.active&&download.error){
+                 install.textContent='Nie udało się pobrać modelu. Kliknij, aby spróbować ponownie.';
+                 install.disabled=false;
+                 return;
+               }
+               install.textContent='Pobieranie modelu: '+Math.max(0,Math.min(100,Number(download.percent)||0))+'% · '+String(download.status||'Trwa pobieranie').slice(0,75);
+             }
+             install.textContent='Pobieranie trwa. Wróć do HealthGo po zakończeniu.';
+           }catch(error){
+             console.warn('HealthGo model install:',String(error?.message||error));
+             install.textContent='Nie udało się rozpocząć pobierania. Spróbuj ponownie.';
+             install.disabled=false;
+           }
+         });
+         errorRow.querySelector('.ai-bubble')?.appendChild(install);
+       }
+
      }
    }
  }finally{
