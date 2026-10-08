@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getAI, getGenerativeModel, GoogleAIBackend } from 'firebase/ai';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'firebase/app-check';
 
@@ -13,14 +13,21 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
       appId: "1:924242915977:web:bed648007802203cf28c58"
     };
 
-    const aiApp=initializeApp(firebaseConfig,'healthgo-mobile-ai');
+    // Repeated bundle loading must not initialize App Check twice for one Firebase app.
+    const aiApp=getApps().find(app=>app.name==='healthgo-mobile-ai')
+      ||initializeApp(firebaseConfig,'healthgo-mobile-ai');
     const desktopLocal=/^(127\.0\.0\.1|localhost)$/.test(location.hostname);
     let appCheck=null;
     if(!desktopLocal){
-      appCheck=initializeAppCheck(aiApp,{
-        provider:new ReCaptchaEnterpriseProvider('6LejMdktAAAAAH1fKJ0wcrsG_WLjImYUHyNjpXMR'),
-        isTokenAutoRefreshEnabled:true
-      });
+      const existing=window.__healthGoAppCheckInstance;
+      appCheck=existing&&existing.app===aiApp?existing:null;
+      if(!appCheck){
+        appCheck=initializeAppCheck(aiApp,{
+          provider:new ReCaptchaEnterpriseProvider('6LejMdktAAAAAH1fKJ0wcrsG_WLjImYUHyNjpXMR'),
+          isTokenAutoRefreshEnabled:true
+        });
+        window.__healthGoAppCheckInstance=appCheck;
+      }
     }
     const ai=getAI(aiApp,{backend:new GoogleAIBackend()});
 
@@ -86,7 +93,9 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
 
         const level=['average','medium','high'].includes(responseMode)?responseMode:'average';
         const prompt=buildPrompt(String(message||''),mode,history,level);
-        const maxOutputTokens=level==='average'?280:level==='medium'?520:900;
+        // Gemini 3.x may use part of the token budget for reasoning.
+        // Keep enough room for a final user-visible answer in every mode.
+        const maxOutputTokens=level==='average'?1536:level==='medium'?3072:4096;
         const parts=[prompt];
         const img=imagePart(imageData);
         if(img)parts.push(img);
@@ -113,10 +122,16 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
               lastError=error;
               const msg=String((error&&error.message)||error||'');
               const code=String((error&&error.code)||'');
-              const transient=/429|resource-exhausted|quota|500|502|503|504|unavailable|network|fetch|timeout/i.test(msg+' '+code);
-              const modelIssue=/404|not.?found|model|unsupported|failed-precondition/i.test(msg+' '+code);
+              const details=msg+' '+code;
+              const permissionIssue=/permission-denied|unauthenticated|api-key-not-valid|invalid-api-key|403|401|app.check|recaptcha|billing/i.test(details);
+              const transient=/429|resource-exhausted|quota|500|502|503|504|unavailable|network|fetch|timeout/i.test(details);
+              const modelIssue=/404|not.?found|model|unsupported|failed-precondition/i.test(details);
+              if(permissionIssue)throw new Error('AI_AUTH_ERROR '+details);
+              // On rate limiting, trying several models immediately multiplies
+              // unsuccessful requests. Report the limit instead.
+              if(/429|resource-exhausted|quota/i.test(details))throw new Error('AI_RATE_LIMIT '+details);
               if(attempt===0&&transient){
-                await new Promise(r=>setTimeout(r,level==='average'?350:700));
+                await new Promise(r=>setTimeout(r,level==='average'?500:1000));
                 continue;
               }
               if(modelIssue||transient)break;
