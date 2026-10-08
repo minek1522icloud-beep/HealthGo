@@ -2552,7 +2552,7 @@ window.addEventListener('beforeunload',save);
     loading=new Promise(function(resolve,reject){
       const script=document.createElement('script');
       script.dataset.healthgoAiBundle='1';
-      script.src='./healthgo-ai-bundle.js?v=11&r='+run;
+      script.src='./healthgo-ai-bundle.js?v=12&r='+run;
       script.async=true;
       script.onload=function(){resolve(true)};
       script.onerror=function(){
