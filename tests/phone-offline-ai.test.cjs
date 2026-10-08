@@ -41,6 +41,7 @@ function setup(){
   localStorage:{getItem:key=>store.get(key)||null,setItem:(key,v)=>store.set(key,v),removeItem:key=>store.delete(key)},
   navigator:{userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X)',gpu:{},onLine:true,storage:{estimate:async()=>({quota:2e9,usage:0}),persist:async()=>true}},
   location:{protocol:'https:',hostname:'minek1522icloud-beep.github.io'},
+  caches:{open:async()=>({match:async()=>null,put:async()=>{}})},
   document:{getElementById:element,addEventListener:(name,cb)=>{if(name==='DOMContentLoaded')cb()}}
  };
  const context={window,document:window.document,navigator:window.navigator,location:window.location,localStorage:window.localStorage,
