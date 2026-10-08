@@ -121,24 +121,27 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
     async function requestGemini(model,parts,limitMs,outerSignal){
       if(outerSignal?.aborted)throw new Error('AI_CANCELLED');
       const controller=new AbortController();
-      let timedOut=false;
-      const onOuterAbort=()=>controller.abort();
+      let rejectWatchdog;
+      const watchdog=new Promise((_,reject)=>{rejectWatchdog=reject});
+      const onOuterAbort=()=>{
+        controller.abort();
+        rejectWatchdog(new Error('AI_CANCELLED'));
+      };
       if(outerSignal)outerSignal.addEventListener('abort',onOuterAbort,{once:true});
       const timeout=setTimeout(()=>{
-        timedOut=true;
         controller.abort();
+        rejectWatchdog(new Error('AI_PROVIDER_TIMEOUT'));
       },limitMs);
       try{
-        return await model.generateContent(parts,{
-          signal:controller.signal,
-          timeout:limitMs
-        });
-      }catch(error){
-        if(outerSignal?.aborted)throw new Error('AI_CANCELLED');
-        if(timedOut)throw new Error('AI_PROVIDER_TIMEOUT');
-        throw error;
+        // The timeout rejects the Promise even on a device where aborting a
+        // pending Firebase fetch does not immediately settle that fetch.
+        return await Promise.race([
+          model.generateContent(parts,{signal:controller.signal,timeout:limitMs}),
+          watchdog
+        ]);
       }finally{
         clearTimeout(timeout);
+        controller.abort();
         if(outerSignal)outerSignal.removeEventListener('abort',onOuterAbort);
       }
     }
