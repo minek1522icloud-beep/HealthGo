@@ -19,7 +19,7 @@ test('mobile AI prevents double sends, restores current chat context and uses a 
   assert.match(html,/window\.healthGoAIRequestBusy=false/);
   assert.match(html,/if\(!requestUid\|\|window\.healthGoAIRequestBusy\)return/);
   assert.match(html,/function aiSyncHistoryFromDom\(\)/);
-  assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData\),mobileTimeout\)/);
+  assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData,\{/);
   assert.match(html,/AI offline · tryb podstawowy/);
 });
 
