@@ -1,0 +1,22 @@
+.hg-ai-local-note{display:none;margin:10px 0 12px;padding:12px 14px;border-radius:14px;border:1px solid #dbeafe;background:#f8fbff;color:#25324b;font-size:13px;line-height:1.5}
+.hg-ai-local-note button{margin-left:8px;padding:5px 10px;border:1px solid #bfdbfe;background:#fff;border-radius:10px;color:#1d4ed8;font-weight:750}
+.hg-ai-setup{margin:12px 0 16px;padding:22px;border:1px solid rgba(99,102,241,.2);border-radius:22px;background:linear-gradient(138deg,#eef4ff,#f9fafb 56%,#f0fdf4);box-shadow:0 10px 30px rgba(15,23,42,.08);color:#182235}
+.hg-ai-setup[hidden]{display:none!important}
+.hg-ai-setup-top{display:flex;align-items:center;gap:12px}
+.hg-ai-setup-mark{display:grid;place-items:center;border-radius:16px;width:54px;height:54px;background:#1d4ed8;color:#fff;font-size:27px;flex:none}
+.hg-ai-setup-title{font-size:21px;font-weight:850;line-height:1.2}
+.hg-ai-setup-badge{color:#4f46e5;font-weight:750;font-size:11px;letter-spacing:.02em}
+.hg-ai-setup-copy{color:#475569;font-size:13px;line-height:1.55;margin:14px 0}
+.hg-ai-setup-features{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.hg-ai-setup-feature{padding:6px 10px;background:#fff;border:1px solid #dbeafe;border-radius:10px;font-weight:700;font-size:12px}
+.hg-ai-setup-progress{margin:12px 0;height:12px;overflow:hidden;border-radius:999px;background:#dbeafe}
+.hg-ai-setup-progress[hidden]{display:none}
+.hg-ai-setup-progress-inner{height:100%;width:0;background:linear-gradient(90deg,#2563eb,#22c55e);transition:width .3s ease}
+.hg-ai-setup-actions{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 10px}
+.hg-ai-setup-actions button{padding:11px 14px;font-weight:780;border-radius:12px}
+#hgOfflineAiInstallBtn{background:#2563eb;color:#fff}
+#hgOfflineAiInstallBtn:disabled{opacity:.65;cursor:wait}
+#hgOfflineAiLaterBtn{background:#e2e8f0;color:#334155}
+.hg-ai-setup-status{font-size:13px;font-weight:700;color:#1d4ed8;min-height:21px;overflow-wrap:anywhere}
+.hg-ai-setup-disclaimer{color:#64748b;font-size:11px;line-height:1.4}
+@media(max-width:900px){.hg-ai-local-note{display:block}.hg-ai-setup{margin:8px 0 16px;padding:18px}.hg-ai-setup-title{font-size:19px}}

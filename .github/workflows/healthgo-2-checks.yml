@@ -20,6 +20,16 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm test
+      - name: Verify browser AI Worker bundles for GitHub Pages
+        shell: bash
+        run: |
+          mkdir -p /tmp/healthgo-ai-worker-check
+          cp www/healthgo-offline-ai-worker.entry.js /tmp/healthgo-ai-worker-check/entry.js
+          cd /tmp/healthgo-ai-worker-check
+          npm init -y >/dev/null
+          npm install --ignore-scripts --no-package-lock --no-save @huggingface/transformers@3.8.1 esbuild@0.25.10
+          npx esbuild entry.js --bundle --format=esm --platform=browser --target=es2020 --minify --outfile=worker.js
+          test -s worker.js
       - run: npm install --prefix firebase/functions --ignore-scripts
       - run: npm --prefix firebase/functions run build
       - run: npm run check:syntax

@@ -37,8 +37,9 @@ jobs:
           cp www/healthgo-ai-entry.js mobile-build/entry.js
           cd mobile-build
           npm init -y >/dev/null 2>&1
-          npm install --no-package-lock --no-save firebase@12.19.0 esbuild@0.25.10
+          npm install --no-package-lock --no-save firebase@12.19.0 esbuild@0.25.10 @huggingface/transformers@3.8.1
           npx esbuild entry.js --bundle --format=iife --platform=browser --target=es2020 --minify --outfile=../www/healthgo-ai-bundle.js
+          npx esbuild ../www/healthgo-offline-ai-worker.entry.js --bundle --format=esm --platform=browser --target=es2020 --minify --outfile=../www/healthgo-offline-ai-worker.js
 
       - name: Przygotuj wersje mobilna
         shell: bash
@@ -57,6 +58,7 @@ jobs:
           PY
           printf '{"version":"%s","deployedAt":"%s"}\n' "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > www/version.json
           test -s www/healthgo-ai-bundle.js
+          test -s www/healthgo-offline-ai-worker.js
           grep -q "$GITHUB_SHA" www/index.html
           grep -q "$GITHUB_SHA" www/version.json
 

@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com; connect-src 'self' https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com; worker-src 'self' blob:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co https://cdn.jsdelivr.net https://*.jsdelivr.net https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="healthgo-build" content="development">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>HealthGo</title>
@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="HealthGo">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./healthgo-offline-ai.css">
 <link rel="apple-touch-icon" href="./icon.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -453,7 +454,36 @@ html.hg-session-known #authScreen{display:none!important}
         </div>
       </div>
 
-      <div class="mobile-ai-note"><b>🤖 HealthGo AI Mobile</b><br>Na telefonie HealthGo korzysta z mobilnego modułu AI. Konto, Family i postęp są synchronizowane przez Supabase.</div>
+      <div class="mobile-ai-note"><b>🤖 HealthGo AI Mobile</b><br>Na telefonie możesz korzystać z AI w chmurze albo zainstalować lżejszy model do rozmów lokalnych. Konto, Family i postęp są synchronizowane przez Supabase.</div>
+      <div class="hg-ai-local-note">
+        <b>✨ HealthGo AI na urządzeniu</b>
+        <span> — model do rozmów bez internetu, po jednorazowym pobraniu.</span>
+        <button type="button" onclick="window.HealthGoOfflineAI?.openInstall()">Ustaw AI</button>
+      </div>
+      <div class="hg-ai-setup" id="hgOfflineAiSetup" hidden>
+        <div class="hg-ai-setup-top">
+          <div class="hg-ai-setup-mark" aria-hidden="true">✦</div>
+          <div>
+            <div class="hg-ai-setup-badge" id="hgOfflineAiBadge">Jednorazowa konfiguracja</div>
+            <div class="hg-ai-setup-title">Zainstaluj HealthGo AI</div>
+          </div>
+        </div>
+        <p class="hg-ai-setup-copy">Pobierz prawdziwy, niewielki model językowy na telefon. Po instalacji może odpowiadać na wiadomości tekstowe także bez internetu — bez konta w zewnętrznej usłudze AI.</p>
+        <div class="hg-ai-setup-features">
+          <span class="hg-ai-setup-feature">📱 Na tym telefonie</span>
+          <span class="hg-ai-setup-feature">🔒 Rozmowy lokalne</span>
+          <span class="hg-ai-setup-feature">📦 Około 483 MB</span>
+        </div>
+        <div class="hg-ai-setup-status" id="hgOfflineAiStatus" role="status" aria-live="polite">Zalecane Wi-Fi i przynajmniej 600 MB wolnego miejsca.</div>
+        <div class="hg-ai-setup-progress" id="hgOfflineAiProgress" hidden>
+          <div class="hg-ai-setup-progress-inner" id="hgOfflineAiMeter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Postęp pobierania aktualnego pliku"></div>
+        </div>
+        <div class="hg-ai-setup-actions">
+          <button id="hgOfflineAiInstallBtn" type="button">Pobierz HealthGo AI</button>
+          <button id="hgOfflineAiLaterBtn" type="button">Nie teraz · użyj chmury</button>
+        </div>
+        <div class="hg-ai-setup-disclaimer">Model Qwen2.5 0.5B jest mniejszy od komputerowego Qwen3 4B, dlatego może odpowiadać wolniej i mniej dokładnie. Wymaga obsługi WebGPU; przeglądarka może usunąć jego pliki przy małej ilości miejsca. Rozpoznawanie zdjęć nadal wymaga usługi w chmurze.</div>
+      </div>
 
       <div id="aiMessages" class="ai-messages" aria-live="polite">
         <div class="ai-msg assistant">
@@ -982,6 +1012,7 @@ function go(page){
  if(page==='activity')setTimeout(refreshDeviceHealth,20);
  if(page==='devices')setTimeout(function(){refreshDeviceHealth();updateNotificationStatus()},20);
  if(page==='settings')setTimeout(renderHealthGoProfile,20);
+ if(page==='ai')setTimeout(()=>window.HealthGoOfflineAI?.offerIfNeeded(),40);
  syncMobileNav(page);
 }
 function modal(title,text,action='OK'){
@@ -1162,6 +1193,8 @@ function healthGoMobileErrorCode(error){
  if(/AI_AUTH_ERROR|403|401|permission-denied|unauthenticated/i.test(raw))return 'MOBILE_ACCESS';
  if(/AI_RATE_LIMIT|429|resource-exhausted|quota/i.test(raw))return 'MOBILE_RATE_LIMIT';
  if(/MOBILE_AI_INIT_ERROR|BUNDLE_LOAD_ERROR|MOBILE_AI_SDK_NOT_READY/i.test(raw))return 'MOBILE_SDK';
+ if(/LOCAL_OFFLINE_MODEL_MISSING|LOCAL_NOT_INSTALLED/i.test(raw))return 'MOBILE_LOCAL_INSTALL';
+ if(/LOCAL_GPU_UNAVAILABLE|LOCAL_WORKER_UNAVAILABLE|LOCAL_GENERATION_TIMEOUT/i.test(raw))return 'MOBILE_LOCAL_UNSUPPORTED';
  if(/AI_TIMEOUT|AI_CANCELLED|AI_PROVIDER_TIMEOUT|timeout|AbortError/i.test(raw))return 'MOBILE_TIMEOUT';
  if(/AI_REQUEST_ERROR|model|404|failed-precondition/i.test(raw))return 'MOBILE_PROVIDER';
  if(/network|offline|failed to fetch/i.test(raw))return 'MOBILE_NETWORK';
@@ -1202,18 +1235,34 @@ async function askAI(){
      statusText.className='muted ai-request-status';
      statusText.textContent='Przygotowuję połączenie…';
      typing?.querySelector('.ai-bubble')?.appendChild(statusText);
-     const mobileTimeout=requestLevel==='average'?45000:requestLevel==='medium'?65000:85000;
-     aiSetConnection(true,'AI Mobile · przygotowuję połączenie…');
-     answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData,{
-       mode:requestMode,responseMode:requestLevel,history:requestHistory,
-       signal:mobileController.signal,
-       onStatus:stage=>{
-         if(sessionActive()&&window.healthGoAIRequestToken===requestToken){
-           aiSetConnection(true,'AI Mobile · '+stage);
-           if(statusText.isConnected)statusText.textContent=stage;
-         }
+     const updateStage=stage=>{
+       if(sessionActive()&&window.healthGoAIRequestToken===requestToken){
+         aiSetConnection(true,'AI Mobile · '+stage);
+         if(statusText.isConnected)statusText.textContent=stage;
        }
-     }),mobileTimeout,mobileController);
+     };
+     let localError=null;
+     const local=window.HealthGoOfflineAI;
+     if(!imageData&&local?.available()){
+       try{
+         updateStage('Wczytuję AI zapisane na telefonie…');
+         answer=await healthGoAITimed(local.ask({
+           message:q,mode:requestMode,responseMode:requestLevel,
+           history:requestHistory,onStatus:updateStage
+         }),90000,mobileController);
+       }catch(error){localError=error;}
+     }
+     if(!answer){
+       if(navigator.onLine===false){
+         throw localError||new Error('LOCAL_OFFLINE_MODEL_MISSING');
+       }
+       const mobileTimeout=requestLevel==='average'?45000:requestLevel==='medium'?65000:85000;
+       updateStage(localError?'Lokalne AI niedostępne. Łączę z chmurą…':'Łączę z Gemini…');
+       answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData,{
+         mode:requestMode,responseMode:requestLevel,history:requestHistory,
+         signal:mobileController.signal,onStatus:updateStage
+       }),mobileTimeout,mobileController);
+     }
    }else{
      let cloudError=null,localError=null;
      // Desktop is hosted at localhost: Firebase's production App Check cannot
@@ -1269,7 +1318,9 @@ async function askAI(){
    let detail='Spróbuj ponownie za chwilę.';
    if(isHostedMobileHealthGo()){
      const code=healthGoMobileErrorCode(err);
-     if(code==='MOBILE_APP_CHECK')detail='Firebase App Check nie potwierdził dostępu. Administrator HealthGo musi sprawdzić domenę strony i klucz reCAPTCHA Enterprise w Firebase/Google Cloud.';
+     if(code==='MOBILE_LOCAL_INSTALL')detail='Nie ma jeszcze modelu AI pobranego na ten telefon. Połącz się z internetem, wybierz „Ustaw AI” i pobierz model.';
+     else if(code==='MOBILE_LOCAL_UNSUPPORTED')detail='Ten telefon nie może uruchomić lokalnego AI. Spróbuj ponownie w chmurze.';
+     else if(code==='MOBILE_APP_CHECK')detail='Firebase App Check nie potwierdził dostępu. Administrator HealthGo musi sprawdzić domenę strony i klucz reCAPTCHA Enterprise w Firebase/Google Cloud.';
      else if(code==='MOBILE_ACCESS')detail='Firebase AI Logic odrzucił uprawnienia aplikacji. Administrator musi sprawdzić ustawienia App Check i usługi AI.';
      else if(code==='MOBILE_RATE_LIMIT')detail='Usługa AI osiągnęła limit zapytań. Spróbuj później.';
      else if(code==='MOBILE_NETWORK')detail='Telefon nie może połączyć się z usługą AI. Sprawdź internet.';
@@ -2590,5 +2641,6 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-pro.js"></script>
 <script src="./healthgo-v2-ui.js"></script>
 <script src="./healthgo-mobile-suite.js"></script>
+<script src="./healthgo-offline-ai.js"></script>
 </body>
 </html>
