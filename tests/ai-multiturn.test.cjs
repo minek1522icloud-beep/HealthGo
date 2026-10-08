@@ -149,5 +149,5 @@ test('Mobile keeps modes, navigation and offline rules intact',()=>{
  assert.match(html,/data-mobile-page="plan"/);
  assert.match(html,/data-mobile-page="more"/);
  const sw=fs.readFileSync('www/service-worker.js','utf8');
- assert.match(sw,/healthgo-pwa-v15-mobile-ai-20261008/);
+ assert.match(sw,/healthgo-pwa-v16-mobile-ai-cancel-20261008/);
 });
