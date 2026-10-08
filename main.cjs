@@ -12,6 +12,7 @@ const fs = require("fs");
 const http = require("http");
 const { spawn } = require("child_process");
 const { autoUpdater } = require("electron-updater");
+const { createAutomaticUpdateChecks } = require("./desktop-update-scheduler.cjs");
 const {
   isHealthGoOrigin,
   isAllowedAuthPopupUrl,
@@ -34,6 +35,8 @@ let aiServer = null;
 let ollamaProcess = null;
 let ollamaStartingPromise = null;
 let updateIsInstalling = false;
+let updateIsDownloading = false;
+let updateChecks = null;
 
 const PORT = 5500;
 
@@ -1245,6 +1248,7 @@ function setupAutoUpdater() {
   autoUpdater.on(
     "update-available",
     (info) => {
+      updateIsDownloading = true;
       console.log(
         "HealthGo Update: dostępna wersja:",
         info.version
@@ -1255,6 +1259,7 @@ function setupAutoUpdater() {
   autoUpdater.on(
     "update-not-available",
     (info) => {
+      updateIsDownloading = false;
       console.log(
         "HealthGo Update: aplikacja jest aktualna:",
         info.version
@@ -1277,6 +1282,7 @@ function setupAutoUpdater() {
   autoUpdater.on(
     "error",
     (error) => {
+      updateIsDownloading = false;
       console.error(
         "HealthGo Update - błąd:",
         error
@@ -1293,6 +1299,8 @@ function setupAutoUpdater() {
 
       updateIsInstalling =
         true;
+      updateIsDownloading = false;
+      updateChecks?.stop();
 
       console.log(
         "HealthGo Update: pobrano wersję:",
@@ -1318,17 +1326,25 @@ function setupAutoUpdater() {
     }
   );
 
-  // Sprawdzamy aktualizację od razu po uruchomieniu aplikacji.
-  autoUpdater
-    .checkForUpdates()
-    .catch(
-      (error) => {
-        console.error(
-          "HealthGo Update - nie udało się sprawdzić aktualizacji:",
-          error
-        );
-      }
-    );
+  // Sprawdzamy automatycznie przy uruchomieniu, co 10 minut oraz po
+  // powrocie do okna HealthGo (jeżeli od ostatniego sprawdzenia minęły
+  // co najmniej 2 minuty). Pobieranie i instalacja nie wymagają kliknięcia.
+  updateChecks = createAutomaticUpdateChecks({
+    check: () => autoUpdater.checkForUpdates(),
+    isBusy: () => updateIsInstalling || updateIsDownloading,
+    intervalMs: 10 * 60 * 1000,
+    minGapMs: 2 * 60 * 1000,
+    onError: (error, reason) => {
+      console.error(
+        "HealthGo Update - kontrola " + reason + " nie powiodła się:",
+        error
+      );
+    }
+  });
+  updateChecks.start();
+  mainWindow?.on("focus", () => {
+    void updateChecks?.checkNow("focus");
+  });
 }
 
 // ========================================
@@ -1753,6 +1769,10 @@ app.whenReady().then(
 // ========================================
 // ZAMYKANIE
 // ========================================
+
+app.on("before-quit", () => {
+  updateChecks?.stop();
+});
 
 app.on(
   "window-all-closed",
