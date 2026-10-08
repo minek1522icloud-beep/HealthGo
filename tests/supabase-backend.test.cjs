@@ -141,7 +141,7 @@ test('hosted mobile uses App Check while localhost Electron avoids production at
   assert.match(entry,/desktopLocal/);
   assert.match(entry,/initializeAppCheck\(aiApp/);
   assert.match(entry,/if\(!desktopLocal\)/);
-  assert.match(entry,/getToken\(appCheck,true\)/);
+  assert.match(entry,/getToken\(appCheck,attempt===1\)/);
   assert.match(html,/healthGoLoadAIBundle/);
   assert.match(html,/healthgo-ai-bundle\.js\?v=11/);
 });
