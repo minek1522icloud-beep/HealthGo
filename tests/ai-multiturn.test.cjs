@@ -16,7 +16,7 @@ function setup(){
     location:{hostname:'minek1522icloud-beep.github.io'},
     console:{error:()=>{}},
     Event:class{constructor(type){this.type=type}},
-    setTimeout,clearTimeout,
+    setTimeout,clearTimeout,AbortController,
     initializeApp:(_config,name)=>{
       if(apps.some(a=>a.name===name))throw Error('firebase-app-duplicate');
       app.name=name;apps.push(app);return app;
@@ -149,5 +149,53 @@ test('Mobile keeps modes, navigation and offline rules intact',()=>{
  assert.match(html,/data-mobile-page="plan"/);
  assert.match(html,/data-mobile-page="more"/);
  const sw=fs.readFileSync('www/service-worker.js','utf8');
- assert.match(sw,/healthgo-pwa-v15-mobile-ai-20261008/);
+ assert.match(sw,/healthgo-pwa-v16-mobile-ai-cancel-20261008/);
+});
+
+test('Gemini request has a real deadline even if provider promise never settles',async()=>{
+ const source=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
+ const start=source.indexOf('    async function requestGemini(');
+ const end=source.indexOf('    window.healthGoMobileAI={',start);
+ assert.ok(start>=0&&end>start,'SDK timeout helper exists');
+ let didAbort=false;
+ const context={AbortController,Promise,setTimeout,clearTimeout};
+ vm.runInNewContext(source.slice(start,end)+'\nthis.requestGemini=requestGemini;',context);
+ const model={
+  generateContent(_parts,opts){
+   assert.ok(opts.signal,'Firebase generation receives AbortSignal');
+   assert.equal(opts.timeout,20);
+   opts.signal.addEventListener('abort',()=>{didAbort=true});
+   return new Promise(()=>{});
+  }
+ };
+ await assert.rejects(context.requestGemini(model,['hello'],20,null),/AI_PROVIDER_TIMEOUT/);
+ assert.equal(didAbort,true);
+});
+
+test('Cancelling a mobile generation aborts Firebase and returns immediately',async()=>{
+ const source=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
+ const start=source.indexOf('    async function requestGemini(');
+ const end=source.indexOf('    window.healthGoMobileAI={',start);
+ const context={AbortController,Promise,setTimeout,clearTimeout};
+ vm.runInNewContext(source.slice(start,end)+'\nthis.requestGemini=requestGemini;',context);
+ const stop=new AbortController();
+ let sdkSignal=null;
+ const pending=context.requestGemini({
+  generateContent(_parts,opts){sdkSignal=opts.signal;return new Promise(()=>{})}
+ },['hello'],30000,stop.signal);
+ stop.abort();
+ await assert.rejects(pending,/AI_CANCELLED/);
+ assert.ok(sdkSignal.aborted);
+});
+
+test('Mobile request has progress and real cancellation; desktop Ollama remains unchanged',()=>{
+ const html=fs.readFileSync('www/index.html','utf8');
+ const entry=fs.readFileSync('www/healthgo-ai-entry.js','utf8');
+ assert.match(html,/mobileController=new AbortController/);
+ assert.match(html,/signal:mobileController.signal/);
+ assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData,\{/);
+ assert.match(html,/mobileTimeout,mobileController/);
+ assert.match(html,/AI Mobile · /);
+ assert.match(entry,/model.generateContent\(parts,\{signal:controller.signal,timeout:limitMs\}\)/);
+ assert.match(entry,/notifyStage\(onStatus,'Generuję odpowiedź w Gemini/);
 });
