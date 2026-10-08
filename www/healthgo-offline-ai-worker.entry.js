@@ -31,7 +31,7 @@ async function setup(){
     generator=await pipeline('text-generation',MODEL,{
       dtype:'q4f16',
       device:'webgpu',
-      progress_callback(progress)=>{
+      progress_callback: progress => {
         if(progress?.status==='progress'){
           report('progress',{
             percent:Number.isFinite(progress.progress)?Math.max(0,Math.min(100,Math.floor(progress.progress))):null,
