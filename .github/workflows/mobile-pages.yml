@@ -35,11 +35,12 @@ jobs:
         run: |
           mkdir -p mobile-build
           cp www/healthgo-ai-entry.js mobile-build/entry.js
+          cp www/healthgo-offline-ai-worker.entry.js mobile-build/worker.entry.js
           cd mobile-build
           npm init -y >/dev/null 2>&1
           npm install --no-package-lock --no-save firebase@12.19.0 esbuild@0.25.10 @huggingface/transformers@3.8.1
           npx esbuild entry.js --bundle --format=iife --platform=browser --target=es2020 --minify --outfile=../www/healthgo-ai-bundle.js
-          npx esbuild ../www/healthgo-offline-ai-worker.entry.js --bundle --format=esm --platform=browser --target=es2020 --minify --outfile=../www/healthgo-offline-ai-worker.js
+          npx esbuild worker.entry.js --bundle --format=esm --platform=browser --target=es2020 --minify --outfile=../www/healthgo-offline-ai-worker.js
 
       - name: Przygotuj wersje mobilna
         shell: bash
