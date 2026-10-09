@@ -542,7 +542,7 @@ html.hg-session-known #authScreen{display:none!important}
       <section class="map-v2-panel" data-map-panel="route" hidden aria-label="Planowanie trasy">
         <div class="map-v2-panel-head"><h3>🧭 Zaplanuj trasę</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
         <div class="map-v2-panel-content">
-          <p class="map-v2-muted">Początek: Twoja lokalizacja, pobierana wyłącznie po kliknięciu „Wyznacz trasę” i zgodzie na GPS.</p>
+          <p class="map-v2-muted">Początek: Twoja lokalizacja, pobierana po kliknięciu „Wyznacz trasę” i zgodzie na GPS. Aby obliczyć trasę, współrzędne startu i celu trafią do zewnętrznej usługi OSRM lub OpenStreetMap.</p>
           <label class="map-v2-field" for="mapV2RouteTo">Dokąd?</label>
           <input id="mapV2RouteTo" class="map-v2-input" type="search" autocomplete="off" placeholder="Adres, park albo wybrane miejsce">
           <div class="map-v2-buttons" role="group" aria-label="Środek transportu">
@@ -1792,6 +1792,18 @@ function renderMapPlaces(places){
    const card=document.createElement('article');card.className='map-place';
    card.innerHTML='<h3>'+(i+1)+'. '+healthGoEscape(meta.icon+' '+name)+'</h3><p>'+healthGoEscape(meta.label)+'</p><p>📍 '+healthGoEscape(address)+'</p><p>↔️ około '+healthGoEscape(dist)+' od środka mapy</p>'+(extra.length?'<p>'+healthGoEscape(extra.join(' · '))+'</p>':'')+'<div class="map-place-actions"><button type="button">Pokaż na mapie</button></div>';
    card.querySelector('button').addEventListener('click',function(){healthGoMap.setView([p.lat,p.lon],17,{animate:true})});
+   const actions=card.querySelector('.map-place-actions');
+   if(actions&&window.HealthGoMapV2){
+     const star=document.createElement('button');
+     star.type='button';star.textContent='⭐ Zapisz';star.addEventListener('click',function(){
+       window.HealthGoMapV2.savePlace({name,lat:p.lat,lon:p.lon});
+     });
+     const route=document.createElement('button');
+     route.type='button';route.textContent='🧭 Trasa';route.addEventListener('click',function(){
+       window.HealthGoMapV2.selectDestination(name,p.lat,p.lon);
+     });
+     actions.append(star,route);
+   }
    root.appendChild(card);
  });
 }
