@@ -19,8 +19,8 @@ function setup(){
   fire(value){this.events.message?.({data:value});}
   postMessage(message){
    if(message.type==='install'){
-    this.fire({type:'progress',percent:26,file:'model_q4f16.onnx'});
-    this.fire({type:'ready',model:'onnx-community/Qwen2.5-0.5B-Instruct'});
+    this.fire({type:'progress',percent:26,file:'model_q4.onnx'});
+    this.fire({type:'ready',model:'onnx-community/SmolLM2-135M-Instruct-ONNX-MHA'});
    }else if(message.type==='ask'){
     lastAsk=message;
     this.fire({type:'answer',id:message.id,answer:'Cześć! Jak mogę Ci pomóc?'});
@@ -64,7 +64,7 @@ test('First phone visit offers genuine install UI only after entering AI screen'
 
 test('Local model is marked installed only after worker reports ready',async()=>{
  const sdk=setup();
- assert.equal(sdk.store.has('healthgo_local_ai_qwen05_ready_v1'),false);
+ assert.equal(sdk.store.has('healthgo_local_ai_smol135_wasm_v2'),false);
  sdk.api.openInstall();
  const ok=await sdk.api.install();
  assert.equal(ok,true);
@@ -88,14 +88,22 @@ test('Installed phone AI really handles a conversation using worker inference',a
  assert.equal(sdk.lastAsk.responseMode,'medium');
 });
 
-test('No GPU or insufficient storage cannot falsely finish the install',async()=>{
+test('iPhone without WebGPU can still install the WebAssembly model',async()=>{
  const sdk=setup();
  sdk.window.navigator.gpu=null;
- const ok=await sdk.api.install();
- assert.equal(ok,false);
- assert.equal(sdk.api.available(),false);
- assert.equal(sdk.created,0);
- assert.match(sdk.element('hgOfflineAiStatus').textContent,/WebGPU/);
+ assert.equal(await sdk.api.install(),true);
+ assert.equal(sdk.api.available(),true);
+});
+
+test('Unsupported worker or low browser storage cannot falsely finish install',async()=>{
+ const noWorker=setup();
+ delete noWorker.window.Worker;
+ assert.equal(await noWorker.api.install(),false);
+ assert.equal(noWorker.api.available(),false);
+ const lowSpace=setup();
+ lowSpace.window.navigator.storage.estimate=async()=>({quota:250*1024*1024,usage:0});
+ assert.equal(await lowSpace.api.install(),false);
+ assert.match(lowSpace.element('hgOfflineAiStatus').textContent,/pamięci/);
 });
 
 test('Real LLM worker is built on GitHub Pages from Transformers.js and model files are not embedded in the PWA',()=>{
@@ -104,9 +112,9 @@ test('Real LLM worker is built on GitHub Pages from Transformers.js and model fi
  const workflow=fs.readFileSync('.github/workflows/mobile-pages.yml','utf8');
  const sw=fs.readFileSync('www/service-worker.js','utf8');
  assert.match(worker,/pipeline\('text-generation',MODEL/);
- assert.match(worker,/onnx-community\/Qwen2\.5-0\.5B-Instruct/);
- assert.match(worker,/dtype:'q4f16'/);
- assert.match(worker,/device:'webgpu'/);
+ assert.match(worker,/onnx-community\/SmolLM2-135M-Instruct-ONNX-MHA/);
+ assert.match(worker,/dtype:'q4'/);
+ assert.match(worker,/device:'wasm'/);
  assert.match(worker,/progress_callback:\s*progress/);
  assert.match(worker,/const proof=await generator/);
  assert.match(worker,/report\('answer',\{id,answer:/);
@@ -121,5 +129,5 @@ test('Real LLM worker is built on GitHub Pages from Transformers.js and model fi
  assert.match(workflow,/npx esbuild worker\.entry\.js --bundle --format=esm/);
  assert.doesNotMatch(workflow,/esbuild \.\.\/www\/healthgo-offline-ai-worker\.entry\.js/);
  assert.match(workflow,/--outfile=\.\.\/www\/healthgo-offline-ai-worker\.js/);
- assert.match(sw,/healthgo-pwa-v18-ios-crash-recovery-20261008/);
+ assert.match(sw,/healthgo-pwa-v19-shortcut-ai-wasm-20261009/);
 });
