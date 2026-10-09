@@ -73,3 +73,26 @@
 }
 body[data-dark="1"] #map .map-v2-panel,body[data-dark="1"] #map .map-v2-bottom{background:#202a3a;color:#fff}
 body[data-dark="1"] #map .map-v2-item span{color:#dce7f6}
+
+
+/* Measuring is a temporary map interaction; hide the old status banner to
+   preserve useful map space while the compact measuring widget is visible. */
+#map .map-v2-measure-hud{position:absolute;z-index:790;bottom:91px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:rgba(255,255,255,.98);color:#173f75;padding:14px 16px;border-radius:20px;border:1px solid #cfdef0;box-shadow:0 12px 34px rgba(15,23,42,.19);backdrop-filter:blur(12px)}
+#map .map-v2-measure-hud[hidden]{display:none!important}
+#map .map-v2-measure-info{display:flex;flex-direction:column;min-width:0;gap:4px}
+#map .map-v2-measure-info b{font-size:17px;letter-spacing:-.3px}
+#map .map-v2-measure-info span:not(#mapV2MeasureDistance){font-size:12px;line-height:1.4;color:#60738e}
+#map .map-v2-measure-controls{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+#map .map-v2-measure-controls button{border-radius:11px;padding:9px 11px;background:#eaf1fe;color:#2055a5;font-size:12px;font-weight:800}
+#map .map-v2-measure-controls .map-v2-measure-done{background:#176be8;color:#fff}
+#map .map-v2-measure-controls button:focus-visible{outline:3px solid #79b1ff;outline-offset:2px}
+#map .map-workspace.measure-active .map-status-pill{display:none}
+#map .map-workspace.map-v2-spacious .map-v2-banner,#map .map-workspace.map-v2-spacious .map-categories{display:none!important}
+#map .map-workspace.map-v2-spacious .map-toolbar{padding-top:7px;padding-bottom:6px}
+@media(max-width:900px){
+ #map .map-v2-measure-hud{bottom:82px;left:8px;right:8px;display:flex;flex-direction:column;align-items:stretch;gap:9px;padding:11px 12px}
+ #map .map-v2-measure-info{gap:3px}
+ #map .map-v2-measure-info b{font-size:15px}
+ #map .map-v2-measure-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ #map .map-v2-measure-controls button{padding:11px 6px}
+}
