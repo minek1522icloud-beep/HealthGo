@@ -190,9 +190,9 @@ test('The download worker streams model files directly into browser Cache API',(
  assert.doesNotMatch(source,/pipeline\('text-generation'/);
  assert.match(worker,/if\(input\.type==='warmup'\)/);
  assert.match(worker,/numThreads=1/);
- assert.match(html,/id="hgOfflineAiDeviceBadge"/);
- assert.match(html,/id="hgOfflineAiTryLocalBtn"/);
- assert.match(html,/healthgo-offline-ai\.js/);
+ assert.doesNotMatch(html,/id="hgOfflineAiDeviceBadge"/);
+ assert.doesNotMatch(html,/id="hgOfflineAiTryLocalBtn"/);
+ assert.doesNotMatch(html,/<script src="\.\/healthgo-offline-ai\.js"/);
  assert.match(workflow,/@huggingface\/transformers@3\.8\.1/);
  assert.match(workflow,/npx esbuild worker\.entry\.js --bundle --format=esm/);
 });
