@@ -1,3 +1,11 @@
+/* Hide inactive navigation even though .hg-pro-nav has display:flex.
+   The hidden attribute alone loses to author CSS; this fixes the iPhone overlay. */
+#map #hgProNavigation[hidden]{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
 /* HealthGo Mapa 2.0 — native interactive UI over the existing Leaflet map. */
 #map .map-workspace{border:0;border-radius:20px;box-shadow:0 15px 55px rgba(15,23,42,.08);background:#eef6f4}
 #map .map-toolbar{position:relative;padding:12px 14px 10px;background:rgba(255,255,255,.98);border-bottom:1px solid #e5edf5;gap:10px}
