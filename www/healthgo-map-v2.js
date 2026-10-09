@@ -144,6 +144,8 @@
   if(name==='map'){close();return}
   if(!valid.includes(name)){close();return}
   if(activePanel===name){close();return}
+  // Stay in the same map tab: route is a full-screen planner, not a new page.
+  document.body?.classList?.toggle?.('hg-route-planner-open',name==='route');
   activePanel=name;
   document.querySelectorAll('.map-v2-panel').forEach(panel=>{panel.hidden=panel.dataset.mapPanel!==name;});
   document.querySelectorAll('.map-v2-tab,.map-v2-actions button[data-panel]').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===name));
@@ -154,7 +156,37 @@
   if(name==='settings')window.HealthGoMap4?.renderSettings?.();
   setTimeout(()=>getMap()?.invalidateSize({pan:false}),80);
  }
- function close(){activePanel='';document.querySelectorAll('.map-v2-panel').forEach(p=>p.hidden=true);document.querySelectorAll('.map-v2-tab,.map-v2-actions button[data-panel]').forEach(b=>b.classList.toggle('active',b.dataset.panel==='map'));}
+ function close(){
+  activePanel='';
+  document.body?.classList?.remove?.('hg-route-planner-open');
+  document.querySelectorAll('.map-v2-panel').forEach(p=>p.hidden=true);
+  document.querySelectorAll('.map-v2-tab,.map-v2-actions button[data-panel]').forEach(b=>b.classList.toggle('active',b.dataset.panel==='map'));
+  setTimeout(()=>getMap()?.invalidateSize?.({pan:false}),65);
+ }
+ function swapRoute(){
+  const from=el('mapV2RouteFrom'),to=el('mapV2RouteTo');
+  if(!from||!to)return false;
+  if(!clean(from.value)||!clean(to.value)){
+   const result=el('mapV2RouteOutput');
+   if(result)result.textContent='Aby zamienić trasę, wpisz oba adresy. Punkt GPS nie ma nazwy do zamiany.';
+   return false;
+  }
+  const previousStart=from.value;from.value=to.value;to.value=previousStart;
+  destination=null;window.HealthGoMapPro?.clearRoute?.();
+  routeChoices=[];const choices=el('hg4RouteAlternatives');if(choices)choices.replaceChildren();
+  const result=el('mapV2RouteOutput');
+  if(result)result.textContent='Zamieniono adresy. Kliknij „Znajdź najlepszą trasę”, aby przeliczyć.';
+  return true;
+ }
+ function useGPSStart(){
+  const from=el('mapV2RouteFrom');if(!from)return false;
+  from.value='';
+  window.HealthGoMapPro?.clearRoute?.();
+  routeChoices=[];const choices=el('hg4RouteAlternatives');if(choices)choices.replaceChildren();
+  const result=el('mapV2RouteOutput');
+  if(result)result.textContent='Punkt startowy: GPS. Telefon zapyta o lokalizację dopiero po wyznaczeniu trasy.';
+  return true;
+ }
  function chooseLayer(kind){
   if(!['street','satellite'].includes(kind))return;
   if(typeof L==='undefined'||!getMap()){say('Otwórz mapę, aby zmienić warstwę.');return}
@@ -212,7 +244,6 @@
    if(destinationMarker)map.removeLayer(destinationMarker);
    destinationMarker=L.marker([p.lat,p.lon]).addTo(map).bindPopup('📍 '+(typeof healthGoEscape==='function'?healthGoEscape(p.name):p.name));
   }
-  toggle('route'); // Opens or closes only when already on route
   if(activePanel!=='route')toggle('route');
   say('Cel trasy: '+p.name+'. Aby zaplanować trasę, kliknij „Wyznacz trasę”.');
  }
@@ -488,10 +519,15 @@
  }else{mount();setTimeout(watchWelcome,1000)}
  window.addEventListener('resize',()=>{if(el('map')?.classList.contains('active'))resizeViewport()});
  if(window.visualViewport)window.visualViewport.addEventListener('resize',()=>{if(el('map')?.classList.contains('active'))resizeViewport()});
+ document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&document.body?.classList?.contains?.('hg-route-planner-open')){
+   event.preventDefault();close();
+  }
+ });
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&(tracker!==null||measuring)){
   const wasTracking=tracker!==null;stopTracking(false);if(measuring)stopMeasure();
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart};
 })();
