@@ -1206,8 +1206,6 @@ function healthGoMobileErrorCode(error){
  if(/AI_AUTH_ERROR|403|401|permission-denied|unauthenticated/i.test(raw))return 'MOBILE_ACCESS';
  if(/AI_RATE_LIMIT|429|resource-exhausted|quota/i.test(raw))return 'MOBILE_RATE_LIMIT';
  if(/MOBILE_AI_INIT_ERROR|BUNDLE_LOAD_ERROR|MOBILE_AI_SDK_NOT_READY/i.test(raw))return 'MOBILE_SDK';
- if(/LOCAL_OFFLINE_MODEL_MISSING|LOCAL_NOT_INSTALLED/i.test(raw))return 'MOBILE_LOCAL_INSTALL';
- if(/LOCAL_WORKER_UNAVAILABLE|LOCAL_GENERATION_TIMEOUT|LOCAL_LOAD_TIMEOUT/i.test(raw))return 'MOBILE_LOCAL_UNSUPPORTED';
  if(/AI_TIMEOUT|AI_CANCELLED|AI_PROVIDER_TIMEOUT|timeout|AbortError/i.test(raw))return 'MOBILE_TIMEOUT';
  if(/AI_REQUEST_ERROR|model|404|failed-precondition/i.test(raw))return 'MOBILE_PROVIDER';
  if(/network|offline|failed to fetch/i.test(raw))return 'MOBILE_NETWORK';
@@ -1250,32 +1248,17 @@ async function askAI(){
      typing?.querySelector('.ai-bubble')?.appendChild(statusText);
      const updateStage=stage=>{
        if(sessionActive()&&window.healthGoAIRequestToken===requestToken){
-         aiSetConnection(true,'AI Mobile · '+stage);
+         aiSetConnection(true,'HealthGo AI');
          if(statusText.isConnected)statusText.textContent=stage;
        }
      };
-     let localError=null;
-     const local=window.HealthGoOfflineAI;
-     if(!imageData&&local?.available()){
-       try{
-         updateStage('Wczytuję AI zapisane na telefonie…');
-         answer=await healthGoAITimed(local.ask({
-           message:q,mode:requestMode,responseMode:requestLevel,
-           history:requestHistory,onStatus:updateStage
-         }),90000,mobileController);
-       }catch(error){localError=error;}
-     }
-     if(!answer){
-       if(navigator.onLine===false){
-         throw localError||new Error('LOCAL_OFFLINE_MODEL_MISSING');
-       }
-       const mobileTimeout=requestLevel==='average'?45000:requestLevel==='medium'?65000:85000;
-       updateStage(localError?'Lokalne AI niedostępne. Łączę z chmurą…':'Łączę z Gemini…');
-       answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData,{
-         mode:requestMode,responseMode:requestLevel,history:requestHistory,
-         signal:mobileController.signal,onStatus:updateStage
-       }),mobileTimeout,mobileController);
-     }
+     if(navigator.onLine===false)throw new Error('MOBILE_NETWORK_OFFLINE');
+     const mobileTimeout=requestLevel==='average'?45000:requestLevel==='medium'?65000:85000;
+     updateStage('Przygotowuję odpowiedź…');
+     answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData,{
+       mode:requestMode,responseMode:requestLevel,history:requestHistory,
+       signal:mobileController.signal,onStatus:updateStage
+     }),mobileTimeout,mobileController);
    }else{
      let cloudError=null,localError=null;
      // Desktop is hosted at localhost: Firebase's production App Check cannot
@@ -1305,7 +1288,7 @@ async function askAI(){
    aiAddMessage('assistant',aiTextToHtml(answer));
    aiHistory.push({role:'user',content:q||'[zdjęcie]'},{role:'assistant',content:answer});
    if(aiHistory.length>40)aiHistory=aiHistory.slice(-40);
-   aiSetConnection(true,isHostedMobileHealthGo()?'AI Mobile online':'AI online');
+   aiSetConnection(true,'HealthGo AI');
    awardChallenge('ai_first');
  }catch(err){
    if(!sessionActive())return;
@@ -1314,26 +1297,11 @@ async function askAI(){
    console.warn('HealthGo AI: request unavailable',msg,
      err&&err.cloudError?String(err.cloudError.code||err.cloudError.status||err.cloudError.message||''):'',
      err&&err.localError?String(err.localError.code||err.localError.status||err.localError.message||''):'');
-   if(isHostedMobileHealthGo()&&!imageData&&navigator.onLine===false){
-     try{
-       const fallback=aiLocalReply(q||'');
-       if(fallback&&fallback.html&&!/Łączenie z pełnym HealthGo AI/i.test(fallback.html)){
-         aiSetConnection(false,'AI offline · tryb podstawowy');
-         aiAddMessage('assistant',fallback.html);
-         const fallbackText=(new DOMParser().parseFromString(fallback.html,'text/html').body.textContent||'').trim();
-         aiHistory.push({role:'user',content:q||'[pytanie]'},{role:'assistant',content:fallbackText});
-         if(aiHistory.length>40)aiHistory=aiHistory.slice(-40);
-         return;
-       }
-     }catch(_){}
-   }
    aiSetConnection(false,'AI chwilowo niedostępne');
    let detail='Spróbuj ponownie za chwilę.';
    if(isHostedMobileHealthGo()){
      const code=healthGoMobileErrorCode(err);
-     if(code==='MOBILE_LOCAL_INSTALL')detail='Nie ma jeszcze modelu AI pobranego na ten telefon. Połącz się z internetem, wybierz „Ustaw AI” i pobierz model.';
-     else if(code==='MOBILE_LOCAL_UNSUPPORTED')detail='Ten telefon nie może uruchomić lokalnego AI. Spróbuj ponownie w chmurze.';
-     else if(code==='MOBILE_APP_CHECK')detail='Firebase App Check nie potwierdził dostępu. Administrator HealthGo musi sprawdzić domenę strony i klucz reCAPTCHA Enterprise w Firebase/Google Cloud.';
+     if(code==='MOBILE_APP_CHECK')detail='Firebase App Check nie potwierdził dostępu. Administrator HealthGo musi sprawdzić domenę strony i klucz reCAPTCHA Enterprise w Firebase/Google Cloud.';
      else if(code==='MOBILE_ACCESS')detail='Firebase AI Logic odrzucił uprawnienia aplikacji. Administrator musi sprawdzić ustawienia App Check i usługi AI.';
      else if(code==='MOBILE_RATE_LIMIT')detail='Usługa AI osiągnęła limit zapytań. Spróbuj później.';
      else if(code==='MOBILE_NETWORK')detail='Telefon nie może połączyć się z usługą AI. Sprawdź internet.';
@@ -2651,7 +2619,7 @@ window.addEventListener('beforeunload',save);
   };
   // Avoid initializing Firebase AI + reCAPTCHA during the first Safari render.
   // waitForHealthGoMobileAI() loads this bundle only after a chat request.
-  // Optional phone WebGPU AI is likewise loaded only after explicit consent.
+  // Regular phone chat never prompts for a local model installation.
 })();
 </script>
 <script src="./healthgo-pro.js"></script>
