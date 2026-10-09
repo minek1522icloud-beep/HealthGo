@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com https://www.google.com https://www.gstatic.com/recaptcha/ https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://server.arcgisonline.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com https://www.gstatic.com/recaptcha/; worker-src 'self' blob:; child-src blob:; connect-src 'self' https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://router.project-osrm.org https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co https://cdn.jsdelivr.net https://*.jsdelivr.net https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://recaptcha.google.com/recaptcha/ https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com https://www.google.com https://www.gstatic.com/recaptcha/ https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://server.arcgisonline.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com https://www.gstatic.com/recaptcha/; worker-src 'self' blob:; child-src blob:; connect-src 'self' https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://router.project-osrm.org https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co https://cdn.jsdelivr.net https://*.jsdelivr.net https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://api.open-meteo.com https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://recaptcha.google.com/recaptcha/ https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="healthgo-build" content="development">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>HealthGo</title>
@@ -510,7 +510,7 @@ html.hg-session-known #authScreen{display:none!important}
 <section id="map" class="page">
   <div class="map-workspace" id="mapWorkspace">
     <div class="map-toolbar">
-      <div class="map-v2-banner">🗺️ HealthGo Mapa 2.0 <span class="map-v2-tag">OpenStreetMap</span></div>
+      <div class="map-v2-banner">🗺️ HealthGo Mapa 4.0 <span class="map-v2-tag">OpenStreetMap</span></div>
       <div class="map-toolbar-row">
         <div class="map-address-wrap">
           <span class="map-address-icon">🔎</span>
@@ -535,10 +535,10 @@ html.hg-session-known #authScreen{display:none!important}
 
     <div class="map-canvas-wrap">
       <div id="healthgoMap" aria-label="Mapa prawdziwych miejsc"></div>
-      <div id="hg3DMap" class="hg-pro-3d-host" aria-label="Interaktywna mapa budynków 3D" hidden></div>
+      
       <div id="mapSearchStatus" class="map-status-pill">Przybliż mapę do wybranej okolicy albo użyj „Moje położenie”. Lokalizacja jest pobierana tylko po Twoim kliknięciu i zgodzie.</div>
       <div class="map-v2-actions" aria-label="Szybkie akcje mapy">
-        <button type="button" data-panel="route" onclick="HealthGoMapV2.toggle('route')">↗ Trasy</button>
+        <button type="button" data-panel="route" onclick="HealthGoMapV2.toggle('route')">↗ Nawigacja</button>
         <button type="button" data-panel="favorites" onclick="HealthGoMapV2.toggle('favorites')">⭐ Ulubione <span id="mapV2FavouriteCount">0</span></button>
         <button type="button" onclick="HealthGoMapV2.showFamily()">👥 Rodzina</button>
       </div>
@@ -569,7 +569,7 @@ html.hg-session-known #authScreen{display:none!important}
           <div class="hg-pro-nav-buttons">
             <button id="hgProVoice" type="button" aria-label="Włącz lub wyłącz głos" aria-pressed="false" onclick="HealthGoMapPro.toggleVoice()">Głos: wyłączony</button>
             <button id="hgProFollow" type="button" aria-pressed="true" onclick="HealthGoMapPro.toggleFollow()">Śledź położenie</button>
-            <button id="hgProNav3D" type="button" aria-pressed="true" onclick="HealthGoMapPro.toggleNavigation3D()">3D</button>
+            <button id="hgProNavTheme" type="button" onclick="HealthGoMapPro.toggleNavigationTheme()">Motyw</button>
             <button type="button" class="hg-pro-stop" onclick="HealthGoMapPro.stopNavigation()">Zakończ</button>
           </div>
         </div>
@@ -588,23 +588,25 @@ html.hg-session-known #authScreen{display:none!important}
       </aside>
       <svg class="hg-pro-sprite" aria-hidden="true" width="0" height="0" focusable="false">
         <symbol id="hg-map-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><path d="M6 17V7a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v10"/><path d="m15 14 3 3 3-3"/></symbol>
+        <symbol id="hg-map-weather" viewBox="0 0 24 24"><path d="M7 17h11a4 4 0 1 0-.5-8 6 6 0 0 0-11.2 1.5A3.3 3.3 0 0 0 7 17Z"/><path d="m9 20-1 2m6-2-1 2"/></symbol>
+        <symbol id="hg-map-settings" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></symbol>
         <symbol id="hg-map-walk" viewBox="0 0 24 24"><circle cx="13" cy="4" r="2"/><path d="m9 21 2-6-3-4 2-4 5 3 2 5m-8-4-4 3m9 1 3 6"/></symbol>
         <symbol id="hg-map-star" viewBox="0 0 24 24"><path d="m12 2 3 6.6 7.3 1-5.3 5.1 1.3 7.2-6.3-3.4-6.3 3.4 1.2-7.2-5.2-5.1 7.3-1Z"/></symbol>
         <symbol id="hg-map-pin" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7v10M7 12h10"/><circle cx="12" cy="12" r="3"/></symbol>
         <symbol id="hg-map-layers" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5Zm-9 10 9 5 9-5M3 17l9 5 9-5"/></symbol>
         <symbol id="hg-map-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
       </svg>
-      <nav class="map-v2-bottom" aria-label="Funkcje Mapy 2.0">
-        <button type="button" class="map-v2-tab" data-panel="route" onclick="HealthGoMapV2.toggle('route')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-route"></use></svg>Trasy</button>
-        <button type="button" class="map-v2-tab" data-panel="activity" onclick="HealthGoMapV2.toggle('activity')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-walk"></use></svg>Aktywność</button>
-        <button type="button" class="map-v2-tab" data-panel="favorites" onclick="HealthGoMapV2.toggle('favorites')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-star"></use></svg>Miejsca</button>
-        <button type="button" class="map-v2-tab" data-panel="layers" onclick="HealthGoMapV2.toggle('layers')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-layers"></use></svg>Warstwy</button>
-        <button type="button" class="map-v2-tab" data-panel="tools" onclick="HealthGoMapV2.toggle('tools')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-menu"></use></svg>Więcej</button>
+      <nav class="map-v2-bottom" aria-label="Mapa HealthGo 4.0">
+        <button type="button" class="map-v2-tab active" data-panel="map" onclick="HealthGoMapV2.toggle('map')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-pin"></use></svg>Mapa</button>
+        <button type="button" class="map-v2-tab" data-panel="route" onclick="HealthGoMapV2.toggle('route')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-route"></use></svg>Nawigacja</button>
+        <button type="button" class="map-v2-tab" data-panel="weather" onclick="HealthGoMapV2.toggle('weather')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-weather"></use></svg>Pogoda</button>
+        <button type="button" class="map-v2-tab" data-panel="saved" onclick="HealthGoMapV2.toggle('saved')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-star"></use></svg>Zapisane</button>
+        <button type="button" class="map-v2-tab" data-panel="settings" onclick="HealthGoMapV2.toggle('settings')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-settings"></use></svg>Ustawienia</button>
       </nav>
       <section class="map-v2-panel" data-map-panel="route" hidden aria-label="Planowanie trasy">
-        <div class="map-v2-panel-head"><h3>🧭 Zaplanuj trasę</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-head"><h3>Nawigacja PRO</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
         <div class="map-v2-panel-content">
-          <p class="map-v2-muted">Wpisz własny punkt startowy lub zostaw to pole puste, aby użyć GPS. Po wybraniu trasy współrzędne startu i celu zostaną przekazane do OSRM lub OpenStreetMap.</p>
+          <p class="map-v2-muted">Wybierz środek transportu, adres początkowy i cel. GPS jest opcjonalny. Współrzędne trasy wysyłamy do OSRM lub OpenStreetMap dopiero po wyznaczeniu trasy.</p>
           <label class="map-v2-field" for="mapV2RouteFrom">Skąd? <span class="map-v2-tag">GPS lub adres</span></label>
           <input id="mapV2RouteFrom" class="map-v2-input" type="search" autocomplete="street-address" placeholder="Moja lokalizacja lub wpisz miasto, ulicę…">
           <p class="map-v2-muted">Gdy iPhone blokuje GPS, wpisz tutaj adres startowy — trasa nadal zadziała.</p>
@@ -616,12 +618,58 @@ html.hg-session-known #authScreen{display:none!important}
             <button type="button" data-map-mode="bike" aria-pressed="false" onclick="HealthGoMapV2.chooseMode('bike')">🚲 Rower</button>
           </div>
           <p id="mapV2RouteModeHint" class="map-v2-muted">Trasa drogowa z publicznej usługi OSRM — orientacyjna.</p>
-          <button type="button" class="map-v2-primary" onclick="HealthGoMapV2.planRoute()">↗ Wyznacz trasę</button>
+          <button type="button" class="map-v2-primary" onclick="HealthGoMapV2.planRoute()">↗ Znajdź najlepszą trasę</button>
+          <div id="hg4RouteAlternatives" class="hg4-route-alternatives" aria-label="Warianty trasy"></div>
+          <button type="button" class="hg4-outline" onclick="HealthGoMap4.saveCurrentRoute()">☆ Zapisz tę trasę</button>
           <p id="mapV2RouteOutput" class="map-v2-alert" role="status">Podaj cel lub wybierz miejsce z wyników mapy.</p>
           <p id="mapV2GpsHelp" class="map-v2-alert" hidden>Jeśli odmówiono lokalizacji, otwórz Ustawienia iPhone’a → Prywatność i ochrona → Usługi lokalizacji. Sprawdź uprawnienia HealthGo lub Witryn Safari. Możesz też wyznaczyć trasę, wpisując punkt startowy powyżej.</p>
           <button id="hgNavStartButton" class="map-v2-primary" type="button" hidden onclick="HealthGoMapPro.startNavigation()">➤ Rozpocznij nawigację GPS</button>
           <p class="map-v2-muted">Wskazówki są orientacyjne i nie uwzględniają korków. Zawsze przestrzegaj znaków i nie obsługuj telefonu podczas prowadzenia pojazdu.</p>
           <a id="mapV2External" href="https://www.openstreetmap.org/directions" target="_blank" rel="noopener noreferrer" hidden>Otwórz wskazówki ↗</a>
+        </div>
+      </section>
+      <section class="map-v2-panel" data-map-panel="weather" hidden aria-label="Aktualna pogoda">
+        <div class="map-v2-panel-head"><h3>Pogoda w okolicy</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-content">
+          <p id="hg4WeatherStatus" class="map-v2-muted" role="status">Pogoda na podstawie środka widocznej mapy. Bez żądania GPS.</p>
+          <div id="hg4WeatherCurrent" class="hg4-weather-card"></div>
+          <h4>Najbliższe godziny</h4>
+          <div id="hg4WeatherHours" class="hg4-weather-hours"></div>
+          <button type="button" class="map-v2-primary" onclick="HealthGoMap4.refreshWeather()">Odśwież rzeczywistą pogodę</button>
+          <p class="map-v2-muted">Źródło: Open-Meteo. Prognoza opadów to nie radar na żywo.</p>
+          <h4>Ruch i utrudnienia</h4>
+          <p id="hg4WorksStatus" class="map-v2-alert">Możesz sprawdzić remonty oznaczone przez społeczność OpenStreetMap. Nie mamy danych o korkach na żywo.</p>
+          <div class="map-v2-buttons"><button type="button" onclick="HealthGoMap4.refreshWorks()">Sprawdź remonty w okolicy</button><button type="button" onclick="HealthGoMap4.clearWorks()">Ukryj remonty</button></div>
+        </div>
+      </section>
+      <section class="map-v2-panel" data-map-panel="saved" hidden aria-label="Ulubione miejsca i zapisane trasy">
+        <div class="map-v2-panel-head"><h3>Zapisane</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-content">
+          <p id="hg4SavedStatus" class="map-v2-muted">Plany tras są zapisane lokalnie dla Twojego konta, bez dokładnych danych GPS.</p>
+          <h4>Ulubione miejsca</h4>
+          <button type="button" class="hg4-outline" onclick="HealthGoMapV2.toggle('favorites')">Zobacz ulubione miejsca</button>
+          <h4>Zapisane trasy</h4>
+          <div id="hg4SavedRoutes"></div>
+          <button type="button" class="hg4-outline" onclick="HealthGoMapV2.toggle('route')">＋ Nowa trasa</button>
+        </div>
+      </section>
+      <section class="map-v2-panel" data-map-panel="settings" hidden aria-label="Dostosowanie nawigacji">
+        <div class="map-v2-panel-head"><h3>Dostosuj nawigację</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-content hg4-settings">
+          <label class="map-v2-field" for="hg4Theme">Wygląd nawigacji</label>
+          <select id="hg4Theme" class="map-v2-input" onchange="HealthGoMap4.settingsChanged()"><option value="auto">Automatyczny dzień/noc</option><option value="light">Jasny</option><option value="dark">Ciemny</option></select>
+          <label class="map-v2-field" for="hg4DefaultMode">Domyślny transport</label>
+          <select id="hg4DefaultMode" class="map-v2-input" onchange="HealthGoMap4.settingsChanged()"><option value="car">Samochód</option><option value="foot">Pieszo</option><option value="bike">Rower</option></select>
+          <label class="hg4-check"><input id="hg4Voice" type="checkbox" onchange="HealthGoMap4.settingsChanged()"> Komunikaty głosowe, jeśli iPhone je obsługuje</label>
+          <label class="hg4-check"><input id="hg4Follow" type="checkbox" checked onchange="HealthGoMap4.settingsChanged()"> Automatyczne centrowanie podczas prowadzenia</label>
+          <label class="hg4-check"><input id="hg4AvoidMotorways" type="checkbox" onchange="HealthGoMap4.settingsChanged()"> Spróbuj omijać autostrady (zależne od serwera tras)</label>
+          <p id="hg4SettingsNote" class="map-v2-muted">Ustawienia zapisują się na Twoim telefonie po zalogowaniu.</p>
+          <h4>Więcej funkcji mapy</h4>
+          <div class="map-v2-buttons">
+            <button type="button" onclick="HealthGoMapV2.toggle('layers')">Warstwy 2D / satelita</button>
+            <button type="button" onclick="HealthGoMapV2.toggle('activity')">HealthGo Walk</button>
+            <button type="button" onclick="HealthGoMapV2.toggle('tools')">Pomiar, rodzina i GPS</button>
+          </div>
         </div>
       </section>
       <section class="map-v2-panel" data-map-panel="layers" hidden aria-label="Warstwy mapy">
@@ -633,12 +681,11 @@ html.hg-session-known #authScreen{display:none!important}
           </div>
           <p class="map-v2-muted">Zwykła mapa: OpenStreetMap. Zdjęcia satelitarne: Esri.</p>
           <div class="map-v2-buttons">
-            <button id="hg3DButton" type="button" onclick="HealthGoMapPro.toggle3D()">▤ Pokaż budynki 3D</button>
-          <button id="hg3DRefresh" type="button" onclick="HealthGoMapPro.refreshBuildings()">↻ Odśwież budynki</button>
-            <button type="button" onclick="HealthGoMapV2.notice('traffic')">🚦 Ruch — planowany</button>
-            <button type="button" onclick="HealthGoMapV2.notice('weather')">🌦️ Pogoda — planowana</button>
+            <button type="button" onclick="HealthGoMapV2.toggle('weather')">Pogoda dla mapy</button>
+            <button type="button" onclick="HealthGoMap4.refreshWorks()">Zaznaczone remonty OSM</button>
+            <button type="button" onclick="HealthGoMap4.clearWorks()">Ukryj remonty</button>
           </div>
-          <p class="map-v2-alert">Budynki 3D korzystają z rzeczywistych obrysów OpenStreetMap. Gdzie brakuje wysokości, jest ona szacowana — nie są to zdjęcia ani Street View. Korki i radar wymagają dodatkowych danych.</p>
+          <p class="map-v2-alert">Tylko mapa 2D: OpenStreetMap lub zdjęcia satelitarne Esri. Warstwa remontów pochodzi z OSM, nie jest informacją o korkach na żywo.</p>
         </div>
       </section>
       <section class="map-v2-panel" data-map-panel="favorites" hidden aria-label="Zapisane miejsca">
@@ -663,9 +710,9 @@ html.hg-session-known #authScreen{display:none!important}
         </div>
       </section>
       <section class="map-v2-panel" data-map-panel="tools" hidden aria-label="Więcej funkcji mapy">
-        <div class="map-v2-panel-head"><h3>✨ Mapa 2.0</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-head"><h3>Dodatkowe narzędzia</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
         <div class="map-v2-panel-content">
-          <div id="hgProNotice" class="map-v2-alert" role="status">Widok 3D dostępny po wybraniu odpowiedniej warstwy.</div>
+          <div id="hgProNotice" class="map-v2-alert" role="status">Narzędzia mapy i udostępnione miejsca.</div>
           <div class="map-v2-buttons">
             <button type="button" onclick="HealthGoMapV2.close();searchMapPlaces()">🔎 Szukaj miejsc w okolicy</button>
             <button type="button" onclick="HealthGoMapV2.showFamily()">👥 Rodzina za zgodą</button>
@@ -2817,5 +2864,6 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-mobile-suite.js"></script>
 <script src="./healthgo-map-v2.js?v=1"></script>
 <script src="./healthgo-map-pro.js?v=1"></script>
+<script src="./healthgo-map4.js?v=1"></script>
 </body>
 </html>
