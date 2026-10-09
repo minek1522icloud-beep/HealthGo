@@ -340,6 +340,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-chat-modern.css?v=1">
 <link rel="stylesheet" href="./healthgo-map-v2.css?v=3">
 <link rel="stylesheet" href="./healthgo-spacious-ui.css?v=2">
+<link rel="stylesheet" href="./healthgo-navigation-screen.css?v=1">
 </head>
 <body style="background:#07111f">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -606,14 +607,27 @@ html.hg-session-known #authScreen{display:none!important}
         <button type="button" class="map-v2-tab" data-panel="settings" onclick="HealthGoMapV2.toggle('settings')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-settings"></use></svg>Ustawienia</button>
       </nav>
       <section class="map-v2-panel" data-map-panel="route" hidden aria-label="Planowanie trasy">
-        <div class="map-v2-panel-head"><h3>Nawigacja PRO</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-head hg-nav-planner-head">
+          <div class="hg-nav-planner-title">
+            <small>HEALTHGO MAPS</small>
+            <h3>Nawigacja PRO</h3>
+            <span>Wybierz cel i zobacz trasę na mapie.</span>
+          </div>
+          <button type="button" class="map-v2-close hg-nav-planner-x" aria-label="Zamknij nawigację i wróć do mapy" onclick="HealthGoMapV2.close()">×</button>
+        </div>
         <div class="map-v2-panel-content">
-          <p class="map-v2-muted">Wybierz środek transportu, adres początkowy i cel. GPS jest opcjonalny. Współrzędne trasy wysyłamy do OSRM lub OpenStreetMap dopiero po wyznaczeniu trasy.</p>
+          <p class="map-v2-muted hg-nav-planner-intro">Zaplanuj podróż bez wychodzenia z HealthGo. Lokalizacja GPS jest opcjonalna.</p>
           <label class="map-v2-field" for="mapV2RouteFrom">Skąd? <span class="map-v2-tag">GPS lub adres</span></label>
           <input id="mapV2RouteFrom" class="map-v2-input" type="search" autocomplete="street-address" placeholder="Moja lokalizacja lub wpisz miasto, ulicę…">
           <p class="map-v2-muted">Gdy iPhone blokuje GPS, wpisz tutaj adres startowy — trasa nadal zadziała.</p>
           <label class="map-v2-field" for="mapV2RouteTo">Dokąd?</label>
           <input id="mapV2RouteTo" class="map-v2-input" type="search" autocomplete="off" placeholder="Adres, park albo wybrane miejsce">
+          <div class="hg-nav-planner-shortcuts" role="group" aria-label="Szybkie działania nawigacji">
+            <button type="button" onclick="HealthGoMapV2.swapRoute()" aria-label="Zamień adres startowy i cel">⇅ Zamień</button>
+            <button type="button" onclick="HealthGoMapV2.useGPSStart()">◎ Start: GPS</button>
+            <button type="button" onclick="HealthGoMapV2.toggle('saved')">☆ Zapisane</button>
+            <button type="button" onclick="HealthGoMapV2.toggle('settings')">⚙ Ustawienia</button>
+          </div>
           <div class="map-v2-buttons" role="group" aria-label="Środek transportu">
             <button class="active" type="button" data-map-mode="car" aria-pressed="true" onclick="HealthGoMapV2.chooseMode('car')">🚙 Samochód</button>
             <button type="button" data-map-mode="foot" aria-pressed="false" onclick="HealthGoMapV2.chooseMode('foot')">🚶 Pieszo</button>
@@ -625,8 +639,8 @@ html.hg-session-known #authScreen{display:none!important}
           <button type="button" class="hg4-outline" onclick="HealthGoMap4.saveCurrentRoute()">☆ Zapisz tę trasę</button>
           <p id="mapV2RouteOutput" class="map-v2-alert" role="status">Podaj cel lub wybierz miejsce z wyników mapy.</p>
           <p id="mapV2GpsHelp" class="map-v2-alert" hidden>Jeśli odmówiono lokalizacji, otwórz Ustawienia iPhone’a → Prywatność i ochrona → Usługi lokalizacji. Sprawdź uprawnienia HealthGo lub Witryn Safari. Możesz też wyznaczyć trasę, wpisując punkt startowy powyżej.</p>
-          <button id="hgNavStartButton" class="map-v2-primary" type="button" hidden onclick="HealthGoMapPro.startNavigation()">➤ Rozpocznij nawigację GPS</button>
-          <p class="map-v2-muted">Wskazówki są orientacyjne i nie uwzględniają korków. Zawsze przestrzegaj znaków i nie obsługuj telefonu podczas prowadzenia pojazdu.</p>
+          <button id="hgNavStartButton" class="map-v2-primary hg-nav-planner-go" type="button" hidden onclick="HealthGoMapPro.startNavigation()">➤ Rozpocznij prowadzenie GPS</button>
+          <p class="map-v2-muted hg-nav-planner-disclaimer">Szacowany czas bez korków na żywo. GPS wymaga pozwolenia i działa tylko przy uruchomionej nawigacji.</p>
           <a id="mapV2External" href="https://www.openstreetmap.org/directions" target="_blank" rel="noopener noreferrer" hidden>Otwórz wskazówki ↗</a>
         </div>
       </section>
