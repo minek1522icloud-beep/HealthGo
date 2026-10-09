@@ -185,3 +185,15 @@ body[data-dark="1"] #map .map-v2-item span{color:#dce7f6}
   #map .map-v2-panel{bottom:10px;border-radius:24px;max-height:76%}
   #map .map-v2-panel-content{padding:12px 20px 30px}
 }
+
+
+/* Consistent SVG icons across the native-feeling bottom app navigation. */
+@media(max-width:900px){
+  .mobile-nav{gap:5px;padding-left:10px;padding-right:10px}
+  .mobile-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;padding:7px 3px}
+  .mobile-nav .hg-mobile-icon{display:block;width:23px;height:23px;min-width:23px;min-height:23px;margin:0;flex:none}
+  .mobile-nav .mobile-nav-label{font-size:11px;font-weight:750;letter-spacing:.1px}
+  .mobile-nav button.active{background:#e8f0fe!important;color:#145fda!important}
+  #map .map-category{font-size:12px}
+  #map .map-v2-float button .hg-pro-icon{width:24px;height:24px}
+}
