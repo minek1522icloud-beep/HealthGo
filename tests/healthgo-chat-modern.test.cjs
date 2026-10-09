@@ -33,10 +33,10 @@ test('Five visible topic buttons and all three response levels are present',()=>
 test('iPhone App Check can load required reCAPTCHA assets under the CSP',()=>{
  const policy=html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)"/)?.[1];
  assert.ok(policy,'explicit CSP exists');
- const directives=Object.fromEntries(policy.split(';').map(x=>x.trim()).filter(Boolean).map(x=>[x.split(/\\s+/)[0],x]));
- assert.match(directives['script-src']||'',/https:\/\/www\\.gstatic\\.com\/recaptcha\//);
- assert.match(directives['frame-src']||'',/https:\/\/recaptcha\\.google\\.com\/recaptcha\//);
- assert.match(directives['img-src']||'',/https:\/\/www\\.gstatic\\.com\/recaptcha\//);
+ const directives=Object.fromEntries(policy.split(';').map(x=>x.trim()).filter(Boolean).map(x=>[x.split(' ')[0],x]));
+ assert.ok(directives['script-src']?.includes('https://www.gstatic.com/recaptcha/'),'reCAPTCHA script host allowed');
+ assert.ok(directives['frame-src']?.includes('https://recaptcha.google.com/recaptcha/'),'reCAPTCHA iframe host allowed');
+ assert.ok(directives['img-src']?.includes('https://www.gstatic.com/recaptcha/'),'reCAPTCHA images allowed');
  assert.doesNotMatch(directives['script-src']||'',/unsafe-eval/);
 });
 
