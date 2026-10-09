@@ -6,6 +6,8 @@ const MODEL_SIZE_MB=182;
 env.useBrowserCache=true;
 env.allowLocalModels=false;
 env.allowRemoteModels=true;
+// Avoid memory-intensive multithreaded WASM initialization on iPhone Safari.
+if(env.backends?.onnx?.wasm)env.backends.onnx.wasm.numThreads=1;
 let generator=null;
 let preparing=null;
 let generating=false;
@@ -67,7 +69,7 @@ self.addEventListener('message',event=>{
   const input=event.data||{};
   const id=input.id;
   if(!Number.isSafeInteger(id)||id<1)return;
-  if(input.type==='install'){
+  if(input.type==='warmup'){
     setup().catch(error=>report('error',{id,code:String(error.message||'LOCAL_INSTALL_ERROR').slice(0,160)}));
     return;
   }
