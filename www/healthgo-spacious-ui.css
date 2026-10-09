@@ -1,0 +1,277 @@
+/* HealthGo spacious UI v1 — shared spacing and an isolated navigation screen.
+   Loaded after the existing styles to resolve old layout collisions. */
+:root{
+  --hg-ui-space:18px;
+  --hg-ui-radius:19px;
+  --hg-ui-card-pad:22px;
+}
+html,body{overflow-x:clip}
+.main .page{min-width:0}
+.main .page:not(#map):not(#ai){max-width:1160px;margin-inline:auto}
+.main .page:not(#map):not(#ai) > .hero,
+.main .page:not(#map):not(#ai) > .dashboard-hero{margin-bottom:var(--hg-ui-space)}
+.main .page:not(#map):not(#ai) .card,
+.main .page:not(#map):not(#ai) .stat,
+.main .page:not(#map):not(#ai) .settings-section,
+.main .page:not(#map):not(#ai) .hg-mobile-card{
+  border-radius:var(--hg-ui-radius);
+  padding:var(--hg-ui-card-pad);
+}
+.main .page:not(#map):not(#ai) .grid,
+.main .page:not(#map):not(#ai) .grid2,
+.main .page:not(#map):not(#ai) .stats,
+.main .page:not(#map):not(#ai) .start-layout,
+.main .page:not(#map):not(#ai) .plan-shell,
+.main .page:not(#map):not(#ai) .challenge-layout,
+.main .page:not(#map):not(#ai) .challenge-overview,
+.main .page:not(#map):not(#ai) .settings-shell,
+.main .page:not(#map):not(#ai) .activity-shell{gap:var(--hg-ui-space)}
+.main .page:not(#map):not(#ai) .card h2,
+.main .page:not(#map):not(#ai) .card h3{line-height:1.3}
+.main .page:not(#map):not(#ai) .card p,
+.main .page:not(#map):not(#ai) .settings-section p{
+  line-height:1.6;
+}
+.main .page:not(#map):not(#ai) .quick-row,
+.main .page:not(#map):not(#ai) .activity-metrics,
+.main .page:not(#map):not(#ai) .hg-mobile-grid,
+.main .page:not(#map):not(#ai) .hg-mobile-stack{gap:13px}
+.main .page:not(#map):not(#ai) .quick,
+.main .page:not(#map):not(#ai) .challenge-real,
+.main .page:not(#map):not(#ai) .activity-metric{padding:16px;border-radius:15px}
+.main .page:not(#map):not(#ai) .btn{min-height:42px}
+.main #ai .ai-msg{margin-bottom:19px}
+.main #ai .ai-messages{line-height:1.57}
+.main #ai .ai-response-bar{gap:12px}
+.main #ai .ai-composer{min-height:55px}
+
+/* The user's navigation example requires a real full-screen mode.
+   In particular, hide *all* sibling sheets, toolbars, results and tabs. */
+body.hg-navigation-active{
+  overflow:hidden!important;
+  overscroll-behavior:none;
+}
+body.hg-navigation-active .main{overflow:visible!important}
+body.hg-navigation-active .top,
+body.hg-navigation-active .sidebar,
+body.hg-navigation-active .mobile-nav,
+body.hg-navigation-active #mobileMoreSheet,
+body.hg-navigation-active #mobileMoreBackdrop{display:none!important}
+body.hg-navigation-active #map.page.active{
+  display:block!important;
+  position:fixed!important;
+  inset:0!important;
+  height:100dvh!important;width:100vw!important;
+  max-width:none!important;min-height:0!important;
+  margin:0!important;padding:0!important;
+  border:0!important;overflow:visible!important;
+  z-index:20000!important;
+  transform:none!important;animation:none!important;
+}
+body.hg-navigation-active #map #mapWorkspace{
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;min-height:0!important;
+  display:flex!important;flex-direction:column!important;
+  border:0!important;border-radius:0!important;
+  box-shadow:none!important;overflow:hidden!important;
+  background:#e7effa!important;
+}
+body.hg-navigation-active #map .map-toolbar,
+body.hg-navigation-active #map .map-v2-panel,
+body.hg-navigation-active #map .map-v2-bottom,
+body.hg-navigation-active #map .map-v2-actions,
+body.hg-navigation-active #map .map-v2-float,
+body.hg-navigation-active #map .map-v2-measure-hud,
+body.hg-navigation-active #map .map-results-panel,
+body.hg-navigation-active #map #mapResultsPanel,
+body.hg-navigation-active #map #mapSearchStatus,
+body.hg-navigation-active #map .map-status-pill{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.hg-navigation-active #map .map-canvas-wrap{
+  position:relative!important;
+  display:block!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+  height:100%!important;
+  overflow:hidden!important;
+  background:#e7effa!important;
+}
+body.hg-navigation-active #map #healthgoMap{
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;
+  min-height:100%!important;
+}
+body.hg-navigation-active #map #hgProNavigation:not([hidden]){
+  position:absolute!important;inset:0!important;
+  display:block!important;visibility:visible!important;
+  z-index:22000!important;
+  background:transparent!important;
+  padding:0!important;margin:0!important;
+  pointer-events:none!important;
+  color:#f1f6ff!important;
+}
+body.hg-navigation-active #map #hgProNavigation[hidden]{display:none!important}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-main{
+  position:absolute!important;top:calc(12px + env(safe-area-inset-top))!important;
+  left:12px!important;right:12px!important;
+  width:auto!important;max-width:620px!important;
+  margin:0!important;
+  display:flex!important;align-items:center!important;
+  gap:12px!important;
+  background:linear-gradient(115deg,#163a68,#111f39)!important;
+  color:#f8fbff!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:19px!important;
+  padding:13px 15px!important;
+  box-shadow:0 9px 35px rgba(8,20,38,.27)!important;
+  pointer-events:auto!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-direction-symbol{
+  width:51px!important;height:51px!important;
+  flex:0 0 51px!important;
+  display:grid!important;place-items:center!important;
+  padding:0!important;
+  border-radius:15px!important;
+  font-size:34px!important;
+  background:#2479ea!important;color:#fff!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-direction-copy{flex:1;min-width:0!important;gap:3px!important}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-direction-copy b{
+  font-size:clamp(15px,4.1vw,20px)!important;line-height:1.2!important;color:#fff!important;
+  overflow-wrap:anywhere;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-direction-copy span{
+  color:#c4d7ef!important;font-size:12px!important;line-height:1.3!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-eyebrow{
+  width:auto!important;padding:0!important;
+  background:transparent!important;color:#8ec9ff!important;font-size:10px!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-close{
+  display:grid!important;place-items:center!important;
+  flex:0 0 37px!important;height:37px!important;
+  padding:0!important;font-size:24px!important;
+  background:rgba(255,255,255,.13)!important;color:#fff!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-speed{
+  position:absolute!important;
+  top:calc(104px + env(safe-area-inset-top))!important;
+  right:12px!important;
+  display:flex!important;flex-direction:column!important;gap:0!important;
+  min-width:60px!important;padding:9px 10px!important;
+  background:rgba(18,32,55,.91)!important;
+  color:#fff!important;
+  border-radius:15px!important;
+  pointer-events:none!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-speed small{
+  width:auto!important;padding:0!important;background:transparent!important;
+  color:#b8cae5!important;font-size:10px!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-speed strong{font-size:23px!important;line-height:1.2!important}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-footer{
+  position:absolute!important;
+  left:12px!important;right:12px!important;
+  bottom:calc(16px + env(safe-area-inset-bottom))!important;
+  width:auto!important;max-width:620px!important;
+  margin:0!important;
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  gap:12px!important;padding:14px!important;
+  border-radius:20px!important;
+  background:rgba(16,30,52,.96)!important;
+  border:1px solid rgba(175,205,242,.19)!important;
+  box-shadow:0 12px 35px rgba(5,13,30,.26)!important;
+  pointer-events:auto!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-progress{
+  min-width:0!important;display:flex!important;flex-direction:column!important;
+  align-items:flex-start!important;gap:3px!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-progress strong{
+  font-size:20px!important;line-height:1.2!important;color:#fff!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-progress span{
+  font-size:13px!important;color:#9bd2ff!important;line-height:1.4!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-progress small{
+  background:transparent!important;padding:0!important;width:auto!important;
+  color:#b7c8e0!important;font-size:11px!important;max-width:100%!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-buttons{
+  width:100%!important;display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-buttons button{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  min-width:0!important;min-height:44px!important;
+  padding:9px 4px!important;
+  background:#2a405f!important;color:#f5f9ff!important;
+  border:1px solid rgba(175,205,242,.12)!important;
+  border-radius:12px!important;
+  font-size:11px!important;font-weight:750!important;
+  line-height:1.25!important;text-align:center!important;
+  overflow-wrap:anywhere!important;
+  pointer-events:auto!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-buttons .hg-pro-stop{
+  background:#f5f8ff!important;color:#172846!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-warning{
+  position:absolute!important;
+  bottom:calc(178px + env(safe-area-inset-bottom))!important;
+  left:13px!important;right:13px!important;
+  width:max-content!important;max-width:calc(100% - 26px)!important;
+  padding:7px 10px!important;
+  margin:0!important;
+  background:rgba(12,26,45,.89)!important;
+  border-radius:10px!important;color:#dceafd!important;
+  font-size:10px!important;line-height:1.4!important;
+}
+body.hg-navigation-active #map .leaflet-control-attribution{
+  max-width:calc(100vw - 14px);
+  font-size:9px!important;
+}
+@media(max-width:900px){
+  :root{--hg-ui-space:17px;--hg-ui-card-pad:19px}
+  .main{padding-inline:16px!important}
+  .top{margin-inline:-16px!important;padding-inline:18px!important;margin-bottom:16px!important}
+  .main .page:not(#map):not(#ai) > .hero,
+  .main .page:not(#map):not(#ai) > .dashboard-hero{padding:24px 20px!important;margin-bottom:17px!important}
+  .main .page:not(#map):not(#ai) .card,
+  .main .page:not(#map):not(#ai) .stat,
+  .main .page:not(#map):not(#ai) .settings-section,
+  .main .page:not(#map):not(#ai) .hg-mobile-card{padding:19px!important}
+  .main .page:not(#map):not(#ai) .hg-mobile-home,
+  .main .page:not(#map):not(#ai) .hg-mobile-stack{gap:15px!important}
+  .main .page:not(#map):not(#ai) .settings-row,
+  .main .page:not(#map):not(#ai) .hg-mobile-toggle-row{padding-block:14px!important}
+  .main .page:not(#map):not(#ai) .stat-value{font-size:clamp(20px,6vw,29px)}
+  body:has(#map.active) .main{padding:0 0 calc(74px + env(safe-area-inset-bottom))!important}
+  body:has(#map.active) .top{margin:0!important}
+  #map .map-v2-panel{max-height:min(70%,calc(100dvh - 174px))!important}
+  #map .map-v2-panel-head{padding:17px 19px 10px!important}
+  #map .map-v2-panel-content{padding:10px 19px 23px!important}
+  #map .map-v2-panel .map-v2-buttons{gap:9px!important}
+  #ai .ai-response-bar{gap:8px!important;padding:11px 13px!important}
+  #ai .ai-messages{padding-inline:16px!important}
+  #ai .ai-composer{width:calc(100% - 24px)!important}
+  body.hg-navigation-active .main{padding:0!important}
+  body.hg-navigation-active .top{display:none!important}
+  body.hg-navigation-active #map .map-v2-panel{display:none!important}
+  body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-footer{left:9px!important;right:9px!important;bottom:calc(10px + env(safe-area-inset-bottom))!important}
+  body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-main{left:9px!important;right:9px!important;top:calc(8px + env(safe-area-inset-top))!important}
+  body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-warning{bottom:calc(175px + env(safe-area-inset-bottom))!important}
+}
+@media(max-width:380px){
+  body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-buttons{gap:5px!important}
+  body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-buttons button{font-size:10px!important;min-height:42px!important}
+}
+@media(max-height:680px){
+  body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-warning{display:none!important}
+  body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-main{padding:10px 12px!important}
+  body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-footer{gap:8px!important;padding:11px 12px!important}
+}
