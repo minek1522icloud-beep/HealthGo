@@ -9,6 +9,7 @@ on:
       - "www/**"
       - "scripts/build-safe-mobile.py"
       - "tests/build-safe-mobile.test.cjs"
+      - "tests/healthgo-map-v2.test.cjs"
       - "tests/healthgo-chat-modern.test.cjs"
       - "tests/ai-multiturn.test.cjs"
       - "tests/mobile-suite.test.cjs"
@@ -50,7 +51,7 @@ jobs:
 
       - name: Sprawdz pobieranie i wznawianie AI na telefonie
         shell: bash
-        run: node --test tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
+        run: node --test tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
 
       - name: Przygotuj wersje mobilna
         shell: bash
@@ -71,6 +72,8 @@ jobs:
           printf '{"version":"%s","deployedAt":"%s"}\n' "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > www/version.json
           test -s www/healthgo-ai-bundle.js
           test -s www/healthgo-chat-modern.css
+          test -s www/healthgo-map-v2.css
+          test -s www/healthgo-map-v2.js
           test -s www/safe.html
           test -s www/diagnostics.html
           grep -q 'healthgo-safe-mode' www/safe.html
