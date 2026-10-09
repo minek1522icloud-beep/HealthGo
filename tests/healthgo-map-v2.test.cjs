@@ -27,6 +27,16 @@ test('Map 2.0 ships five real control panels plus searchable existing Leaflet ma
  assert.match(workflow,/healthgo-map-v2\.test\.cjs/);
 });
 
+test('Phone bottom navigation uses consistent icons, and map categories avoid emoji clutter',()=>{
+ for(const page of ['start','ai','map','plan','more']){
+  assert.match(html,new RegExp('<button data-mobile-page="'+page+'"[^>]*><svg class="mobile-nav-icon hg-mobile-icon"'));
+ }
+ assert.match(css,/\.mobile-nav \.hg-mobile-icon/);
+ assert.doesNotMatch(html,/<span class="mobile-nav-icon">(?:🏠|🤖|🗺️|📅)/);
+ for(const category of ['Wszystko','Restauracje','Sklepy','Siłownie','Apteki','Kawiarnie','Parki'])
+  assert.match(html,new RegExp('>'+category+'<\\/button>'));
+});
+
 test('Map search results expose real route and save-place actions without faking destinations',()=>{
  assert.match(html,/window\.HealthGoMapV2\.savePlace\(\{name,lat:p\.lat,lon:p\.lon\}\)/);
  assert.match(html,/window\.HealthGoMapV2\.selectDestination\(name,p\.lat,p\.lon\)/);
