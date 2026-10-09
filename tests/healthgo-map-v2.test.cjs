@@ -62,7 +62,12 @@ test('Map module parses and requests GPS only after a user action',()=>{
 function harness(){
  const storage=new Map();
  const nodes=new Map();
- const classes=()=>({add(){},remove(){},toggle(){}});
+ const classes=()=>{
+  const values=new Set();
+  return {add(v){values.add(v)},remove(v){values.delete(v)},
+   toggle(v,on){const next=typeof on==='boolean'?on:!values.has(v);if(next)values.add(v);else values.delete(v);return next},
+   contains(v){return values.has(v)}};
+ };
  const node=(id)=>{
   if(!nodes.has(id))nodes.set(id,{
    id,textContent:'',value:'',hidden:false,classList:classes(),children:[],
@@ -76,11 +81,17 @@ function harness(){
   return nodes.get(id);
  };
  const document={
-  readyState:'loading',hidden:false,
+  readyState:'loading',hidden:false,body:{classList:classes()},
   addEventListener(){},
   getElementById:node,
   querySelector:sel=>sel==='.app'?node('app'):null,
-  querySelectorAll:()=>[],
+  querySelectorAll:sel=>{
+   if(sel==='.map-v2-panel')return ['route','weather','saved','settings','favorites','layers','activity','tools']
+    .map(n=>Object.assign(node('panel-'+n),{dataset:{mapPanel:n}}));
+   if(sel==='.map-v2-tab,.map-v2-actions button[data-panel]')return ['map','route','weather','saved','settings']
+    .map(n=>Object.assign(node('tab-'+n),{dataset:{panel:n}}));
+   return [];
+  },
   createElement:tag=>({...node('new-'+tag+'-'+nodes.size),tagName:tag})
  };
  const map={
@@ -116,8 +127,59 @@ function harness(){
   removeItem:k=>storage.delete(k)
  };
  vm.runInNewContext(source,{document,window,navigator,localStorage,console,setTimeout,clearTimeout,URLSearchParams,Date,Number,Math,JSON,String,encodeURIComponent,AbortController,healthGoMap:map,L,fetch:fetchMock});
- return {window,storage,node,locationCalls,map,navigator,fetchCalls};
+ return {window,storage,node,locationCalls,map,navigator,fetchCalls,document};
 }
+
+test('Navigation opens a dedicated view INSIDE the same HealthGo map without GPS',()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ assert.equal(app.document.body.classList.contains('hg-route-planner-open'),false);
+ api.toggle('route');
+ assert.equal(app.document.body.classList.contains('hg-route-planner-open'),true);
+ assert.equal(app.node('panel-route').hidden,false);
+ assert.equal(app.node('panel-weather').hidden,true);
+ assert.equal(app.locationCalls.current,0,'opening planner never requests GPS');
+ assert.equal(app.locationCalls.tracking,0,'opening planner never starts tracking');
+ api.close();
+ assert.equal(app.document.body.classList.contains('hg-route-planner-open'),false);
+ assert.equal(app.node('panel-route').hidden,true);
+ assert.equal(app.node('tab-map').classList.contains('active'),true);
+});
+
+test('Quick navigation actions swap real addresses and select GPS only on request',()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ app.node('mapV2RouteFrom').value='Warszawa';
+ app.node('mapV2RouteTo').value='Kraków';
+ assert.equal(api.swapRoute(),true);
+ assert.equal(app.node('mapV2RouteFrom').value,'Kraków');
+ assert.equal(app.node('mapV2RouteTo').value,'Warszawa');
+ assert.equal(app.locationCalls.current,0);
+ assert.equal(api.useGPSStart(),true);
+ assert.equal(app.node('mapV2RouteFrom').value,'');
+ assert.match(app.node('mapV2RouteOutput').textContent,/Punkt startowy: GPS/);
+ assert.equal(app.locationCalls.current,0,'GPS selected without immediate location request');
+});
+
+test('Opening saved destinations and settings exits planner cleanly',()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ api.toggle('route');
+ api.toggle('settings');
+ assert.equal(app.document.body.classList.contains('hg-route-planner-open'),false);
+ assert.equal(app.node('panel-settings').hidden,false);
+ api.toggle('route');
+ assert.equal(app.document.body.classList.contains('hg-route-planner-open'),true);
+ api.toggle('map');
+ assert.equal(app.document.body.classList.contains('hg-route-planner-open'),false);
+});
+
+test('Selecting destination while planner is open must not unexpectedly close it',()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ api.toggle('route');
+ api.selectDestination('Rynek',52.2,21.01);
+ assert.equal(app.document.body.classList.contains('hg-route-planner-open'),true);
+ assert.equal(app.node('panel-route').hidden,false);
+ assert.equal(app.node('mapV2RouteTo').value,'Rynek');
+});
+
 test('No location tracking starts at map load; favorites are account-specific',()=>{
  const app=harness();
  assert.equal(app.locationCalls.current,0);
