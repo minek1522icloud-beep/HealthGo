@@ -532,6 +532,17 @@ html.hg-session-known #authScreen{display:none!important}
         <button type="button" title="Moja lokalizacja" aria-label="Pokaż moją lokalizację" onclick="HealthGoMapV2.centerGPS()">◎</button>
         <button type="button" title="Dodatkowe funkcje" aria-label="Więcej możliwości mapy" onclick="HealthGoMapV2.toggle('tools')">⋯</button>
       </div>
+      <aside id="mapV2MeasureHud" class="map-v2-measure-hud" role="status" aria-live="polite" hidden>
+        <div class="map-v2-measure-info">
+          <b>📏 Odległość: <span id="mapV2MeasureDistance">0 m</span></b>
+          <span id="mapV2MeasureHint">Dotknij mapy, aby wybrać pierwszy punkt.</span>
+        </div>
+        <div class="map-v2-measure-controls">
+          <button type="button" onclick="HealthGoMapV2.undoMeasure()" aria-label="Cofnij ostatni punkt">↶ Cofnij</button>
+          <button type="button" onclick="HealthGoMapV2.clearMeasure()" aria-label="Wyczyść pomiar">Wyczyść</button>
+          <button type="button" class="map-v2-measure-done" onclick="HealthGoMapV2.stopMeasure()" aria-label="Zakończ pomiar">Gotowe</button>
+        </div>
+      </aside>
       <nav class="map-v2-bottom" aria-label="Funkcje Mapy 2.0">
         <button type="button" class="map-v2-tab" data-panel="route" onclick="HealthGoMapV2.toggle('route')"><span>🧭</span>Trasy</button>
         <button type="button" class="map-v2-tab" data-panel="activity" onclick="HealthGoMapV2.toggle('activity')"><span>🚶</span>Aktywność</button>
@@ -601,7 +612,10 @@ html.hg-session-known #authScreen{display:none!important}
             <button type="button" onclick="HealthGoMapV2.showFamily()">👥 Rodzina za zgodą</button>
             <button type="button" onclick="HealthGoMapV2.centerGPS()">📍 Moja lokalizacja</button>
             <button type="button" onclick="HealthGoMapV2.toggle('favorites')">⭐ Zapisane miejsca</button>
+            <button type="button" onclick="HealthGoMapV2.startMeasure()">📏 Mierz odległość na mapie</button>
+            <button id="mapV2SpaciousButton" type="button" aria-pressed="false" onclick="HealthGoMapV2.toggleSpacious()">▣ Więcej miejsca na mapę</button>
           </div>
+          <p class="map-v2-muted">📏 Pomiar pokazuje odległość w linii prostej między dotkniętymi punktami. Nie uruchamia GPS i nie zapisuje współrzędnych. Tryb większej mapy ukrywa filtry do ponownego włączenia.</p>
           <p class="map-v2-muted">Mapa, lokalizacja i trasy korzystają z danych zewnętrznych wyłącznie podczas wybranych działań. Zwykła mapa nie uruchamia śledzenia GPS.</p>
         </div>
       </section>
