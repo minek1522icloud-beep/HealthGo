@@ -140,6 +140,19 @@
    return false;
   }finally{if(button)button.disabled=false}
  }
+ function visibleCenter(){
+  if(gl&&threeD){const c=gl.getCenter();return {lat:c.lat,lon:c.lng};}
+  const m=getLeaflet(),c=m?.getCenter?.();return c?{lat:c.lat,lon:c.lng}:null;
+ }
+ function center3D(){
+  if(!threeD||!gl)return false;
+  if(!navigator.geolocation)return false;
+  navigator.geolocation.getCurrentPosition(pos=>{
+   const lat=Number(pos.coords.latitude),lon=Number(pos.coords.longitude);
+   if(isFinitePoint({lat,lon})){gl.flyTo({center:[lon,lat],zoom:17,duration:900});msg('Pokazuję Twoją lokalizację w 3D.');}
+  },()=>msg('Lokalizacja jest niedostępna lub odmówiono zgody.'),{enableHighAccuracy:true,timeout:14000,maximumAge:15000});
+  return true;
+ }
  function stop3D(){
   loadEpoch++;
   if(gl){
@@ -251,6 +264,7 @@
   lastSpeech='';
  }
  function toggleVoice(){
+  if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){msg('Głosowa nawigacja nie jest obsługiwana w tej przeglądarce.');return false}
   voice=!voice;
   const button=$('hgProVoice');if(button){button.textContent=voice?'Głos: włączony':'Głos: wyłączony';button.setAttribute('aria-pressed',String(voice))}
   if(voice)speak('Wskazówki głosowe zostały włączone');
@@ -264,6 +278,6 @@
  function leaveMap(){stopNavigation();if(threeD)stop3D()}
  document.addEventListener('visibilitychange',()=>{if(document.hidden)leaveMap()});
  window.addEventListener('pagehide',leaveMap);
- window.HealthGoMapPro={toggle3D,stop3D,refreshBuildings,setRoute,clearRoute,startNavigation,
+ window.HealthGoMapPro={toggle3D,stop3D,center3D,visibleCenter,refreshBuildings,setRoute,clearRoute,startNavigation,
   stopNavigation,toggleVoice,toggleFollow,leaveMap,parseHeight,buildingsToFeatures};
 })();
