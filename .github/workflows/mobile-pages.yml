@@ -42,6 +42,10 @@ jobs:
           npx esbuild entry.js --bundle --format=iife --platform=browser --target=es2020 --minify --outfile=../www/healthgo-ai-bundle.js
           npx esbuild worker.entry.js --bundle --format=esm --platform=browser --target=es2020 --minify --outfile=../www/healthgo-offline-ai-worker.js
 
+      - name: Sprawdz pobieranie i wznawianie AI na telefonie
+        shell: bash
+        run: node --test tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
+
       - name: Przygotuj wersje mobilna
         shell: bash
         run: |
