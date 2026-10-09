@@ -15,7 +15,8 @@ test('Safari initial page does not eagerly load both Gemini and optional WebGPU 
  const core=sw.match(/const CORE=([^;]+);/);
  assert.ok(core,'service worker shell cache declared');
  assert.doesNotMatch(core[1],/healthgo-offline-ai-worker\.js/);
- assert.match(core[1],/recovery\.html/);
+ assert.doesNotMatch(core[1],/healthgo-offline-ai|healthgo-v2-ui|healthgo-mobile-suite/);
+ assert.ok(fs.existsSync('www/recovery.html'),'recovery stays accessible without eager PWA pre-cache');
  assert.match(local,/new Worker\(WORKER,\{type:'module'/);
  assert.match(local,/async function install\(\)/);
  assert.match(local,/start\.addEventListener|el\('hgOfflineAiInstallBtn'\)\?\.addEventListener/);
