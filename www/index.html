@@ -1107,6 +1107,7 @@ let timerSec=0, timerInt=null;
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 function go(page){
  const target=document.getElementById(page);if(!target)return;
+ if(page!=='map')window.HealthGoMapPro?.leaveMap();
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  target.classList.add('active');
  document.getElementById('title').textContent=titles[page]||'HealthGo';
