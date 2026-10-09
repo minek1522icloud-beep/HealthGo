@@ -99,9 +99,6 @@ body[data-dark="1"] #map .map-v2-item span{color:#dce7f6}
 
 
 /* Premium navigation/map enhancements; never conceal MapLibre attribution. */
-#map .hg-pro-3d-host{position:absolute;inset:0;z-index:520;min-height:0;overflow:hidden}
-#map .hg-pro-3d-host[hidden],#map .hg-pro-nav[hidden]{display:none!important}
-#map .hg-pro-3d-host .maplibregl-control-container{z-index:2}
 #map .hg-pro-icon{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 #map .map-v2-tab{gap:5px;padding:10px 7px;min-height:54px}
 #map .map-v2-bottom{padding:9px;gap:8px}
@@ -128,10 +125,6 @@ body[data-dark="1"] #map .map-v2-item span{color:#dce7f6}
 #map .map-workspace.map-pro-navigating .map-categories{display:none!important}
 #map .map-workspace.map-pro-navigating .map-toolbar{padding:6px 10px}
 #map .map-workspace.map-pro-navigating .map-v2-banner{display:none}
-#map .map-workspace.map-pro-3d .map-v2-float{z-index:650}
-#map .map-workspace.map-pro-3d .map-v2-actions{z-index:660}
-#map .map-workspace.map-pro-3d .map-v2-panel{z-index:800}
-#map .map-workspace.map-pro-3d .map-v2-bottom{z-index:670}
 #map .hg-pro-nav button:focus-visible{outline:3px solid #6eabfc;outline-offset:2px}
 @media(max-width:900px){
  #map .map-v2-bottom{padding:8px 5px;gap:3px}
@@ -275,7 +268,6 @@ body[data-dark="1"] #map .map-v2-item span{color:#dce7f6}
 #map .hg-pro-needle{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;
  background:#0d68ed;color:#fff;border:3px solid #fff;box-shadow:0 0 0 5px #2e84ff33,0 5px 16px #0007;
  font-size:25px;line-height:1;transition:transform .3s ease}
-#map .hg-pro-position-arrow{filter:drop-shadow(0 3px 7px rgba(0,0,0,.4))}
 #map .hg-pro-nav button:focus-visible{outline:3px solid #8abbff;outline-offset:3px}
 @media(max-width:900px){
  #map .map-workspace.map-pro-navigating #hgProNavigation{padding:calc(8px + env(safe-area-inset-top)) 9px calc(8px + env(safe-area-inset-bottom))}
