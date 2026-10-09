@@ -6,6 +6,7 @@
  let tracker=null,traceLayer=null,trackingStarted=0,lastFix=null,trackedMeters=0,routeMode='car';
  let measuring=false,measurePoints=[],measureLine=null,measureDots=[],mapSpacious=false;
  let mapEntryLocated=false,mapWelcomeShown=false,locationWelcomeObserver=null;
+ let routeChoices=[],routeChosen=0,routeStartWasManual=false;
  let recentFix=null; // precise GPS fix stays in memory; never persisted
  let mapLocationCheckBusy=false;
  const satellite='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
@@ -30,7 +31,6 @@
   resizeViewport();
   if(getMap()){
    getMap().invalidateSize({pan:false});
-   window.HealthGoMapPro?.enableAuto3D?.();
    if(!mapEntryLocated){
     const recent=getRecentPosition();
     if(recent){mapEntryLocated=true;centerFromConsent(recent);}
@@ -140,7 +140,8 @@
  function toggle(name){
   if(measuring)stopMeasure();
   mount();
-  const valid=['route','layers','favorites','activity','tools'];
+  const valid=['route','layers','favorites','activity','tools','weather','saved','settings'];
+  if(name==='map'){close();return}
   if(!valid.includes(name)){close();return}
   if(activePanel===name){close();return}
   activePanel=name;
@@ -148,9 +149,12 @@
   document.querySelectorAll('.map-v2-tab,.map-v2-actions button[data-panel]').forEach(btn=>btn.classList.toggle('active',btn.dataset.panel===name));
   if(name==='favorites')drawFavorites();
   if(name==='activity')drawActivity();
+  if(name==='weather')window.HealthGoMap4?.refreshWeather?.();
+  if(name==='saved')window.HealthGoMap4?.drawRoutes?.();
+  if(name==='settings')window.HealthGoMap4?.renderSettings?.();
   setTimeout(()=>getMap()?.invalidateSize({pan:false}),80);
  }
- function close(){activePanel='';document.querySelectorAll('.map-v2-panel').forEach(p=>p.hidden=true);document.querySelectorAll('.map-v2-tab,.map-v2-actions button[data-panel]').forEach(b=>b.classList.remove('active'));}
+ function close(){activePanel='';document.querySelectorAll('.map-v2-panel').forEach(p=>p.hidden=true);document.querySelectorAll('.map-v2-tab,.map-v2-actions button[data-panel]').forEach(b=>b.classList.toggle('active',b.dataset.panel==='map'));}
  function chooseLayer(kind){
   if(!['street','satellite'].includes(kind))return;
   if(typeof L==='undefined'||!getMap()){say('Otwórz mapę, aby zmienić warstwę.');return}
@@ -251,6 +255,7 @@
  function chooseMode(mode){
   if(!['car','foot','bike'].includes(mode))return;
   if(routeMode!==mode){
+    routeChoices=[];routeChosen=0;const variants=el('hg4RouteAlternatives');if(variants)variants.replaceChildren();
     window.HealthGoMapPro?.clearRoute();
     if(routeLayer&&getMap())getMap().removeLayer(routeLayer);
     routeLayer=null;
@@ -397,7 +402,6 @@
   renderMeasure();
  }
  function startMeasure(){
-  window.HealthGoMapPro?.stop3D();
   mount();
   const map=getMap();
   if(!map||typeof map.on!=='function'){
