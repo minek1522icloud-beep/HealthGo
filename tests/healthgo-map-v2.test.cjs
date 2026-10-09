@@ -47,7 +47,8 @@ test('Map search results expose real route and save-place actions without faking
 
 test('Map module parses and requests GPS only after a user action',()=>{
  new vm.Script(source,{filename:'healthgo-map-v2.js'});
- assert.doesNotMatch(source,/getCurrentPosition\([^)]*\)\s*;/);
+ assert.match(source,/function locateOptIn\(\)/);
+ assert.match(source,/const known=getRecentPosition\(\)/);
  assert.match(source,/function locateOptIn\(\)/);
  assert.match(source,/async function planRoute\(\)/);
  assert.match(source,/navigator\.geolocation\.watchPosition\(/);
@@ -121,6 +122,18 @@ test('No location tracking starts at map load; favorites are account-specific',(
  assert.equal(app.locationCalls.tracking,0);
 });
 
+test('Recent consented GPS is remembered only in memory and never persisted',()=>{
+ const app=harness();
+ assert.equal(app.locationCalls.current,0);
+ assert.equal(app.window.HealthGoMapV2.getRecentPosition(),null);
+ assert.equal(app.window.HealthGoMapV2.rememberPosition({lat:52.2,lon:21.0,accuracy:15}),true);
+ const fix=app.window.HealthGoMapV2.getRecentPosition();
+ assert.equal(fix.lat,52.2);
+ assert.equal(fix.lon,21);
+ assert.equal(app.locationCalls.current,0,'no second permission prompt for fresh fix');
+ assert.equal(app.storage.size,0,'GPS coordinates not saved to localStorage');
+});
+
 test('Distance measurement uses map taps without GPS or persisting location',()=>{
  const app=harness(),api=app.window.HealthGoMapV2;
  assert.equal(api.startMeasure(),true);
@@ -190,6 +203,6 @@ test('Traffic, weather and 3D are identified as unavailable until real feeds exi
  assert.match(source,/Warstwa korków wymaga zewnętrznego dostawcy/);
  assert.match(source,/Radar i ostrzeżenia pogodowe wymagają aktualnego źródła/);
  assert.match(source,/Widok 3D wymaga osobnego silnika/);
- assert.match(source,/Bez zgody na GPS/);
+ assert.match(source,/Telefon odmówił dostępu do GPS/);
  assert.match(source,/Nie wyświetlam zmyślonego czasu/);
 });
