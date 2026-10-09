@@ -70,7 +70,8 @@
   mount();return true;
  }
  function saveCenter(){const map=getMap();if(!map){say('Najpierw otwórz mapę.');return}
-  const center=map.getCenter();savePlace({name:'Moje miejsce '+new Date().toLocaleDateString('pl-PL'),lat:center.lat,lon:center.lng});
+  const center=window.HealthGoMapPro?.visibleCenter?.()||map.getCenter();
+  savePlace({name:'Moje miejsce '+new Date().toLocaleDateString('pl-PL'),lat:center.lat,lon:center.lng});
  }
  function drawFavorites(){
   const root=el('mapV2Favorites');if(!root)return;root.replaceChildren();
@@ -81,7 +82,7 @@
    const item=child(root,'div',undefined,'map-v2-item'),copy=child(item,'span',p.name||'Miejsce');
    child(copy,'small',Number(p.lat).toFixed(4)+', '+Number(p.lon).toFixed(4));
    const controls=child(item,'div',undefined,'map-v2-buttons');
-   const show=child(controls,'button','Pokaż');show.type='button';show.addEventListener('click',()=>{getMap()?.setView([p.lat,p.lon],16);close()});
+   const show=child(controls,'button','Pokaż');show.type='button';show.addEventListener('click',()=>{window.HealthGoMapPro?.stop3D();getMap()?.setView([p.lat,p.lon],16);close()});
    const route=child(controls,'button','Trasa');route.type='button';route.addEventListener('click',()=>selectDestination(p.name,p.lat,p.lon));
    const del=child(controls,'button','Usuń');del.type='button';del.addEventListener('click',()=>{const newer=read('favorites');newer.splice(i,1);write('favorites',newer);drawFavorites();mount()});
   });
@@ -170,7 +171,7 @@
    if(output)output.textContent=msg==='GPS_DENIED'?'Bez zgody na GPS nie wyznaczę trasy od Twojego położenia.':msg==='GPS_UNAVAILABLE'?'Nie udało się ustalić lokalizacji. Sprawdź uprawnienia telefonu.':'Nie udało się wyznaczyć trasy. Publiczny serwer może być zajęty — spróbuj później.';
   }
  }
- function showFamily(){close();if(typeof showFamilyOnMap==='function')showFamilyOnMap();}
+ function showFamily(){close();window.HealthGoMapPro?.stop3D();if(typeof showFamilyOnMap==='function')showFamilyOnMap();}
  function startTracking(){
   if(tracker!==null)return;
   if(!currentUid()){say('Zaloguj się przed rozpoczęciem aktywności.');return}
@@ -262,6 +263,7 @@
   renderMeasure();
  }
  function startMeasure(){
+  window.HealthGoMapPro?.stop3D();
   mount();
   const map=getMap();
   if(!map||typeof map.on!=='function'){
@@ -310,7 +312,7 @@
   return mapSpacious;
  }
  function notice(topic){const labels={traffic:'Warstwa korków wymaga zewnętrznego dostawcy bieżących danych. Nie pokazujemy fikcyjnego ruchu.',weather:'Radar i ostrzeżenia pogodowe wymagają aktualnego źródła danych. Nie pokazujemy fikcyjnej pogody.',threeD:'Widok 3D wymaga osobnego silnika map. Obecna mapa Leaflet działa płynnie w 2D.'};say(labels[topic]||'Funkcja wymaga konfiguracji danych.');}
- function centerGPS(){if(typeof useMyLocation==='function')useMyLocation();}
+ function centerGPS(){if(window.HealthGoMapPro?.center3D?.())return;if(typeof useMyLocation==='function')useMyLocation();}
  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',mount,{once:true})}else mount();
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&(tracker!==null||measuring)){
   const wasTracking=tracker!==null;stopTracking(false);if(measuring)stopMeasure();
