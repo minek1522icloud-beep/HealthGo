@@ -46,7 +46,6 @@ async function install(id){
     headers:new Headers({'Content-Type':response.headers.get('Content-Type')||'application/octet-stream'})
    }));
   }
-  const cache=await caches.open(CACHE);
   for(const file of FILES)if(!(await cache.match(modelUrl(file))))
    throw new Error('LOCAL_MODEL_CACHE_INCOMPLETE');
   send('downloaded',{id,model:MODEL});
