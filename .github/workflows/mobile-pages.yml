@@ -11,6 +11,7 @@ on:
       - "tests/build-safe-mobile.test.cjs"
       - "tests/healthgo-map-v2.test.cjs"
       - "tests/healthgo-map-pro.test.cjs"
+      - "tests/healthgo-map4.test.cjs"
       - "tests/healthgo-chat-modern.test.cjs"
       - "tests/ai-multiturn.test.cjs"
       - "tests/mobile-suite.test.cjs"
@@ -52,7 +53,7 @@ jobs:
 
       - name: Sprawdz pobieranie i wznawianie AI na telefonie
         shell: bash
-        run: node --test tests/healthgo-map-pro.test.cjs tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
+        run: node --test tests/healthgo-map4.test.cjs tests/healthgo-map-pro.test.cjs tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
 
       - name: Przygotuj wersje mobilna
         shell: bash
@@ -76,6 +77,7 @@ jobs:
           test -s www/healthgo-map-v2.css
           test -s www/healthgo-map-v2.js
           test -s www/healthgo-map-pro.js
+          test -s www/healthgo-map4.js
           test -s www/safe.html
           test -s www/diagnostics.html
           grep -q 'healthgo-safe-mode' www/safe.html
