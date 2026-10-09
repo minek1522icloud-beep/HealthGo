@@ -547,20 +547,33 @@ html.hg-session-known #authScreen{display:none!important}
         <button type="button" title="Moja lokalizacja" aria-label="Pokaż moją lokalizację" onclick="HealthGoMapV2.centerGPS()"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-pin"></use></svg></button>
         <button type="button" title="Dodatkowe funkcje" aria-label="Więcej możliwości mapy" onclick="HealthGoMapV2.toggle('tools')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-menu"></use></svg></button>
       </div>
-      <aside id="hgProNavigation" class="hg-pro-nav" role="status" aria-live="polite" hidden>
+      <aside id="hgProNavigation" class="hg-pro-nav" role="region" aria-label="Prowadzenie po trasie" hidden>
         <div class="hg-pro-nav-main">
-          <div id="hgProNavIcon" class="hg-pro-direction-symbol" aria-hidden="true">↱</div>
-          <div class="hg-pro-direction-copy"><b id="hgProNavDirection">Ustalam pozycję…</b><span id="hgProNavNext">Czekam na sygnał GPS</span></div>
+          <div id="hgProNavIcon" class="hg-pro-direction-symbol" aria-hidden="true">↑</div>
+          <div class="hg-pro-direction-copy">
+            <small class="hg-pro-eyebrow">NASTĘPNY MANEWR</small>
+            <b id="hgProNavDirection" aria-live="polite">Ustalam pozycję…</b>
+            <span id="hgProNavNext">Czekam na sygnał GPS</span>
+          </div>
+          <button type="button" class="hg-pro-nav-close" aria-label="Zakończ nawigację" onclick="HealthGoMapPro.stopNavigation()">×</button>
+        </div>
+        <div class="hg-pro-speed" aria-label="Prędkość z GPS">
+          <small>GPS</small><strong id="hgProNavSpeed">—</strong><small>km/h</small>
         </div>
         <div class="hg-pro-nav-footer">
-          <span id="hgProNavDistance">Trasa obliczona</span>
+          <div class="hg-pro-nav-progress">
+            <strong id="hgProNavEta">—</strong>
+            <span id="hgProNavDistance">Obliczam pozostałą trasę…</span>
+            <small id="hgProNavDestination">Cel podróży</small>
+          </div>
           <div class="hg-pro-nav-buttons">
-            <button id="hgProVoice" type="button" aria-pressed="false" onclick="HealthGoMapPro.toggleVoice()">Głos: wyłączony</button>
+            <button id="hgProVoice" type="button" aria-label="Włącz lub wyłącz głos" aria-pressed="false" onclick="HealthGoMapPro.toggleVoice()">Głos: wyłączony</button>
             <button id="hgProFollow" type="button" aria-pressed="true" onclick="HealthGoMapPro.toggleFollow()">Śledź położenie</button>
+            <button id="hgProNav3D" type="button" aria-pressed="true" onclick="HealthGoMapPro.toggleNavigation3D()">3D</button>
             <button type="button" class="hg-pro-stop" onclick="HealthGoMapPro.stopNavigation()">Zakończ</button>
           </div>
         </div>
-        <small>GPS działa tylko przy otwartej aplikacji. Wskazówki nie zastępują znaków drogowych.</small>
+        <small class="hg-pro-nav-warning">Wskazówki orientacyjne, bez korków i danych o ograniczeniach prędkości. Nie obsługuj telefonu podczas prowadzenia.</small>
       </aside>
       <aside id="mapV2MeasureHud" class="map-v2-measure-hud" role="status" aria-live="polite" hidden>
         <div class="map-v2-measure-info">
