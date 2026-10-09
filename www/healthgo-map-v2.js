@@ -54,7 +54,7 @@
  function welcomeShouldOpen(){
   if(mapWelcomeShown||localStorageGet('healthgo.location.welcome.v1')!==null)return false;
   const app=document.querySelector?.('.app'),signin=el('authScreen');
-  if(!app||app.classList.contains('auth-hidden')||signin?.classList.contains('show'))return false;
+  if(!app||app.classList.contains('auth-hidden')||signin?.classList?.contains?.('show'))return false;
   return true;
  }
  function showLocationWelcome(){
