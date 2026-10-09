@@ -173,6 +173,10 @@
  }
  function toggleNavigationTheme(){setNight(!night);window.HealthGoMap4?.saveSettings?.({theme:night?'dark':'light'});return night}
  function leaveMap(){stopNavigation()}
+ // Fresh app launches always begin in regular map mode. The HUD is mounted
+ // in HTML but cannot be shown until startNavigation explicitly opens it.
+ show('hgProNavigation',false);
+ document.body?.classList?.remove('hg-navigation-active');
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopNavigation()});
  window.addEventListener('pagehide',stopNavigation);
  window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,toggleVoice,toggleFollow,
