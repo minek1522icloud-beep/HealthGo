@@ -6,6 +6,7 @@
  let tracker=null,traceLayer=null,trackingStarted=0,lastFix=null,trackedMeters=0,routeMode='car';
  let measuring=false,measurePoints=[],measureLine=null,measureDots=[],mapSpacious=false;
  let mapEntryLocated=false,mapWelcomeShown=false,locationWelcomeObserver=null;
+ let recentFix=null; // precise GPS fix stays in memory; never persisted
  const satellite='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
  const routeUrl='https://router.project-osrm.org/route/v1/driving/';
  const getMap=()=>typeof healthGoMap!=='undefined'?healthGoMap:null;
@@ -75,6 +76,7 @@
   navigator.geolocation.getCurrentPosition(position=>{
    const pos=position.coords;
    if(!Number.isFinite(pos?.latitude)||!Number.isFinite(pos?.longitude))return;
+   rememberPosition({lat:pos.latitude,lon:pos.longitude,accuracy:pos.accuracy});
    if(el('map')?.classList.contains('active')){
     mapEntryLocated=true;
     if(getMap()&&typeof useMyLocation==='function')useMyLocation();
@@ -184,12 +186,31 @@
   const p={name:clean(rows[0].display_name||query),lat:Number(rows[0].lat),lon:Number(rows[0].lon)};
   return validPoint(p)?p:null;
  }
+ function rememberPosition(p){
+  if(!validPoint(p))return false;
+  const accuracy=Number(p.accuracy);
+  recentFix={lat:Number(p.lat),lon:Number(p.lon),accuracy:Number.isFinite(accuracy)?accuracy:150,at:Date.now()};
+  return true;
+ }
+ function getRecentPosition(maxAge=120000){
+  return recentFix&&Date.now()-recentFix.at<maxAge&&recentFix.accuracy<=150?
+   {lat:recentFix.lat,lon:recentFix.lon}:null;
+ }
  function locateOptIn(){
+  // Reuse a recent fix from a previous user-authorized location request,
+  // avoiding redundant iPhone permission prompts while planning a route.
+  const known=getRecentPosition();
+  if(known)return Promise.resolve(known);
   return new Promise((resolve,reject)=>{
    if(!navigator.geolocation){reject(new Error('GPS_UNAVAILABLE'));return}
-   navigator.geolocation.getCurrentPosition(pos=>resolve({lat:pos.coords.latitude,lon:pos.coords.longitude}),
-     err=>reject(new Error(err?.code===1?'GPS_DENIED':'GPS_UNAVAILABLE')),
-     {enableHighAccuracy:true,timeout:15000,maximumAge:20000});
+   navigator.geolocation.getCurrentPosition(pos=>{
+     const point={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy};
+     rememberPosition(point);resolve({lat:point.lat,lon:point.lon});
+   },err=>{
+     const fallback=getRecentPosition(300000);
+     if(fallback&&err?.code!==1){resolve(fallback);return;}
+     reject(new Error(err?.code===1?'GPS_DENIED':err?.code===3?'GPS_TIMEOUT':'GPS_UNAVAILABLE'));
+   },{enableHighAccuracy:true,timeout:17000,maximumAge:30000});
   });
  }
  function chooseMode(mode){
@@ -242,7 +263,7 @@
    if(external){const q=new URLSearchParams({engine:'fossgis_osrm_car',route:start.lat+','+start.lon+';'+destination.lat+','+destination.lon});external.href='https://www.openstreetmap.org/directions?'+q;external.textContent='Otwórz wskazówki dojazdu ↗';external.hidden=false;}
   }catch(err){
    const msg=String(err?.message||err);
-   if(output)output.textContent=msg==='GPS_DENIED'?'Bez zgody na GPS nie wyznaczę trasy od Twojego położenia.':msg==='GPS_UNAVAILABLE'?'Nie udało się ustalić lokalizacji. Sprawdź uprawnienia telefonu.':'Nie udało się wyznaczyć trasy. Publiczny serwer może być zajęty — spróbuj później.';
+   if(output)output.textContent=msg==='GPS_DENIED'?'Telefon odmówił dostępu do GPS. Sprawdź uprawnienia lokalizacji dla HealthGo w ustawieniach iPhone’a.':msg==='GPS_TIMEOUT'?'GPS nie odpowiedział na czas. Spróbuj na otwartej przestrzeni lub użyj przycisku lokalizacji.':msg==='GPS_UNAVAILABLE'?'Telefon nie może teraz ustalić pozycji. Sprawdź usługi lokalizacji.':'Nie udało się wyznaczyć trasy. Sprawdź adres i połączenie z usługą tras.';
   }
  }
  function showFamily(){close();window.HealthGoMapPro?.stop3D();if(typeof showFamilyOnMap==='function')showFamilyOnMap();}
@@ -397,5 +418,5 @@
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition};
 })();
