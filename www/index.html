@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com https://www.google.com https://www.gstatic.com/recaptcha/ https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com https://www.gstatic.com/recaptcha/; worker-src 'self' blob:; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co https://cdn.jsdelivr.net https://*.jsdelivr.net https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://recaptcha.google.com/recaptcha/ https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com https://www.google.com https://www.gstatic.com/recaptcha/ https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https://server.arcgisonline.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com https://www.gstatic.com/recaptcha/; worker-src 'self' blob:; connect-src 'self' https://router.project-osrm.org https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co https://cdn.jsdelivr.net https://*.jsdelivr.net https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://recaptcha.google.com/recaptcha/ https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="healthgo-build" content="development">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>HealthGo</title>
@@ -338,6 +338,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-v2.css">
 <link rel="stylesheet" href="./healthgo-mobile-suite.css">
 <link rel="stylesheet" href="./healthgo-chat-modern.css?v=1">
+<link rel="stylesheet" href="./healthgo-map-v2.css?v=1">
 </head>
 <body style="background:#07111f">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -495,6 +496,7 @@ html.hg-session-known #authScreen{display:none!important}
 <section id="map" class="page">
   <div class="map-workspace" id="mapWorkspace">
     <div class="map-toolbar">
+      <div class="map-v2-banner">🗺️ HealthGo Mapa 2.0 <span class="map-v2-tag">OpenStreetMap</span></div>
       <div class="map-toolbar-row">
         <div class="map-address-wrap">
           <span class="map-address-icon">🔎</span>
@@ -520,6 +522,89 @@ html.hg-session-known #authScreen{display:none!important}
     <div class="map-canvas-wrap">
       <div id="healthgoMap" aria-label="Mapa prawdziwych miejsc"></div>
       <div id="mapSearchStatus" class="map-status-pill">Przybliż mapę do wybranej okolicy albo użyj „Moje położenie”. Lokalizacja jest pobierana tylko po Twoim kliknięciu i zgodzie.</div>
+      <div class="map-v2-actions" aria-label="Szybkie akcje mapy">
+        <button type="button" data-panel="route" onclick="HealthGoMapV2.toggle('route')">↗ Trasy</button>
+        <button type="button" data-panel="favorites" onclick="HealthGoMapV2.toggle('favorites')">⭐ Ulubione <span id="mapV2FavouriteCount">0</span></button>
+        <button type="button" onclick="HealthGoMapV2.showFamily()">👥 Rodzina</button>
+      </div>
+      <div class="map-v2-float" aria-label="Sterowanie mapą">
+        <button type="button" title="Warstwy mapy" aria-label="Warstwy mapy" onclick="HealthGoMapV2.toggle('layers')">▱</button>
+        <button type="button" title="Moja lokalizacja" aria-label="Pokaż moją lokalizację" onclick="HealthGoMapV2.centerGPS()">◎</button>
+        <button type="button" title="Dodatkowe funkcje" aria-label="Więcej możliwości mapy" onclick="HealthGoMapV2.toggle('tools')">⋯</button>
+      </div>
+      <nav class="map-v2-bottom" aria-label="Funkcje Mapy 2.0">
+        <button type="button" class="map-v2-tab" data-panel="route" onclick="HealthGoMapV2.toggle('route')"><span>🧭</span>Trasy</button>
+        <button type="button" class="map-v2-tab" data-panel="activity" onclick="HealthGoMapV2.toggle('activity')"><span>🚶</span>Aktywność</button>
+        <button type="button" class="map-v2-tab" data-panel="favorites" onclick="HealthGoMapV2.toggle('favorites')"><span>⭐</span>Miejsca</button>
+        <button type="button" class="map-v2-tab" data-panel="layers" onclick="HealthGoMapV2.toggle('layers')"><span>🗺️</span>Warstwy</button>
+        <button type="button" class="map-v2-tab" data-panel="tools" onclick="HealthGoMapV2.toggle('tools')"><span>☰</span>Więcej</button>
+      </nav>
+      <section class="map-v2-panel" data-map-panel="route" hidden aria-label="Planowanie trasy">
+        <div class="map-v2-panel-head"><h3>🧭 Zaplanuj trasę</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-content">
+          <p class="map-v2-muted">Początek: Twoja lokalizacja, pobierana wyłącznie po kliknięciu „Wyznacz trasę” i zgodzie na GPS.</p>
+          <label class="map-v2-field" for="mapV2RouteTo">Dokąd?</label>
+          <input id="mapV2RouteTo" class="map-v2-input" type="search" autocomplete="off" placeholder="Adres, park albo wybrane miejsce">
+          <div class="map-v2-buttons" role="group" aria-label="Środek transportu">
+            <button class="active" type="button" data-map-mode="car" aria-pressed="true" onclick="HealthGoMapV2.chooseMode('car')">🚙 Samochód</button>
+            <button type="button" data-map-mode="foot" aria-pressed="false" onclick="HealthGoMapV2.chooseMode('foot')">🚶 Pieszo</button>
+            <button type="button" data-map-mode="bike" aria-pressed="false" onclick="HealthGoMapV2.chooseMode('bike')">🚲 Rower</button>
+          </div>
+          <p id="mapV2RouteModeHint" class="map-v2-muted">Trasa drogowa z publicznej usługi OSRM — orientacyjna.</p>
+          <button type="button" class="map-v2-primary" onclick="HealthGoMapV2.planRoute()">↗ Wyznacz trasę</button>
+          <p id="mapV2RouteOutput" class="map-v2-alert" role="status">Podaj cel lub wybierz miejsce z wyników mapy.</p>
+          <a id="mapV2External" href="https://www.openstreetmap.org/directions" target="_blank" rel="noopener noreferrer" hidden>Otwórz wskazówki ↗</a>
+        </div>
+      </section>
+      <section class="map-v2-panel" data-map-panel="layers" hidden aria-label="Warstwy mapy">
+        <div class="map-v2-panel-head"><h3>🗺️ Warstwy mapy</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-content">
+          <div class="map-v2-buttons">
+            <button type="button" class="active" data-map-layer="street" aria-pressed="true" onclick="HealthGoMapV2.chooseLayer('street')">🗺️ Zwykła mapa</button>
+            <button type="button" data-map-layer="satellite" aria-pressed="false" onclick="HealthGoMapV2.chooseLayer('satellite')">🛰️ Satelita</button>
+          </div>
+          <p class="map-v2-muted">Zwykła mapa: OpenStreetMap. Zdjęcia satelitarne: Esri.</p>
+          <div class="map-v2-buttons">
+            <button type="button" onclick="HealthGoMapV2.notice('threeD')">🏙️ Budynki 3D — planowane</button>
+            <button type="button" onclick="HealthGoMapV2.notice('traffic')">🚦 Ruch — planowany</button>
+            <button type="button" onclick="HealthGoMapV2.notice('weather')">🌦️ Pogoda — planowana</button>
+          </div>
+          <p class="map-v2-alert">Dane o korkach, radarze deszczu i budynkach 3D dodamy po podłączeniu wiarygodnych usług. Nie pokazujemy przykładowych danych jako aktualnych.</p>
+        </div>
+      </section>
+      <section class="map-v2-panel" data-map-panel="favorites" hidden aria-label="Zapisane miejsca">
+        <div class="map-v2-panel-head"><h3>⭐ Ulubione miejsca</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-content">
+          <p class="map-v2-muted">Miejsca zapisują się lokalnie i osobno dla zalogowanego konta. Nie udostępniamy ich innym.</p>
+          <button type="button" class="map-v2-primary" onclick="HealthGoMapV2.saveCenter()">＋ Zapisz środek widocznej mapy</button>
+          <div id="mapV2Favorites" aria-live="polite"></div>
+        </div>
+      </section>
+      <section class="map-v2-panel" data-map-panel="activity" hidden aria-label="Moje trasy i aktywność">
+        <div class="map-v2-panel-head"><h3>🚶 Aktywność i trasy</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-content">
+          <p class="map-v2-muted">Rejestracja GPS działa tylko po Twoim włączeniu i przy otwartej aplikacji. Zapisuje dystans i czas, bez historii dokładnych współrzędnych.</p>
+          <p id="mapV2TrackState" class="map-v2-alert">Rejestrowanie wyłączone.</p>
+          <div class="map-v2-buttons">
+            <button type="button" onclick="HealthGoMapV2.startTracking()">▶ Rozpocznij spacer</button>
+            <button type="button" onclick="HealthGoMapV2.stopTracking(true)">■ Zatrzymaj i zapisz</button>
+          </div>
+          <h4>Ostatnie aktywności</h4>
+          <div id="mapV2Activities"></div>
+        </div>
+      </section>
+      <section class="map-v2-panel" data-map-panel="tools" hidden aria-label="Więcej funkcji mapy">
+        <div class="map-v2-panel-head"><h3>✨ Mapa 2.0</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
+        <div class="map-v2-panel-content">
+          <div class="map-v2-buttons">
+            <button type="button" onclick="HealthGoMapV2.close();searchMapPlaces()">🔎 Szukaj miejsc w okolicy</button>
+            <button type="button" onclick="HealthGoMapV2.showFamily()">👥 Rodzina za zgodą</button>
+            <button type="button" onclick="HealthGoMapV2.centerGPS()">📍 Moja lokalizacja</button>
+            <button type="button" onclick="HealthGoMapV2.toggle('favorites')">⭐ Zapisane miejsca</button>
+          </div>
+          <p class="map-v2-muted">Mapa, lokalizacja i trasy korzystają z danych zewnętrznych wyłącznie podczas wybranych działań. Zwykła mapa nie uruchamia śledzenia GPS.</p>
+        </div>
+      </section>
 
       <section id="mapResultsPanel" class="map-results-panel" aria-label="Wyniki wyszukiwania miejsc">
         <div class="map-results-head">
@@ -986,7 +1071,7 @@ function go(page){
  document.getElementById('title').textContent=titles[page]||'HealthGo';
  document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
  window.scrollTo({top:0,behavior:'smooth'});
- if(page==='map')setTimeout(()=>{initHealthGoMap();renderFamilyLocationsOnMap();refreshHealthGoMapSize()},120);
+ if(page==='map')setTimeout(()=>{initHealthGoMap();renderFamilyLocationsOnMap();refreshHealthGoMapSize();window.HealthGoMapV2?.mount()},120);
  if(page==='plan')setTimeout(renderPlanDay,20);
  if(page==='start')setTimeout(()=>{renderTodayPlanPreview();renderProgressUI()},20);
  if(page==='challenges')setTimeout(renderProgressUI,20);
@@ -2635,5 +2720,6 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-pro.js"></script>
 <script src="./healthgo-v2-ui.js"></script>
 <script src="./healthgo-mobile-suite.js"></script>
+<script src="./healthgo-map-v2.js?v=1"></script>
 </body>
 </html>
