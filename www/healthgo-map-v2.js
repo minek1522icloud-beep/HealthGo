@@ -4,6 +4,7 @@
  const el=id=>document.getElementById(id);
  let mounted=false,activePanel='',tileLayer=null,tileKind='street',destination=null,destinationMarker=null,routeLayer=null;
  let tracker=null,traceLayer=null,trackingStarted=0,lastFix=null,trackedMeters=0,routeMode='car';
+ let measuring=false,measurePoints=[],measureLine=null,measureDots=[],mapSpacious=false;
  const satellite='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
  const routeUrl='https://router.project-osrm.org/route/v1/driving/';
  const getMap=()=>typeof healthGoMap!=='undefined'?healthGoMap:null;
@@ -215,10 +216,98 @@
   list.slice(0,8).forEach(row=>{const item=child(root,'div',undefined,'map-v2-item');
    const label=child(item,'span',(Number(row.meters)/1000).toFixed(2)+' km · '+Number(row.minutes)+' min');child(label,'small',new Date(row.at).toLocaleString('pl-PL'));});
  }
+
+ function measureDistanceText(meters){
+  if(!Number.isFinite(meters)||meters<=0)return '0 m';
+  return meters<1000?Math.round(meters)+' m':(meters/1000).toFixed(2).replace('.',',')+' km';
+ }
+ function measuredMeters(){
+  return measurePoints.slice(1).reduce((sum,point,index)=>sum+distance(measurePoints[index],point),0);
+ }
+ function renderMeasure(){
+  const map=getMap(),label=el('mapV2MeasureDistance'),hint=el('mapV2MeasureHint');
+  if(measureLine&&map){map.removeLayer(measureLine);measureLine=null}
+  if(map)measureDots.forEach(dot=>map.removeLayer(dot));
+  measureDots=[];
+  if(label)label.textContent=measureDistanceText(measuredMeters());
+  if(hint)hint.textContent=measurePoints.length===0?'Dotknij mapy, aby wybrać pierwszy punkt.'
+   :measurePoints.length===1?'Wybierz drugi punkt, aby poznać dystans.'
+   :'Punkty: '+measurePoints.length+' · pomiar po prostej między punktami, nie po ulicach.';
+  if(map&&typeof L!=='undefined'&&measurePoints.length){
+   if(typeof L.circleMarker==='function'){
+    measurePoints.forEach((point,index)=>{
+     const dot=L.circleMarker([point.lat,point.lon],{
+      radius:index===0?7:5,color:'#0c5edb',weight:2,fillColor:'#fff',fillOpacity:1
+     }).addTo(map);
+     measureDots.push(dot);
+    });
+   }
+   if(measurePoints.length>1&&typeof L.polyline==='function'){
+    measureLine=L.polyline(measurePoints.map(p=>[p.lat,p.lon]),{
+     color:'#1265ed',weight:4,opacity:.85,dashArray:'8,7',interactive:false
+    }).addTo(map);
+   }
+  }
+ }
+ function measureClick(event){
+  if(!measuring||!event?.latlng)return;
+  const point={lat:Number(event.latlng.lat),lon:Number(event.latlng.lng)};
+  if(!validPoint(point))return;
+  if(measurePoints.length>=30){say('Maksymalnie 30 punktów pomiaru. Cofnij punkt lub wyczyść pomiar.');return}
+  measurePoints.push(point);
+  renderMeasure();
+ }
+ function startMeasure(){
+  mount();
+  const map=getMap();
+  if(!map||typeof map.on!=='function'){
+   say('Najpierw otwórz mapę, aby zmierzyć dystans.');return false;
+  }
+  if(measuring)return true;
+  close();
+  measuring=true;measurePoints=[];
+  map.on('click',measureClick);
+  el('mapWorkspace')?.classList.add('measure-active');
+  const hud=el('mapV2MeasureHud');if(hud)hud.hidden=false;
+  renderMeasure();
+  say('Pomiar odległości w linii prostej — dotknij mapy, aby dodać punkty.');
+  return true;
+ }
+ function undoMeasure(){
+  if(!measuring||!measurePoints.length)return;
+  measurePoints.pop();renderMeasure();
+ }
+ function clearMeasure(){
+  if(!measuring)return;
+  measurePoints=[];renderMeasure();
+ }
+ function stopMeasure(){
+  const map=getMap();
+  if(map&&typeof map.off==='function')map.off('click',measureClick);
+  measuring=false;measurePoints=[];
+  if(measureLine&&map)map.removeLayer(measureLine);
+  if(map)measureDots.forEach(dot=>map.removeLayer(dot));
+  measureLine=null;measureDots=[];
+  el('mapWorkspace')?.classList.remove('measure-active');
+  const hud=el('mapV2MeasureHud');if(hud)hud.hidden=true;
+  const label=el('mapV2MeasureDistance');if(label)label.textContent='0 m';
+  say('Pomiar zakończony. Nie zapisano lokalizacji ani współrzędnych.');
+ }
+ function toggleSpacious(){
+  mapSpacious=!mapSpacious;
+  el('mapWorkspace')?.classList.toggle('map-v2-spacious',mapSpacious);
+  const button=el('mapV2SpaciousButton');
+  if(button){
+   button.textContent=mapSpacious?'▤ Pokaż filtry mapy':'▣ Więcej miejsca na mapę';
+   button.setAttribute('aria-pressed',String(mapSpacious));
+  }
+  setTimeout(()=>getMap()?.invalidateSize({pan:false}),80);
+  return mapSpacious;
+ }
  function notice(topic){const labels={traffic:'Warstwa korków wymaga zewnętrznego dostawcy bieżących danych. Nie pokazujemy fikcyjnego ruchu.',weather:'Radar i ostrzeżenia pogodowe wymagają aktualnego źródła danych. Nie pokazujemy fikcyjnej pogody.',threeD:'Widok 3D wymaga osobnego silnika map. Obecna mapa Leaflet działa płynnie w 2D.'};say(labels[topic]||'Funkcja wymaga konfiguracji danych.');}
  function centerGPS(){if(typeof useMyLocation==='function')useMyLocation();}
  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',mount,{once:true})}else mount();
- document.addEventListener('visibilitychange',()=>{if(document.hidden){stopTracking(false);say('Rejestrowanie zatrzymano po ukryciu aplikacji. Nie zapisano trasy.')}});
- window.addEventListener('pagehide',()=>stopTracking(false));
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS};
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){stopTracking(false);if(measuring)stopMeasure();say('Rejestrowanie i pomiar zatrzymano po ukryciu aplikacji. Nie zapisano trasy.')}});
+ window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious};
 })();
