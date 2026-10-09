@@ -32,8 +32,16 @@ optional = (
     '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>',
     '<script src="https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js"></script>',
 )
+# Optional modules are installed or removed as the normal HealthGo chat evolves.
+# Absence is valid; duplicates indicate a broken shell and must still fail loudly.
 for tag in optional:
-    replace_once(tag)
+    occurrences = html.count(tag)
+    if occurrences > 1:
+        raise SystemExit(
+            f"Safe mode build found {occurrences} duplicate optional tags: {tag[:100]}"
+        )
+    if occurrences == 1:
+        html = html.replace(tag, "", 1)
 
 replace_once("if (typeof setupMobilePWA === 'function') setupMobilePWA();",
              "// Safe diagnostics: do not register SW or poll/refresh this page.")
