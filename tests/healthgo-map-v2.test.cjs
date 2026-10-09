@@ -87,14 +87,21 @@ function harness(){
   on(kind,handler){this.handlers[kind]=handler;return this;},
   off(kind,handler){if(this.handlers[kind]===handler)delete this.handlers[kind];return this;},
   invalidateSize(){},
+  fitBounds(){},
   removeLayer(layer){this.layers.delete(layer);return this;},
   emitClick(lat,lng){this.handlers.click?.({latlng:{lat,lng}});}
  };
  const layer=()=>({
   addTo(m){m.layers.add(this);return this;}
  });
- const L={circleMarker:()=>layer(),polyline:()=>layer()};
+ const L={circleMarker:()=>layer(),polyline:()=>({...layer(),getBounds(){return {}}})};
  const locationCalls={current:0,tracking:0};
+ const fetchCalls=[];
+ const fetchMock=async url=>{
+  fetchCalls.push(String(url));
+  if(String(url).includes('/search?'))return {ok:true,json:async()=>[{display_name:'Przykładowe miejsce',lat:'52.2',lon:'21.0'}]};
+  return {ok:true,json:async()=>({routes:[{distance:1000,duration:240,geometry:{coordinates:[[21,52.2],[21.01,52.21]]},legs:[{steps:[]}]}]})};
+ };
  const navigator={geolocation:{
   getCurrentPosition(success,error){locationCalls.current++;locationCalls.lastSuccess=success;locationCalls.lastError=error;},
   watchPosition(){locationCalls.tracking++;return 1;},
@@ -106,8 +113,8 @@ function harness(){
   setItem:(k,v)=>storage.set(k,v),
   removeItem:k=>storage.delete(k)
  };
- vm.runInNewContext(source,{document,window,navigator,localStorage,console,setTimeout,clearTimeout,URLSearchParams,Date,Number,Math,JSON,String,encodeURIComponent,AbortController,healthGoMap:map,L});
- return {window,storage,node,locationCalls,map};
+ vm.runInNewContext(source,{document,window,navigator,localStorage,console,setTimeout,clearTimeout,URLSearchParams,Date,Number,Math,JSON,String,encodeURIComponent,AbortController,healthGoMap:map,L,fetch:fetchMock});
+ return {window,storage,node,locationCalls,map,navigator,fetchCalls};
 }
 test('No location tracking starts at map load; favorites are account-specific',()=>{
  const app=harness();
@@ -218,6 +225,26 @@ test('Manual origin is recognized without triggering GPS tracking',()=>{
  assert.match(source,/START_NOT_FOUND/);
  const app=harness();
  assert.equal(app.locationCalls.current,0);
+});
+test('Denied system permission does not trigger an automatic GPS prompt',async()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ app.storage.set('healthgo.location.welcome.v1','allowed');
+ app.navigator.permissions={query:async()=>({state:'denied'})};
+ assert.equal(await api.centerIfSystemGranted(),false);
+ assert.equal(app.locationCalls.current,0,'no OS location prompt while denied');
+ assert.equal(app.storage.get('healthgo.location.welcome.v1'),'denied');
+});
+test('Actual typed start and destination calculate a route without GPS',async()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ app.node('mapV2RouteFrom').value='Przykładowy punkt startowy';
+ app.node('mapV2RouteTo').value='Przykładowy cel';
+ app.node('hgNavStartButton').hidden=false;
+ await api.planRoute();
+ assert.equal(app.locationCalls.current,0,'no location permission required for typed start');
+ assert.equal(app.fetchCalls.filter(url=>url.includes('/search?')).length,2);
+ assert.equal(app.fetchCalls.filter(url=>url.includes('/route/v1/driving/')).length,1);
+ assert.equal(app.node('hgNavStartButton').hidden,true,'live GPS guidance hidden for manual route');
+ assert.match(app.node('mapV2RouteOutput').textContent,/Podgląd trasy z wpisanego adresu startowego/);
 });
 test('Map viewport sizing uses actual bottom navigation instead of a fixed blank gap',()=>{
  assert.match(source,/nav\.getBoundingClientRect\?\.\(\)\.top/);
