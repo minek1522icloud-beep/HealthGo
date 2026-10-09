@@ -205,6 +205,7 @@
    write('activities',[{at:new Date().toISOString(),meters:Math.round(trackedMeters),minutes},...all].slice(0,15));
    say('Zapisano podsumowanie aktywności bez historii współrzędnych.');
   }
+  if(!save&&traceLayer&&getMap()){getMap().removeLayer(traceLayer);traceLayer=null;}
   lastFix=null;updateTracking();if(activePanel==='activity')drawActivity();
  }
  function drawActivity(){
