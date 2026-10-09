@@ -262,15 +262,16 @@
  }
  async function planRoute(){
   const field=el('mapV2RouteTo'),output=el('mapV2RouteOutput'),external=el('mapV2External');
+  const help=el('mapV2GpsHelp');if(help)help.hidden=true;
   if(output)output.textContent='Szukam trasy…';
   if(external)external.hidden=true;
-  const raw=clean(field?.value,180);
+  const raw=clean(field?.value,180),manualStart=clean(el('mapV2RouteFrom')?.value,180);
   if(!raw){if(output)output.textContent='Wpisz cel lub wybierz pinezkę miejsca.';return}
   try{
    if(!destination||raw!==destination.name){destination=await locateByName(raw);}
    if(!destination){if(output)output.textContent='Nie znalazłem takiego miejsca. Doprecyzuj adres.';return}
-   const start=await locateOptIn(); // Only when the user requested route
-   if(!validPoint(start))throw new Error('GPS_UNAVAILABLE');
+   const start=manualStart?await locateByName(manualStart):await locateOptIn();
+   if(!validPoint(start))throw new Error(manualStart?'START_NOT_FOUND':'GPS_UNAVAILABLE');
    if(routeMode!=='car'){
     const mode=routeMode==='foot'?'fossgis_osrm_foot':'fossgis_osrm_bike';
     const params=new URLSearchParams({engine:mode,route:start.lat+','+start.lon+';'+destination.lat+','+destination.lon});
@@ -285,17 +286,20 @@
    const route=json?.routes?.[0],geometry=route?.geometry?.coordinates;
    if(!Array.isArray(geometry)||geometry.length<2)throw new Error('ROUTE_EMPTY');
    window.HealthGoMapPro?.setRoute(route,destination.name);
+   // A manually entered start allows a route preview, not live GPS guidance.
+   if(manualStart){const nav=el('hgNavStartButton');if(nav)nav.hidden=true;}
    if(!getMap()||typeof L==='undefined')return;
    if(routeLayer)getMap().removeLayer(routeLayer);
    routeLayer=L.polyline(geometry.filter(pt=>Array.isArray(pt)&&pt.length>=2).map(pt=>[pt[1],pt[0]]),{color:'#1869ee',weight:6,opacity:.94,className:'map-v2-route-line'}).addTo(getMap());
    getMap().fitBounds(routeLayer.getBounds(),{padding:[42,42],maxZoom:16});
    const km=(Number(route.distance)/1000).toFixed(1),min=Math.max(1,Math.round(Number(route.duration)/60));
-   if(output)output.textContent='Samochodem: około '+km+' km · '+min+' min. Czas orientacyjny, bez bieżących korków.';
+   if(output)output.textContent='Samochodem: około '+km+' km · '+min+' min. '+(manualStart?'Podgląd trasy z wpisanego adresu startowego, bez śledzenia GPS.':'Czas orientacyjny, bez bieżących korków.');
    say('Wyznaczono trasę samochodową do: '+destination.name);
    if(external){const q=new URLSearchParams({engine:'fossgis_osrm_car',route:start.lat+','+start.lon+';'+destination.lat+','+destination.lon});external.href='https://www.openstreetmap.org/directions?'+q;external.textContent='Otwórz wskazówki dojazdu ↗';external.hidden=false;}
   }catch(err){
    const msg=String(err?.message||err);
-   if(output)output.textContent=msg==='GPS_DENIED'?'Telefon odmówił dostępu do GPS. Sprawdź uprawnienia lokalizacji dla HealthGo w ustawieniach iPhone’a.':msg==='GPS_TIMEOUT'?'GPS nie odpowiedział na czas. Spróbuj na otwartej przestrzeni lub użyj przycisku lokalizacji.':msg==='GPS_UNAVAILABLE'?'Telefon nie może teraz ustalić pozycji. Sprawdź usługi lokalizacji.':'Nie udało się wyznaczyć trasy. Sprawdź adres i połączenie z usługą tras.';
+   if(help)help.hidden=msg!=='GPS_DENIED';
+   if(output)output.textContent=msg==='GPS_DENIED'?'iPhone zablokował GPS. Wpisz adres w polu „Skąd?” albo zmień uprawnienia lokalizacji w ustawieniach.':msg==='START_NOT_FOUND'?'Nie znaleziono punktu startowego. Wpisz pełniejszy adres.':msg==='GPS_TIMEOUT'?'GPS nie odpowiedział na czas. Spróbuj ponownie lub wpisz adres startowy.':msg==='GPS_UNAVAILABLE'?'Nie można ustalić pozycji. Wpisz adres startowy lub sprawdź uprawnienia telefonu.':'Nie udało się wyznaczyć trasy. Sprawdź adres i połączenie z usługą tras.';
   }
  }
  function showFamily(){close();window.HealthGoMapPro?.stop3D();if(typeof showFamilyOnMap==='function')showFamilyOnMap();}
