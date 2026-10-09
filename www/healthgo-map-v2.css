@@ -149,3 +149,39 @@ body[data-dark="1"] #map .map-v2-item span{color:#dce7f6}
  #map .hg-pro-nav-buttons{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr}
  #map .hg-pro-nav-buttons button{padding:10px 5px;font-size:11px;min-width:0}
 }
+
+
+/* HealthGo 2.1: relaxed map UI and first-open privacy choice. */
+#hgLocationWelcome{position:fixed;inset:0;z-index:16000;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(10,23,45,.45);backdrop-filter:blur(8px)}
+#hgLocationWelcome[hidden]{display:none!important}
+#hgLocationWelcome .hg-location-card{width:min(440px,100%);max-height:calc(100dvh - 40px);overflow-y:auto;background:#fff;color:#17263e;border-radius:27px;padding:28px 25px 22px;box-shadow:0 28px 80px rgba(10,32,63,.27);line-height:1.5}
+#hgLocationWelcome .hg-location-symbol{height:62px;width:62px;display:grid;place-items:center;border-radius:20px;background:#e8f1ff;color:#1165ed;margin-bottom:20px}
+#hgLocationWelcome h2{font-size:22px;line-height:1.2;letter-spacing:-.5px;margin:0 0 12px}
+#hgLocationWelcome p{font-size:14px;line-height:1.65;color:#53667f;margin:0 0 24px}
+#hgLocationWelcome .hg-location-actions{display:grid;gap:10px}
+#hgLocationWelcome .hg-location-actions button{min-height:52px;border-radius:15px;font-size:15px;font-weight:800;padding:11px 14px}
+#hgLocationWelcome .hg-location-allow{background:#1668ea;color:white}
+#hgLocationWelcome .hg-location-later{background:#eef3fa;color:#305178}
+#hgLocationWelcome small{display:block;margin-top:13px;font-size:11px;color:#728198;line-height:1.5}
+#hgLocationWelcome button:focus-visible{outline:3px solid #70aafd;outline-offset:2px}
+#map .map-v2-float button .hg-pro-icon{height:23px;width:23px}
+#map .map-v2-float button{border-radius:15px}
+#map .map-v2-actions button{min-height:44px}
+#map .map-v2-panel-content .map-v2-primary{min-height:50px}
+@media(max-width:900px){
+  #hgLocationWelcome{padding:14px}
+  #hgLocationWelcome .hg-location-card{padding:25px 20px 21px}
+  /* The bottom feature row contains the same actions; keep the city visible. */
+  #map .map-v2-actions{display:none!important}
+  #map .map-v2-float{top:12px;right:11px;gap:10px}
+  #map .map-v2-float button{height:45px;width:45px;box-shadow:0 5px 19px rgba(21,42,73,.15)}
+  #map .map-v2-float button:last-child{display:none!important}
+  #map .map-toolbar{padding:7px 11px 6px}
+  #map .map-categories{padding:5px 0 6px}
+  #map .map-category{padding:10px 15px;font-weight:750;box-shadow:none}
+  #map .map-v2-bottom{left:10px;right:10px;bottom:7px;gap:5px;padding:7px 5px;border-radius:21px}
+  #map .map-v2-tab{min-height:56px;padding:7px 3px;gap:3px}
+  #map .map-status-pill{bottom:82px;left:10px;right:10px;line-height:1.35;box-shadow:0 3px 14px rgba(11,45,86,.10)}
+  #map .map-v2-panel{bottom:10px;border-radius:24px;max-height:76%}
+  #map .map-v2-panel-content{padding:12px 20px 30px}
+}
