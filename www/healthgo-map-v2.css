@@ -1,0 +1,74 @@
+/* HealthGo Mapa 2.0 — native interactive UI over the existing Leaflet map. */
+#map .map-workspace{border:0;border-radius:20px;box-shadow:0 15px 55px rgba(15,23,42,.08);background:#eef6f4}
+#map .map-toolbar{position:relative;padding:12px 14px 10px;background:rgba(255,255,255,.98);border-bottom:1px solid #e5edf5;gap:10px}
+#map .map-address-wrap{background:#fff;border:1px solid #dce5f0;box-shadow:0 4px 18px rgba(15,23,42,.07);border-radius:18px;padding:4px 12px;min-width:0}
+#map #mapAddressInput{min-height:42px;font-size:15px;width:100%}
+#map .map-bar-btn{border-radius:12px;background:#eff5fe;color:#1c4a91;padding:10px 12px}
+#map .map-bar-btn.primary{background:#1969ed;color:white}
+#map .map-categories{gap:8px;scrollbar-width:none;padding:2px 0 5px}
+#map .map-categories::-webkit-scrollbar{display:none}
+#map .map-category{border:1px solid #e0e8f2;border-radius:999px;background:#fff;padding:10px 14px;font-size:12px;box-shadow:0 2px 7px rgba(16,24,40,.04)}
+#map .map-category.active{background:#1969ed;color:#fff;border-color:#1969ed;box-shadow:0 4px 13px rgba(25,105,237,.18)}
+#map .map-canvas-wrap{background:#dfede5}
+#map #healthgoMap{height:100%;min-height:300px}
+#map .map-v2-float{position:absolute;z-index:570;right:12px;top:14px;display:flex;flex-direction:column;gap:9px;pointer-events:none}
+#map .map-v2-float button{pointer-events:auto;width:48px;height:48px;display:grid;place-items:center;background:rgba(255,255,255,.98);border:1px solid #e3e8ee;border-radius:16px;color:#17498b;font-size:21px;box-shadow:0 8px 26px rgba(30,41,59,.15)}
+#map .map-v2-float button:focus-visible,#map .map-v2-tab:focus-visible,#map .map-v2-panel button:focus-visible{outline:3px solid #65a8f4;outline-offset:2px}
+#map .map-v2-actions{position:absolute;z-index:580;left:12px;right:72px;top:14px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;pointer-events:none}
+#map .map-v2-actions button{pointer-events:auto;flex:0 0 auto;border-radius:999px;padding:10px 13px;background:#fff;border:1px solid #e0e8f2;box-shadow:0 5px 16px rgba(16,24,40,.12);color:#153e7c;font-weight:800;font-size:12px}
+#map .map-v2-actions button.active{background:#1969ed;color:#fff;border-color:#1969ed}
+#map .map-v2-panel{position:absolute;z-index:800;top:69px;left:12px;width:min(400px,calc(100% - 80px));max-height:calc(100% - 155px);display:flex;flex-direction:column;overflow:hidden;border-radius:22px;background:rgba(255,255,255,.98);box-shadow:0 20px 60px rgba(15,23,42,.21);border:1px solid #e8edf4;color:#172033}
+#map .map-v2-panel[hidden]{display:none!important}
+#map .map-v2-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 15px 10px}
+#map .map-v2-panel-head h3{font-size:17px;margin:0;letter-spacing:-.3px}
+#map .map-v2-close{background:#f0f4f9;color:#475569;border:0;border-radius:11px;width:34px;height:34px;font-size:20px;flex:0 0 34px}
+#map .map-v2-panel-content{overflow:auto;padding:2px 15px 16px}
+#map .map-v2-muted{font-size:12px;color:#667085;line-height:1.5;margin:4px 0 12px}
+#map .map-v2-input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #dce5f0;border-radius:13px;background:white;color:#1b2533;font-size:16px}
+#map .map-v2-field{font-size:12px;color:#64748b;font-weight:750;display:block;margin:12px 0 5px}
+#map .map-v2-buttons{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+#map .map-v2-buttons button,#map .map-v2-panel .map-v2-primary{border:1px solid #dbe5f2;background:#f3f7ff;color:#204a89;padding:11px 13px;border-radius:13px;font-size:13px;font-weight:780}
+#map .map-v2-panel .map-v2-primary{background:#1468f3;color:white;border-color:#1468f3;width:100%;margin-top:6px}
+#map .map-v2-panel button:disabled{opacity:.5;cursor:default}
+#map .map-v2-item{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:11px 0;border-bottom:1px solid #eef2f6}
+#map .map-v2-item span{font-size:13px;line-height:1.4;color:#334155}
+#map .map-v2-item small{display:block;font-size:11px;color:#7b8799;margin-top:2px}
+#map .map-v2-item button{background:#edf4ff;color:#2159ae;border-radius:10px;font-size:12px;padding:9px}
+#map .map-v2-alert{border-radius:12px;background:#eef5ff;padding:11px 12px;color:#244c81;font-size:12px;line-height:1.5}
+#map .map-v2-bottom{position:absolute;z-index:570;left:12px;right:12px;bottom:12px;display:flex;align-items:center;gap:7px;padding:8px;background:rgba(255,255,255,.97);border:1px solid #e8eef6;border-radius:18px;box-shadow:0 8px 28px rgba(15,23,42,.14);backdrop-filter:blur(14px)}
+#map .map-v2-tab{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;gap:2px;padding:8px 3px;background:transparent;border-radius:12px;color:#62748c;font-size:11px;font-weight:800}
+#map .map-v2-tab span{font-size:20px}
+#map .map-v2-tab.active{background:#eaf2ff;color:#1765e9}
+#map .map-status-pill{bottom:86px;left:12px;right:12px;max-width:unset;padding:9px 12px;font-size:11px;z-index:555}
+#map .map-results-panel{top:66px;z-index:740}
+#map .map-v2-map-pin{background:#126cf0;color:#fff;border:3px solid white;width:36px;height:36px;display:grid;place-items:center;border-radius:50% 50% 50% 7px;box-shadow:0 6px 18px #152b4655;font-size:17px}
+#map .map-v2-banner{font-size:12px;color:#46637f;font-weight:700;padding:1px 2px}
+#map .map-v2-tag{display:inline-flex;align-items:center;padding:4px 8px;border-radius:99px;background:#eaf3ff;font-size:11px;color:#1f5eac}
+#map .map-v2-recording{color:#b91c1c;font-weight:800}
+#map .map-v2-route-line{stroke-linecap:round;stroke-linejoin:round}
+#map .leaflet-control-attribution{font-size:10px}
+@media(max-width:900px){
+ body:has(#map.active) .main{padding:0 0 calc(74px + env(safe-area-inset-bottom))!important}
+ body:has(#map.active) .top{height:calc(56px + env(safe-area-inset-top));margin:0!important;padding:env(safe-area-inset-top) 12px 0!important}
+ #map{height:calc(100dvh - 128px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;min-height:410px;overflow:hidden!important}
+ #map .map-workspace{height:100%;min-height:0;border-radius:0}
+ #map .map-toolbar{padding:8px 12px 4px;gap:5px}
+ #map .map-toolbar-row{flex-wrap:nowrap!important}
+ #map .map-toolbar-row>.map-bar-btn{display:none!important}
+ #map .map-address-wrap{order:0!important;flex-basis:100%!important}
+ #map #mapAddressInput{min-height:39px}
+ #map .map-categories{padding:3px 0 6px;gap:6px}
+ #map .map-category{padding:8px 11px;font-size:12px}
+ #map .map-v2-float{right:11px;top:53px}
+ #map .map-v2-actions{top:7px;right:7px;left:9px}
+ #map .map-v2-actions button{padding:8px 11px}
+ #map .map-v2-panel{top:auto;bottom:12px;left:8px;right:8px;width:auto;max-height:72%;border-radius:23px}
+ #map .map-v2-panel-head{padding:16px 16px 7px}
+ #map .map-v2-bottom{left:8px;right:8px;bottom:7px;padding:6px}
+ #map .map-v2-tab{font-size:10px;padding:6px 3px}
+ #map .map-status-pill{bottom:80px;max-width:none;left:8px;right:8px;padding:8px 10px}
+ #map .map-results-panel{top:48px;left:8px;right:8px;width:auto;max-height:60%}
+ #map .leaflet-control-zoom{display:none}
+}
+body[data-dark="1"] #map .map-v2-panel,body[data-dark="1"] #map .map-v2-bottom{background:#202a3a;color:#fff}
+body[data-dark="1"] #map .map-v2-item span{color:#dce7f6}
