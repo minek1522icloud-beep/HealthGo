@@ -7,6 +7,8 @@ on:
       - main
     paths:
       - "www/**"
+      - "scripts/build-safe-mobile.py"
+      - "tests/build-safe-mobile.test.cjs"
       - "tests/healthgo-chat-modern.test.cjs"
       - "tests/ai-multiturn.test.cjs"
       - "tests/mobile-suite.test.cjs"
@@ -50,7 +52,7 @@ jobs:
 
       - name: Sprawdz pobieranie i wznawianie AI na telefonie
         shell: bash
-        run: node --test tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
+        run: node --test tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
 
       - name: Przygotuj wersje mobilna
         shell: bash
