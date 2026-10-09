@@ -40,8 +40,8 @@
  function localStorageGet(name){try{return localStorage.getItem(name)}catch(_){return null}}
  function localStorageSet(name,value){try{localStorage.setItem(name,value)}catch(_){}}
  function resizeViewport(){
-  const panel=el('map'),nav=document.querySelector('.mobile-nav');
-  if(!panel||!panel.classList.contains('active')||!nav)return;
+  const panel=el('map'),nav=document.querySelector?.('.mobile-nav');
+  if(!panel||!panel.classList?.contains?.('active')||!nav)return;
   if(window.innerWidth>900){panel.style.removeProperty('height');return}
   const top=panel.getBoundingClientRect?.().top,navTop=nav.getBoundingClientRect?.().top;
   if(!Number.isFinite(top)||!Number.isFinite(navTop)||navTop<=top+300)return;
@@ -53,7 +53,7 @@
  }
  function welcomeShouldOpen(){
   if(mapWelcomeShown||localStorageGet('healthgo.location.welcome.v1')!==null)return false;
-  const app=document.querySelector('.app'),signin=el('authScreen');
+  const app=document.querySelector?.('.app'),signin=el('authScreen');
   if(!app||app.classList.contains('auth-hidden')||signin?.classList.contains('show'))return false;
   return true;
  }
