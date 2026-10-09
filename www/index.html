@@ -457,7 +457,8 @@ html.hg-session-known #authScreen{display:none!important}
       <div class="mobile-ai-note"><b>🤖 HealthGo AI Mobile</b><br>Na telefonie możesz korzystać z AI w chmurze albo zainstalować lżejszy model do rozmów lokalnych. Konto, Family i postęp są synchronizowane przez Supabase.</div>
       <div class="hg-ai-local-note">
         <b>✨ HealthGo AI na urządzeniu</b>
-        <span> — model do rozmów bez internetu, po jednorazowym pobraniu.</span>
+        <span> — model pobierany i zapisywany bez uruchamiania podczas instalacji.</span>
+        <span class="hg-ai-device-badge" id="hgOfflineAiDeviceBadge" data-installed="false">Sprawdzam pliki AI…</span>
         <button type="button" onclick="window.HealthGoOfflineAI?.openInstall()">Ustaw AI</button>
       </div>
       <div class="hg-ai-setup" id="hgOfflineAiSetup" hidden>
@@ -468,7 +469,7 @@ html.hg-session-known #authScreen{display:none!important}
             <div class="hg-ai-setup-title">Zainstaluj HealthGo AI</div>
           </div>
         </div>
-        <p class="hg-ai-setup-copy">Pobierz model do rozmów na tym telefonie. Pobieranie zacznie się dopiero po kliknięciu i pokaże prawdziwy postęp. Na zgodnych urządzeniach model może później działać bez internetu.</p>
+        <p class="hg-ai-setup-copy">Pobierz pliki AI na ten telefon. Po pobraniu pozostaną zapisane w pamięci aplikacji, dopóki system ich nie usunie. Uruchamianie modelu jest osobnym krokiem, aby nie przeciążać iPhone’a podczas instalacji.</p>
         <div class="hg-ai-setup-features">
           <span class="hg-ai-setup-feature">📱 Na tym telefonie</span>
           <span class="hg-ai-setup-feature">🔒 Rozmowy lokalne</span>
@@ -480,9 +481,10 @@ html.hg-session-known #authScreen{display:none!important}
         </div>
         <div class="hg-ai-setup-actions">
           <button id="hgOfflineAiInstallBtn" type="button">Pobierz HealthGo AI</button>
+          <button id="hgOfflineAiTryLocalBtn" type="button" hidden>Uruchom lokalne AI</button>
           <button id="hgOfflineAiLaterBtn" type="button">Nie teraz · użyj chmury</button>
         </div>
-        <div class="hg-ai-setup-disclaimer">Model SmolLM2 135M działa przez WebAssembly, bez konieczności obsługi WebGPU. Ma mniej możliwości niż model komputerowy; Safari może usunąć pamięć modelu, gdy telefonowi zabraknie miejsca. Zdjęcia nadal wymagają AI w chmurze.</div>
+        <div class="hg-ai-setup-disclaimer">Pobrane pliki są przechowywane lokalnie na tym telefonie. Safari może usunąć je, gdy zabraknie pamięci lub wyczyścisz dane strony; dlatego nie można zagwarantować przechowywania na zawsze. „Model pobrany” nie znaczy jeszcze „AI uruchomione”. Zdjęcia wymagają chmury.</div>
       </div>
 
       <div id="aiMessages" class="ai-messages" aria-live="polite">
