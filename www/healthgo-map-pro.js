@@ -16,6 +16,7 @@
  let auto3DMap=null,auto3DArmed=true,auto3DLoading=false;
  let watchId=null,activeStep=0,currentPosition=null,lastSpeech='',routeEpoch=0,loadEpoch=0;
  let leafletArrow=null,glArrow=null,glArrowElement=null,buildingAbort=null,preferNav3D=true;
+ let activeMapLibre=null;
  let lastCameraTick=0, routeTailMeters=[],navCompletion=false;
  const isFinitePoint=p=>p&&Number.isFinite(+p.lat)&&Number.isFinite(+p.lon)&&Math.abs(+p.lat)<=90&&Math.abs(+p.lon)<=180;
  const emptyFC=()=>({type:'FeatureCollection',features:[]});
@@ -142,7 +143,7 @@
   const button=$('hg3DButton');
   if(button)button.disabled=true;
   try{
-   const lib=await loadLib();
+   const lib=await loadLib();activeMapLibre=lib;
    if(lib.supported&&!lib.supported())throw Error('WEBGL_NOT_SUPPORTED');
    const center=leaflet.getCenter();
    host.hidden=false;
@@ -150,7 +151,7 @@
     zoom:Math.max(15.2,leaflet.getZoom()),pitch:58,bearing:-18,
     canvasContextAttributes:{antialias:false},fadeDuration:0,maxTileCacheSize:35});
    threeD=true;document.getElementById('mapWorkspace')?.classList.add('map-pro-3d');
-   gl.on('load',()=>{drawRoute();refreshBuildings();});
+   gl.on('load',()=>{drawRoute();refreshBuildings();if(watchId!==null&&currentPosition){positionMarker(currentPosition,0);setNavigationAppearance(true);}});
    gl.on('zoomend',()=>{if(threeD&&gl&&gl.getZoom()<14.8)stop3D();});
    gl.on('error',e=>{if(e?.error)console.warn('MapLibre 3D:',e.error.message||e.error)});
    if(button)button.textContent='▱ Wróć do mapy 2D';
@@ -231,6 +232,84 @@
   if(phrase===lastSpeech)return;lastSpeech=phrase;
   try{window.speechSynthesis.cancel();const u=new window.SpeechSynthesisUtterance(phrase);
    u.lang='pl-PL';u.rate=.96;window.speechSynthesis.speak(u)}catch(_){}
+ }
+ function routeRemaining(point){
+  if(!lastRoute?.geometry?.length)return 0;
+  const coords=lastRoute.geometry;let nearest=0,best=Infinity;
+  const stride=Math.max(1,Math.floor(coords.length/600));
+  for(let i=0;i<coords.length;i+=stride){
+   const c=coords[i],a={lat:c[1],lon:c[0]},d=greatCircle(point,a);
+   if(d<best){best=d;nearest=i;}
+  }
+  for(let i=Math.max(0,nearest-stride);i<=Math.min(coords.length-1,nearest+stride);i++){
+   const c=coords[i],d=greatCircle(point,{lat:c[1],lon:c[0]});
+   if(d<best){best=d;nearest=i;}
+  }
+  return Math.max(0,routeTailMeters[nearest]||0);
+ }
+ function buildRouteLengths(coords){
+  routeTailMeters=new Array(coords.length).fill(0);
+  for(let i=coords.length-2;i>=0;i--){
+   const a={lat:coords[i][1],lon:coords[i][0]},b={lat:coords[i+1][1],lon:coords[i+1][0]};
+   routeTailMeters[i]=routeTailMeters[i+1]+greatCircle(a,b);
+  }
+ }
+ function setNavigationAppearance(enabled){
+  document.body?.classList?.toggle('hg-nav-live',enabled);
+  const map=getLeaflet();
+  if(map)map.invalidateSize?.({pan:false});
+  if(!threeD||!gl||!gl.isStyleLoaded?.())return;
+  try{
+   gl.setPaintProperty('base','raster-brightness-min',enabled?.07:0);
+   gl.setPaintProperty('base','raster-brightness-max',enabled?.48:1);
+   gl.setPaintProperty('base','raster-saturation',enabled?-.48:0);
+   gl.setPaintProperty('base','raster-contrast',enabled?.18:0);
+   if(gl.getLayer('hg-buildings-3d')){
+    gl.setPaintProperty('hg-buildings-3d','fill-extrusion-color',
+     enabled?'#364967':['case',['get','estimated'],'#90b7dc','#547fb3']);
+   }
+  }catch(_){}
+ }
+ function removeGlArrow(){
+  if(glArrow){try{glArrow.remove()}catch(_){}glArrow=null;glArrowElement=null}
+ }
+ function removeNavigationMarkers(){
+  removeGlArrow();
+  if(leafletArrow){try{getLeaflet()?.removeLayer?.(leafletArrow)}catch(_){}leafletArrow=null}
+ }
+ function positionMarker(point,heading){
+  const angle=Number.isFinite(heading)?heading:0;
+  if(threeD&&gl){
+   if(leafletArrow){try{getLeaflet()?.removeLayer?.(leafletArrow)}catch(_){}leafletArrow=null}
+   if(!glArrow&&activeMapLibre?.Marker&&document.createElement){
+    const node=document.createElement('div');
+    node.className='hg-pro-position-arrow';
+    node.innerHTML='<svg viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><path d="M24 3 42 42 24 33 6 42Z" fill="#ffffff" stroke="#1f6be6" stroke-width="4" stroke-linejoin="round"/></svg>';
+    glArrowElement=node;
+    glArrow=new activeMapLibre.Marker({element:node,rotationAlignment:'map',pitchAlignment:'viewport'})
+      .setLngLat([point.lon,point.lat]).addTo(gl);
+   }
+   if(glArrow){glArrow.setLngLat([point.lon,point.lat]);glArrow.setRotation?.(angle)}
+   return;
+  }
+  removeGlArrow();
+  if(typeof L==='undefined'||!L.marker||!L.divIcon||!getLeaflet())return;
+  if(!leafletArrow){
+   const icon=L.divIcon({className:'hg-pro-leaflet-arrow',
+    html:'<div class="hg-pro-needle">▲</div>',iconSize:[42,42],iconAnchor:[21,21]});
+   leafletArrow=L.marker([point.lat,point.lon],{icon,interactive:false,zIndexOffset:2000}).addTo(getLeaflet());
+  }else leafletArrow.setLatLng([point.lat,point.lon]);
+  const needle=leafletArrow.getElement?.()?.querySelector?.('.hg-pro-needle');
+  if(needle)needle.style.transform='rotate('+angle+'deg)';
+ }
+ function updateJourneyStatus(point,speed){
+  const remaining=routeRemaining(point);
+  const full=Math.max(lastRoute?.meters||0,routeTailMeters[0]||0,1);
+  const seconds=Math.max(0,Math.round((lastRoute?.minutes||0)*Math.min(1,remaining/full)));
+  const eta=new Date(Date.now()+seconds*1000);
+  navText('hgProNavEta','Przyjazd '+eta.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}));
+  navText('hgProNavDistance',formatMeters(remaining)+' · około '+Math.max(1,Math.ceil(seconds/60))+' min');
+  navText('hgProNavSpeed',Number.isFinite(speed)&&speed>=0&&speed<100?' '+Math.round(speed*3.6):'—');
  }
  function updatePosition(pos){
   if(watchId===null||!lastRoute)return;
