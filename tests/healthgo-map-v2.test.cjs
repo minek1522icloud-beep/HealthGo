@@ -9,7 +9,7 @@ const css=fs.readFileSync('www/healthgo-map-v2.css','utf8');
 const workflow=fs.readFileSync('.github/workflows/mobile-pages.yml','utf8');
 
 test('Map 2.0 ships five real control panels plus searchable existing Leaflet map',()=>{
- for(const id of ['healthgoMap','mapV2RouteTo','mapV2RouteOutput','mapV2Favorites','mapV2Activities','mapV2TrackState'])
+ for(const id of ['healthgoMap','mapV2RouteTo','mapV2RouteOutput','mapV2Favorites','mapV2Activities','mapV2TrackState','mapV2MeasureHud','mapV2MeasureDistance','mapV2MeasureHint','mapV2SpaciousButton'])
   assert.match(html,new RegExp('id="'+id+'"'));
  for(const p of ['route','layers','favorites','activity','tools'])
   assert.match(html,new RegExp('data-map-panel="'+p+'"'));
@@ -17,6 +17,8 @@ test('Map 2.0 ships five real control panels plus searchable existing Leaflet ma
  assert.match(html,/healthgo-map-v2\.js\?v=1/);
  assert.match(html,/healthgo-map-v2\.css\?v=1/);
  assert.match(css,/#map \.map-v2-panel\[hidden\]/);
+ assert.match(css,/#map \.map-v2-measure-hud\[hidden\]/);
+ assert.match(css,/map-v2-spacious \.map-categories/);
  assert.match(html,/OpenStreetMap/);
  assert.match(workflow,/healthgo-map-v2\.test\.cjs/);
 });
@@ -62,6 +64,18 @@ function harness(){
   querySelectorAll:()=>[],
   createElement:tag=>({...node('new-'+tag+'-'+nodes.size),tagName:tag})
  };
+ const map={
+  handlers:{},layers:new Set(),
+  on(kind,handler){this.handlers[kind]=handler;return this;},
+  off(kind,handler){if(this.handlers[kind]===handler)delete this.handlers[kind];return this;},
+  invalidateSize(){},
+  removeLayer(layer){this.layers.delete(layer);return this;},
+  emitClick(lat,lng){this.handlers.click?.({latlng:{lat,lng}});}
+ };
+ const layer=()=>({
+  addTo(m){m.layers.add(this);return this;}
+ });
+ const L={circleMarker:()=>layer(),polyline:()=>layer()};
  const locationCalls={current:0,tracking:0};
  const navigator={geolocation:{
   getCurrentPosition(){locationCalls.current++;},
@@ -74,8 +88,8 @@ function harness(){
   setItem:(k,v)=>storage.set(k,v),
   removeItem:k=>storage.delete(k)
  };
- vm.runInNewContext(source,{document,window,navigator,localStorage,console,setTimeout,clearTimeout,URLSearchParams,Date,Number,Math,JSON,String,encodeURIComponent,AbortController});
- return {window,storage,node,locationCalls};
+ vm.runInNewContext(source,{document,window,navigator,localStorage,console,setTimeout,clearTimeout,URLSearchParams,Date,Number,Math,JSON,String,encodeURIComponent,AbortController,healthGoMap:map,L});
+ return {window,storage,node,locationCalls,map};
 }
 test('No location tracking starts at map load; favorites are account-specific',()=>{
  const app=harness();
@@ -90,6 +104,44 @@ test('No location tracking starts at map load; favorites are account-specific',(
  assert.equal(app.storage.has('healthgo.map2.favorites.user-b'),false);
  assert.equal(app.locationCalls.current,0);
  assert.equal(app.locationCalls.tracking,0);
+});
+
+test('Distance measurement uses map taps without GPS or persisting location',()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ assert.equal(api.startMeasure(),true);
+ assert.equal(app.node('mapV2MeasureHud').hidden,false);
+ assert.equal(app.node('mapV2MeasureDistance').textContent,'0 m');
+ app.map.emitClick(52.2,21.01);
+ assert.equal(app.node('mapV2MeasureDistance').textContent,'0 m');
+ app.map.emitClick(52.2,21.02);
+ assert.match(app.node('mapV2MeasureDistance').textContent,/^0,[5-9][0-9] km$/);
+ assert.equal(app.locationCalls.current,0);
+ assert.equal(app.locationCalls.tracking,0);
+ assert.equal(app.storage.size,0,'map taps are not saved');
+ api.undoMeasure();
+ assert.equal(app.node('mapV2MeasureDistance').textContent,'0 m');
+ app.map.emitClick(52.2,21.02);
+ assert.ok(app.map.layers.size>0);
+ api.clearMeasure();
+ assert.equal(app.node('mapV2MeasureDistance').textContent,'0 m');
+ assert.equal(app.map.layers.size,0);
+ api.stopMeasure();
+ assert.equal(app.node('mapV2MeasureHud').hidden,true);
+ assert.equal(app.map.handlers.click,undefined);
+});
+
+test('Opening other map tools stops measurement and spacious mode is reversible',()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ assert.equal(api.toggleSpacious(),true);
+ assert.equal(app.node('mapV2SpaciousButton').textContent,'▤ Pokaż filtry mapy');
+ assert.equal(api.toggleSpacious(),false);
+ assert.equal(app.node('mapV2SpaciousButton').textContent,'▣ Więcej miejsca na mapę');
+ api.startMeasure();
+ app.map.emitClick(52.2,21);
+ api.toggle('favorites');
+ assert.equal(app.map.handlers.click,undefined);
+ assert.equal(app.node('mapV2MeasureHud').hidden,true);
+ assert.equal(app.node('mapV2MeasureDistance').textContent,'0 m');
 });
 test('Traffic, weather and 3D are identified as unavailable until real feeds exist',()=>{
  assert.match(source,/Warstwa korków wymaga zewnętrznego dostawcy/);
