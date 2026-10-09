@@ -2,6 +2,7 @@
  'use strict';
 
  const READY_KEY='healthgo_local_ai_smol135_wasm_v2';
+ const INTERRUPTED_KEY='healthgo_local_ai_download_interrupted_v1';
  const DISMISSED_KEY='healthgo_local_ai_setup_skipped_v1';
  const DOWNLOAD_WORKER='./healthgo-ai-download-worker.js?v=1';
  const INFERENCE_WORKER='./healthgo-offline-ai-worker.js?v=2';
@@ -9,13 +10,15 @@
  const MODEL_BASE='https://huggingface.co/onnx-community/SmolLM2-135M-Instruct-ONNX-MHA/resolve/main/';
  const REQUIRED_FILES=['config.json','tokenizer.json','tokenizer_config.json','generation_config.json','onnx/model_q4.onnx'];
  let downloader=null,inference=null;
- let installed=false,checked=false,localActive=false;
+ let installed=false,checked=false,localActive=false,installInFlight=false;
  let mode='idle',opened=false,nextId=1;
  let installPending=null,warmupPending=null;
  const pending=new Map();
  const el=id=>document.getElementById(id);
  const phone=()=>/iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent||'')&&location.protocol==='https:';
- const isBusy=()=>mode==='downloading'||mode==='testing'||pending.size>0;
+ const isBusy=()=>installInFlight||mode==='downloading'||mode==='testing'||pending.size>0;
+ function interrupted(){try{return localStorage.getItem(INTERRUPTED_KEY)==='1';}catch(_){return false;}}
+ function markInterrupted(value){try{if(value)localStorage.setItem(INTERRUPTED_KEY,'1');else localStorage.removeItem(INTERRUPTED_KEY);}catch(_){}}
  function markInstalled(value){
   installed=!!value;
   try{
@@ -46,7 +49,7 @@
    action.textContent=mode==='downloading'?'Pobieranie AI…'
     :mode==='testing'?'Uruchamiam model…'
     :installed?'Model pobrany ✓'
-    :mode==='error'?'Spróbuj pobrać ponownie':'Pobierz HealthGo AI';
+    :interrupted()?'Wznów pobieranie AI':mode==='error'?'Spróbuj pobrać ponownie':'Pobierz HealthGo AI';
   }
   if(later)later.disabled=mode==='downloading';
   if(tester){
@@ -63,6 +66,7 @@
   if(deviceBadge){
    deviceBadge.textContent=localActive?'✓ Lokalne AI działa'
     :installed?'✓ Model AI na tym telefonie'
+    :interrupted()?'↻ Pobieranie przerwane — wznów'
     :checked?'↓ Model AI niepobrany'
     :'Sprawdzam pliki AI…';
    deviceBadge.setAttribute('data-installed',String(installed));
@@ -80,6 +84,7 @@
     }
    }
    markInstalled(true);
+   markInterrupted(false);
    if(mode==='idle'||mode==='error')mode='downloaded';
    return true;
   }catch(_){
@@ -188,8 +193,9 @@
   return inference;
  }
  async function install(){
-  if(isBusy())return false;
-  if(!phone())return false;
+  if(isBusy()||!phone())return false;
+  installInFlight=true;
+  try{
   showCard(true);
   if(await verifyStored()){
    mode='downloaded';status('Model jest już pobrany na ten telefon.');render();return true;
@@ -203,6 +209,7 @@
      throw new Error('LOCAL_STORAGE_QUOTA');
    }
    const download=newDownloader();
+   markInterrupted(true);
    const id=nextId++;
    const result=await new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>reject(new Error('LOCAL_INSTALL_TIMEOUT')),8*60*1000+10000);
@@ -217,6 +224,10 @@
   }finally{
    resetDownloader();
    if(mode==='downloading')mode=installed?'downloaded':'error';
+   render();
+  }
+  }finally{
+   installInFlight=false;
    render();
   }
  }
