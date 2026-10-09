@@ -87,7 +87,7 @@ test('deployment stamps real commit into HTML and publishes matching version',()
  assert.match(workflow,/test -s www\/healthgo-ai-bundle\.js/);
  assert.match(suite,/Sprawdź i pobierz aktualizację/);
  assert.match(sw,/SKIP_WAITING/);
- assert.match(sw,/healthgo-pwa-v29-spacious-ui-20261009/);
+ assert.match(sw,/healthgo-pwa-v30-nav-visibility-20261009/);
 });
 
 test('home-screen shortcut updates are postponed while AI model downloads',async()=>{
