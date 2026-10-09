@@ -149,7 +149,7 @@ test('Mobile keeps modes, navigation and offline rules intact',()=>{
  assert.match(html,/data-mobile-page="plan"/);
  assert.match(html,/data-mobile-page="more"/);
  const sw=fs.readFileSync('www/service-worker.js','utf8');
- assert.match(sw,/healthgo-pwa-v20-ai-download-separate-20261009/);
+ assert.match(sw,/healthgo-pwa-v21-simple-chat-20261009/);
 });
 
 test('Gemini request has a real deadline even if provider promise never settles',async()=>{
@@ -195,7 +195,7 @@ test('Mobile request has progress and real cancellation; desktop Ollama remains 
  assert.match(html,/signal:mobileController.signal/);
  assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData,\{/);
  assert.match(html,/mobileTimeout,mobileController/);
- assert.match(html,/AI Mobile · /);
+ assert.match(html,/HealthGo AI/);
  assert.match(entry,/model.generateContent\(parts,\{signal:controller.signal,timeout:limitMs\}\)/);
  assert.match(entry,/notifyStage\(onStatus,'Generuję odpowiedź w Gemini/);
 });
