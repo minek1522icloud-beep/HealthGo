@@ -15,6 +15,8 @@
  let gl=null,threeD=false,libLoading=null,lastRoute=null,follow=true,voice=false;
  let auto3DMap=null,auto3DArmed=true,auto3DLoading=false;
  let watchId=null,activeStep=0,currentPosition=null,lastSpeech='',routeEpoch=0,loadEpoch=0;
+ let leafletArrow=null,glArrow=null,glArrowElement=null,buildingAbort=null,preferNav3D=true;
+ let lastCameraTick=0, routeTailMeters=[],navCompletion=false;
  const isFinitePoint=p=>p&&Number.isFinite(+p.lat)&&Number.isFinite(+p.lon)&&Math.abs(+p.lat)<=90&&Math.abs(+p.lon)<=180;
  const emptyFC=()=>({type:'FeatureCollection',features:[]});
  const msg=s=>{const node=$('hgProNotice');if(node)node.textContent=s;};
@@ -51,7 +53,7 @@
  function buildingsToFeatures(elements){
   if(!Array.isArray(elements))return emptyFC();
   const features=[];
-  for(const item of elements.slice(0,180)){
+  for(const item of elements.slice(0,85)){
    if(item.type!=='way'||!Array.isArray(item.geometry)||item.geometry.length<4)continue;
    const coords=item.geometry.map(p=>[Number(p.lon),Number(p.lat)]);
    if(coords.some(p=>!Number.isFinite(p[0])||!Number.isFinite(p[1])))continue;
@@ -77,14 +79,16 @@
   const center=gl.getCenter();
   if(gl.getZoom()<14.5){msg('Przybliż mapę do ulic (zoom 15), aby pokazać domy 3D.');return false}
   const lat=Number(center.lat),lon=Number(center.lng);
-  const dx=.005,dy=.0035;
+  const dx=.0025,dy=.002;
   // One small bounded region per explicit request: avoid automatic tile-scale
   // Overpass requests or unrestricted public API scraping.
   const box=[lat-dy,lon-dx,lat+dy,lon+dx].map(v=>v.toFixed(6)).join(',');
-  const query='[out:json][timeout:18];way["building"]('+box+');out geom 160;';
+  const query='[out:json][timeout:14];way["building"]('+box+');out geom 90;';
   const epoch=++loadEpoch;
   msg('Pobieram obrysy prawdziwych budynków OpenStreetMap…');
-  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),21000);
+  if(buildingAbort)buildingAbort.abort();
+  const controller=new AbortController();buildingAbort=controller;
+  const timer=setTimeout(()=>controller.abort(),16500);
   try {
    const response=await fetch('https://overpass-api.de/api/interpreter',{
     method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
@@ -101,7 +105,7 @@
   }catch(e){
    if(epoch===loadEpoch)msg('Nie udało się pobrać budynków. Wróć do 2D albo spróbuj odświeżyć później.');
    return false;
-  }finally{clearTimeout(timer)}
+  }finally{clearTimeout(timer);if(buildingAbort===controller)buildingAbort=null;}
  }
  function drawRoute(){
   if(!gl||!threeD||!gl.isStyleLoaded?.()||!lastRoute)return;
@@ -144,7 +148,7 @@
    host.hidden=false;
    gl=new lib.Map({container:host,style:osmStyle(),center:[center.lng,center.lat],
     zoom:Math.max(15.2,leaflet.getZoom()),pitch:58,bearing:-18,
-    canvasContextAttributes:{antialias:true}});
+    canvasContextAttributes:{antialias:false},fadeDuration:0,maxTileCacheSize:35});
    threeD=true;document.getElementById('mapWorkspace')?.classList.add('map-pro-3d');
    gl.on('load',()=>{drawRoute();refreshBuildings();});
    gl.on('zoomend',()=>{if(threeD&&gl&&gl.getZoom()<14.8)stop3D();});
@@ -172,6 +176,8 @@
  }
  function stop3D(){
   loadEpoch++;
+  if(buildingAbort){buildingAbort.abort();buildingAbort=null;}
+  removeGlArrow();
   if(gl){
    if(getLeaflet()&&threeD){try{const c=gl.getCenter();getLeaflet().setView([c.lat,c.lng],gl.getZoom())}catch(_){}}
    try{gl.remove()}catch(_){}
