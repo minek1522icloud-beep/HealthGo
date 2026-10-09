@@ -1756,26 +1756,33 @@ async function searchMapAddress(){
 
 function useMyLocation(){
  initHealthGoMap();if(!healthGoMap)return;
+ const display=function(lat,lon,acc){
+   if(!Number.isFinite(lat)||!Number.isFinite(lon))return;
+   if(healthGoLocationLayer)healthGoLocationLayer.clearLayers();
+   const myProfile=window.HealthGoServices?.state?.profile||{};
+   const myName=String(myProfile.nickname||'Moje konto');
+   const marker=L.marker([lat,lon],{icon:healthGoProfileIcon(myName,true,myProfile.avatarUrl||myProfile.avatar_url||'')}).addTo(healthGoLocationLayer);
+   marker.bindTooltip(healthGoEscape(myName),{permanent:true,direction:'top',offset:[0,-14],className:'healthgo-family-name-tooltip'});
+   marker.bindPopup('<b>📍 '+healthGoEscape(myName)+'</b><br>'+(acc===null?'Dokładność niedostępna':'Dokładność około '+Math.round(acc)+' m')).openPopup();
+   if(acc!==null)L.circle([lat,lon],{radius:Math.max(5,acc),weight:1,fillOpacity:.08}).addTo(healthGoLocationLayer);
+   healthGoMap.setView([lat,lon],16,{animate:true});
+   mapStatus('Pokazuję Twoją lokalizację.');
+ };
+ const cached=window.HealthGoMapV2?.getRecentPosition?.();
+ if(cached){display(cached.lat,cached.lon,null);return}
  if(!navigator.geolocation){mapStatus('To urządzenie nie udostępnia lokalizacji.');return}
- mapStatus('Czekam na zgodę na lokalizację…');
+ mapStatus('Ustalam położenie GPS…');
  navigator.geolocation.getCurrentPosition(
    function(pos){
-     const lat=pos.coords.latitude,lon=pos.coords.longitude,acc=(Number.isFinite(pos.coords.accuracy)?pos.coords.accuracy:null);
-     if(healthGoLocationLayer)healthGoLocationLayer.clearLayers();
-     const myProfile=window.HealthGoServices?.state?.profile||{};
-     const myName=String(myProfile.nickname||'Moje konto');
-     const marker=L.marker([lat,lon],{icon:healthGoProfileIcon(myName,true,myProfile.avatarUrl||myProfile.avatar_url||'')}).addTo(healthGoLocationLayer);
-     marker.bindTooltip(healthGoEscape(myName),{permanent:true,direction:'top',offset:[0,-14],className:'healthgo-family-name-tooltip'});
-     marker.bindPopup('<b>📍 '+healthGoEscape(myName)+'</b><br>'+(acc===null?'Dokładność niedostępna':'Dokładność około '+Math.round(acc)+' m')).openPopup();
-     if(acc!==null)L.circle([lat,lon],{radius:acc,weight:1,fillOpacity:.08}).addTo(healthGoLocationLayer);
-     healthGoMap.setView([lat,lon],16,{animate:true});
-     mapStatus('Pokazuję Twoje położenie. Lokalizacja została użyta po Twojej zgodzie.');
+     const lat=pos.coords.latitude,lon=pos.coords.longitude,acc=Number.isFinite(pos.coords.accuracy)?pos.coords.accuracy:null;
+     window.HealthGoMapV2?.rememberPosition?.({lat,lon,accuracy:acc});
+     display(lat,lon,acc);
    },
    function(err){
-     const msg=err&&err.code===1?'Nie udzielono zgody na lokalizację.':err&&err.code===2?'Nie udało się ustalić położenia urządzenia.':'Lokalizacja nie odpowiedziała na czas.';
+     const msg=err&&err.code===1?'Telefon odmówił dostępu do lokalizacji. Sprawdź uprawnienia dla HealthGo.':err&&err.code===2?'Nie udało się ustalić położenia urządzenia.':'GPS nie odpowiedział na czas. Spróbuj ponownie.';
      mapStatus(msg);
    },
-   {enableHighAccuracy:true,timeout:12000,maximumAge:30000}
+   {enableHighAccuracy:true,timeout:17000,maximumAge:30000}
  );
 }
 
