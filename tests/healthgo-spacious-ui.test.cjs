@@ -9,8 +9,8 @@ const js=fs.readFileSync('www/healthgo-map-pro.js','utf8');
 test('Spacious styles load after all older map/chat/mobile styles on every app screen',()=>{
  const mobile=html.indexOf('healthgo-mobile-suite.css');
  const chat=html.indexOf('healthgo-chat-modern.css');
- const map=html.indexOf('healthgo-map-v2.css?v=2');
- const newStyle=html.indexOf('healthgo-spacious-ui.css?v=1');
+ const map=html.indexOf('healthgo-map-v2.css?v=3');
+ const newStyle=html.indexOf('healthgo-spacious-ui.css?v=2');
  assert.ok(mobile>=0&&chat>mobile&&map>chat&&newStyle>map,
   'layout overrides must load last');
  assert.match(html,/healthgo-map-pro\.js\?v=2/);
@@ -31,6 +31,19 @@ test('Live navigation covers the entire screen without sheets or bottom mobile m
  assert.match(css,/body\.hg-navigation-active #map #mapResultsPanel/);
  assert.match(css,/body\.hg-navigation-active #map #hgProNavigation:not\(\[hidden\]\)/);
  assert.match(css,/body\.hg-navigation-active #map #healthgoMap/);
+});
+
+
+test('Navigation HUD stays hidden on normal map even if older CSS sets display:flex',()=>{
+ const oldCSS=fs.readFileSync('www/healthgo-map-v2.css','utf8');
+ // The hidden attribute can be overridden by an author display:flex rule.
+ // Enforce explicit display:none !important in both active and inactive states.
+ assert.match(oldCSS,/#map #hgProNavigation\[hidden\]\s*\{\s*display:none!important/);
+ assert.match(css,/body:not\(\.hg-navigation-active\) #map #hgProNavigation/);
+ assert.match(css,/#map #hgProNavigation\[hidden\]\s*\{\s*display:none!important/);
+ assert.match(js,/show\('hgProNavigation',true\)/);
+ assert.match(js,/show\('hgProNavigation',false\)/);
+ assert.match(html,/id="hgProNavigation"[^>]*hidden/);
 });
 
 test('Navigation cards have separate top and bottom safe-area positions',()=>{
