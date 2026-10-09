@@ -17,7 +17,7 @@
  let watchId=null,activeStep=0,currentPosition=null,lastSpeech='',routeEpoch=0,loadEpoch=0;
  let leafletArrow=null,glArrow=null,glArrowElement=null,buildingAbort=null,preferNav3D=true;
  let activeMapLibre=null;
- let lastCameraTick=0, routeTailMeters=[],navCompletion=false,nav3DAttempted=false;
+ let lastCameraTick=0, routeTailMeters=[],navCompletion=false,nav3DAttempted=false,renderRequest=0;
  const isFinitePoint=p=>p&&Number.isFinite(+p.lat)&&Number.isFinite(+p.lon)&&Math.abs(+p.lat)<=90&&Math.abs(+p.lon)<=180;
  const emptyFC=()=>({type:'FeatureCollection',features:[]});
  const msg=s=>{const node=$('hgProNotice');if(node)node.textContent=s;};
@@ -136,6 +136,7 @@
  }
  async function toggle3D(){
   if(threeD){stop3D();return false}
+  const myRequest=++renderRequest;
   auto3DArmed=false; // returning to 2D must not cause a repeated toggle loop
   const leaflet=getLeaflet(),host=$('hg3DMap');
   if(!leaflet||!host){msg('Najpierw otwórz mapę.');return false}
@@ -143,7 +144,9 @@
   const button=$('hg3DButton');
   if(button)button.disabled=true;
   try{
-   const lib=await loadLib();activeMapLibre=lib;
+   const lib=await loadLib();
+   if(renderRequest!==myRequest)return false;
+   activeMapLibre=lib;
    if(lib.supported&&!lib.supported())throw Error('WEBGL_NOT_SUPPORTED');
    const center=leaflet.getCenter();
    host.hidden=false;
@@ -176,6 +179,7 @@
   return true;
  }
  function stop3D(){
+  renderRequest++;
   loadEpoch++;
   if(buildingAbort){buildingAbort.abort();buildingAbort=null;}
   removeGlArrow();
@@ -330,7 +334,7 @@
   navText('hgProNavDirection',instruction);
   navText('hgProNavIcon',maneuverIcon(selected));
   navText('hgProNavNext',meters===null?'Kontynuuj do następnego manewru':formatMeters(meters)+' do manewru');
-  updateJourneyStatus(point,Number(c.speed));
+  updateJourneyStatus(point,c.speed==null?NaN:Number(c.speed));
   positionMarker(point,Number(c.heading));
   const now=Date.now();
   if(follow&&now-lastCameraTick>=950){
@@ -355,9 +359,10 @@
   // navigation on heavy 3D loading or restart tracking for the renderer.
   if(preferNav3D&&!threeD&&!nav3DAttempted&&getLeaflet()?.getCenter&&document.getElementById('hg3DMap')){
    nav3DAttempted=true;
-   toggle3D().then(ok=>{if(ok&&watchId!==null&&currentPosition){
-    setNavigationAppearance(true);positionMarker(currentPosition,Number(c.heading));
-   }}).catch(()=>{});
+   toggle3D().then(ok=>{
+    if(ok&&watchId!==null&&currentPosition){setNavigationAppearance(true);positionMarker(currentPosition,Number(c.heading));}
+    if(!ok&&watchId!==null){navText('hgProNavNext','Prowadzenie 2D — 3D niedostępne na tym urządzeniu.');}
+   }).catch(()=>{});
   }
  }
  function startNavigation(){
@@ -382,7 +387,8 @@
   try{
    watchId=navigator.geolocation.watchPosition(pos=>{if(id===routeEpoch)updatePosition(pos)},
     err=>{
-     msg(err?.code===1?'Telefon nie zezwolił na nawigację GPS. Sprawdź uprawnienia HealthGo.':'Nie ma aktualnego sygnału GPS. Spróbuj na otwartej przestrzeni.');
+     const failure=err?.code===1?'Telefon nie zezwolił na GPS. Sprawdź ustawienia HealthGo.':'Brak aktualnego sygnału GPS — spróbuj na otwartej przestrzeni.';
+     msg(failure);navText('hgProNavNext',failure);
      if(err?.code===1)stopNavigation();
     },{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
   }catch(_){stopNavigation();msg('Nie udało się uruchomić GPS.');return false}
