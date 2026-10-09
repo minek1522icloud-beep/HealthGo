@@ -195,7 +195,7 @@
    buttons.appendChild(del);item.appendChild(buttons);root.appendChild(item);
   });
  }
- function init(){renderSettings()}
+ function init(){renderSettings();window.HealthGoMapV2?.chooseMode?.(getSettings().mode)}
  document.addEventListener('visibilitychange',()=>{if(document.hidden){weatherController?.abort();worksController?.abort();}});
  window.addEventListener('pagehide',()=>{weatherController?.abort();worksController?.abort()});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
