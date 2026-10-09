@@ -7,6 +7,7 @@
  let measuring=false,measurePoints=[],measureLine=null,measureDots=[],mapSpacious=false;
  let mapEntryLocated=false,mapWelcomeShown=false,locationWelcomeObserver=null;
  let recentFix=null; // precise GPS fix stays in memory; never persisted
+ let mapLocationCheckBusy=false;
  const satellite='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
  const routeUrl='https://router.project-osrm.org/route/v1/driving/';
  const getMap=()=>typeof healthGoMap!=='undefined'?healthGoMap:null;
@@ -30,10 +31,10 @@
   if(getMap()){
    getMap().invalidateSize({pan:false});
    window.HealthGoMapPro?.enableAuto3D?.();
-   if(!mapEntryLocated&&localStorageGet('healthgo.location.welcome.v1')==='allowed'){
-    mapEntryLocated=true;
-    // Permission was explicitly granted earlier. Only position the map when opened.
-    if(typeof useMyLocation==='function')useMyLocation();
+   if(!mapEntryLocated){
+    const recent=getRecentPosition();
+    if(recent){mapEntryLocated=true;centerFromConsent(recent);}
+    else if(localStorageGet('healthgo.location.welcome.v1')==='allowed')centerIfSystemGranted();
    }
   }
   const fav=el('mapV2FavouriteCount');if(fav)fav.textContent=String(read('favorites').length);
@@ -52,6 +53,40 @@
    if(getMap())getMap().invalidateSize({pan:false});
   }
  }
+ function centerFromConsent(point){
+  if(!validPoint(point)||!getMap()||!el('map')?.classList?.contains?.('active'))return false;
+  getMap().setView([Number(point.lat),Number(point.lon)],16,{animate:true});
+  return true;
+ }
+ async function centerIfSystemGranted(){
+  if(mapLocationCheckBusy||mapEntryLocated)return false;
+  mapLocationCheckBusy=true;
+  try{
+   // App consent is not a substitute for browser/iOS permission.
+   // In unsupported browsers, never provoke an automatic system prompt.
+   if(!navigator.permissions?.query)return false;
+   const status=await navigator.permissions.query({name:'geolocation'});
+   if(status?.state!=='granted'){
+    if(status?.state==='denied')localStorageSet('healthgo.location.welcome.v1','denied');
+    return false;
+   }
+   if(!navigator.geolocation)return false;
+   return await new Promise(resolve=>{
+    navigator.geolocation.getCurrentPosition(pos=>{
+     const point={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy};
+     if(rememberPosition(point)){
+      const centered=centerFromConsent(point);
+      if(centered)mapEntryLocated=true;
+      resolve(centered);
+     }else resolve(false);
+    },err=>{
+     if(err?.code===1)localStorageSet('healthgo.location.welcome.v1','denied');
+     resolve(false);
+    },{enableHighAccuracy:true,maximumAge:30000,timeout:14000});
+   });
+  }catch(_){return false}
+  finally{mapLocationCheckBusy=false}
+ }
  function welcomeShouldOpen(){
   if(mapWelcomeShown||localStorageGet('healthgo.location.welcome.v1')!==null)return false;
   const app=document.querySelector?.('.app'),signin=el('authScreen');
@@ -69,27 +104,23 @@
  function chooseWelcomeLocation(allowed){
   const dialog=el('hgLocationWelcome');
   if(dialog)dialog.hidden=true;
-  localStorageSet('healthgo.location.welcome.v1',allowed?'allowed':'later');
-  if(!allowed)return;
+  if(!allowed){localStorageSet('healthgo.location.welcome.v1','later');return}
   if(!navigator.geolocation){say('Lokalizacja nie jest obsługiwana na tym telefonie.');return}
   // This is a direct user-gesture callback; the browser owns the real OS prompt.
   navigator.geolocation.getCurrentPosition(position=>{
    const pos=position.coords;
    if(!Number.isFinite(pos?.latitude)||!Number.isFinite(pos?.longitude))return;
+   localStorageSet('healthgo.location.welcome.v1','allowed');
    rememberPosition({lat:pos.latitude,lon:pos.longitude,accuracy:pos.accuracy});
-   if(el('map')?.classList.contains('active')){
-    mapEntryLocated=true;
-    if(getMap()&&typeof useMyLocation==='function')useMyLocation();
-   }
+   if(centerFromConsent({lat:pos.latitude,lon:pos.longitude}))mapEntryLocated=true;
    // Do not retain or send coordinates until the user actually opens the map.
   },err=>{
-   localStorageSet('healthgo.location.welcome.v1','later');
-   if(err?.code===1)say('Odmówiono dostępu do lokalizacji. Możesz zmienić tę decyzję w ustawieniach telefonu.');
+   localStorageSet('healthgo.location.welcome.v1',err?.code===1?'denied':'later');
+   if(err?.code===1)say('iPhone odmawia dostępu do GPS. Sprawdź Ustawienia → Prywatność i ochrona → Usługi lokalizacji → HealthGo lub Witryny Safari.');
   },{enableHighAccuracy:false,maximumAge:60000,timeout:12000});
  }
  function askLocationAgain(){
   mapWelcomeShown=false;
-  localStorageSet('healthgo.location.welcome.v1','later');
   if(!navigator.geolocation){say('Lokalizacja niedostępna.');return}
   if(typeof useMyLocation==='function'){window.HealthGoMapPro?.stop3D?.();useMyLocation();}
  }
@@ -209,6 +240,7 @@
    },err=>{
      const fallback=getRecentPosition(300000);
      if(fallback&&err?.code!==1){resolve(fallback);return;}
+     if(err?.code===1)localStorageSet('healthgo.location.welcome.v1','denied');
      reject(new Error(err?.code===1?'GPS_DENIED':err?.code===3?'GPS_TIMEOUT':'GPS_UNAVAILABLE'));
    },{enableHighAccuracy:true,timeout:17000,maximumAge:30000});
   });
@@ -418,5 +450,5 @@
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted};
 })();
