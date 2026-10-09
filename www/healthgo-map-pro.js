@@ -7,12 +7,13 @@
  const $=id=>document.getElementById(id);
  const getLeaflet=()=>typeof healthGoMap==='undefined'?null:healthGoMap;
  const osmTiles='https://tile.openstreetmap.org/{z}/{x}/{y}.png';
- const mapLibreScript='https://unpkg.com/maplibre-gl@6.11.2/dist/maplibre-gl.js';
+ const mapLibreScript='https://unpkg.com/maplibre-gl@6.11.2/dist/maplibre-gl.mjs';
  const mapLibreStyle='https://unpkg.com/maplibre-gl@6.11.2/dist/maplibre-gl.css';
  const buildingSource='hg-real-buildings';
  const routeSource='hg-pro-route';
  const drivingLine='hg-pro-route-line';
  let gl=null,threeD=false,libLoading=null,lastRoute=null,follow=true,voice=false;
+ let auto3DMap=null,auto3DArmed=true,auto3DLoading=false;
  let watchId=null,activeStep=0,currentPosition=null,lastSpeech='',routeEpoch=0,loadEpoch=0;
  const isFinitePoint=p=>p&&Number.isFinite(+p.lat)&&Number.isFinite(+p.lon)&&Math.abs(+p.lat)<=90&&Math.abs(+p.lon)<=180;
  const emptyFC=()=>({type:'FeatureCollection',features:[]});
@@ -24,17 +25,15 @@
  const show=(id,value)=>{const n=$(id);if(n)n.hidden=!value;};
  const announce=s=>{msg(s);if(typeof mapStatus==='function')mapStatus(s);};
  function loadLib(){
-  if(window.maplibregl)return Promise.resolve(window.maplibregl);
   if(libLoading)return libLoading;
-  libLoading=new Promise((resolve,reject)=>{
-   if(!document.querySelector('link[data-hg-maplibre]')){
-    const link=document.createElement('link');link.rel='stylesheet';link.href=mapLibreStyle;
-    link.dataset.hgMaplibre='1';document.head.appendChild(link);
-   }
-   const script=document.createElement('script');script.src=mapLibreScript;script.async=true;
-   script.onload=()=>window.maplibregl?resolve(window.maplibregl):reject(new Error('MAPLIBRE_UNAVAILABLE'));
-   script.onerror=()=>reject(new Error('MAPLIBRE_DOWNLOAD_FAILED'));
-   document.head.appendChild(script);
+  // MapLibre 6 is ES-module only. Import lazily so mobile start stays fast.
+  if(!document.querySelector('link[data-hg-maplibre]')){
+   const link=document.createElement('link');link.rel='stylesheet';link.href=mapLibreStyle;
+   link.dataset.hgMaplibre='1';document.head.appendChild(link);
+  }
+  libLoading=import(mapLibreScript).then(lib=>{
+   if(typeof lib.Map!=='function')throw Error('MAPLIBRE_UNAVAILABLE');
+   return lib;
   }).catch(e=>{libLoading=null;throw e});
   return libLoading;
  }
@@ -114,6 +113,22 @@
    layout:{'line-join':'round','line-cap':'round'},
    paint:{'line-color':'#216dec','line-width':7,'line-opacity':.98}});
  }
+ function enableAuto3D(){
+  const map=getLeaflet();
+  if(!map||typeof map.on!=='function')return false;
+  if(auto3DMap===map)return true;
+  auto3DMap=map;auto3DArmed=true;
+  map.on('zoomend',()=>{
+   if(threeD||auto3DLoading)return;
+   const z=Number(map.getZoom());
+   if(z<15){auto3DArmed=true;return}
+   // Only a deliberate close street-level zoom activates the heavier 3D view.
+   if(z<17||!auto3DArmed)return;
+   auto3DArmed=false;auto3DLoading=true;
+   toggle3D().finally(()=>{auto3DLoading=false});
+  });
+  return true;
+ }
  async function toggle3D(){
   if(threeD){stop3D();return false}
   const leaflet=getLeaflet(),host=$('hg3DMap');
@@ -131,6 +146,7 @@
     canvasContextAttributes:{antialias:true}});
    threeD=true;document.getElementById('mapWorkspace')?.classList.add('map-pro-3d');
    gl.on('load',()=>{drawRoute();refreshBuildings();});
+   gl.on('zoomend',()=>{if(threeD&&gl&&gl.getZoom()<14.8)stop3D();});
    gl.on('error',e=>{if(e?.error)console.warn('MapLibre 3D:',e.error.message||e.error)});
    if(button)button.textContent='▱ Wróć do mapy 2D';
    msg('Widok 3D włączony. Budynki to rzeczywiste obrysy OSM, nie zdjęcia domów.');
@@ -288,6 +304,6 @@
  function leaveMap(){stopNavigation();if(threeD)stop3D()}
  document.addEventListener('visibilitychange',()=>{if(document.hidden)leaveMap()});
  window.addEventListener('pagehide',leaveMap);
- window.HealthGoMapPro={toggle3D,stop3D,center3D,visibleCenter,refreshBuildings,setRoute,clearRoute,startNavigation,
+ window.HealthGoMapPro={toggle3D,stop3D,enableAuto3D,center3D,visibleCenter,refreshBuildings,setRoute,clearRoute,startNavigation,
   stopNavigation,toggleVoice,toggleFollow,leaveMap,parseHeight,buildingsToFeatures};
 })();
