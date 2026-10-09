@@ -361,7 +361,7 @@
    nav3DAttempted=true;
    toggle3D().then(ok=>{
     if(ok&&watchId!==null&&currentPosition){setNavigationAppearance(true);positionMarker(currentPosition,Number(c.heading));}
-    if(!ok&&watchId!==null){navText('hgProNavNext','Prowadzenie 2D — 3D niedostępne na tym urządzeniu.');}
+    if(!ok&&watchId!==null&&preferNav3D){navText('hgProNavNext','Prowadzenie 2D — 3D niedostępne na tym urządzeniu.');}
    }).catch(()=>{});
   }
  }
@@ -389,13 +389,14 @@
     err=>{
      const failure=err?.code===1?'Telefon nie zezwolił na GPS. Sprawdź ustawienia HealthGo.':'Brak aktualnego sygnału GPS — spróbuj na otwartej przestrzeni.';
      msg(failure);navText('hgProNavNext',failure);
-     if(err?.code===1)stopNavigation();
+     if(err?.code===1){stopNavigation();announce(failure)}
     },{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
   }catch(_){stopNavigation();msg('Nie udało się uruchomić GPS.');return false}
   msg('Prowadzenie uruchomione. Mapa nocna i 3D nie wymagają płatnego klucza.');
   return true;
  }
  function stopNavigation(){
+  if(nav3DAttempted&&!threeD)renderRequest++;
   routeEpoch++;nav3DAttempted=false;
   if(watchId!==null&&navigator.geolocation?.clearWatch)navigator.geolocation.clearWatch(watchId);
   watchId=null;currentPosition=null;navCompletion=false;
@@ -410,9 +411,9 @@
   preferNav3D=!preferNav3D;
   const b=$('hgProNav3D');
   if(b){b.textContent=preferNav3D?'3D':'2D';b.setAttribute('aria-pressed',String(preferNav3D))}
-  if(!preferNav3D&&threeD)stop3D();
+  if(!preferNav3D){if(threeD)stop3D();else renderRequest++;}
   if(preferNav3D&&watchId!==null&&!threeD){
-   nav3DAttempted=false;
+   nav3DAttempted=true;
    if(currentPosition){
     positionMarker(currentPosition,0);
     if(getLeaflet()?.getCenter)toggle3D().then(ok=>{if(ok){setNavigationAppearance(true);positionMarker(currentPosition,0)}}).catch(()=>{});
