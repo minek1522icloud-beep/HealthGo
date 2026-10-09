@@ -164,6 +164,10 @@
    modifier==='uturn'?'Zawróć':'Jedź prosto';
   return part+(road?' w '+road:'');
  }
+ function clearRoute(){
+  stopNavigation();lastRoute=null;activeStep=0;show('hgNavStartButton',false);
+  if(gl?.getSource?.(routeSource))gl.getSource(routeSource).setData(emptyFC());
+ }
  function setRoute(route,destination){
   const coordinates=route?.geometry?.coordinates;
   if(!Array.isArray(coordinates)||coordinates.length<2)return false;
@@ -184,7 +188,7 @@
    u.lang='pl-PL';u.rate=.96;window.speechSynthesis.speak(u)}catch(_){}
  }
  function updatePosition(pos){
-  if(!watchId||!lastRoute)return;
+  if(watchId===null||!lastRoute)return;
   const c=pos.coords||{},point={lat:Number(c.latitude),lon:Number(c.longitude)};
   if(!isFinitePoint(point)||Number(c.accuracy)>120)return;
   currentPosition=point;
@@ -257,8 +261,9 @@
   const b=$('hgProFollow');if(b){b.textContent=follow?'Śledź położenie':'Mapa swobodna';b.setAttribute('aria-pressed',String(follow))}
   return follow;
  }
- document.addEventListener('visibilitychange',()=>{if(document.hidden){stopNavigation();if(threeD)stop3D()}});
- window.addEventListener('pagehide',()=>{stopNavigation();stop3D()});
- window.HealthGoMapPro={toggle3D,stop3D,refreshBuildings,setRoute,startNavigation,
-  stopNavigation,toggleVoice,toggleFollow,parseHeight,buildingsToFeatures};
+ function leaveMap(){stopNavigation();if(threeD)stop3D()}
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)leaveMap()});
+ window.addEventListener('pagehide',leaveMap);
+ window.HealthGoMapPro={toggle3D,stop3D,refreshBuildings,setRoute,clearRoute,startNavigation,
+  stopNavigation,toggleVoice,toggleFollow,leaveMap,parseHeight,buildingsToFeatures};
 })();
