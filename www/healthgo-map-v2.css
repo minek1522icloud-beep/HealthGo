@@ -293,3 +293,46 @@ body[data-dark="1"] #map .map-v2-item span{color:#dce7f6}
  #map .map-workspace.map-pro-navigating .hg-pro-nav-buttons button{min-width:0;padding:9px 3px;font-size:11px;line-height:1.2}
  #map .map-workspace.map-pro-navigating .hg-pro-nav-warning{left:10px;bottom:calc(172px + env(safe-area-inset-bottom));font-size:9px}
 }
+
+
+/* HealthGo Map 4.0 interface — light 2D, spacious sheets and honest live data */
+#map .map-v2-panel[data-map-panel="weather"],
+#map .map-v2-panel[data-map-panel="settings"],
+#map .map-v2-panel[data-map-panel="saved"]{max-height:calc(100% - 118px)}
+#map .hg4-weather-card{min-height:118px;background:linear-gradient(135deg,#edf6ff,#f6fbff);border-radius:18px;padding:18px;margin:11px 0;border:1px solid #dbe9f8}
+#map .hg4-weather-summary{display:flex;align-items:center;gap:18px}
+#map .hg4-weather-icon{font-size:42px;line-height:1}
+#map .hg4-weather-summary div{display:flex;flex-direction:column;gap:3px}
+#map .hg4-weather-summary strong{font-size:29px;color:#124579;line-height:1.15}
+#map .hg4-weather-summary div span{color:#4a698a;font-size:13px;font-weight:750}
+#map .hg4-weather-hours{display:flex;gap:9px;overflow-x:auto;scrollbar-width:thin;padding:9px 0 15px}
+#map .hg4-hour{display:flex;min-width:93px;flex-direction:column;gap:7px;border-radius:15px;border:1px solid #e1eaf6;background:#f8fbff;padding:14px 10px}
+#map .hg4-hour b{font-size:12px;color:#46617f}#map .hg4-hour span{font-size:19px;font-weight:800;color:#144b8d}
+#map .hg4-hour small{font-size:11px;color:#56728e}
+#map .hg4-check{display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #e6edf6;font-size:13px;color:#273d56;line-height:1.5}
+#map .hg4-check input{accent-color:#1769ea;width:20px;height:20px;flex:none}
+#map .hg4-outline{width:100%;min-height:47px;margin:8px 0;border:1px solid #bed6f5;border-radius:14px;background:#f1f7ff;color:#17559d;font-weight:780;font-size:13px}
+#map .hg4-route-alternatives{display:flex;flex-direction:column;gap:9px;margin:10px 0}
+#map .hg4-alternative{text-align:left;padding:13px 14px;min-height:49px;border:1px solid #dce6f2;background:#f7faff;border-radius:13px;font-size:13px;color:#214e81;font-weight:750}
+#map .hg4-alternative.active{border-color:#246fe5;background:#eaf3ff;box-shadow:inset 0 0 0 1px #246fe5}
+#map .map-v2-panel-content h4{font-size:14px;font-weight:850;color:#254268;margin:17px 0 7px}
+#map .map-v2-panel-content .map-v2-input{min-height:48px;margin-bottom:5px}
+#map .map-v2-tab.active{background:#e3f0ff!important;color:#1259bb!important}
+#map .map-workspace.map-pro-navigating{background:#edf4ff!important}
+#map .map-workspace.map-pro-navigating #healthgoMap .leaflet-tile-pane{filter:none}
+#map .map-workspace.map-pro-navigating.hg-nav-dark #healthgoMap .leaflet-tile-pane{filter:brightness(.72) invert(.92) hue-rotate(175deg) saturate(.52) contrast(1.18)}
+#map .hg-nav-user-icon{border:0;background:transparent}
+#map .hg-nav-arrow{display:grid;place-items:center;width:45px;height:45px;border-radius:50%;background:#196be7;border:3px solid white;color:#fff;box-shadow:0 0 0 6px #328bff44,0 6px 18px #0005;font-size:26px}
+#map .map-workspace.map-pro-navigating:not(.hg-nav-dark) .hg-pro-nav-main{background:linear-gradient(130deg,#1d5394,#1c3760)}
+#map .map-workspace.map-pro-navigating:not(.hg-nav-dark) .hg-pro-nav-footer{background:#20354e}
+@media(max-width:900px){
+ #map .map-v2-bottom{grid-template-columns:repeat(5,minmax(0,1fr));display:grid;gap:3px;padding:7px 4px;left:8px;right:8px}
+ #map .map-v2-tab{min-width:0;width:100%;font-size:10px;font-weight:800;line-height:1.25;min-height:60px;padding:8px 0;gap:5px}
+ #map .map-v2-tab .hg-pro-icon{height:22px;width:22px}
+ #map .map-v2-panel[data-map-panel="weather"],#map .map-v2-panel[data-map-panel="saved"],#map .map-v2-panel[data-map-panel="settings"]{
+  max-height:min(77%,calc(100dvh - 145px));bottom:8px;left:8px;right:8px
+ }
+ #map .map-v2-panel-content{padding:8px 19px calc(28px + env(safe-area-inset-bottom))}
+ #map .map-v2-panel .map-v2-primary{min-height:48px}
+ #map .hg4-route-alternatives{gap:8px}
+}
