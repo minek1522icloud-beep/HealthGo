@@ -90,6 +90,7 @@
   const p={name:clean(name||'Wybrane miejsce'),lat:Number(lat),lon:Number(lon)};
   if(!validPoint(p))return;
   destination=p;
+  window.HealthGoMapPro?.clearRoute();
   const field=el('mapV2RouteTo');if(field)field.value=p.name;
   const map=getMap();
   if(map&&typeof L!=='undefined'){
@@ -119,6 +120,7 @@
  function chooseMode(mode){
   if(!['car','foot','bike'].includes(mode))return;
   if(routeMode!==mode){
+    window.HealthGoMapPro?.clearRoute();
     if(routeLayer&&getMap())getMap().removeLayer(routeLayer);
     routeLayer=null;
     const routeOutput=el('mapV2RouteOutput');
@@ -154,6 +156,7 @@
    try{const res=await fetch(url,{signal:controller.signal});if(!res.ok)throw new Error('ROUTE_HTTP_'+res.status);json=await res.json();}finally{clearTimeout(timer)}
    const route=json?.routes?.[0],geometry=route?.geometry?.coordinates;
    if(!Array.isArray(geometry)||geometry.length<2)throw new Error('ROUTE_EMPTY');
+   window.HealthGoMapPro?.setRoute(route,destination.name);
    if(!getMap()||typeof L==='undefined')return;
    if(routeLayer)getMap().removeLayer(routeLayer);
    routeLayer=L.polyline(geometry.filter(pt=>Array.isArray(pt)&&pt.length>=2).map(pt=>[pt[1],pt[0]]),{color:'#1869ee',weight:6,opacity:.94,className:'map-v2-route-line'}).addTo(getMap());
