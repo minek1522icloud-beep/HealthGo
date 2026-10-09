@@ -1,6 +1,8 @@
 import {pipeline,env} from '@huggingface/transformers';
 
-const MODEL='onnx-community/Qwen2.5-0.5B-Instruct';
+// Quantized compact model runs on Safari's WebAssembly backend without WebGPU.
+const MODEL='onnx-community/SmolLM2-135M-Instruct-ONNX-MHA';
+const MODEL_SIZE_MB=182;
 env.useBrowserCache=true;
 env.allowLocalModels=false;
 env.allowRemoteModels=true;
@@ -24,13 +26,10 @@ async function setup(){
   if(generator)return generator;
   if(preparing)return preparing;
   preparing=(async()=>{
-    if(!self.navigator?.gpu){
-      throw new Error('LOCAL_GPU_UNAVAILABLE');
-    }
-    report('stage',{label:'Pobieram model i przygotowuję silnik…'});
+    report('stage',{label:'Uruchamiam lekki silnik AI dla telefonu…'});
     generator=await pipeline('text-generation',MODEL,{
-      dtype:'q4f16',
-      device:'webgpu',
+      dtype:'q4',
+      device:'wasm',
       progress_callback: progress => {
         if(progress?.status==='progress'){
           report('progress',{
@@ -53,7 +52,7 @@ async function setup(){
       generator=null;
       throw new Error('LOCAL_MODEL_NO_REPLY');
     }
-    report('ready',{model:MODEL});
+    report('ready',{model:MODEL,modelSizeMB:MODEL_SIZE_MB});
     return generator;
   })();
   try{return await preparing;}
@@ -98,7 +97,8 @@ self.addEventListener('message',event=>{
     }
     messages.push({role:'user',content:question});
     report('stage',{label:'Lokalne AI tworzy odpowiedź…'});
-    const tokenBudget=input.responseMode==='high'?230:input.responseMode==='medium'?150:95;
+    // Keep memory and inference latency bounded on mobile Safari.
+    const tokenBudget=input.responseMode==='high'?120:input.responseMode==='medium'?90:64;
     const output=await model(messages,{max_new_tokens:tokenBudget,do_sample:false});
     const answer=parseResult(output);
     if(!answer)throw new Error('LOCAL_EMPTY_ANSWER');
