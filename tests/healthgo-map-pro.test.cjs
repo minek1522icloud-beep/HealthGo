@@ -98,6 +98,17 @@ test('Switching page hides navigation and releases tracking',()=>{
  assert.equal(app.element('hgProNavigation').hidden,true);
 });
 
+
+test('Street-level zoom automatically enables the real 3D renderer with fallback',()=>{
+ const sdk=harness();
+ assert.equal(sdk.api.enableAuto3D(),false,'mock has no zoom event capability');
+ assert.match(js,/mapLibreScript='https:\/\/unpkg\.com\/maplibre-gl@6\.11\.2\/dist\/maplibre-gl\.mjs'/);
+ assert.match(js,/import\(mapLibreScript\)/,'MapLibre 6 loads as an ES module');
+ assert.match(js,/if\(z<17\|\|!auto3DArmed\)return/);
+ assert.match(js,/map\.on\('zoomend'/);
+ assert.match(js,/if\(threeD&&gl&&gl\.getZoom\(\)<14\.8\)stop3D\(\)/);
+ assert.match(html,/id="hg3DMap"/);
+});
 test('Regular Map 2D, privacy and older favorites remain wired',()=>{
  assert.match(mapJS,/window\.HealthGoMapPro\?\.setRoute\(route,destination\.name\)/);
  assert.match(mapJS,/window\.HealthGoMapPro\?\.clearRoute\(\)/);
