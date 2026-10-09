@@ -5,6 +5,7 @@
  let mounted=false,activePanel='',tileLayer=null,tileKind='street',destination=null,destinationMarker=null,routeLayer=null;
  let tracker=null,traceLayer=null,trackingStarted=0,lastFix=null,trackedMeters=0,routeMode='car';
  let measuring=false,measurePoints=[],measureLine=null,measureDots=[],mapSpacious=false;
+ let mapEntryLocated=false,mapWelcomeShown=false,locationWelcomeObserver=null;
  const satellite='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
  const routeUrl='https://router.project-osrm.org/route/v1/driving/';
  const getMap=()=>typeof healthGoMap!=='undefined'?healthGoMap:null;
@@ -24,8 +25,81 @@
    const field=el('mapV2RouteTo');
    if(field)field.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();planRoute();}});
   }
-  if(getMap())getMap().invalidateSize({pan:false});
+  resizeViewport();
+  if(getMap()){
+   getMap().invalidateSize({pan:false});
+   window.HealthGoMapPro?.enableAuto3D?.();
+   if(!mapEntryLocated&&localStorageGet('healthgo.location.welcome.v1')==='allowed'){
+    mapEntryLocated=true;
+    // Permission was explicitly granted earlier. Only position the map when opened.
+    if(typeof useMyLocation==='function')useMyLocation();
+   }
+  }
   const fav=el('mapV2FavouriteCount');if(fav)fav.textContent=String(read('favorites').length);
+ }
+ function localStorageGet(name){try{return localStorage.getItem(name)}catch(_){return null}}
+ function localStorageSet(name,value){try{localStorage.setItem(name,value)}catch(_){}}
+ function resizeViewport(){
+  const panel=el('map'),nav=document.querySelector('.mobile-nav');
+  if(!panel||!panel.classList.contains('active')||!nav)return;
+  if(window.innerWidth>900){panel.style.removeProperty('height');return}
+  const top=panel.getBoundingClientRect?.().top,navTop=nav.getBoundingClientRect?.().top;
+  if(!Number.isFinite(top)||!Number.isFinite(navTop)||navTop<=top+300)return;
+  const space=Math.round(navTop-top-5);
+  if(space>=380){
+   panel.style.setProperty('height',space+'px','important');
+   if(getMap())getMap().invalidateSize({pan:false});
+  }
+ }
+ function welcomeShouldOpen(){
+  if(mapWelcomeShown||localStorageGet('healthgo.location.welcome.v1')!==null)return false;
+  const app=document.querySelector('.app'),signin=el('authScreen');
+  if(!app||app.classList.contains('auth-hidden')||signin?.classList.contains('show'))return false;
+  return true;
+ }
+ function showLocationWelcome(){
+  if(!welcomeShouldOpen())return false;
+  const dialog=el('hgLocationWelcome');
+  if(!dialog)return false;
+  mapWelcomeShown=true;dialog.hidden=false;
+  dialog.querySelector('button')?.focus?.({preventScroll:true});
+  return true;
+ }
+ function chooseWelcomeLocation(allowed){
+  const dialog=el('hgLocationWelcome');
+  if(dialog)dialog.hidden=true;
+  localStorageSet('healthgo.location.welcome.v1',allowed?'allowed':'later');
+  if(!allowed)return;
+  if(!navigator.geolocation){say('Lokalizacja nie jest obsługiwana na tym telefonie.');return}
+  // This is a direct user-gesture callback; the browser owns the real OS prompt.
+  navigator.geolocation.getCurrentPosition(position=>{
+   const pos=position.coords;
+   if(!Number.isFinite(pos?.latitude)||!Number.isFinite(pos?.longitude))return;
+   if(el('map')?.classList.contains('active')){
+    mapEntryLocated=true;
+    if(getMap()&&typeof useMyLocation==='function')useMyLocation();
+   }
+   // Do not retain or send coordinates until the user actually opens the map.
+  },err=>{
+   localStorageSet('healthgo.location.welcome.v1','later');
+   if(err?.code===1)say('Odmówiono dostępu do lokalizacji. Możesz zmienić tę decyzję w ustawieniach telefonu.');
+  },{enableHighAccuracy:false,maximumAge:60000,timeout:12000});
+ }
+ function askLocationAgain(){
+  mapWelcomeShown=false;
+  localStorageSet('healthgo.location.welcome.v1','later');
+  if(!navigator.geolocation){say('Lokalizacja niedostępna.');return}
+  if(typeof useMyLocation==='function'){window.HealthGoMapPro?.stop3D?.();useMyLocation();}
+ }
+ function watchWelcome(){
+  if(showLocationWelcome())return;
+  const app=document.querySelector('.app');
+  if(!app||localStorageGet('healthgo.location.welcome.v1')!==null||typeof MutationObserver==='undefined')return;
+  if(locationWelcomeObserver)return;
+  locationWelcomeObserver=new MutationObserver(()=>{
+   if(showLocationWelcome()){locationWelcomeObserver?.disconnect();locationWelcomeObserver=null;}
+  });
+  locationWelcomeObserver.observe(app,{attributes:true,attributeFilter:['class']});
  }
  function toggle(name){
   if(measuring)stopMeasure();
@@ -313,11 +387,15 @@
  }
  function notice(topic){const labels={traffic:'Warstwa korków wymaga zewnętrznego dostawcy bieżących danych. Nie pokazujemy fikcyjnego ruchu.',weather:'Radar i ostrzeżenia pogodowe wymagają aktualnego źródła danych. Nie pokazujemy fikcyjnej pogody.',threeD:'Widok 3D wymaga osobnego silnika map. Obecna mapa Leaflet działa płynnie w 2D.'};say(labels[topic]||'Funkcja wymaga konfiguracji danych.');}
  function centerGPS(){if(window.HealthGoMapPro?.center3D?.())return;if(typeof useMyLocation==='function')useMyLocation();}
- if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',mount,{once:true})}else mount();
+ if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',()=>{mount();setTimeout(watchWelcome,1000);},{once:true});
+ }else{mount();setTimeout(watchWelcome,1000)}
+ window.addEventListener('resize',()=>{if(el('map')?.classList.contains('active'))resizeViewport()});
+ if(window.visualViewport)window.visualViewport.addEventListener('resize',()=>{if(el('map')?.classList.contains('active'))resizeViewport()});
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&(tracker!==null||measuring)){
   const wasTracking=tracker!==null;stopTracking(false);if(measuring)stopMeasure();
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain};
 })();
