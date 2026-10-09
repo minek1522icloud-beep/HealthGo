@@ -27,6 +27,7 @@ test('Five visible topic buttons and all three response levels are present',()=>
  assert.match(html,/healthgo\.ai\.topicMode/);
  assert.match(html,/healthgo\.ai\.responseMode/);
  assert.match(html,/aria-pressed/);
+ assert.match(css,/#ai \.ai-topic\{flex:0 0 auto;width:auto!important/);
 });
 
 test('Phone chat automatically uses the existing AI without selecting a provider',()=>{
