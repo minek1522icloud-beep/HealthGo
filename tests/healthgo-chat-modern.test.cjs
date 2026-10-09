@@ -30,6 +30,16 @@ test('Five visible topic buttons and all three response levels are present',()=>
  assert.match(css,/#ai \.ai-topic\{flex:0 0 auto;width:auto!important/);
 });
 
+test('iPhone App Check can load required reCAPTCHA assets under the CSP',()=>{
+ const policy=html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)"/)?.[1];
+ assert.ok(policy,'explicit CSP exists');
+ const directives=Object.fromEntries(policy.split(';').map(x=>x.trim()).filter(Boolean).map(x=>[x.split(/\\s+/)[0],x]));
+ assert.match(directives['script-src']||'',/https:\/\/www\\.gstatic\\.com\/recaptcha\//);
+ assert.match(directives['frame-src']||'',/https:\/\/recaptcha\\.google\\.com\/recaptcha\//);
+ assert.match(directives['img-src']||'',/https:\/\/www\\.gstatic\\.com\/recaptcha\//);
+ assert.doesNotMatch(directives['script-src']||'',/unsafe-eval/);
+});
+
 test('Phone chat automatically uses the existing AI without selecting a provider',()=>{
  const start=html.indexOf('if(isHostedMobileHealthGo()){\n     const statusText');
  const end=html.indexOf('}else{\n     let cloudError=null,localError=null;',start);
