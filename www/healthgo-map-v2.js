@@ -116,6 +116,13 @@
  }
  function chooseMode(mode){
   if(!['car','foot','bike'].includes(mode))return;
+  if(routeMode!==mode){
+    if(routeLayer&&getMap())getMap().removeLayer(routeLayer);
+    routeLayer=null;
+    const routeOutput=el('mapV2RouteOutput');
+    if(routeOutput)routeOutput.textContent='Kliknij „Wyznacz trasę”, aby pobrać trasę dla wybranego środka transportu.';
+    const link=el('mapV2External');if(link)link.hidden=true;
+  }
   routeMode=mode;
   document.querySelectorAll('[data-map-mode]').forEach(b=>{const selected=b.dataset.mapMode===mode;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',String(selected));});
   const helper=el('mapV2RouteModeHint');
