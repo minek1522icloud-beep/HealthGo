@@ -1003,7 +1003,7 @@ function modal(title,text,action='OK'){
  document.getElementById('modal').classList.add('show');
 }
 function closeModal(){document.getElementById('modal').classList.remove('show')}
-let aiMode='assistant';
+let aiMode=(()=>{try{const value=localStorage.getItem('healthgo.ai.topicMode');return ['assistant','plan','food','activity','explore'].includes(value)?value:'assistant'}catch(_){return 'assistant'}})();
 let aiResponseMode=(()=>{try{const saved=localStorage.getItem('healthgo.ai.responseMode');return ['average','medium','high'].includes(saved)?saved:'average'}catch(_){return 'average'}})();
 let aiPendingPhoto=null;
 function aiEscape(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -1013,6 +1013,7 @@ function aiInputKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askAI
 function aiScroll(){const box=document.getElementById('aiMessages');if(box)box.scrollTop=box.scrollHeight}
 function aiAddMessage(role,html,actions=[]){
  const box=document.getElementById('aiMessages');if(!box)return;
+ box.querySelector('.ai-welcome')?.remove();
  const row=document.createElement('div');row.className='ai-msg '+role;
  const actionHtml=actions.length?'<div class="ai-inline-actions">'+actions.map(a=>'<button type="button" onclick="'+a.onclick+'">'+aiEscape(a.label)+'</button>').join('')+'</div>':'';
  row.innerHTML=(role==='assistant'?'':'')+'<div class="ai-bubble">'+html+actionHtml+'</div>';
@@ -1020,10 +1021,37 @@ function aiAddMessage(role,html,actions=[]){
 }
 function aiShowTyping(){return aiAddMessage('assistant','<div class="ai-typing"><i></i><i></i><i></i></div>')}
 function aiSetMode(mode,btn){
+ if(!['assistant','plan','food','activity','explore'].includes(mode))mode='assistant';
  aiMode=mode;
- document.querySelectorAll('.ai-mode').forEach(b=>b.classList.toggle('active',b.dataset.aiMode===mode));
- const data={assistant:['HealthGo AI','Zapytaj o wszystko — szkołę, technologię, gry, planowanie i HealthGo','Napisz dowolne pytanie…'],plan:['Plan dnia','Pomogę uporządkować Twój dzień','Np. ułóż mi plan po szkole…'],food:['Jedzenie','Pomysły na posiłki i przepisy','Np. co mogę zrobić z jajek i pieczywa?'],activity:['Aktywność','Pomysły na bezpieczny ruch i zabawę','Np. co mogę zrobić dziś na dworze?'],explore:['Odkrywaj','Pomysły na miejsca i wyjścia','Np. gdzie warto pójść z rodziną?']};
- const d=data[mode]||data.assistant;document.getElementById('aiModeTitle').textContent=d[0];document.getElementById('aiModeSub').textContent=d[1];document.getElementById('aiInput').placeholder=d[2];document.getElementById('aiInput').focus();
+ try{localStorage.setItem('healthgo.ai.topicMode',mode)}catch(_){}
+ document.querySelectorAll('.ai-mode').forEach(b=>{
+  const active=b.dataset.aiMode===mode;
+  b.classList.toggle('active',active);
+  b.setAttribute('aria-pressed',String(active));
+ });
+ const topics={
+  assistant:['HealthGo AI','Zapytaj o wszystko','Napisz wiadomość…'],
+  plan:['HealthGo AI','Plan dnia','Co chcesz zaplanować?'],
+  food:['HealthGo AI','Jedzenie i przepisy','Na co masz ochotę?'],
+  activity:['HealthGo AI','Aktywność','W czym mogę pomóc?'],
+  explore:['HealthGo AI','Odkrywanie','Co chcesz odkryć?']
+ };
+ const selected=topics[mode];
+ const title=document.getElementById('aiModeTitle'),subtitle=document.getElementById('aiModeSub'),input=document.getElementById('aiInput');
+ if(title)title.textContent=selected[0];
+ if(subtitle)subtitle.textContent=selected[1];
+ if(input){input.placeholder=selected[2];if(btn)input.focus();}
+}
+function aiToggleHistory(force){
+ const shell=document.getElementById('aiChatShell'),toggle=document.getElementById('aiHistoryToggle');
+ if(!shell)return;
+ const open=typeof force==='boolean'?force:!shell.classList.contains('history-open');
+ shell.classList.toggle('history-open',open);
+ if(toggle)toggle.setAttribute('aria-expanded',String(open));
+}
+function aiShowWelcome(){
+ const box=document.getElementById('aiMessages');
+ if(box)box.innerHTML="<div class=\"ai-welcome\"><div class=\"ai-welcome-mark\" aria-hidden=\"true\">✦</div><h2>W czym mogę Ci pomóc?</h2><p>Możesz zapytać o szkołę, plan dnia, pomysły na posiłki albo po prostu porozmawiać.</p><div class=\"ai-welcome-suggestions\"><button type=\"button\" onclick=\"aiQuick('Pomóż mi zaplanować dzień')\">📅 Zaplanuj dzień</button><button type=\"button\" onclick=\"aiQuick('Pomóż mi w nauce')\">📚 Nauka</button><button type=\"button\" onclick=\"aiQuick('Podaj pomysł na posiłek')\">🥗 Jedzenie</button><button type=\"button\" onclick=\"aiQuick('Wymyśl coś ciekawego')\">✨ Pomysły</button></div></div>";
 }
 function aiSetResponseMode(mode,btn){
  if(!['average','medium','high'].includes(mode))mode='average';
@@ -1033,14 +1061,14 @@ function aiSetResponseMode(mode,btn){
  const hint=document.getElementById('aiResponseHint');
  if(hint)hint.textContent=mode==='average'?'Szybsza, krótsza odpowiedź':mode==='medium'?'Więcej szczegółów, normalna szybkość':'Najdokładniejsza odpowiedź — może potrwać dłużej';
 }
-setTimeout(()=>aiSetResponseMode(aiResponseMode),0);
+setTimeout(()=>{aiSetResponseMode(aiResponseMode);aiSetMode(aiMode);},0);
 function aiQuick(text){fillAI(text);askAI()}
 function aiNewChat(){aiClearChat();document.getElementById('aiInput').focus()}
 function aiClearChat(){
  if(window.healthGoAIRequestBusy)return;
  window.healthGoAIConversationEpoch=(window.healthGoAIConversationEpoch||0)+1;
  const box=document.getElementById('aiMessages');if(!box)return;
- box.innerHTML='<div class="ai-msg assistant"><div class="ai-bubble"><b>Nowa rozmowa ✨</b><p>Co chcesz teraz zrobić w HealthGo?</p><div class="ai-inline-actions"><button onclick="aiQuick(\'Ułóż mi plan dnia\')">📅 Plan dnia</button><button onclick="aiQuick(\'Wymyśl mi grę\')">🎮 Gra</button><button onclick="aiQuick(\'Podaj pomysł na posiłek\')">🍽️ Jedzenie</button></div></div></div>';
+ aiShowWelcome();
  aiPendingPhoto=null;aiHistory=[];const p=document.getElementById('aiAttachmentPreview');p.classList.remove('show');p.innerHTML='';aiScroll();
 }
 function aiPhotoSelected(input){
@@ -2242,7 +2270,7 @@ try{document.body.dataset.dark=localStorage.getItem('healthgo_dark')==='1'?'1':'
 let tutStep=0, tutActive=false, tutCleanup=null, tutTimer=null;
 const tut=[
  {page:'start',sel:'#start',title:'Start',text:'Start pokazuje tylko dane, które HealthGo naprawdę ma. Jeśli nie ma danych z urządzenia, zobaczysz „Brak danych”, a nie przykładowe liczby.'},
- {page:'ai',sel:'#aiChatShell',title:'HealthGo AI',text:'Tutaj rozmawiasz z działającym lokalnym HealthGo AI. Historia rozmów jest po lewej, a wiadomość wpisujesz na dole.'},
+ {page:'ai',sel:'#aiChatShell',title:'HealthGo AI',text:'Tu rozmawiasz z HealthGo AI. Wybierz temat, poziom odpowiedzi i napisz wiadomość albo dodaj zdjęcie.'},
  {page:'map',sel:'#mapWorkspace',title:'Mapa',text:'Mapa korzysta z prawdziwych danych OpenStreetMap. Możesz wyszukać adres, użyć „Moje położenie” po zgodzie i wyszukać miejsca widoczne w obszarze.'},
  {page:'plan',sel:'#plan',title:'Plan Dnia',text:'Plan jest Twój. Bez wpisów pokazuje „Brak planu”. Dodajesz prawdziwe godziny, miejsca i notatki.'},
  {page:'challenges',sel:'.level-panel',title:'XP i poziomy',text:'XP jest częścią Wyzwań. Dostajesz je dopiero po wykonaniu konkretnej czynności. Poziomy rosną stopniowo aż do 1000.'},
@@ -2550,14 +2578,15 @@ function load(id){
  const send=document.getElementById('aiSendBtn');if(send)send.disabled=false;
  currentId=id;const box=root();if(!box)return;box.replaceChildren();
  for(const message of item.messages||[]){const row=document.createElement('div'),bubble=document.createElement('div');row.className='ai-msg '+(message.role==='user'?'user':'assistant');bubble.className='ai-bubble';bubble.textContent=String(message.text||'');row.appendChild(bubble);box.appendChild(row);}
- render();box.scrollTop=box.scrollHeight;
+ if(!(item.messages||[]).length)aiShowWelcome();
+ aiToggleHistory(false);render();box.scrollTop=box.scrollHeight;
 }
 function fresh(){
  window.healthGoAIConversationEpoch=(window.healthGoAIConversationEpoch||0)+1;
  window.healthGoAIRequestBusy=false;
  window.healthGoAIRequestToken=null;
  const send=document.getElementById('aiSendBtn');if(send)send.disabled=false;
- currentId='chat_'+crypto.randomUUID();root()?.replaceChildren();const list=all();list.unshift({id:currentId,title:'Nowa rozmowa',messages:[],updated:Date.now()});put(list);render();}
+ currentId='chat_'+crypto.randomUUID();root()?.replaceChildren();aiShowWelcome();const list=all();list.unshift({id:currentId,title:'Nowa rozmowa',messages:[],updated:Date.now()});put(list);render();}
 function migrate(){
  if(!currentUid||window.healthGoLegacyOwnerUid!==currentUid||localStorage.getItem(key()))return;
  try{
@@ -2569,7 +2598,7 @@ function migrate(){
   });put(list);
  }catch(_){}
 }
-window.aiNewChat=()=>{if(window.healthGoAIRequestBusy)return;save();fresh();try{aiHistory=[];}catch(_){};};
+window.aiNewChat=()=>{if(window.healthGoAIRequestBusy)return;save();fresh();aiToggleHistory(false);try{aiHistory=[];}catch(_){};};
 window.healthGoClearAIHistory=()=>{
  if(window.healthGoAIRequestBusy||!currentUid)return false;
  try{localStorage.removeItem(key())}catch(_){return false}
