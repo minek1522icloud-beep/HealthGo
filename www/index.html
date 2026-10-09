@@ -1200,6 +1200,16 @@ async function requestLocalHealthGoAI(payload,timeoutMs){
    clearTimeout(timeout);
  }
 }
+function healthGoAppCheckSafeCode(error){
+ const message=String((error&&error.message)||error||'');
+ const match=message.match(/APP_CHECK_ERROR\\s+([a-zA-Z][a-zA-Z0-9./_-]{0,80})/);
+ return match?match[1]:(/APP_CHECK_TIMEOUT/.test(message)?'APP_CHECK_TIMEOUT':'APP_CHECK_FAILURE');
+}
+function healthGoAppCheckGuidance(error){
+ const message=String((error&&error.message)||error||'');
+ if(/APP_CHECK_TIMEOUT/.test(message))return 'Firebase App Check nie potwierdził dostępu. Sprawdź internet i czy Safari nie blokuje reCAPTCHA Enterprise. Jeśli problem się powtarza, sprawdź konfigurację Firebase.';
+ return 'Firebase App Check nie potwierdził dostępu. W projekcie healthgo-e45be sprawdź Firebase → App Check (aplikacja WWW i klucz reCAPTCHA Enterprise). W Google Cloud klucz powinien zezwalać na domenę minek1522icloud-beep.github.io, bez /HealthGo.';
+}
 function healthGoMobileErrorCode(error){
  const raw=String((error&&error.message)||error||'');
  if(/APP_CHECK_ERROR|app.check|recaptcha|APP_CHECK_TIMEOUT/i.test(raw))return 'MOBILE_APP_CHECK';
@@ -1301,7 +1311,7 @@ async function askAI(){
    let detail='Spróbuj ponownie za chwilę.';
    if(isHostedMobileHealthGo()){
      const code=healthGoMobileErrorCode(err);
-     if(code==='MOBILE_APP_CHECK')detail='Firebase App Check nie potwierdził dostępu. Administrator HealthGo musi sprawdzić domenę strony i klucz reCAPTCHA Enterprise w Firebase/Google Cloud.';
+     if(code==='MOBILE_APP_CHECK')detail=healthGoAppCheckGuidance(err);
      else if(code==='MOBILE_ACCESS')detail='Firebase AI Logic odrzucił uprawnienia aplikacji. Administrator musi sprawdzić ustawienia App Check i usługi AI.';
      else if(code==='MOBILE_RATE_LIMIT')detail='Usługa AI osiągnęła limit zapytań. Spróbuj później.';
      else if(code==='MOBILE_NETWORK')detail='Telefon nie może połączyć się z usługą AI. Sprawdź internet.';
@@ -1321,7 +1331,7 @@ async function askAI(){
        const code=healthGoMobileErrorCode(err);
        const label=document.createElement('p');
        label.className='muted';
-       label.textContent='Kod diagnostyczny: '+code;
+       label.textContent='Kod diagnostyczny: '+code+(code==='MOBILE_APP_CHECK'?' · '+healthGoAppCheckSafeCode(err):'');
        errorRow.querySelector('.ai-bubble')?.appendChild(label);
        const control=document.createElement('button');
        control.type='button';
@@ -1336,7 +1346,7 @@ async function askAI(){
            control.textContent='App Check działa. Teraz sprawdź usługę AI, wysyłając nowe pytanie.';
          }catch(error){
            const diagnostic=healthGoMobileErrorCode(error);
-           control.textContent='Sprawdzanie nieudane: '+diagnostic;
+           control.textContent='Sprawdzanie nieudane: '+diagnostic+(diagnostic==='MOBILE_APP_CHECK'?' · '+healthGoAppCheckSafeCode(error):'');
          }finally{control.disabled=false;}
        });
        errorRow.querySelector('.ai-bubble')?.appendChild(control);
