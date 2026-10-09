@@ -34,13 +34,14 @@
    if(!mapEntryLocated){
     const recent=getRecentPosition();
     if(recent){mapEntryLocated=true;centerFromConsent(recent);}
-    else if(localStorageGet('healthgo.location.welcome.v1')==='allowed')centerIfSystemGranted();
+    else if(['allowed','denied'].includes(localStorageGet('healthgo.location.welcome.v1')))centerIfSystemGranted();
    }
   }
   const fav=el('mapV2FavouriteCount');if(fav)fav.textContent=String(read('favorites').length);
  }
  function localStorageGet(name){try{return localStorage.getItem(name)}catch(_){return null}}
  function localStorageSet(name,value){try{localStorage.setItem(name,value)}catch(_){}}
+ function noteSystemLocationGranted(){localStorageSet('healthgo.location.welcome.v1','allowed')}
  function resizeViewport(){
   const panel=el('map'),nav=document.querySelector?.('.mobile-nav');
   if(!panel||!panel.classList?.contains?.('active')||!nav)return;
@@ -75,6 +76,7 @@
     navigator.geolocation.getCurrentPosition(pos=>{
      const point={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy};
      if(rememberPosition(point)){
+      noteSystemLocationGranted();
       const centered=centerFromConsent(point);
       if(centered)mapEntryLocated=true;
       resolve(centered);
@@ -236,7 +238,7 @@
    if(!navigator.geolocation){reject(new Error('GPS_UNAVAILABLE'));return}
    navigator.geolocation.getCurrentPosition(pos=>{
      const point={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy};
-     rememberPosition(point);resolve({lat:point.lat,lon:point.lon});
+     rememberPosition(point);noteSystemLocationGranted();resolve({lat:point.lat,lon:point.lon});
    },err=>{
      const fallback=getRecentPosition(300000);
      if(fallback&&err?.code!==1){resolve(fallback);return;}
@@ -454,5 +456,5 @@
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted};
 })();
