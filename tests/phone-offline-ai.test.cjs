@@ -51,7 +51,7 @@ function setup(shared={}){
   return elements.get(id);
  }
  const cacheAPI={
-  open:async()=>({match:async url=>urls.has(url)?{ok:true}:null})
+  open:async()=>{if(shared.failCacheAccess)throw Error('Safari cache unavailable');return {match:async url=>urls.has(url)?{ok:true}:null};}
  };
  const localStorage={getItem:key=>local.get(key)||null,setItem:(key,v)=>local.set(key,v),removeItem:key=>local.delete(key)};
  const navigator={userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 26_0 like Mac OS X)',onLine:true,gpu:null,
@@ -135,6 +135,22 @@ test('Failed or incomplete downloads never show a fake installed badge',async()=
  assert.equal(await incomplete.api.install(),false);
  assert.equal(incomplete.api.installed,false);
  assert.match(incomplete.element('hgOfflineAiDeviceBadge').textContent,/niepobrany/);
+});
+
+test('Temporary Safari storage failures keep the downloaded marker until files can be verified',async()=>{
+ const shared={};
+ const first=setup(shared);
+ assert.equal(await first.api.install(),true);
+ const readyKey='healthgo_local_ai_smol135_wasm_v2';
+ shared.failCacheAccess=true;
+ const reopened=setup(shared);
+ assert.equal(await reopened.api.verifyStored(),false);
+ assert.equal(reopened.api.available(),false,'never run unverified model');
+ assert.equal(shared.local.get(readyKey),'1','temporary error must not erase saved status');
+ assert.match(reopened.element('hgOfflineAiDeviceBadge').textContent,/Nie można teraz sprawdzić/);
+ shared.failCacheAccess=false;
+ assert.equal(await reopened.api.verifyStored(),true);
+ assert.match(reopened.element('hgOfflineAiDeviceBadge').textContent,/na tym telefonie/);
 });
 
 test('Two rapid taps cannot start competing model downloads',async()=>{
