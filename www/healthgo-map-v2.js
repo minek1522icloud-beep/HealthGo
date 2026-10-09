@@ -28,6 +28,7 @@
   const fav=el('mapV2FavouriteCount');if(fav)fav.textContent=String(read('favorites').length);
  }
  function toggle(name){
+  if(measuring)stopMeasure();
   mount();
   const valid=['route','layers','favorites','activity','tools'];
   if(!valid.includes(name)){close();return}
@@ -265,6 +266,7 @@
   }
   if(measuring)return true;
   close();
+  if(typeof toggleMapResults==='function')toggleMapResults(false);
   measuring=true;measurePoints=[];
   map.on('click',measureClick);
   el('mapWorkspace')?.classList.add('measure-active');
@@ -307,7 +309,10 @@
  function notice(topic){const labels={traffic:'Warstwa korków wymaga zewnętrznego dostawcy bieżących danych. Nie pokazujemy fikcyjnego ruchu.',weather:'Radar i ostrzeżenia pogodowe wymagają aktualnego źródła danych. Nie pokazujemy fikcyjnej pogody.',threeD:'Widok 3D wymaga osobnego silnika map. Obecna mapa Leaflet działa płynnie w 2D.'};say(labels[topic]||'Funkcja wymaga konfiguracji danych.');}
  function centerGPS(){if(typeof useMyLocation==='function')useMyLocation();}
  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',mount,{once:true})}else mount();
- document.addEventListener('visibilitychange',()=>{if(document.hidden){stopTracking(false);if(measuring)stopMeasure();say('Rejestrowanie i pomiar zatrzymano po ukryciu aplikacji. Nie zapisano trasy.')}});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden&&(tracker!==null||measuring)){
+  const wasTracking=tracker!==null;stopTracking(false);if(measuring)stopMeasure();
+  say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
+ }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
  window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious};
 })();
