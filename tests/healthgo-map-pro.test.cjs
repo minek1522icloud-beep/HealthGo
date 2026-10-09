@@ -12,13 +12,17 @@ function harness(){
   if(!nodes.has(id))nodes.set(id,{id,hidden:true,textContent:'',classList:{add(){},remove(){},toggle(){}},setAttribute(){}});
   return nodes.get(id);
  };
- const document={hidden:false,getElementById:element,addEventListener(){}};
+ const applied=new Set();
+ const bodyClass={add:x=>applied.add(x),remove:x=>applied.delete(x),contains:x=>applied.has(x)};
+ const sheets=[{hidden:false},{hidden:false},{hidden:false}];
+ const document={hidden:false,body:{classList:bodyClass},getElementById:element,addEventListener(){},
+  querySelectorAll:selector=>selector==='#map .map-v2-panel'?sheets:[]};
  let starts=0,stops=0,onPosition=null;
  const navigator={geolocation:{watchPosition(cb){starts++;onPosition=cb;return 1},clearWatch(){stops++}}};
  const window={addEventListener(){},HealthGoMapV2:{close(){},resizeViewport(){},rememberPosition(){}},speechSynthesis:{cancel(){}}};
  const map={setView(){},getZoom(){return 16},removeLayer(){}};
  vm.runInNewContext(js,{document,window,navigator,healthGoMap:map,console,Date,Math,Number,String});
- return {api:window.HealthGoMapPro,element,emitGPS(coords){onPosition?.({coords})},counts(){return {starts,stops}}};
+ return {api:window.HealthGoMapPro,element,applied,sheets,emitGPS(coords){onPosition?.({coords})},counts(){return {starts,stops}}};
 }
 test('Old 3D engine, renderers and model buttons are gone from mobile map',()=>{
  new vm.Script(js,{filename:'healthgo-map-pro.js'});
@@ -43,6 +47,19 @@ test('GPS only starts on manual navigation after real route is loaded',()=>{
  assert.equal(h.element('hgProNavigation').hidden,false);
  h.api.stopNavigation();
  assert.equal(h.counts().stops,1);
+ assert.equal(h.element('hgProNavigation').hidden,true);
+});
+test('Entering navigation hides all old map panels and restores normal UI on exit',()=>{
+ const h=harness();
+ h.api.setRoute({geometry:{coordinates:[[21,52],[21.01,52.01]]},
+  distance:1000,duration:200,
+  legs:[{steps:[{maneuver:{type:'depart',location:[21,52]}}]}]},'Cel');
+ assert.equal(h.api.startNavigation(),true);
+ assert.equal(h.applied.has('hg-navigation-active'),true);
+ assert.ok(h.sheets.every(x=>x.hidden),'all overlapping map panels hidden');
+ assert.equal(h.element('hgProNavigation').hidden,false);
+ h.api.stopNavigation();
+ assert.equal(h.applied.has('hg-navigation-active'),false);
  assert.equal(h.element('hgProNavigation').hidden,true);
 });
 test('Route path updates ETA, GPS speed, and end-of-route progress without 3D',()=>{
