@@ -137,6 +137,32 @@ test('Failed or incomplete downloads never show a fake installed badge',async()=
  assert.match(incomplete.element('hgOfflineAiDeviceBadge').textContent,/niepobrany/);
 });
 
+test('Two rapid taps cannot start competing model downloads',async()=>{
+ const x=setup();
+ const first=x.api.install();
+ const second=x.api.install();
+ assert.equal(await second,false);
+ assert.equal(await first,true);
+ assert.equal(x.workers.filter(w=>w.kind==='download').length,1);
+});
+
+test('Failed download offers resumable installation after phone restart',async()=>{
+ const shared={cancelDownload:true};
+ const first=setup(shared);
+ assert.equal(await first.api.install(),false);
+ assert.equal(first.local.get('healthgo_local_ai_download_interrupted_v1'),'1');
+ // User had previously dismissed the setup prompt; interrupted setup must still be offered.
+ first.api.later();
+ const reopened=setup(shared);
+ await reopened.api.offerIfNeeded();
+ assert.equal(reopened.element('hgOfflineAiSetup').hidden,false);
+ assert.match(reopened.element('hgOfflineAiInstallBtn').textContent,/Wznów pobieranie AI/);
+ shared.cancelDownload=false;
+ assert.equal(await reopened.api.install(),true);
+ assert.equal(reopened.local.has('healthgo_local_ai_download_interrupted_v1'),false);
+ assert.match(reopened.element('hgOfflineAiDeviceBadge').textContent,/na tym telefonie/);
+});
+
 test('The download worker streams model files directly into browser Cache API',()=>{
  const source=fs.readFileSync('www/healthgo-ai-download-worker.js','utf8');
  const worker=fs.readFileSync('www/healthgo-offline-ai-worker.entry.js','utf8');
