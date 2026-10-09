@@ -120,6 +120,11 @@
   if(!route?.steps?.length){text('mapV2RouteOutput','Najpierw wyznacz trasę samochodową.');return false}
   if(!navigator.geolocation){text('mapV2RouteOutput','GPS niedostępny. Możesz użyć podglądu trasy z wpisanego adresu.');return false}
   active=true;stepIndex=0;lastSpeech='';lastCamera=0;
+  // Make navigation a single uncluttered full-screen state, not a map sheet.
+  window.HealthGoMapV2?.close?.();
+  const panels=document.querySelectorAll?.('#map .map-v2-panel');
+  panels?.forEach?.(panel=>{panel.hidden=true;});
+  document.body?.classList?.add('hg-navigation-active');
   node('mapWorkspace')?.classList?.add('map-pro-navigating');
   show('hgProNavigation',true);
   loadOptions();
@@ -128,6 +133,8 @@
   text('hgProNavNext','Pozycja zostanie użyta tylko podczas nawigacji.');
   text('hgProNavDistance',nice(route.meters));
   window.HealthGoMapV2?.close?.();
+  // Leaflet needs a size refresh after the map becomes full-screen.
+  setTimeout(()=>map()?.invalidateSize?.({pan:false}),80);
   try{
    watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
     const message=err?.code===1?'iPhone odmówił dostępu do GPS. Sprawdź uprawnienia lub wpisz punkt startowy.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
@@ -144,8 +151,10 @@
   show('hgProNavigation',false);
   node('mapWorkspace')?.classList?.remove('map-pro-navigating');
   node('mapWorkspace')?.classList?.remove('hg-nav-dark');
+  document.body?.classList?.remove('hg-navigation-active');
   try{window.speechSynthesis?.cancel?.()}catch(_){}
   window.HealthGoMapV2?.resizeViewport?.();
+  setTimeout(()=>map()?.invalidateSize?.({pan:false}),50);
  }
  function toggleVoice(){
   if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){
