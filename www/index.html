@@ -604,7 +604,10 @@ html.hg-session-known #authScreen{display:none!important}
       <section class="map-v2-panel" data-map-panel="route" hidden aria-label="Planowanie trasy">
         <div class="map-v2-panel-head"><h3>🧭 Zaplanuj trasę</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
         <div class="map-v2-panel-content">
-          <p class="map-v2-muted">Początek: Twoja lokalizacja, pobierana po kliknięciu „Wyznacz trasę” i zgodzie na GPS. Aby obliczyć trasę, współrzędne startu i celu trafią do zewnętrznej usługi OSRM lub OpenStreetMap.</p>
+          <p class="map-v2-muted">Wpisz własny punkt startowy lub zostaw to pole puste, aby użyć GPS. Po wybraniu trasy współrzędne startu i celu zostaną przekazane do OSRM lub OpenStreetMap.</p>
+          <label class="map-v2-field" for="mapV2RouteFrom">Skąd? <span class="map-v2-tag">GPS lub adres</span></label>
+          <input id="mapV2RouteFrom" class="map-v2-input" type="search" autocomplete="street-address" placeholder="Moja lokalizacja lub wpisz miasto, ulicę…">
+          <p class="map-v2-muted">Gdy iPhone blokuje GPS, wpisz tutaj adres startowy — trasa nadal zadziała.</p>
           <label class="map-v2-field" for="mapV2RouteTo">Dokąd?</label>
           <input id="mapV2RouteTo" class="map-v2-input" type="search" autocomplete="off" placeholder="Adres, park albo wybrane miejsce">
           <div class="map-v2-buttons" role="group" aria-label="Środek transportu">
@@ -615,6 +618,7 @@ html.hg-session-known #authScreen{display:none!important}
           <p id="mapV2RouteModeHint" class="map-v2-muted">Trasa drogowa z publicznej usługi OSRM — orientacyjna.</p>
           <button type="button" class="map-v2-primary" onclick="HealthGoMapV2.planRoute()">↗ Wyznacz trasę</button>
           <p id="mapV2RouteOutput" class="map-v2-alert" role="status">Podaj cel lub wybierz miejsce z wyników mapy.</p>
+          <p id="mapV2GpsHelp" class="map-v2-alert" hidden>Jeśli odmówiono lokalizacji, otwórz Ustawienia iPhone’a → Prywatność i ochrona → Usługi lokalizacji. Sprawdź uprawnienia HealthGo lub Witryn Safari. Możesz też wyznaczyć trasę, wpisując punkt startowy powyżej.</p>
           <button id="hgNavStartButton" class="map-v2-primary" type="button" hidden onclick="HealthGoMapPro.startNavigation()">➤ Rozpocznij nawigację GPS</button>
           <p class="map-v2-muted">Wskazówki są orientacyjne i nie uwzględniają korków. Zawsze przestrzegaj znaków i nie obsługuj telefonu podczas prowadzenia pojazdu.</p>
           <a id="mapV2External" href="https://www.openstreetmap.org/directions" target="_blank" rel="noopener noreferrer" hidden>Otwórz wskazówki ↗</a>
