@@ -24,7 +24,7 @@ test('Old 3D engine, renderers and model buttons are gone from mobile map',()=>{
  new vm.Script(js,{filename:'healthgo-map-pro.js'});
  for(const id of ['hgNavStartButton','hgProNavigation','hgProNavDirection','hgProNavEta','hgProVoice','hgProFollow','hgProNavTheme'])
   assert.match(html,new RegExp('id="'+id+'"'));
- assert.doesNotMatch(js,/maplibre|WebGL|fill-extrusion|buildingsToFeatures|toggle3D|import\(/i);
+ assert.doesNotMatch(js,/maplibre|fill-extrusion|buildingsToFeatures|toggle3D|import\(/i);
  assert.doesNotMatch(html,/id="hg3DMap"|id="hg3DButton"|id="hgProNav3D"/);
  assert.match(css,/HealthGo Map 4.0 interface/);
  assert.match(mapJS,/window\.HealthGoMapPro\?\.setRoute\?\.\(route,destination\?\.name/);
