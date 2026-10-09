@@ -55,9 +55,9 @@ function harness(){
   head:{appendChild(){}},querySelector(){return null},
   createElement(){return{dataset:{},setAttribute(){}}}
  };
- let starts=0,stops=0;
+ let starts=0,stops=0,onPosition=null;
  const navigator={geolocation:{
-  watchPosition(success,error,options){starts++;return 11;},
+  watchPosition(success,error,options){starts++;onPosition=success;return 11;},
   clearWatch(){stops++;}
  }};
  const window={addEventListener(){},HealthGoMapV2:{close(){}},speechSynthesis:{cancel(){}}};
@@ -65,7 +65,7 @@ function harness(){
  const vmEnv={document,window,navigator,console,setTimeout,clearTimeout,fetch(){throw Error('not expected')},
   healthGoMap:map,AbortController,URLSearchParams};
  vm.runInNewContext(js,vmEnv,{filename:'healthgo-map-pro.js'});
- return {api:window.HealthGoMapPro,element,window,document,navigator,stats(){return{starts,stops}}};
+ return {api:window.HealthGoMapPro,element,window,document,navigator,emitGPS(coords){onPosition?.({coords});},stats(){return{starts,stops}}};
 }
 
 test('GPS navigation starts only after a route with real OSRM maneuvers',()=>{
@@ -108,6 +108,38 @@ test('Street-level zoom automatically enables the real 3D renderer with fallback
  assert.match(js,/map\.on\('zoomend'/);
  assert.match(js,/if\(threeD&&gl&&gl\.getZoom\(\)<14\.8\)stop3D\(\)/);
  assert.match(html,/id="hg3DMap"/);
+});
+
+test('NightDrive uses real OSRM path for remaining distance and GPS speed',()=>{
+ const app=harness(),sdk=app.api;
+ const route={geometry:{coordinates:[[21,52],[21.005,52],[21.01,52]]},
+  legs:[{steps:[{maneuver:{type:'depart',location:[21,52]},name:'Start'},
+   {maneuver:{type:'turn',modifier:'right',location:[21.01,52]},name:'Cel'}]}],
+  distance:690,duration:100};
+ assert.equal(sdk.setRoute(route,'Park'),true);
+ const start=sdk.routeRemaining({lat:52,lon:21});
+ const end=sdk.routeRemaining({lat:52,lon:21.01});
+ assert.ok(start>500,'route progress starts far from destination');
+ assert.equal(end,0,'distance reaches zero at destination');
+ assert.equal(sdk.startNavigation(),true);
+ app.emitGPS({latitude:52,longitude:21.004,accuracy:12,speed:5,heading:90});
+ assert.match(app.element('hgProNavDistance').textContent,/m · około .* min/);
+ assert.equal(app.element('hgProNavSpeed').textContent,' 18');
+ assert.match(app.element('hgProNavEta').textContent,/Przyjazd/);
+ assert.equal(app.element('hgProNavDestination').textContent,'Park');
+ sdk.stopNavigation();
+ assert.equal(app.stats().stops,1);
+});
+test('NightDrive UI has full-screen navigation and safe 3D fallback',()=>{
+ assert.match(html,/id="hgProNav3D"/);
+ assert.match(html,/id="hgProNavSpeed"/);
+ assert.match(html,/id="hgProNavEta"/);
+ assert.match(css,/map-pro-navigating\s*\{/);
+ assert.match(css,/filter:brightness\(\.72\) invert\(\.92\)/);
+ assert.match(js,/function toggleNavigation3D\(\)/);
+ assert.match(js,/canvasContextAttributes:\{antialias:false\}/);
+ assert.match(js,/if\(renderRequest!==myRequest\)return false/);
+ assert.match(js,/removeNavigationMarkers\(\)/);
 });
 test('Regular Map 2D, privacy and older favorites remain wired',()=>{
  assert.match(mapJS,/window\.HealthGoMapPro\?\.setRoute\(route,destination\.name\)/);
