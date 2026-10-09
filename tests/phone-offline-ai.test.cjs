@@ -193,6 +193,9 @@ test('The download worker streams model files directly into browser Cache API',(
  assert.doesNotMatch(html,/id="hgOfflineAiDeviceBadge"/);
  assert.doesNotMatch(html,/id="hgOfflineAiTryLocalBtn"/);
  assert.doesNotMatch(html,/<script src="\.\/healthgo-offline-ai\.js"/);
- assert.match(workflow,/@huggingface\/transformers@3\.8\.1/);
- assert.match(workflow,/npx esbuild worker\.entry\.js --bundle --format=esm/);
+ // Keep the source worker covered, but the regular phone chat must not
+ // download/bundle its large unused runtime.
+ assert.doesNotMatch(workflow,/@huggingface\/transformers@3\.8\.1/);
+ assert.doesNotMatch(workflow,/npx esbuild worker\.entry\.js --bundle --format=esm/);
+ assert.match(workflow,/npx esbuild entry\.js --bundle --format=iife/);
 });
