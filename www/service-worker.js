@@ -1,8 +1,10 @@
 'use strict';
-const CACHE_NAME='healthgo-pwa-v18-ios-crash-recovery-20261008';
+const CACHE_NAME='healthgo-pwa-v19-shortcut-ai-wasm-20261009';
 // The 850+ KB local AI worker and model weights must never be downloaded
 // while opening HealthGo. Install them only after user consent in AI.
-const CORE=['./','./index.html','./manifest.webmanifest','./healthgo-pro.js','./supabase-client.js','./core/achievement-engine.js','./core/health-data.js','./healthgo-services.js','./healthgo-v2-ui.js','./healthgo-mobile-suite.js','./healthgo-mobile-suite.css','./healthgo-offline-ai.css','./healthgo-offline-ai.js','./recovery.html','./healthgo-devices.js'];
+// Keep first-time install inexpensive on iOS WebKit; opened assets are cached
+// naturally by the fetch handler, but never download optional features upfront.
+const CORE=['./index.html','./manifest.webmanifest'];
 const PREFERENCES_CACHE='healthgo-preferences-v1';
 const OFFLINE_DISABLED='./offline-disabled';
 let offlinePreference=null;
