@@ -237,6 +237,7 @@
   window.HealthGoOfflineAI={
     install,ask,openInstall,offerIfNeeded,later,available:storedReady,
     get status(){return mode;},
+    get busy(){return mode==='downloading'||mode==='testing';},
     close:()=>showCard(false)
   };
   function wireControls(){
