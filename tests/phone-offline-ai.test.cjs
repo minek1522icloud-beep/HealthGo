@@ -134,7 +134,7 @@ test('Failed or incomplete downloads never show a fake installed badge',async()=
  const incomplete=setup({noSavedFiles:true});
  assert.equal(await incomplete.api.install(),false);
  assert.equal(incomplete.api.installed,false);
- assert.match(incomplete.element('hgOfflineAiDeviceBadge').textContent,/niepobrany/);
+ assert.match(incomplete.element('hgOfflineAiDeviceBadge').textContent,/Pobieranie przerwane — wznów/);
 });
 
 test('Temporary Safari storage failures keep the downloaded marker until files can be verified',async()=>{
