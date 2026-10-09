@@ -67,6 +67,7 @@
    deviceBadge.textContent=localActive?'✓ Lokalne AI działa'
     :installed?'✓ Model AI na tym telefonie'
     :interrupted()?'↻ Pobieranie przerwane — wznów'
+    :mode==='storage-error'?'⚠ Nie można teraz sprawdzić pamięci AI'
     :checked?'↓ Model AI niepobrany'
     :'Sprawdzam pliki AI…';
    deviceBadge.setAttribute('data-installed',String(installed));
@@ -88,8 +89,12 @@
    if(mode==='idle'||mode==='error')mode='downloaded';
    return true;
   }catch(_){
-   markInstalled(false);
-   if(mode!=='downloading'&&mode!=='testing')mode='idle';
+   // A temporary iOS Cache Storage error does not prove that cached AI files
+   // were evicted. Keep the durable marker, but never claim AI is runnable.
+   installed=false;
+   localActive=false;
+   if(mode!=='downloading'&&mode!=='testing')mode='storage-error';
+   status('Nie można teraz sprawdzić pamięci AI w telefonie. Spróbuj ponownie.');
    return false;
   }finally{
    checked=true;
@@ -200,6 +205,7 @@
   if(await verifyStored()){
    mode='downloaded';status('Model jest już pobrany na ten telefon.');render();return true;
   }
+  if(mode==='storage-error')return false;
   if(navigator.onLine===false){mode='error';status('Do pierwszego pobrania AI potrzebujesz internetu.');render();return false;}
   mode='downloading';progress(null);status('Zapisuję pliki modelu w pamięci telefonu…');render();
   try{
@@ -234,8 +240,11 @@
  async function startLocal(){
   if(isBusy())return false;
   if(!(await verifyStored())){
-   status('Pliki modelu zniknęły z pamięci Safari. Pobierz model ponownie.');
-   mode='idle';render();return false;
+   if(mode!=='storage-error'){
+    status('Pliki modelu zniknęły z pamięci Safari. Pobierz model ponownie.');
+    mode='idle';
+   }
+   render();return false;
   }
   showCard(true);
   if(localActive)return true;
