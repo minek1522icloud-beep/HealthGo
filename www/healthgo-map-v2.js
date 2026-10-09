@@ -481,7 +481,7 @@
   setTimeout(()=>getMap()?.invalidateSize({pan:false}),80);
   return mapSpacious;
  }
- function notice(topic){const labels={traffic:'Warstwa korków wymaga zewnętrznego dostawcy bieżących danych. Nie pokazujemy fikcyjnego ruchu.',weather:'Radar i ostrzeżenia pogodowe wymagają aktualnego źródła danych. Nie pokazujemy fikcyjnej pogody.',threeD:'Widok 3D wymaga osobnego silnika map. Obecna mapa Leaflet działa płynnie w 2D.'};say(labels[topic]||'Funkcja wymaga konfiguracji danych.');}
+ function notice(topic){const labels={traffic:'Korki na żywo wymagają odrębnego dostawcy. W zakładce Pogoda sprawdzisz rzeczywiste remonty z OSM.',weather:'Prognoza Open-Meteo jest dostępna w zakładce Pogoda. Radar na żywo wymaga osobnej usługi.'};say(labels[topic]||'Sprawdź odpowiednią zakładkę mapy.');}
  function centerGPS(){if(typeof useMyLocation==='function')useMyLocation();}
  if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded',()=>{mount();setTimeout(watchWelcome,1000);},{once:true});
