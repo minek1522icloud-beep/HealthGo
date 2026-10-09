@@ -86,7 +86,7 @@
    }
    markInstalled(true);
    markInterrupted(false);
-   if(mode==='idle'||mode==='error')mode='downloaded';
+   if(mode==='idle'||mode==='error'||mode==='storage-error')mode='downloaded';
    return true;
   }catch(_){
    // A temporary iOS Cache Storage error does not prove that cached AI files
