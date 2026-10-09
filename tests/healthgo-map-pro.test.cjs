@@ -102,7 +102,7 @@ test('Regular Map 2D, privacy and older favorites remain wired',()=>{
  assert.match(mapJS,/window\.HealthGoMapPro\?\.setRoute\(route,destination\.name\)/);
  assert.match(mapJS,/window\.HealthGoMapPro\?\.clearRoute\(\)/);
  assert.match(html,/window\.HealthGoMapV2\?\.mount\(\)/);
- assert.match(html,/healthgo\.map2\./);
+ assert.match(mapJS,/healthgo\.map2\./);
  assert.doesNotMatch(js,/getCurrentPosition\(/);
  assert.match(js,/document\.addEventListener\('visibilitychange'/);
  assert.match(js,/navigator\.geolocation\.watchPosition\(/);
