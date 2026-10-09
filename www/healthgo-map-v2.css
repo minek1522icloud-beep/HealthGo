@@ -197,3 +197,99 @@ body[data-dark="1"] #map .map-v2-item span{color:#dce7f6}
   #map .map-category{font-size:12px}
   #map .map-v2-float button .hg-pro-icon{width:24px;height:24px}
 }
+
+
+/* HealthGo NightDrive: user-requested cinematic navigation mode. The existing
+   OSM raster is visually shaded instead of consuming a third-party paid key. */
+#map .map-workspace.map-pro-navigating{
+ position:fixed!important;inset:0!important;z-index:12100!important;
+ width:100vw!important;height:100dvh!important;min-height:0!important;
+ border:0!important;border-radius:0!important;background:#10192b!important;
+}
+#map .map-workspace.map-pro-navigating .map-toolbar{display:none!important}
+#map .map-workspace.map-pro-navigating .map-canvas-wrap{flex:1;min-height:0;background:#10192b}
+#map .map-workspace.map-pro-navigating #healthgoMap{background:#10192b}
+#map .map-workspace.map-pro-navigating #healthgoMap .leaflet-tile-pane{
+ filter:brightness(.72) invert(.92) hue-rotate(175deg) saturate(.52) contrast(1.18);
+}
+#map .map-workspace.map-pro-navigating .map-v2-measure-hud,
+#map .map-workspace.map-pro-navigating .map-results-panel,
+#map .map-workspace.map-pro-navigating .map-v2-bottom,
+#map .map-workspace.map-pro-navigating .map-v2-actions,
+#map .map-workspace.map-pro-navigating .map-v2-float{display:none!important}
+#map .map-workspace.map-pro-navigating #hgProNavigation{
+ position:absolute;inset:0;z-index:12500;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+ display:block;color:#f6faff;pointer-events:none;
+}
+#map .map-workspace.map-pro-navigating .hg-pro-nav-main{
+ pointer-events:auto;display:flex;align-items:center;gap:15px;
+ width:min(640px,calc(100vw - 24px));padding:17px 16px;
+ background:linear-gradient(128deg,#132f52,#101a2e);
+ border:1px solid rgba(160,197,244,.20);border-radius:22px;
+ box-shadow:0 16px 44px rgba(0,0,0,.28);
+}
+#map .map-workspace.map-pro-navigating .hg-pro-direction-symbol{
+ display:grid;place-items:center;flex:0 0 64px;width:64px;height:65px;border-radius:17px;
+ background:#0f8df2;color:#fff;font-size:44px;font-weight:700;
+}
+#map .map-workspace.map-pro-navigating .hg-pro-direction-copy{flex:1;min-width:0;gap:4px}
+#map .map-workspace.map-pro-navigating .hg-pro-direction-copy .hg-pro-eyebrow{
+ display:block;color:#87b9f7;font-size:10px;font-weight:850;letter-spacing:.11em;
+}
+#map .map-workspace.map-pro-navigating .hg-pro-direction-copy b{color:#fff;font-size:21px;line-height:1.2}
+#map .map-workspace.map-pro-navigating .hg-pro-direction-copy span{color:#bed5f4;font-size:14px}
+#map .hg-pro-nav-close{
+ pointer-events:auto;flex:0 0 34px;width:34px;height:34px;display:grid;place-items:center;
+ border-radius:11px;background:rgba(255,255,255,.12);color:#fff;font-size:26px;
+}
+#map .hg-pro-speed{
+ position:absolute;top:calc(116px + env(safe-area-inset-top));right:13px;
+ display:flex;flex-direction:column;align-items:center;gap:2px;min-width:67px;
+ border:1px solid rgba(255,255,255,.25);border-radius:17px;padding:8px 11px;
+ background:rgba(13,26,47,.90);box-shadow:0 5px 18px rgba(0,0,0,.22);
+}
+#map .hg-pro-speed small{color:#adbeda;font-size:10px;font-weight:800}
+#map .hg-pro-speed strong{font-size:23px;font-variant-numeric:tabular-nums;color:#fff;line-height:1.2}
+#map .map-workspace.map-pro-navigating .hg-pro-nav-footer{
+ position:absolute;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));
+ pointer-events:auto;display:flex;align-items:center;gap:14px;justify-content:space-between;
+ border-radius:21px;background:rgba(13,25,45,.97);border:1px solid rgba(180,207,243,.20);
+ box-shadow:0 12px 44px rgba(0,0,0,.27);padding:15px 16px;
+}
+#map .hg-pro-nav-progress{display:flex;flex-direction:column;min-width:0;gap:4px}
+#map .hg-pro-nav-progress strong{font-size:20px;color:#fff;white-space:nowrap}
+#map .hg-pro-nav-progress span{font-size:13px;font-weight:800;color:#99d3ff}
+#map .hg-pro-nav-progress small{font-size:11px;color:#acbdd6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#map .map-workspace.map-pro-navigating .hg-pro-nav-buttons{gap:7px}
+#map .map-workspace.map-pro-navigating .hg-pro-nav-buttons button{
+ pointer-events:auto;min-height:41px;padding:10px 12px;background:#253950;
+ border:1px solid rgba(155,191,230,.22);color:#edf5ff;border-radius:12px;
+}
+#map .map-workspace.map-pro-navigating .hg-pro-nav-buttons .hg-pro-stop{background:#f5f8ff;color:#14243c}
+#map .map-workspace.map-pro-navigating .hg-pro-nav-warning{
+ position:absolute;left:13px;bottom:calc(118px + env(safe-area-inset-bottom));
+ display:block;font-size:10px;color:#d9e5f8;background:rgba(11,24,42,.83);
+ padding:8px 12px;border-radius:12px;max-width:calc(100% - 26px);width:auto;
+}
+#map .hg-pro-leaflet-arrow{background:transparent!important;border:0!important}
+#map .hg-pro-needle{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;
+ background:#0d68ed;color:#fff;border:3px solid #fff;box-shadow:0 0 0 5px #2e84ff33,0 5px 16px #0007;
+ font-size:25px;line-height:1;transition:transform .3s ease}
+#map .hg-pro-position-arrow{filter:drop-shadow(0 3px 7px rgba(0,0,0,.4))}
+#map .hg-pro-nav button:focus-visible{outline:3px solid #8abbff;outline-offset:3px}
+@media(max-width:900px){
+ #map .map-workspace.map-pro-navigating #hgProNavigation{padding:calc(8px + env(safe-area-inset-top)) 9px calc(8px + env(safe-area-inset-bottom))}
+ #map .map-workspace.map-pro-navigating .hg-pro-nav-main{width:100%;padding:13px 12px;gap:10px;border-radius:19px}
+ #map .map-workspace.map-pro-navigating .hg-pro-direction-symbol{flex-basis:54px;width:54px;height:56px;font-size:37px}
+ #map .map-workspace.map-pro-navigating .hg-pro-direction-copy b{font-size:18px}
+ #map .map-workspace.map-pro-navigating .hg-pro-direction-copy span{font-size:12px}
+ #map .hg-pro-speed{right:9px;top:calc(102px + env(safe-area-inset-top));min-width:55px}
+ #map .map-workspace.map-pro-navigating .hg-pro-nav-footer{
+  left:9px;right:9px;bottom:calc(10px + env(safe-area-inset-bottom));
+  flex-direction:column;align-items:stretch;gap:12px;padding:14px 13px;border-radius:19px;
+ }
+ #map .hg-pro-nav-progress strong{font-size:19px}
+ #map .map-workspace.map-pro-navigating .hg-pro-nav-buttons{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+ #map .map-workspace.map-pro-navigating .hg-pro-nav-buttons button{min-width:0;padding:9px 3px;font-size:11px;line-height:1.2}
+ #map .map-workspace.map-pro-navigating .hg-pro-nav-warning{left:10px;bottom:calc(172px + env(safe-area-inset-bottom));font-size:9px}
+}
