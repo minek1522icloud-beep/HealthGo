@@ -42,6 +42,7 @@
  function localStorageGet(name){try{return localStorage.getItem(name)}catch(_){return null}}
  function localStorageSet(name,value){try{localStorage.setItem(name,value)}catch(_){}}
  function noteSystemLocationGranted(){localStorageSet('healthgo.location.welcome.v1','allowed')}
+ function noteSystemLocationDenied(){localStorageSet('healthgo.location.welcome.v1','denied')}
  function resizeViewport(){
   const panel=el('map'),nav=document.querySelector?.('.mobile-nav');
   if(!panel||!panel.classList?.contains?.('active')||!nav)return;
@@ -456,5 +457,5 @@
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied};
 })();
