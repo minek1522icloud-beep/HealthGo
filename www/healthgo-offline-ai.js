@@ -276,13 +276,14 @@
   opened=true;showCard(true);
   if(mode==='idle'&&installed)mode='downloaded';
   status(installed?'Model AI jest pobrany na ten telefon. Możesz osobno uruchomić lokalne AI.'
+   :interrupted()?'Poprzednie pobieranie zostało przerwane. Kliknij „Wznów pobieranie AI” — zapisane już pliki nie będą pobierane ponownie.'
    :'Pobierz pliki AI (około 182 MB) przez Wi-Fi. Nie zamykaj aplikacji podczas pobierania.');
   render();
  }
  async function offerIfNeeded(){
   if(!phone())return;
   await verifyStored();
-  if(!opened&&!installed&&!dismissed())openInstall();
+  if(!opened&&!installed&&(!dismissed()||interrupted()))openInstall();
  }
  function later(){
   try{localStorage.setItem(DISMISSED_KEY,'1');}catch(_){}
