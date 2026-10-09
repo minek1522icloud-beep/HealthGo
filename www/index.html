@@ -1793,9 +1793,11 @@ function useMyLocation(){
    function(pos){
      const lat=pos.coords.latitude,lon=pos.coords.longitude,acc=Number.isFinite(pos.coords.accuracy)?pos.coords.accuracy:null;
      window.HealthGoMapV2?.rememberPosition?.({lat,lon,accuracy:acc});
+     window.HealthGoMapV2?.noteSystemLocationGranted?.();
      display(lat,lon,acc);
    },
    function(err){
+     if(err?.code===1)window.HealthGoMapV2?.noteSystemLocationDenied?.();
      const msg=err&&err.code===1?'Telefon odmówił dostępu do lokalizacji. Sprawdź uprawnienia dla HealthGo.':err&&err.code===2?'Nie udało się ustalić położenia urządzenia.':'GPS nie odpowiedział na czas. Spróbuj ponownie.';
      mapStatus(msg);
    },
