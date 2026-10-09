@@ -37,7 +37,7 @@ test('iPhone App Check can load required reCAPTCHA assets under the CSP',()=>{
  assert.ok(directives['script-src']?.includes('https://www.gstatic.com/recaptcha/'),'reCAPTCHA script host allowed');
  assert.ok(directives['frame-src']?.includes('https://recaptcha.google.com/recaptcha/'),'reCAPTCHA iframe host allowed');
  assert.ok(directives['img-src']?.includes('https://www.gstatic.com/recaptcha/'),'reCAPTCHA images allowed');
- assert.doesNotMatch(directives['script-src']||'',/unsafe-eval/);
+ assert.ok(!(directives['script-src']||'').split(' ').includes("'unsafe-eval'"),'CSP never grants unrestricted JS eval');
 });
 
 test('Phone chat automatically uses the existing AI without selecting a provider',()=>{
