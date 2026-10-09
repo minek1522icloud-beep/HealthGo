@@ -29,6 +29,7 @@ optional = (
     '<script src="./healthgo-mobile-suite.js"></script>',
     '<script src="./healthgo-map-v2.js?v=1"></script>',
     '<script src="./healthgo-map-pro.js?v=1"></script>',
+    '<script src="./healthgo-map4.js?v=1"></script>',
     '<script src="./healthgo-offline-ai.js"></script>',
     '<script src="./healthgo-devices.js"></script>',
     '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>',
