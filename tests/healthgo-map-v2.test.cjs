@@ -9,7 +9,7 @@ const css=fs.readFileSync('www/healthgo-map-v2.css','utf8');
 const workflow=fs.readFileSync('.github/workflows/mobile-pages.yml','utf8');
 
 test('Map 2.0 ships five real control panels plus searchable existing Leaflet map',()=>{
- for(const id of ['healthgoMap','mapV2RouteTo','mapV2RouteOutput','mapV2Favorites','mapV2Activities','mapV2TrackState','mapV2MeasureHud','mapV2MeasureDistance','mapV2MeasureHint','mapV2SpaciousButton','hgLocationWelcome','hgLocationWelcomeTitle'])
+ for(const id of ['healthgoMap','mapV2RouteTo','mapV2RouteOutput','mapV2Favorites','mapV2Activities','mapV2TrackState','mapV2MeasureHud','mapV2MeasureDistance','mapV2MeasureHint','mapV2SpaciousButton','hgLocationWelcome','hgLocationWelcomeTitle','mapV2RouteFrom','mapV2GpsHelp'])
   assert.match(html,new RegExp('id="'+id+'"'));
  for(const p of ['route','layers','favorites','activity','tools'])
   assert.match(html,new RegExp('data-map-panel="'+p+'"'));
@@ -42,7 +42,9 @@ test('Map search results expose real route and save-place actions without faking
  assert.match(html,/window\.HealthGoMapV2\.selectDestination\(name,p\.lat,p\.lon\)/);
  assert.match(html,/https:\/\/router\.project-osrm\.org/);
  assert.match(html,/https:\/\/server\.arcgisonline\.com/);
- assert.match(html,/współrzędne startu i celu trafią do zewnętrznej usługi/);
+ assert.match(html,/współrzędne startu i celu zostaną przekazane do OSRM lub OpenStreetMap/);
+ assert.match(source,/manualStart\?await locateByName\(manualStart\):await locateOptIn\(\)/);
+ assert.match(source,/if\(manualStart\)\{const nav=el\('hgNavStartButton'\)/);
 });
 
 test('Map module parses and requests GPS only after a user action',()=>{
@@ -94,7 +96,7 @@ function harness(){
  const L={circleMarker:()=>layer(),polyline:()=>layer()};
  const locationCalls={current:0,tracking:0};
  const navigator={geolocation:{
-  getCurrentPosition(){locationCalls.current++;},
+  getCurrentPosition(success,error){locationCalls.current++;locationCalls.lastSuccess=success;locationCalls.lastError=error;},
   watchPosition(){locationCalls.tracking++;return 1;},
   clearWatch(){}
  }};
@@ -191,9 +193,32 @@ test('Location welcome offers opt-in and does not call GPS before consent',()=>{
  assert.equal(allowApi.showLocationWelcome(),true);
  allowApi.chooseWelcomeLocation(true);
  assert.equal(allowed.locationCalls.current,1,'OS permission is requested only after tapping Allow');
+ assert.equal(allowed.storage.get('healthgo.location.welcome.v1'),undefined,'only iOS can grant GPS access');
+ allowed.locationCalls.lastSuccess({coords:{latitude:52.2,longitude:21.0,accuracy:15}});
  assert.equal(allowed.storage.get('healthgo.location.welcome.v1'),'allowed');
+ assert.equal(allowed.locationCalls.current,1,'no second GPS prompt after OS accepts');
 });
 
+test('iPhone GPS denial cannot be mistaken for granted OS permission',()=>{
+ const app=harness();app.node('app').classList.contains=()=>false;
+ app.node('hgLocationWelcome').querySelector=()=>({focus(){}});
+ assert.equal(app.window.HealthGoMapV2.showLocationWelcome(),true);
+ app.window.HealthGoMapV2.chooseWelcomeLocation(true);
+ assert.equal(app.storage.get('healthgo.location.welcome.v1'),undefined);
+ app.locationCalls.lastError({code:1});
+ assert.equal(app.storage.get('healthgo.location.welcome.v1'),'denied');
+ assert.equal(app.window.HealthGoMapV2.getRecentPosition(),null);
+ assert.equal(app.locationCalls.current,1);
+});
+test('Manual origin is recognized without triggering GPS tracking',()=>{
+ assert.match(html,/id="mapV2RouteFrom"/);
+ assert.match(source,/manualStart\?await locateByName\(manualStart\):await locateOptIn\(\)/);
+ assert.match(source,/Podgląd trasy z wpisanego adresu startowego, bez śledzenia GPS/);
+ assert.match(source,/help\.hidden=msg!=='GPS_DENIED'/);
+ assert.match(source,/START_NOT_FOUND/);
+ const app=harness();
+ assert.equal(app.locationCalls.current,0);
+});
 test('Map viewport sizing uses actual bottom navigation instead of a fixed blank gap',()=>{
  assert.match(source,/nav\.getBoundingClientRect\?\.\(\)\.top/);
  assert.match(source,/panel\.style\.setProperty\('height',space\+'px','important'\)/);
@@ -203,6 +228,6 @@ test('Traffic, weather and 3D are identified as unavailable until real feeds exi
  assert.match(source,/Warstwa korków wymaga zewnętrznego dostawcy/);
  assert.match(source,/Radar i ostrzeżenia pogodowe wymagają aktualnego źródła/);
  assert.match(source,/Widok 3D wymaga osobnego silnika/);
- assert.match(source,/Telefon odmówił dostępu do GPS/);
+ assert.match(source,/iPhone zablokował GPS/);
  assert.match(source,/Nie wyświetlam zmyślonego czasu/);
 });
