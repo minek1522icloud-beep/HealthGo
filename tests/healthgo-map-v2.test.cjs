@@ -100,6 +100,7 @@ function harness(){
  const fetchMock=async url=>{
   fetchCalls.push(String(url));
   if(String(url).includes('/search?'))return {ok:true,json:async()=>[{display_name:'Przykładowe miejsce',lat:'52.2',lon:'21.0'}]};
+  if(String(url).includes('exclude=motorway'))return {ok:false,status:400};
   return {ok:true,json:async()=>({routes:[{distance:1000,duration:240,geometry:{coordinates:[[21,52.2],[21.01,52.21]]},legs:[{steps:[]}]}]})};
  };
  const navigator={geolocation:{
@@ -245,6 +246,19 @@ test('Actual typed start and destination calculate a route without GPS',async()=
  assert.equal(app.fetchCalls.filter(url=>url.includes('/route/v1/driving/')).length,1);
  assert.equal(app.node('hgNavStartButton').hidden,true,'live GPS guidance hidden for manual route');
  assert.match(app.node('mapV2RouteOutput').textContent,/Podgląd trasy z wpisanego adresu startowego/);
+});
+test('Public OSRM motorway preference fallback is explained without faking avoidance',async()=>{
+ const app=harness();app.window.HealthGoMap4={getSettings(){return {avoidMotorways:true}}};
+ app.node('mapV2RouteFrom').value='Start';
+ app.node('mapV2RouteTo').value='Cel';
+ await app.window.HealthGoMapV2.planRoute();
+ assert.equal(app.locationCalls.current,0);
+ const req=app.fetchCalls.filter(url=>url.includes('/route/v1/driving/'));
+ assert.equal(req.length,2,'retry without exclude after backend rejects this option');
+ assert.match(req[0],/exclude=motorway/);
+ assert.match(app.node('mapV2RouteOutput').textContent,/Serwer nie obsłużył omijania autostrad/);
+ assert.equal(app.node('hg4RouteAlternatives').children.length,1);
+ assert.equal(app.window.HealthGoMapV2.chooseRoute(0),true);
 });
 test('Map viewport sizing uses actual bottom navigation instead of a fixed blank gap',()=>{
  assert.match(source,/nav\.getBoundingClientRect\?\.\(\)\.top/);
