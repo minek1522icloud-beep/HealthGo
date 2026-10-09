@@ -8,7 +8,7 @@ function setup(){
   const source=fs.readFileSync('www/healthgo-ai-entry.js','utf8')
     .replace(/^import .*;\s*$/gm,'');
   const apps=[],prompts=[],events=[];
-  let appCheckInit=0,modelCalls=0,forceRefresh=0,onceFailure=true,failQuota=false,appCheckFails=false;
+  let appCheckInit=0,modelCalls=0,forceRefresh=0,onceFailure=true,failQuota=false,appCheckFails=false,invalidPlaceholder=false;
   const win={dispatchEvent:e=>events.push(e.type)};
   const app={name:'healthgo-mobile-ai'};
   const env={
@@ -31,6 +31,7 @@ function setup(){
     getToken:async (_app,force)=>{
       if(force)forceRefresh++;
       if(appCheckFails)throw Object.assign(Error('recaptcha invalid-domain'),{code:'appCheck/recaptcha-error'});
+      if(invalidPlaceholder)return {token:'placeholder-token',error:Object.assign(Error('Invalid App Check attestation'),{code:'appCheck/recaptcha-error'})};
       if(onceFailure&&!force){onceFailure=false;throw Error('expired-app-check-token')}
       return {token:'test-app-check-token'};
     },
@@ -50,7 +51,8 @@ function setup(){
     load(){vm.runInNewContext(source,env,{filename:'healthgo-ai-entry.js'})},
     stats(){return{appCheckInit,modelCalls,forceRefresh}},
     rateLimit(){failQuota=true},
-    failAppCheck(){appCheckFails=true}
+    failAppCheck(){appCheckFails=true},
+    rejectPlaceholder(){invalidPlaceholder=true}
   };
 }
 
@@ -125,6 +127,15 @@ test('Phone AI diagnoses App Check without making a generation request',async()=
   /APP_CHECK_ERROR appCheck\/recaptcha-error/
  );
  assert.equal(sdk.stats().modelCalls,0);
+});
+
+test('Firebase placeholder tokens with attestation errors are never accepted',async()=>{
+ const sdk=setup();sdk.load();sdk.rejectPlaceholder();
+ await assert.rejects(
+  sdk.window.healthGoMobileAI.ask({message:'Cześć',mode:'assistant',history:[]}),
+  /APP_CHECK_ERROR appCheck\/recaptcha-error/
+ );
+ assert.equal(sdk.stats().modelCalls,0,'unverified App Check never reaches Gemini');
 });
 
 test('Mobile error guidance distinguishes domain attestation from Gemini/provider errors',()=>{
