@@ -9,7 +9,7 @@ const css=fs.readFileSync('www/healthgo-map-v2.css','utf8');
 const workflow=fs.readFileSync('.github/workflows/mobile-pages.yml','utf8');
 
 test('Map 2.0 ships five real control panels plus searchable existing Leaflet map',()=>{
- for(const id of ['healthgoMap','mapV2RouteTo','mapV2RouteOutput','mapV2Favorites','mapV2Activities','mapV2TrackState','mapV2MeasureHud','mapV2MeasureDistance','mapV2MeasureHint','mapV2SpaciousButton'])
+ for(const id of ['healthgoMap','mapV2RouteTo','mapV2RouteOutput','mapV2Favorites','mapV2Activities','mapV2TrackState','mapV2MeasureHud','mapV2MeasureDistance','mapV2MeasureHint','mapV2SpaciousButton','hgLocationWelcome','hgLocationWelcomeTitle'])
   assert.match(html,new RegExp('id="'+id+'"'));
  for(const p of ['route','layers','favorites','activity','tools'])
   assert.match(html,new RegExp('data-map-panel="'+p+'"'));
@@ -19,6 +19,10 @@ test('Map 2.0 ships five real control panels plus searchable existing Leaflet ma
  assert.match(css,/#map \.map-v2-panel\[hidden\]/);
  assert.match(css,/#map \.map-v2-measure-hud\[hidden\]/);
  assert.match(css,/map-v2-spacious \.map-categories/);
+ assert.match(css,/#hgLocationWelcome\[hidden\]/);
+ assert.match(css,/#map \.map-v2-actions\{display:none!important\}/);
+ assert.match(source,/function resizeViewport\(\)/);
+ assert.match(html,/HealthGoMapV2\.chooseWelcomeLocation\(true\)/);
  assert.match(html,/OpenStreetMap/);
  assert.match(workflow,/healthgo-map-v2\.test\.cjs/);
 });
@@ -61,6 +65,7 @@ function harness(){
   readyState:'loading',hidden:false,
   addEventListener(){},
   getElementById:node,
+  querySelector:sel=>sel==='.app'?node('app'):null,
   querySelectorAll:()=>[],
   createElement:tag=>({...node('new-'+tag+'-'+nodes.size),tagName:tag})
  };
@@ -142,6 +147,34 @@ test('Opening other map tools stops measurement and spacious mode is reversible'
  assert.equal(app.map.handlers.click,undefined);
  assert.equal(app.node('mapV2MeasureHud').hidden,true);
  assert.equal(app.node('mapV2MeasureDistance').textContent,'0 m');
+});
+
+test('Location welcome offers opt-in and does not call GPS before consent',()=>{
+ const declined=harness();
+ declined.node('app').classList.contains=()=>false;
+ declined.node('hgLocationWelcome').querySelector=()=>({focus(){}});
+ const declineApi=declined.window.HealthGoMapV2;
+ assert.equal(declineApi.showLocationWelcome(),true);
+ assert.equal(declined.node('hgLocationWelcome').hidden,false);
+ assert.equal(declined.locationCalls.current,0);
+ declineApi.chooseWelcomeLocation(false);
+ assert.equal(declined.node('hgLocationWelcome').hidden,true);
+ assert.equal(declined.storage.get('healthgo.location.welcome.v1'),'later');
+ assert.equal(declined.locationCalls.current,0);
+ const allowed=harness();
+ allowed.node('app').classList.contains=()=>false;
+ allowed.node('hgLocationWelcome').querySelector=()=>({focus(){}});
+ const allowApi=allowed.window.HealthGoMapV2;
+ assert.equal(allowApi.showLocationWelcome(),true);
+ allowApi.chooseWelcomeLocation(true);
+ assert.equal(allowed.locationCalls.current,1,'OS permission is requested only after tapping Allow');
+ assert.equal(allowed.storage.get('healthgo.location.welcome.v1'),'allowed');
+});
+
+test('Map viewport sizing uses actual bottom navigation instead of a fixed blank gap',()=>{
+ assert.match(source,/nav\.getBoundingClientRect\?\.\(\)\.top/);
+ assert.match(source,/panel\.style\.setProperty\('height',space\+'px','important'\)/);
+ assert.match(source,/window\.HealthGoMapPro\?\.enableAuto3D\?\.\(\)/);
 });
 test('Traffic, weather and 3D are identified as unavailable until real feeds exist',()=>{
  assert.match(source,/Warstwa korków wymaga zewnętrznego dostawcy/);
