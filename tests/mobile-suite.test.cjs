@@ -47,6 +47,6 @@ test('mobile suite settings can sync through HealthGo services',()=>{
 test('PWA keeps a minimal first-launch cache on iPhone',()=>{
   const sw=fs.readFileSync('www/service-worker.js','utf8');
   assert.match(sw,/const CORE=\['\.\/index\.html','\.\/manifest\.webmanifest'\]/);
-  assert.match(sw,/healthgo-mobile-suite\.css/);
+  assert.match(sw,/\.(?:html\|js\|css\|png\|ico\|webmanifest)\$/);
   assert.match(sw,/shortcut-ai-wasm-20261009/);
 });
