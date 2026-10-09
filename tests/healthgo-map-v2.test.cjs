@@ -114,7 +114,7 @@ test('Distance measurement uses map taps without GPS or persisting location',()=
  app.map.emitClick(52.2,21.01);
  assert.equal(app.node('mapV2MeasureDistance').textContent,'0 m');
  app.map.emitClick(52.2,21.02);
- assert.match(app.node('mapV2MeasureDistance').textContent,/^0,[5-9][0-9] km$/);
+ assert.match(app.node('mapV2MeasureDistance').textContent,/^6[0-9]{2} m$/);
  assert.equal(app.locationCalls.current,0);
  assert.equal(app.locationCalls.tracking,0);
  assert.equal(app.storage.size,0,'map taps are not saved');
