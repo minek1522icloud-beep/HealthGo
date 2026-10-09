@@ -134,7 +134,7 @@
   text('hgProNavDistance',nice(route.meters));
   window.HealthGoMapV2?.close?.();
   // Leaflet needs a size refresh after the map becomes full-screen.
-  setTimeout(()=>map()?.invalidateSize?.({pan:false}),80);
+  window.setTimeout?.(()=>map()?.invalidateSize?.({pan:false}),80);
   try{
    watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
     const message=err?.code===1?'iPhone odmówił dostępu do GPS. Sprawdź uprawnienia lub wpisz punkt startowy.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
@@ -154,7 +154,7 @@
   document.body?.classList?.remove('hg-navigation-active');
   try{window.speechSynthesis?.cancel?.()}catch(_){}
   window.HealthGoMapV2?.resizeViewport?.();
-  setTimeout(()=>map()?.invalidateSize?.({pan:false}),50);
+  window.setTimeout?.(()=>map()?.invalidateSize?.({pan:false}),50);
  }
  function toggleVoice(){
   if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){
