@@ -15,8 +15,8 @@ test('Map 4.0 retains existing Leaflet map and adds new panels',()=>{
   assert.match(html,new RegExp('data-map-panel="'+p+'"'));
  assert.match(html,/window\.HealthGoMapV2\?\.mount\(\)/);
  assert.match(html,/healthgo-map-v2\.js\?v=1/);
- assert.match(html,/healthgo-map-v2\.css\?v=2/);
- assert.match(html,/healthgo-spacious-ui\.css\?v=1/);
+ assert.match(html,/healthgo-map-v2\.css\?v=3/);
+ assert.match(html,/healthgo-spacious-ui\.css\?v=2/);
  assert.match(css,/#map \.map-v2-panel\[hidden\]/);
  assert.match(css,/#map \.map-v2-measure-hud\[hidden\]/);
  assert.match(css,/map-v2-spacious \.map-categories/);
