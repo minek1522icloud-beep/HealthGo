@@ -131,6 +131,7 @@
  }
  async function toggle3D(){
   if(threeD){stop3D();return false}
+  auto3DArmed=false; // returning to 2D must not cause a repeated toggle loop
   const leaflet=getLeaflet(),host=$('hg3DMap');
   if(!leaflet||!host){msg('Najpierw otwórz mapę.');return false}
   if(leaflet.getZoom()<14){leaflet.setZoom(16);msg('Przybliżam mapę, żeby pokazać budynki 3D.')}
