@@ -12,7 +12,6 @@
 <meta name="apple-mobile-web-app-title" content="HealthGo">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./healthgo-offline-ai.css">
 <link rel="apple-touch-icon" href="./icon.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -338,6 +337,7 @@ html.hg-session-known #authScreen{display:none!important}
 <script src="./core/health-data.js"></script>
 <link rel="stylesheet" href="./healthgo-v2.css">
 <link rel="stylesheet" href="./healthgo-mobile-suite.css">
+<link rel="stylesheet" href="./healthgo-chat-modern.css?v=1">
 </head>
 <body style="background:#07111f">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -440,7 +440,7 @@ html.hg-session-known #authScreen{display:none!important}
 
 <section id="ai" class="page">
   <div class="ai-workspace" id="aiChatShell">
-    <aside class="ai-tools">
+    <aside class="ai-tools" id="aiHistoryPanel" aria-label="Historia rozmów">
       <button class="ai-new" type="button" onclick="aiNewChat()">＋ Nowa rozmowa</button>
       <div id="aiHistory" class="ai-history"></div>
 
@@ -450,56 +450,22 @@ html.hg-session-known #authScreen{display:none!important}
       <div class="ai-chat-top">
         <div><b id="aiModeTitle">HealthGo AI</b><span id="aiModeSub">Zapytaj o wszystko — nie tylko o HealthGo</span></div>
         <div class="ai-chat-actions">
-          <button type="button" title="Wyczyść rozmowę" onclick="aiClearChat()">🗑️</button>
+          <button id="aiNewTopBtn" type="button" title="Nowa rozmowa" aria-label="Nowa rozmowa" onclick="aiNewChat()">＋</button>
+          <button id="aiHistoryToggle" type="button" title="Historia rozmów" aria-label="Historia rozmów" aria-controls="aiHistoryPanel" aria-expanded="false" onclick="aiToggleHistory()">☰</button>
+          <button type="button" title="Wyczyść bieżącą rozmowę" aria-label="Wyczyść bieżącą rozmowę" onclick="aiClearChat()">🗑️</button>
         </div>
       </div>
 
-      <div class="mobile-ai-note"><b>🤖 HealthGo AI Mobile</b><br>Na telefonie możesz korzystać z AI w chmurze albo zainstalować lżejszy model do rozmów lokalnych. Konto, Family i postęp są synchronizowane przez Supabase.</div>
-      <div class="hg-ai-local-note">
-        <b>✨ HealthGo AI na urządzeniu</b>
-        <span> — model pobierany i zapisywany bez uruchamiania podczas instalacji.</span>
-        <span class="hg-ai-device-badge" id="hgOfflineAiDeviceBadge" data-installed="false">Sprawdzam pliki AI…</span>
-        <button type="button" onclick="window.HealthGoOfflineAI?.openInstall()">Ustaw AI</button>
-      </div>
-      <div class="hg-ai-setup" id="hgOfflineAiSetup" hidden>
-        <div class="hg-ai-setup-top">
-          <div class="hg-ai-setup-mark" aria-hidden="true">✦</div>
-          <div>
-            <div class="hg-ai-setup-badge" id="hgOfflineAiBadge">Jednorazowa konfiguracja</div>
-            <div class="hg-ai-setup-title">Zainstaluj HealthGo AI</div>
-          </div>
-        </div>
-        <p class="hg-ai-setup-copy">Pobierz pliki AI na ten telefon. Po pobraniu pozostaną zapisane w pamięci aplikacji, dopóki system ich nie usunie. Uruchamianie modelu jest osobnym krokiem, aby nie przeciążać iPhone’a podczas instalacji.</p>
-        <div class="hg-ai-setup-features">
-          <span class="hg-ai-setup-feature">📱 Na tym telefonie</span>
-          <span class="hg-ai-setup-feature">🔒 Rozmowy lokalne</span>
-          <span class="hg-ai-setup-feature">📦 Około 182 MB</span>
-        </div>
-        <div class="hg-ai-setup-status" id="hgOfflineAiStatus" role="status" aria-live="polite">Zalecane Wi-Fi i przynajmniej 300 MB wolnego miejsca.</div>
-        <div class="hg-ai-setup-progress" id="hgOfflineAiProgress" hidden>
-          <div class="hg-ai-setup-progress-inner" id="hgOfflineAiMeter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Postęp pobierania aktualnego pliku"></div>
-        </div>
-        <div class="hg-ai-setup-actions">
-          <button id="hgOfflineAiInstallBtn" type="button">Pobierz HealthGo AI</button>
-          <button id="hgOfflineAiTryLocalBtn" type="button" hidden>Uruchom lokalne AI</button>
-          <button id="hgOfflineAiLaterBtn" type="button">Nie teraz · użyj chmury</button>
-        </div>
-        <div class="hg-ai-setup-disclaimer">Pobrane pliki są przechowywane lokalnie na tym telefonie. Safari może usunąć je, gdy zabraknie pamięci lub wyczyścisz dane strony; dlatego nie można zagwarantować przechowywania na zawsze. „Model pobrany” nie znaczy jeszcze „AI uruchomione”. Zdjęcia wymagają chmury.</div>
+      <div class="ai-topic-bar" role="group" aria-label="Wybierz temat rozmowy">
+        <button class="ai-topic ai-mode active" type="button" data-ai-mode="assistant" aria-pressed="true" onclick="aiSetMode('assistant',this)">✨ Ogólny</button>
+        <button class="ai-topic ai-mode" type="button" data-ai-mode="plan" aria-pressed="false" onclick="aiSetMode('plan',this)">📅 Plan dnia</button>
+        <button class="ai-topic ai-mode" type="button" data-ai-mode="food" aria-pressed="false" onclick="aiSetMode('food',this)">🥗 Jedzenie</button>
+        <button class="ai-topic ai-mode" type="button" data-ai-mode="activity" aria-pressed="false" onclick="aiSetMode('activity',this)">🚲 Aktywność</button>
+        <button class="ai-topic ai-mode" type="button" data-ai-mode="explore" aria-pressed="false" onclick="aiSetMode('explore',this)">🗺️ Odkrywaj</button>
       </div>
 
       <div id="aiMessages" class="ai-messages" aria-live="polite">
-        <div class="ai-msg assistant">
-          
-          <div class="ai-bubble">
-            <b>Cześć! Jak mogę Ci pomóc?</b>
-            <p>Mogę pomóc Ci zaplanować dzień, znaleźć pomysł na posiłek, wymyślić grę lub wyzwanie, podpowiedzieć aktywność i przejść z Tobą do odpowiedniej części HealthGo.</p>
-            <div class="ai-inline-actions">
-              <button onclick="aiQuick('Ułóż mi plan dnia')">📅 Plan dnia</button>
-              <button onclick="aiQuick('Wymyśl mi grę')">🎮 Gra</button>
-              <button onclick="aiQuick('Podaj pomysł na posiłek')">🍽️ Jedzenie</button>
-            </div>
-          </div>
-        </div>
+        <div class="ai-welcome"><div class="ai-welcome-mark" aria-hidden="true">✦</div><h2>W czym mogę Ci pomóc?</h2><p>Możesz zapytać o szkołę, plan dnia, pomysły na posiłki albo po prostu porozmawiać.</p><div class="ai-welcome-suggestions"><button type="button" onclick="aiQuick('Pomóż mi zaplanować dzień')">📅 Zaplanuj dzień</button><button type="button" onclick="aiQuick('Pomóż mi w nauce')">📚 Nauka</button><button type="button" onclick="aiQuick('Podaj pomysł na posiłek')">🥗 Jedzenie</button><button type="button" onclick="aiQuick('Wymyśl coś ciekawego')">✨ Pomysły</button></div></div>
       </div>
 
       <div id="aiAttachmentPreview" class="ai-attachment-preview"></div>
@@ -1027,7 +993,7 @@ function go(page){
  if(page==='activity')setTimeout(refreshDeviceHealth,20);
  if(page==='devices')setTimeout(function(){refreshDeviceHealth();updateNotificationStatus()},20);
  if(page==='settings')setTimeout(renderHealthGoProfile,20);
- if(page==='ai')setTimeout(()=>window.HealthGoOfflineAI?.offerIfNeeded(),40);
+ // AI opens directly with no installer flow.
  syncMobileNav(page);
 }
 function modal(title,text,action='OK'){
@@ -2662,6 +2628,5 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-pro.js"></script>
 <script src="./healthgo-v2-ui.js"></script>
 <script src="./healthgo-mobile-suite.js"></script>
-<script src="./healthgo-offline-ai.js"></script>
 </body>
 </html>
