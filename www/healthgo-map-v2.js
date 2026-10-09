@@ -165,7 +165,7 @@
   if(!navigator.geolocation){say('Telefon nie udostępnia GPS.');return}
   trackedMeters=0;lastFix=null;trackingStarted=Date.now();
   if(traceLayer&&getMap())getMap().removeLayer(traceLayer);traceLayer=null;
-  tracker=navigator.geolocation.watchPosition(pos=>{
+  try{tracker=navigator.geolocation.watchPosition(pos=>{
    const p={lat:Number(pos.coords.latitude),lon:Number(pos.coords.longitude)};
    if(!validPoint(p)||Number(pos.coords.accuracy)>150)return;
    if(lastFix&&distance(lastFix,p)>3&&distance(lastFix,p)<200){
@@ -179,6 +179,7 @@
    }
    lastFix=p;updateTracking();
   },err=>{say(err?.code===1?'Odmówiono dostępu do lokalizacji. Rejestracja została zatrzymana.':'Utracono GPS. Rejestracja została zatrzymana.');stopTracking(false);},{enableHighAccuracy:true,timeout:15000,maximumAge:0});
+  }catch(_){tracker=null;say('Nie udało się włączyć GPS. Sprawdź uprawnienia lokalizacji.');return;}
   say('Rejestrowanie rozpoczęte. Zatrzymaj je przyciskiem; działa tylko przy otwartej aplikacji.');
   updateTracking();
  }
@@ -209,7 +210,7 @@
  function notice(topic){const labels={traffic:'Warstwa korków wymaga zewnętrznego dostawcy bieżących danych. Nie pokazujemy fikcyjnego ruchu.',weather:'Radar i ostrzeżenia pogodowe wymagają aktualnego źródła danych. Nie pokazujemy fikcyjnej pogody.',threeD:'Widok 3D wymaga osobnego silnika map. Obecna mapa Leaflet działa płynnie w 2D.'};say(labels[topic]||'Funkcja wymaga konfiguracji danych.');}
  function centerGPS(){if(typeof useMyLocation==='function')useMyLocation();}
  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',mount,{once:true})}else mount();
- document.addEventListener('visibilitychange',()=>{if(document.hidden)stopTracking(true)});
- window.addEventListener('pagehide',()=>stopTracking(true));
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){stopTracking(false);say('Rejestrowanie zatrzymano po ukryciu aplikacji. Nie zapisano trasy.')}});
+ window.addEventListener('pagehide',()=>stopTracking(false));
  window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS};
 })();
