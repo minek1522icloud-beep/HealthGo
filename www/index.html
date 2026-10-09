@@ -1202,7 +1202,7 @@ async function requestLocalHealthGoAI(payload,timeoutMs){
 }
 function healthGoAppCheckSafeCode(error){
  const message=String((error&&error.message)||error||'');
- const match=message.match(/APP_CHECK_ERROR\\s+([a-zA-Z][a-zA-Z0-9./_-]{0,80})/);
+ const match=message.match(/APP_CHECK_ERROR\s+([a-zA-Z][a-zA-Z0-9./_-]{0,80})/);
  return match?match[1]:(/APP_CHECK_TIMEOUT/.test(message)?'APP_CHECK_TIMEOUT':'APP_CHECK_FAILURE');
 }
 function healthGoAppCheckGuidance(error){
