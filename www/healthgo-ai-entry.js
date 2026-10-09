@@ -105,6 +105,9 @@ import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'fireb
       for(let attempt=0;attempt<2;attempt++){
         try{
           const result=await boundedAppCheck(getToken(appCheck,attempt===1),signal,11000);
+          // Firebase can return a placeholder token alongside an attestation
+          // error. Never treat that response as a verified App Check session.
+          if(result?.error)throw result.error;
           if(!result||!result.token)throw new Error('APP_CHECK_EMPTY_TOKEN');
           notifyStage(onStatus,'Zabezpieczenie gotowe. Łączę z Gemini…');
           return;
