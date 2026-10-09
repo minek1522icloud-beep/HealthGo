@@ -16,7 +16,7 @@ async function install(id){
  const controller=new AbortController();
  const timer=setTimeout(()=>controller.abort(),8*60*1000);
  try{
-  if(!self.caches)throw new Error('LOCAL_STORAGE_UNAVAILABLE');
+  if(typeof caches==='undefined')throw new Error('LOCAL_STORAGE_UNAVAILABLE');
   const cache=await caches.open(CACHE);
   for(const [index,file] of FILES.entries()){
    const url=modelUrl(file);
