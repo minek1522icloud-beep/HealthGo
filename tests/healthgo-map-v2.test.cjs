@@ -8,10 +8,10 @@ const html=fs.readFileSync('www/index.html','utf8');
 const css=fs.readFileSync('www/healthgo-map-v2.css','utf8');
 const workflow=fs.readFileSync('.github/workflows/mobile-pages.yml','utf8');
 
-test('Map 2.0 ships five real control panels plus searchable existing Leaflet map',()=>{
- for(const id of ['healthgoMap','mapV2RouteTo','mapV2RouteOutput','mapV2Favorites','mapV2Activities','mapV2TrackState','mapV2MeasureHud','mapV2MeasureDistance','mapV2MeasureHint','mapV2SpaciousButton','hgLocationWelcome','hgLocationWelcomeTitle','mapV2RouteFrom','mapV2GpsHelp'])
+test('Map 4.0 retains existing Leaflet map and adds new panels',()=>{
+ for(const id of ['healthgoMap','mapV2RouteTo','mapV2RouteOutput','mapV2Favorites','mapV2Activities','mapV2TrackState','mapV2MeasureHud','mapV2MeasureDistance','mapV2MeasureHint','mapV2SpaciousButton','hgLocationWelcome','hgLocationWelcomeTitle','mapV2RouteFrom','mapV2GpsHelp','hg4WeatherCurrent','hg4WeatherHours','hg4SavedRoutes','hg4Theme','hg4DefaultMode'])
   assert.match(html,new RegExp('id="'+id+'"'));
- for(const p of ['route','layers','favorites','activity','tools'])
+ for(const p of ['route','layers','favorites','activity','tools','weather','saved','settings'])
   assert.match(html,new RegExp('data-map-panel="'+p+'"'));
  assert.match(html,/window\.HealthGoMapV2\?\.mount\(\)/);
  assert.match(html,/healthgo-map-v2\.js\?v=1/);
@@ -42,9 +42,9 @@ test('Map search results expose real route and save-place actions without faking
  assert.match(html,/window\.HealthGoMapV2\.selectDestination\(name,p\.lat,p\.lon\)/);
  assert.match(html,/https:\/\/router\.project-osrm\.org/);
  assert.match(html,/https:\/\/server\.arcgisonline\.com/);
- assert.match(html,/współrzędne startu i celu zostaną przekazane do OSRM lub OpenStreetMap/);
+ assert.match(html,/Współrzędne trasy wysyłamy do OSRM lub OpenStreetMap/);
  assert.match(source,/manualStart\?await locateByName\(manualStart\):await locateOptIn\(\)/);
- assert.match(source,/if\(manualStart\)\{const nav=el\('hgNavStartButton'\)/);
+ assert.match(source,/if\(routeStartWasManual\)\{const nav=el\('hgNavStartButton'\)/);
 });
 
 test('Map module parses and requests GPS only after a user action',()=>{
@@ -249,12 +249,15 @@ test('Actual typed start and destination calculate a route without GPS',async()=
 test('Map viewport sizing uses actual bottom navigation instead of a fixed blank gap',()=>{
  assert.match(source,/nav\.getBoundingClientRect\?\.\(\)\.top/);
  assert.match(source,/panel\.style\.setProperty\('height',space\+'px','important'\)/);
- assert.match(source,/window\.HealthGoMapPro\?\.enableAuto3D\?\.\(\)/);
+ assert.doesNotMatch(source,/enableAuto3D|stop3D|center3D/);
+ assert.match(html,/data-panel="weather"/);
 });
-test('Traffic, weather and 3D are identified as unavailable until real feeds exist',()=>{
- assert.match(source,/Warstwa korków wymaga zewnętrznego dostawcy/);
- assert.match(source,/Radar i ostrzeżenia pogodowe wymagają aktualnego źródła/);
- assert.match(source,/Widok 3D wymaga osobnego silnika/);
+test('Weather is sourced from a real API and road works are never presented as live congestion',()=>{
+ const map4=fs.readFileSync('www/healthgo-map4.js','utf8');
+ assert.match(map4,/api\.open-meteo\.com\/v1\/forecast/);
+ assert.match(map4,/overpass-api\.de\/api\/interpreter/);
+ assert.match(map4,/NIE są korki na żywo/);
  assert.match(source,/iPhone zablokował GPS/);
- assert.match(source,/Nie wyświetlam zmyślonego czasu/);
+ assert.match(source,/Nie pokazuję wymyślonego czasu przejazdu/);
+ assert.doesNotMatch(html,/id="hg3DMap"|id="hg3DButton"/);
 });
