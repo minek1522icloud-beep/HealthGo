@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 
-function harness(remote,running,search=''){
+function harness(remote,running,search='',isDownloading=false){
  const source=fs.readFileSync('www/index.html','utf8');
  const start=source.indexOf('let healthGoVersionCheckBusy=false;');
  const end=source.indexOf('function setupMobilePWA(){',start);
@@ -23,7 +23,7 @@ function harness(remote,running,search=''){
  const context={
   document,location,URL,URLSearchParams,
   navigator:{serviceWorker:{getRegistration:async()=>registration}},
-  window:{},sessionStorage:{
+  window:{HealthGoOfflineAI:{busy:isDownloading}},sessionStorage:{
     getItem:k=>storage.get(k)||null,
     setItem:(k,v)=>storage.set(k,v),
     removeItem:k=>storage.delete(k)
@@ -87,5 +87,25 @@ test('deployment stamps real commit into HTML and publishes matching version',()
  assert.match(workflow,/test -s www\/healthgo-ai-bundle\.js/);
  assert.match(suite,/Sprawdź i pobierz aktualizację/);
  assert.match(sw,/SKIP_WAITING/);
- assert.match(sw,/healthgo-pwa-v18-ios-crash-recovery-20261008/);
+ assert.match(sw,/healthgo-pwa-v19-shortcut-ai-wasm-20261009/);
+});
+
+test('home-screen shortcut updates are postponed while AI model downloads',async()=>{
+ const x=harness(V2,V1,'',true);
+ await x.context.window.healthGoCheckMobileUpdate();
+ assert.equal(x.history.length,0);
+ assert.equal(x.updates.length,0);
+ await x.context.healthGoActivateNewVersion(V2,true);
+ assert.equal(x.history.length,0);
+ assert.match(x.status.textContent,/poczeka na zakończenie pobierania AI/);
+ x.context.window.HealthGoOfflineAI.busy=false;
+ await x.context.window.healthGoCheckMobileUpdate();
+ assert.equal(x.history.length,1);
+});
+
+test('PWA checks installed shortcut updates after initial paint, not during startup',()=>{
+ const html=fs.readFileSync('www/index.html','utf8');
+ assert.match(html,/setTimeout\(checkHealthGoMobileUpdate,12000\)/);
+ assert.match(html,/setInterval\(checkHealthGoMobileUpdate,900000\)/);
+ assert.match(html,/window\.HealthGoOfflineAI\?\.busy\|\|window\.healthGoAIRequestBusy/);
 });

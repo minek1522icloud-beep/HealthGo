@@ -44,9 +44,9 @@ test('mobile suite settings can sync through HealthGo services',()=>{
   assert.match(services,/settingsV3:settings/);
 });
 
-test('offline worker includes new mobile suite assets',()=>{
+test('PWA keeps a minimal first-launch cache on iPhone',()=>{
   const sw=fs.readFileSync('www/service-worker.js','utf8');
-  assert.match(sw,/healthgo-mobile-suite\.js/);
-  assert.match(sw,/healthgo-mobile-suite\.css/);
-  assert.match(sw,/ios-crash-recovery-20261008/);
+  assert.match(sw,/const CORE=\['\.\/index\.html','\.\/manifest\.webmanifest'\]/);
+  assert.match(sw,/const isShell=req\.mode==='navigate'/);
+  assert.match(sw,/shortcut-ai-wasm-20261009/);
 });

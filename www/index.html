@@ -468,13 +468,13 @@ html.hg-session-known #authScreen{display:none!important}
             <div class="hg-ai-setup-title">Zainstaluj HealthGo AI</div>
           </div>
         </div>
-        <p class="hg-ai-setup-copy">Pobierz prawdziwy, niewielki model językowy na telefon. Po instalacji może odpowiadać na wiadomości tekstowe także bez internetu — bez konta w zewnętrznej usłudze AI.</p>
+        <p class="hg-ai-setup-copy">Pobierz model do rozmów na tym telefonie. Pobieranie zacznie się dopiero po kliknięciu i pokaże prawdziwy postęp. Na zgodnych urządzeniach model może później działać bez internetu.</p>
         <div class="hg-ai-setup-features">
           <span class="hg-ai-setup-feature">📱 Na tym telefonie</span>
           <span class="hg-ai-setup-feature">🔒 Rozmowy lokalne</span>
-          <span class="hg-ai-setup-feature">📦 Około 483 MB</span>
+          <span class="hg-ai-setup-feature">📦 Około 182 MB</span>
         </div>
-        <div class="hg-ai-setup-status" id="hgOfflineAiStatus" role="status" aria-live="polite">Zalecane Wi-Fi i przynajmniej 600 MB wolnego miejsca.</div>
+        <div class="hg-ai-setup-status" id="hgOfflineAiStatus" role="status" aria-live="polite">Zalecane Wi-Fi i przynajmniej 300 MB wolnego miejsca.</div>
         <div class="hg-ai-setup-progress" id="hgOfflineAiProgress" hidden>
           <div class="hg-ai-setup-progress-inner" id="hgOfflineAiMeter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Postęp pobierania aktualnego pliku"></div>
         </div>
@@ -482,7 +482,7 @@ html.hg-session-known #authScreen{display:none!important}
           <button id="hgOfflineAiInstallBtn" type="button">Pobierz HealthGo AI</button>
           <button id="hgOfflineAiLaterBtn" type="button">Nie teraz · użyj chmury</button>
         </div>
-        <div class="hg-ai-setup-disclaimer">Model Qwen2.5 0.5B jest mniejszy od komputerowego Qwen3 4B, dlatego może odpowiadać wolniej i mniej dokładnie. Wymaga obsługi WebGPU; przeglądarka może usunąć jego pliki przy małej ilości miejsca. Rozpoznawanie zdjęć nadal wymaga usługi w chmurze.</div>
+        <div class="hg-ai-setup-disclaimer">Model SmolLM2 135M działa przez WebAssembly, bez konieczności obsługi WebGPU. Ma mniej możliwości niż model komputerowy; Safari może usunąć pamięć modelu, gdy telefonowi zabraknie miejsca. Zdjęcia nadal wymagają AI w chmurze.</div>
       </div>
 
       <div id="aiMessages" class="ai-messages" aria-live="polite">
@@ -888,6 +888,11 @@ function healthGoUpdateStatus(message){
 }
 async function healthGoActivateNewVersion(remote,force){
  // Keep the account/session and user data intact; replace only static shell assets.
+ // Do not interrupt an on-device AI download or an ongoing conversation.
+ if(window.HealthGoOfflineAI?.busy||window.healthGoAIRequestBusy){
+  healthGoUpdateStatus('Aktualizacja poczeka na zakończenie pobierania AI lub rozmowy.');
+  return false;
+ }
  // Block refresh loops if the server or network is still returning an old HTML shell.
  const key='healthgo_last_update_attempt';
  let last={};
@@ -914,6 +919,8 @@ async function healthGoActivateNewVersion(remote,force){
 }
 async function checkHealthGoMobileUpdate(force=false){
  if(healthGoVersionCheckBusy||(!force&&!isHostedMobileHealthGo()))return;
+ // Downloading a large model is already demanding for Safari / standalone PWA.
+ if(window.HealthGoOfflineAI?.busy||window.healthGoAIRequestBusy)return;
  // Authentication callback parameters must not be dropped by auto-updating.
  const params=new URLSearchParams(location.search);
  if(params.has('code')||params.has('access_token')||params.has('error'))return;
@@ -962,8 +969,9 @@ function setupMobilePWA(){
  window.addEventListener('appinstalled',()=>dismissPwaInstall());
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkHealthGoMobileUpdate()});
  window.addEventListener('online',()=>checkHealthGoMobileUpdate());
- setTimeout(checkHealthGoMobileUpdate,900);
- setInterval(checkHealthGoMobileUpdate,120000);
+ // Update the installed home-screen shortcut in place, not during first render.
+ setTimeout(checkHealthGoMobileUpdate,12000);
+ setInterval(checkHealthGoMobileUpdate,900000);
  setTimeout(showPwaInstallHint,2200);
 }
 function showPwaInstallHint(){
@@ -1110,26 +1118,30 @@ function aiTextToHtml(text){
  return '<p>'+safe.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')+'</p>';
 }
 async function waitForHealthGoMobileAI(){
+ // Firebase AI is intentionally not loaded during Safari startup. Load it
+ // immediately on the first question rather than waiting 10s doing nothing.
  let lastError='';
  for(let attempt=0;attempt<2;attempt++){
-   const start=Date.now();
-   while(Date.now()-start<10000){
-     if(window.healthGoMobileAI&&typeof window.healthGoMobileAI.ask==='function')return window.healthGoMobileAI;
-     if(window.healthGoMobileAIInitError){lastError=String(window.healthGoMobileAIInitError);break;}
-     await new Promise(r=>setTimeout(r,120));
+   if(window.healthGoMobileAI?.ask)return window.healthGoMobileAI;
+   try{
+     if(typeof window.healthGoLoadAIBundle!=='function')
+       throw new Error('MOBILE_AI_LOADER_UNAVAILABLE');
+     window.healthGoMobileAIInitError='';
+     await window.healthGoLoadAIBundle(attempt===1);
+   }catch(error){
+     lastError=String((error&&error.message)||error||'MOBILE_AI_BUNDLE_ERROR');
    }
-   if(attempt===0&&typeof window.healthGoLoadAIBundle==='function'){
-     try{
-       window.healthGoMobileAIInitError='';
-       await window.healthGoLoadAIBundle(true);
-       continue;
-     }catch(error){
-       lastError=String((error&&error.message)||error||lastError);
+   const start=Date.now();
+   while(Date.now()-start<9000){
+     if(window.healthGoMobileAI?.ask)return window.healthGoMobileAI;
+     if(window.healthGoMobileAIInitError){
+       lastError=String(window.healthGoMobileAIInitError);
+       break;
      }
+     await new Promise(resolve=>setTimeout(resolve,120));
    }
  }
- if(lastError)throw new Error('MOBILE_AI_INIT_ERROR '+lastError);
- throw new Error('MOBILE_AI_SDK_NOT_READY');
+ throw new Error('MOBILE_AI_INIT_ERROR '+(lastError||'MOBILE_AI_SDK_NOT_READY'));
 }
 function healthGoAIAccountType(){
  try{return typeof loadHealthGoProfile==='function'?(loadHealthGoProfile().accountType||'standard'):'standard'}catch(_){return 'standard'}
@@ -1199,7 +1211,7 @@ function healthGoMobileErrorCode(error){
  if(/AI_RATE_LIMIT|429|resource-exhausted|quota/i.test(raw))return 'MOBILE_RATE_LIMIT';
  if(/MOBILE_AI_INIT_ERROR|BUNDLE_LOAD_ERROR|MOBILE_AI_SDK_NOT_READY/i.test(raw))return 'MOBILE_SDK';
  if(/LOCAL_OFFLINE_MODEL_MISSING|LOCAL_NOT_INSTALLED/i.test(raw))return 'MOBILE_LOCAL_INSTALL';
- if(/LOCAL_GPU_UNAVAILABLE|LOCAL_WORKER_UNAVAILABLE|LOCAL_GENERATION_TIMEOUT/i.test(raw))return 'MOBILE_LOCAL_UNSUPPORTED';
+ if(/LOCAL_WORKER_UNAVAILABLE|LOCAL_GENERATION_TIMEOUT|LOCAL_LOAD_TIMEOUT/i.test(raw))return 'MOBILE_LOCAL_UNSUPPORTED';
  if(/AI_TIMEOUT|AI_CANCELLED|AI_PROVIDER_TIMEOUT|timeout|AbortError/i.test(raw))return 'MOBILE_TIMEOUT';
  if(/AI_REQUEST_ERROR|model|404|failed-precondition/i.test(raw))return 'MOBILE_PROVIDER';
  if(/network|offline|failed to fetch/i.test(raw))return 'MOBILE_NETWORK';

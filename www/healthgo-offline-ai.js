@@ -1,9 +1,9 @@
 (function(){
   'use strict';
 
-  const READY_KEY='healthgo_local_ai_qwen05_ready_v1';
+  const READY_KEY='healthgo_local_ai_smol135_wasm_v2';
   const DISMISSED_KEY='healthgo_local_ai_setup_skipped_v1';
-  const WORKER='./healthgo-offline-ai-worker.js?v=1';
+  const WORKER='./healthgo-offline-ai-worker.js?v=2';
   let worker=null;
   let nextId=1;
   let setupPending=null;
@@ -121,18 +121,21 @@
   }
   function deviceSupport(){
     if(!isMobile())return 'LOCAL_MOBILE_ONLY';
-    if(!navigator.gpu)return 'LOCAL_GPU_UNAVAILABLE';
+    // The compact WASM model works without navigator.gpu, including iOS PWA.
     if(!('caches' in window))return 'LOCAL_STORAGE_UNAVAILABLE';
+    if(!('Worker' in window))return 'LOCAL_WORKER_UNAVAILABLE';
     if(navigator.onLine===false&&!storedReady())return 'LOCAL_DOWNLOAD_OFFLINE';
     return null;
   }
   function infoFor(error){
     const code=String(error?.message||error||'');
-    if(/LOCAL_GPU_UNAVAILABLE|LOCAL_WORKER_UNAVAILABLE/.test(code))return 'Ten telefon nie obsługuje wymaganego silnika WebGPU. Możesz nadal używać AI w chmurze.';
-    if(/LOCAL_STORAGE|quota|QuotaExceeded/i.test(code))return 'Za mało dostępnego miejsca na model. Zwolnij pamięć i spróbuj ponownie.';
+    if(/LOCAL_WORKER_UNAVAILABLE|LOCAL_MOBILE_ONLY/.test(code))return 'Ta przeglądarka nie pozwala uruchomić lokalnego modelu. Możesz nadal używać AI w chmurze.';
+    if(/LOCAL_STORAGE|quota|QuotaExceeded/i.test(code))return 'Brak wystarczającej pamięci telefonu. Instalacja AI nie została zakończona.';
     if(/offline|Failed to fetch|network|fetch/i.test(code))return 'Pobieranie przerwane. Sprawdź internet i spróbuj ponownie.';
-    if(/MODEL_NO_REPLY|LOCAL_EMPTY_ANSWER/.test(code))return 'Model się pobrał, ale nie zdołał odpowiedzieć na tym telefonie.';
-    return 'Instalacja nie powiodła się na tym urządzeniu. Możesz spróbować ponownie lub korzystać z chmury.';
+    if(/MODEL_NO_REPLY|LOCAL_EMPTY_ANSWER/.test(code))return 'Model został pobrany, ale nie udało się uruchomić rozmowy. Spróbuj ponownie na Wi-Fi.';
+    if(/LOCAL_INSTALL_TIMEOUT|LOCAL_LOAD_TIMEOUT|LOCAL_GENERATION_TIMEOUT/i.test(code))return 'Model nie odpowiedział na czas. Spróbuj ponownie, pozostawiając HealthGo otwarte.';
+    if(/LOCAL_WORKER_FAILED|DataCloneError|wasm|backend/i.test(code))return 'Silnik AI nie zadziałał na tym telefonie. Nadal możesz korzystać z chmury.';
+    return 'Instalacja AI nie powiodła się. Możesz spróbować ponownie albo używać AI w chmurze.';
   }
   async function install(){
     if(mode==='downloading'||mode==='testing')return false;
@@ -143,7 +146,7 @@
       // Check quota without claiming an estimate is a guaranteed free-space value.
       if(navigator.storage?.estimate){
         const estimate=await navigator.storage.estimate();
-        if(Number.isFinite(estimate.quota)&&Number.isFinite(estimate.usage)&&estimate.quota-estimate.usage<600*1024*1024){
+        if(Number.isFinite(estimate.quota)&&Number.isFinite(estimate.usage)&&estimate.quota-estimate.usage<300*1024*1024){
           throw new Error('LOCAL_STORAGE_QUOTA');
         }
       }
@@ -218,8 +221,8 @@
     if(mode==='idle'){
       mode=storedReady()?'ready':'idle';
       status(storedReady()
-        ?'Model jest zapisany. Przy kolejnym pytaniu wczytamy go z pamięci.'
-        :'Pobierz model Qwen na ten telefon. Waga pliku około 483 MB, zalecane Wi-Fi i ponad 600 MB wolnego miejsca. Rozmowy tekstowe mogą działać bez internetu.');
+        ?'Model jest zapisany na tym telefonie. Przy pierwszym pytaniu wczytamy go do pamięci.'
+        :'Pobierz lżejszy model SmolLM2 (około 182 MB). Zalecamy Wi-Fi i przynajmniej 300 MB wolnego miejsca. Nie zamykaj aplikacji podczas pobierania.');
       render();
     }
   }
@@ -234,10 +237,13 @@
   window.HealthGoOfflineAI={
     install,ask,openInstall,offerIfNeeded,later,available:storedReady,
     get status(){return mode;},
+    get busy(){return mode==='downloading'||mode==='testing';},
     close:()=>showCard(false)
   };
-  document.addEventListener('DOMContentLoaded',()=>{
+  function wireControls(){
     el('hgOfflineAiInstallBtn')?.addEventListener('click',()=>{void install();});
     el('hgOfflineAiLaterBtn')?.addEventListener('click',later);
-  });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wireControls,{once:true});
+  else wireControls();
 })();
