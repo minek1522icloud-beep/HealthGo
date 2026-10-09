@@ -529,6 +529,7 @@ html.hg-session-known #authScreen{display:none!important}
         <button class="map-category" type="button" onclick="selectMapCategory('pharmacies',this)">Apteki</button>
         <button class="map-category" type="button" onclick="selectMapCategory('cafes',this)">Kawiarnie</button>
         <button class="map-category" type="button" onclick="selectMapCategory('parks',this)">Parki</button>
+        <button class="map-category" type="button" onclick="selectMapCategory('transit',this)">Przystanki</button>
         <button class="map-category" type="button" onclick="selectMapCategory('other',this)">Inne miejsca</button>
       </div>
     </div>
@@ -1663,7 +1664,7 @@ async function askAI(){
  }
 }
 let healthGoMap=null,healthGoPlacesLayer=null,healthGoLocationLayer=null,healthGoFamilyLayer=null,healthGoMapFamilySubscription=null,healthGoCategory='all',healthGoMapBusy=false;
-const healthGoCategoryLabels={all:'Wszystkie miejsca',restaurants:'Restauracje',shops:'Sklepy',gyms:'Siłownie',pharmacies:'Apteki',cafes:'Kawiarnie',parks:'Parki',other:'Inne miejsca'};
+const healthGoCategoryLabels={all:'Wszystkie miejsca',restaurants:'Restauracje',shops:'Sklepy',gyms:'Siłownie',pharmacies:'Apteki',cafes:'Kawiarnie',parks:'Parki',transit:'Przystanki',other:'Inne miejsca'};
 
 function mapStatus(text){const el=document.getElementById('mapSearchStatus');if(el)el.textContent=text}
 function toggleMapResults(show){const p=document.getElementById('mapResultsPanel');if(p)p.classList.toggle('show',!!show)}
@@ -1771,6 +1772,7 @@ function healthGoPlaceMeta(t){
  if(shop)return {icon:'🛒',label:shop==='supermarket'?'Supermarket':shop==='convenience'?'Sklep spożywczy':'Sklep'};
  if(leisure==='fitness_centre'||leisure==='sports_centre'||t.sport==='fitness')return {icon:'🏋️',label:'Siłownia / centrum sportowe'};
  if(leisure==='park')return {icon:'🌳',label:'Park'};
+ if(t.highway==='bus_stop'||t.public_transport==='platform'||t.railway==='tram_stop')return {icon:'🚏',label:'Przystanek transportu publicznego'};
  if(leisure==='playground')return {icon:'🛝',label:'Plac zabaw'};
  if(amenity==='library')return {icon:'📚',label:'Biblioteka'};
  if(amenity==='clinic'||amenity==='doctors')return {icon:'🩺',label:'Placówka medyczna'};
@@ -1787,6 +1789,7 @@ function healthGoOverpassClauses(category,bbox){
    pharmacies:['nwr["amenity"="pharmacy"]'+b+';'],
    cafes:['nwr["amenity"="cafe"]'+b+';'],
    parks:['nwr["leisure"="park"]'+b+';'],
+   transit:['nwr["highway"="bus_stop"]'+b+';','nwr["railway"="tram_stop"]'+b+';','nwr["public_transport"="platform"]'+b+';'],
    other:[
      'nwr["amenity"~"^(library|clinic|doctors|hospital)$"]'+b+';',
      'nwr["leisure"="playground"]'+b+';'
