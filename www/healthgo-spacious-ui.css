@@ -275,3 +275,13 @@ body.hg-navigation-active #map .leaflet-control-attribution{
   body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-main{padding:10px 12px!important}
   body.hg-navigation-active #map #hgProNavigation .hg-pro-nav-footer{gap:8px!important;padding:11px 12px!important}
 }
+
+
+/* A navigation HUD exists in the DOM on every page. It must never appear
+   until startNavigation explicitly switches the app into navigation state. */
+body:not(.hg-navigation-active) #map #hgProNavigation,
+#map #hgProNavigation[hidden]{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
