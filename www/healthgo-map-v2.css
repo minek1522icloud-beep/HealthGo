@@ -27,6 +27,7 @@
 #map .map-v2-input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #dce5f0;border-radius:13px;background:white;color:#1b2533;font-size:16px}
 #map .map-v2-field{font-size:12px;color:#64748b;font-weight:750;display:block;margin:12px 0 5px}
 #map .map-v2-buttons{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+#map .map-v2-buttons button.active{background:#dceaff;border-color:#b6d2ff;color:#1758b4;box-shadow:inset 0 0 0 1px #87b5fc}
 #map .map-v2-buttons button,#map .map-v2-panel .map-v2-primary{border:1px solid #dbe5f2;background:#f3f7ff;color:#204a89;padding:11px 13px;border-radius:13px;font-size:13px;font-weight:780}
 #map .map-v2-panel .map-v2-primary{background:#1468f3;color:white;border-color:#1468f3;width:100%;margin-top:6px}
 #map .map-v2-panel button:disabled{opacity:.5;cursor:default}
