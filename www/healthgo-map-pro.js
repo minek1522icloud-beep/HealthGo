@@ -181,6 +181,15 @@
   stopNavigation();lastRoute=null;activeStep=0;show('hgNavStartButton',false);
   if(gl?.getSource?.(routeSource))gl.getSource(routeSource).setData(emptyFC());
  }
+ function maneuverIcon(step){
+  const m=step?.maneuver||{};
+  if(m.type==='arrive')return '◆';
+  if(m.type==='roundabout'||m.type==='rotary')return '⟳';
+  if(m.modifier==='uturn')return '↶';
+  if(m.modifier?.includes('left'))return '↰';
+  if(m.modifier?.includes('right'))return '↱';
+  return '↑';
+ }
  function setRoute(route,destination){
   const coordinates=route?.geometry?.coordinates;
   if(!Array.isArray(coordinates)||coordinates.length<2)return false;
@@ -216,6 +225,7 @@
   const selected=lastRoute.steps[activeStep];
   const text=nextInstruction(selected);
   navText('hgProNavDirection',text);
+  navText('hgProNavIcon',maneuverIcon(selected));
   navText('hgProNavNext',meters===null?'Następny manewr':formatMeters(meters)+' do manewru');
   if(follow){
    if(threeD&&gl){
