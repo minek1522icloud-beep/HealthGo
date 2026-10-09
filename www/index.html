@@ -1118,26 +1118,30 @@ function aiTextToHtml(text){
  return '<p>'+safe.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>')+'</p>';
 }
 async function waitForHealthGoMobileAI(){
+ // Firebase AI is intentionally not loaded during Safari startup. Load it
+ // immediately on the first question rather than waiting 10s doing nothing.
  let lastError='';
  for(let attempt=0;attempt<2;attempt++){
-   const start=Date.now();
-   while(Date.now()-start<10000){
-     if(window.healthGoMobileAI&&typeof window.healthGoMobileAI.ask==='function')return window.healthGoMobileAI;
-     if(window.healthGoMobileAIInitError){lastError=String(window.healthGoMobileAIInitError);break;}
-     await new Promise(r=>setTimeout(r,120));
+   if(window.healthGoMobileAI?.ask)return window.healthGoMobileAI;
+   try{
+     if(typeof window.healthGoLoadAIBundle!=='function')
+       throw new Error('MOBILE_AI_LOADER_UNAVAILABLE');
+     window.healthGoMobileAIInitError='';
+     await window.healthGoLoadAIBundle(attempt===1);
+   }catch(error){
+     lastError=String((error&&error.message)||error||'MOBILE_AI_BUNDLE_ERROR');
    }
-   if(attempt===0&&typeof window.healthGoLoadAIBundle==='function'){
-     try{
-       window.healthGoMobileAIInitError='';
-       await window.healthGoLoadAIBundle(true);
-       continue;
-     }catch(error){
-       lastError=String((error&&error.message)||error||lastError);
+   const start=Date.now();
+   while(Date.now()-start<9000){
+     if(window.healthGoMobileAI?.ask)return window.healthGoMobileAI;
+     if(window.healthGoMobileAIInitError){
+       lastError=String(window.healthGoMobileAIInitError);
+       break;
      }
+     await new Promise(resolve=>setTimeout(resolve,120));
    }
  }
- if(lastError)throw new Error('MOBILE_AI_INIT_ERROR '+lastError);
- throw new Error('MOBILE_AI_SDK_NOT_READY');
+ throw new Error('MOBILE_AI_INIT_ERROR '+(lastError||'MOBILE_AI_SDK_NOT_READY'));
 }
 function healthGoAIAccountType(){
  try{return typeof loadHealthGoProfile==='function'?(loadHealthGoProfile().accountType||'standard'):'standard'}catch(_){return 'standard'}
