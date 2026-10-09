@@ -20,7 +20,8 @@ test('mobile AI prevents double sends, restores current chat context and uses a 
   assert.match(html,/if\(!requestUid\|\|window\.healthGoAIRequestBusy\)return/);
   assert.match(html,/function aiSyncHistoryFromDom\(\)/);
   assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData,\{/);
-  assert.match(html,/AI offline · tryb podstawowy/);
+  assert.doesNotMatch(html,/AI offline · tryb podstawowy/);
+  assert.match(html,/data-ai-mode="assistant"/);
 });
 
 test('mobile suite adds child account, privacy, notifications, offline, appearance and AI settings',()=>{
@@ -48,5 +49,5 @@ test('PWA keeps a minimal first-launch cache on iPhone',()=>{
   const sw=fs.readFileSync('www/service-worker.js','utf8');
   assert.match(sw,/const CORE=\['\.\/index\.html','\.\/manifest\.webmanifest'\]/);
   assert.match(sw,/const isShell=req\.mode==='navigate'/);
-  assert.match(sw,/ai-download-separate-20261009/);
+  assert.match(sw,/simple-chat-20261009/);
 });
