@@ -7,6 +7,6 @@ for(const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)){i
 for(const match of html.matchAll(/<script\s+src="\.\/([^"]+)"/g)){const file=path.join('www',match[1].split('?')[0]);if(!fs.existsSync(file))throw Error('Missing local script '+file);}
 if(!html.includes('healthgo-emerald-2.css?v=1'))throw Error('Missing Emerald theme link');
 if(!fs.existsSync('www/healthgo-emerald-2.css'))throw Error('Missing Emerald theme stylesheet');
-if(!html.includes('healthgo-ai-emerald-v3.css?v=1'))throw Error('Missing HealthGo AI Emerald CSS');
+if(!html.includes('healthgo-ai-emerald-v3.css?v=2'))throw Error('Missing HealthGo AI Emerald CSS');
 if(!fs.existsSync('www/healthgo-ai-emerald-v3.css'))throw Error('Missing HealthGo AI Emerald CSS file');
 console.log('Validated application, Emerald assets and '+count+' inline scripts.');

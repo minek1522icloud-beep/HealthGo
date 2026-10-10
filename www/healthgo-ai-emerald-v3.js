@@ -37,6 +37,24 @@
   const target=document.getElementById(id);
   if(target)target.setAttribute('aria-label',text);
  }
+ // Use one consistent icon per control. Older CSS used :after glyphs,
+ // which stacked extra + and up-arrows outside the composer on iPhone.
+ function svgIcon(paths){
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+paths+'</svg>';
+ }
+ const camera=page.querySelector('.ai-composer-tools button:first-child');
+ if(camera){
+  camera.innerHTML=svgIcon('<path d="M14.5 5h-5L7.5 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5l-2-2Z"/><circle cx="12" cy="13.5" r="3.5"/>');
+  camera.setAttribute('aria-label','Dodaj zdjęcie');
+ }
+ const suggestion=page.querySelector('.ai-composer-tools button:nth-child(2)');
+ if(suggestion){
+  suggestion.innerHTML=svgIcon('<path d="m12 3 1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9L12 3Z"/><path d="m19 18 .5 1.5L21 20l-1.5.5L19 22l-.5-1.5L17 20l1.5-.5L19 18Z"/>');
+ }
+ const sendButton=document.getElementById('aiSendBtn');
+ if(sendButton){
+  sendButton.innerHTML=svgIcon('<path d="m5 12 14-8-4 16-4.2-6-5.8-2Z"/><path d="m11 14 8-10"/>');
+ }
  const name=document.getElementById('aiModeTitle');
  const subtitle=document.getElementById('aiModeSub');
  if(name && name.textContent.trim()==='HealthGo AI')name.textContent='HealthGo AI';
@@ -138,9 +156,21 @@
    row.appendChild(action);
   });
  }
- const messageObserver=new MutationObserver(decorateReplies);
+ function ensureWelcomeIfEmpty(){
+  // Persisted chats with no visible messages must not show a blank full screen.
+  // Never replace a pending AI message while generation is in progress.
+  if(!messages.children.length && !window.healthGoAIRequestBusy &&
+     typeof window.aiShowWelcome==='function'){
+   window.aiShowWelcome();
+  }
+ }
+ const messageObserver=new MutationObserver(()=>{
+  decorateReplies();
+  ensureWelcomeIfEmpty();
+ });
  messageObserver.observe(messages,{childList:true,subtree:true});
  decorateReplies();
+ ensureWelcomeIfEmpty();
 
  // History is a sheet on phones. Escape and selection can close it.
  document.addEventListener('keydown',event=>{

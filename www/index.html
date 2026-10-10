@@ -345,7 +345,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-navigation-live.css?v=1">
 <link rel="stylesheet" href="./healthgo-emerald-2.css?v=1">
 <link rel="stylesheet" href="./healthgo-start-v3.css?v=1">
-<link rel="stylesheet" href="./healthgo-ai-emerald-v3.css?v=1">
+<link rel="stylesheet" href="./healthgo-ai-emerald-v3.css?v=2">
 </head>
 <body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -2864,8 +2864,18 @@ function load(id){
  window.healthGoAIRequestToken=null;
  const send=document.getElementById('aiSendBtn');if(send)send.disabled=false;
  currentId=id;const box=root();if(!box)return;box.replaceChildren();
- for(const message of item.messages||[]){const row=document.createElement('div'),bubble=document.createElement('div');row.className='ai-msg '+(message.role==='user'?'user':'assistant');bubble.className='ai-bubble';bubble.textContent=String(message.text||'');row.appendChild(bubble);box.appendChild(row);}
- if(!(item.messages||[]).length)aiShowWelcome();
+ let visibleMessages=0;
+ const saved=Array.isArray(item.messages)?item.messages:[];
+ for(const message of saved){
+  const text=String(message?.text||'').trim();
+  if(!text)continue;
+  const row=document.createElement('div'),bubble=document.createElement('div');
+  row.className='ai-msg '+(message.role==='user'?'user':'assistant');
+  bubble.className='ai-bubble';bubble.textContent=text;
+  row.appendChild(bubble);box.appendChild(row);
+  visibleMessages++;
+ }
+ if(!visibleMessages)aiShowWelcome();
  aiToggleHistory(false);render();box.scrollTop=box.scrollHeight;
 }
 function fresh(){
@@ -2949,6 +2959,6 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-map-pro.js?v=5"></script>
 <script src="./healthgo-map4.js?v=2"></script>
 <script src="./healthgo-emerald-dashboard.js?v=3"></script>
-<script src="./healthgo-ai-emerald-v3.js?v=1"></script>
+<script src="./healthgo-ai-emerald-v3.js?v=2"></script>
 </body>
 </html>
