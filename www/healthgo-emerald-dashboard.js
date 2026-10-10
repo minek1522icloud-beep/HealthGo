@@ -15,7 +15,7 @@
  const DAY=86400000;
  let chartRange='week';
  let weatherPending=false,weatherFetchedAt=0,weatherPointKey='',weatherController=null;
- let weatherStatus='unavailable';
+ let weatherStatus='unavailable',weatherOwnerUid='',weatherActionMode='locate';
  let goalCacheUid='',goalCacheValue=null;
  let scheduled=false;
  const icons=[
@@ -298,6 +298,19 @@
   putText('hgsChartNote',known.length?'Dane z połączonych urządzeń. Puste dni oznaczają brak odczytu.':'Brak pomiarów w tym okresie. Połącz źródło aktywności.');
  }
  function render(state){
+  const uid=state?.uid||'';
+  if(uid!==weatherOwnerUid){
+   weatherOwnerUid=uid;
+   if(weatherController){weatherController.abort();weatherController=null;}
+   weatherPending=false;weatherFetchedAt=0;weatherPointKey='';
+   weatherStatus='unavailable';weatherActionMode='locate';
+   putText('hgsWeatherTemp','—°');
+   putText('hgsWeatherDesc','Wybierz lokalizację');
+   putText('hgsWeatherPlace','Prognoza na żywo po Twojej zgodzie');
+   putText('hgsWeatherIcon','☀');
+   putText('hgsWeatherActionText','Sprawdź pogodę');
+   el('hgsWeatherAction').disabled=false;
+  }
   renderIdentity(state);
   renderSteps(state);
   renderXpAndChallenge(state);
@@ -328,7 +341,8 @@
   el('hgsWeatherAction').disabled=weatherPending;
  }
  async function fetchWeather(point){
-  if(!validCoords(point)||weatherPending)return false;
+  if(!validCoords(point)||weatherPending||!Services.state.uid)return false;
+  const requestUid=Services.state.uid;
   const key=Number(point.lat).toFixed(2)+','+Number(point.lon).toFixed(2);
   if(key===weatherPointKey && Date.now()-weatherFetchedAt<20*60000)return true;
   weatherPending=true;weatherStatus='loading';weatherText('Pobieranie pogody…');
@@ -341,7 +355,7 @@
    const json=await response.json();
    const temp=json?.current?.temperature_2m;
    if(typeof temp!=='number'||!Number.isFinite(temp))throw new Error('Serwis nie przekazał temperatury.');
-   if(controller!==weatherController||!Services.state.uid)return false;
+   if(controller!==weatherController||Services.state.uid!==requestUid)return false;
    const forecast=codelabel(Number(json.current.weather_code));
    putText('hgsWeatherTemp',Math.round(temp)+'°C');
    putText('hgsWeatherDesc',forecast[0]);
@@ -373,13 +387,14 @@
   if(validCoords(point))fetchWeather(point);
  }
  function askWeather(){
+  if(weatherActionMode==='map'){openWeatherPage();return;}
   if(weatherPending)return;
   const recent=window.HealthGoMapV2?.getRecentPosition?.(300000);
   if(validCoords(recent)){fetchWeather(recent);return;}
   if(!navigator.geolocation){
    weatherText('Lokalizacja niedostępna. Wybierz okolicę na mapie.');
    putText('hgsWeatherActionText','Pokaż mapę');
-   el('hgsWeatherAction').onclick=openWeatherPage;
+   weatherActionMode='map';
    return;
   }
   weatherPending=true;weatherText('Czekam na zgodę lokalizacji…');
@@ -391,7 +406,7 @@
    weatherText('Brak dostępu do lokalizacji.');
    putText('hgsWeatherPlace','Możesz wybrać okolicę w Mapie.');
    putText('hgsWeatherActionText','Otwórz mapę');
-   el('hgsWeatherAction').onclick=openWeatherPage;
+   weatherActionMode='map';
   },{enableHighAccuracy:false,timeout:12000,maximumAge:300000});
  }
  function showGoalDialog(){
