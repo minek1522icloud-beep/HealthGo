@@ -13,7 +13,7 @@ test('Spacious styles load after all older map/chat/mobile styles on every app s
  const newStyle=html.indexOf('healthgo-spacious-ui.css?v=2');
  assert.ok(mobile>=0&&chat>mobile&&map>chat&&newStyle>map,
   'layout overrides must load last');
- assert.match(html,/healthgo-map-pro\.js\?v=3/);
+ assert.match(html,/healthgo-map-pro\.js\?v=4/);
  assert.match(css,/--hg-ui-space:18px/);
  assert.match(css,/\.main \.page:not\(#map\):not\(#ai\) \.card/);
  assert.match(css,/\.main \.page:not\(#map\):not\(#ai\) \.settings-section/);
