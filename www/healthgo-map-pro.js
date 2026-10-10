@@ -21,20 +21,26 @@
   for(let i=coords.length-2;i>=0;i--)remaining[i]=remaining[i+1]+meters(
    {lat:coords[i][1],lon:coords[i][0]},{lat:coords[i+1][1],lon:coords[i+1][0]});
  }
- function routeRemaining(point){
-  if(!route||!remaining.length)return 0;
-  const pts=route.geometry,step=Math.max(1,Math.ceil(pts.length/500));
-  let nearest=0,best=Infinity;
-  for(let i=0;i<pts.length;i+=step){
-   const d=meters(point,{lat:pts[i][1],lon:pts[i][0]});
-   if(d<best){best=d;nearest=i}
+ function segmentProgress(point){
+  if(!route?.geometry?.length||!remaining.length)return {distance:Infinity,left:0};
+  const p=route.geometry,latScale=111320,lonScale=Math.cos(rad(point.lat))*111320;
+  let best=Infinity,left=remaining[0]||0;
+  // Project the GPS position onto actual route segments, rather than using
+  // only the closest route vertex (which can be far away on straight roads).
+  for(let i=0;i<p.length-1;i++){
+   const ax=(p[i][0]-point.lon)*lonScale,ay=(p[i][1]-point.lat)*latScale;
+   const bx=(p[i+1][0]-point.lon)*lonScale,by=(p[i+1][1]-point.lat)*latScale;
+   const dx=bx-ax,dy=by-ay,len2=dx*dx+dy*dy;
+   const t=len2?Math.max(0,Math.min(1,-(ax*dx+ay*dy)/len2)):0;
+   const distance=Math.hypot(ax+t*dx,ay+t*dy);
+   if(distance<best){
+    best=distance;left=Math.max(0,(remaining[i]||0)-t*((remaining[i]||0)-(remaining[i+1]||0)));
+   }
   }
-  for(let i=Math.max(0,nearest-step);i<Math.min(pts.length,nearest+step+1);i++){
-   const d=meters(point,{lat:pts[i][1],lon:pts[i][0]});
-   if(d<best){best=d;nearest=i}
-  }
-  return remaining[nearest]||0;
+  return {distance:best,left};
  }
+ function routeRemaining(point){return segmentProgress(point).left}
+
  function maneuverInfo(step){
   const m=step?.maneuver||{},name=String(step?.name||'').slice(0,80);
   if(m.type==='arrive')return {action:'Dojeżdżasz do celu',street:name||'Cel podróży',icon:'◆'};
@@ -91,21 +97,7 @@
   lastSpeech=key;
   try{window.speechSynthesis.cancel();const u=new window.SpeechSynthesisUtterance(message);u.lang='pl-PL';u.rate=.95;window.speechSynthesis.speak(u)}catch(_){}
  }
- function nearestRouteDistance(point){
-  if(!route?.geometry?.length)return Infinity;
-  // Approximate distance to road geometry (metres); avoid reacting to noise.
-  const pts=route.geometry,coarse=Math.max(1,Math.ceil(pts.length/350));
-  let best=Infinity,index=0;
-  for(let i=0;i<pts.length;i+=coarse){
-   const d=meters(point,{lat:pts[i][1],lon:pts[i][0]});
-   if(d<best){best=d;index=i}
-  }
-  for(let i=Math.max(0,index-coarse);i<=Math.min(pts.length-1,index+coarse);i++){
-   const d=meters(point,{lat:pts[i][1],lon:pts[i][0]});
-   if(d<best)best=d;
-  }
-  return best;
- }
+ function nearestRouteDistance(point){return segmentProgress(point).distance}
  async function requestReroute(point){
   if(rerouting||!active||!route?.geometry?.length||typeof fetch!=='function')return false;
   lastReroute=Date.now();rerouting=true;
