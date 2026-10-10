@@ -52,7 +52,7 @@ for(const [width,height] of [[360,740],[390,844],[430,932],[1024,768]]){
     documentWidth:document.documentElement.scrollWidth,
     viewport:document.documentElement.clientWidth,
     background:style.backgroundColor,inputBackground:inputStyle.backgroundColor,
-    stats:document.querySelectorAll('#hgpOverview .hgp-stat').length,
+    stats:document.querySelectorAll('#plan .hgp-overview .hgp-stat').length,
     visibleWeek:document.getElementById('hgpWeekStrip').offsetParent!==null,
     invisibleMonth:document.getElementById('hgpMonthGrid').hidden
    };
