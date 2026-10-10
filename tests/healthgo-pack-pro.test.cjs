@@ -61,14 +61,15 @@ test('Templated packing lists remain private to an account on this device',()=>{
   app.action('template',{'data-value':'school'});
   const alice='healthgo.pack.pro.2.alice',bob='healthgo.pack.pro.2.bob';
   assert.match(app.storage.get(alice),/Do szkoły/);
-  assert.match(app.root.innerHTML,/Do szkoły/);
+  assert.match(app.root.innerHTML,/Moje listy \(1\)/);
   app.svc.state.uid='bob';app.svc.subscriber();
-  assert.doesNotMatch(app.root.innerHTML,/Do szkoły/);
+  assert.match(app.root.innerHTML,/Moje listy \(0\)/);
   app.action('template',{'data-value':'pool'});
   assert.match(app.storage.get(bob),/Na basen/);
   app.svc.state.uid='alice';app.svc.subscriber();
-  assert.match(app.root.innerHTML,/Do szkoły/);
-  assert.doesNotMatch(app.root.innerHTML,/Na basen/);
+  assert.match(app.root.innerHTML,/Moje listy \(1\)/);
+  assert.match(app.storage.get(alice),/Do szkoły/);
+  assert.doesNotMatch(app.storage.get(alice),/Na basen/);
 });
 test('Checking items persists but cannot alter XP or earn locked achievements',()=>{
   const app=harness();
