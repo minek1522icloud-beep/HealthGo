@@ -373,3 +373,9 @@ body.hg-emerald #map .map-v2-route-line {
   animation-duration:.01ms!important;
  }
 }
+
+/* Override legacy HUD's ID-qualified display:flex!important declarations. */
+body.hg-emerald.hg-navigation-active #map #hgProNavigation .hg-drive-speed,
+body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgLiveWeather {
+ display:none!important;
+}
