@@ -39,7 +39,7 @@ test('Map 4 weather, navigation and saved UI exists without MapLibre 3D',()=>{
  for(const name of ['route','weather','saved','settings'])assert.match(html,new RegExp('data-map-panel="'+name+'"'));
  for(const id of ['hg4WeatherCurrent','hg4WeatherHours','hg4WeatherStatus','hg4SavedRoutes','hg4WorksStatus','hg4Theme','hg4Voice'])
   assert.match(html,new RegExp('id="'+id+'"'));
- assert.match(html,/healthgo-map4\.js\?v=1/);
+ assert.match(html,/healthgo-map4\.js\?v=2/);
  assert.match(html,/https:\/\/api\.open-meteo\.com/);
  assert.match(mapJS,/alternatives=true/);
  assert.doesNotMatch(html,/id="hg3DButton"|id="hg3DMap"|id="hgProNav3D"/);
@@ -88,5 +88,5 @@ test('Voice, navigation appearance and user preferences are saved per account',(
  assert.equal(p.avoidMotorways,true);assert.equal(p.mode,'bike');
  h.window.HealthGoServices.state.uid='u2';
  assert.equal(h.api.getSettings().theme,'auto');
- assert.equal(h.api.getSettings().voice,false);
+ assert.equal(h.api.getSettings().voice,true);
 });
