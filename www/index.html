@@ -1234,14 +1234,59 @@ function isHostedMobileHealthGo(){
 function isStandaloneHealthGo(){
  return window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
 }
-function toggleMobileMore(show){
- document.getElementById('mobileMoreSheet')?.classList.toggle('show',!!show);
- document.getElementById('mobileMoreBackdrop')?.classList.toggle('show',!!show);
+function toggleMobileMore(show,restoreFocus=true){
+ const sheet=document.getElementById('mobileMoreSheet');
+ const backdrop=document.getElementById('mobileMoreBackdrop');
+ const trigger=document.querySelector('[data-mobile-page="more"]');
+ if(!sheet||!backdrop)return;
+ const wasOpen=sheet.classList.contains('show');
+ const isMobile=window.matchMedia?.('(max-width:900px)')?.matches!==false;
+ const open=(typeof show==='boolean'?show:!wasOpen)&&isMobile;
+ sheet.classList.toggle('show',open);
+ backdrop.classList.toggle('show',open);
+ document.body.classList.toggle('hg-more-open',open);
+ sheet.setAttribute('aria-hidden',String(!open));
+ trigger?.setAttribute('aria-expanded',String(open));
+ if(open){
+  syncMobileNav('more');
+  sheet.querySelector('[data-more-close]')?.focus?.({preventScroll:true});
+ }else{
+  syncMobileNav(document.querySelector('.page.active')?.id||'start');
+  if(wasOpen&&restoreFocus)trigger?.focus?.({preventScroll:true});
+ }
 }
 function syncMobileNav(page){
- document.querySelectorAll('[data-mobile-page]').forEach(b=>b.classList.toggle('active',b.dataset.mobilePage===page));
+ document.querySelectorAll('[data-mobile-page]').forEach(b=>{
+  const active=b.dataset.mobilePage===page;
+  b.classList.toggle('active',active);
+  if(active)b.setAttribute('aria-current','page');
+  else b.removeAttribute('aria-current');
+ });
 }
-function mobileGo(page){toggleMobileMore(false);go(page);syncMobileNav(page)}
+function mobileGo(page){
+ toggleMobileMore(false,false);
+ go(page);
+ syncMobileNav(page);
+}
+document.addEventListener('keydown',event=>{
+ const sheet=document.getElementById('mobileMoreSheet');
+ if(!sheet?.classList.contains('show'))return;
+ if(event.key==='Escape'){
+  event.preventDefault();
+  toggleMobileMore(false);
+ }else if(event.key==='Tab'){
+  const focusable=[...sheet.querySelectorAll('button:not([disabled])')];
+  if(!focusable.length)return;
+  const first=focusable[0],last=focusable[focusable.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ }
+});
+window.addEventListener('resize',()=>{
+ if(window.innerWidth>900&&document.getElementById('mobileMoreSheet')?.classList.contains('show')){
+  toggleMobileMore(false,false);
+ }
+});
 function dismissPwaInstall(){
  document.getElementById('pwaInstallHint')?.classList.remove('show');
  try{localStorage.setItem('healthgo_pwa_hint_dismissed','1')}catch(_){}
@@ -1394,6 +1439,7 @@ let timerSec=0, timerInt=null;
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 function go(page){
  const target=document.getElementById(page);if(!target)return;
+ if(document.getElementById('mobileMoreSheet')?.classList.contains('show'))toggleMobileMore(false,false);
  if(page!=='map')window.HealthGoMapPro?.leaveMap();
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  target.classList.add('active');
