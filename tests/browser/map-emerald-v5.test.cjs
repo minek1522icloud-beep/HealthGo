@@ -40,7 +40,7 @@ for(const [width,height] of [[360,740],[390,844],[430,932],[1024,768]]){
   assert.ok(await page.locator('#map .map-v2-tab').count()>=3);
 
   await page.evaluate(()=>{
-   window.healthGoMap={
+   healthGoMap={
     getCenter(){return {lat:50.12,lng:19.24}},
     setView(){return this},
     invalidateSize(){return this},
