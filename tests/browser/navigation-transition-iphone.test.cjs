@@ -58,11 +58,14 @@ async function init(width,routes){
  return {page,errors};
 }
 for(const width of [360,390,430]){
- test('Actual iPhone search button opens visible navigation without second tap at '+width,async()=>{
+ test('Actual iPhone planner button opens visible navigation without second tap at '+width,async()=>{
   const {page,errors}=await init(width,[validRoute]);
-  await page.locator('#mapAddressInput').fill('Park, Częstochowa');
-  await page.getByRole('button',{name:'Szukaj adresu'}).click();
-  await page.waitForFunction(()=>document.querySelector('#map')?.dataset.hgNavigationPhase==='active',{timeout:7000});
+  // On iPhone the main discovery toolbar is intentionally hidden; use the
+  // actual visible navigation planner, the same interface as the user.
+  await page.evaluate(()=>HealthGoMapV2.toggle('route'));
+  await page.locator('#mapV2RouteTo').fill('Park, Częstochowa');
+  await page.getByRole('button',{name:/Wyznacz trasę i prowadź/}).click();
+  await page.waitForFunction(()=>document.querySelector('#map')?.dataset.hgNavigationPhase==='active',null,{timeout:7000});
   const state=await page.evaluate(()=>{
    const hud=document.getElementById('hgProNavigation'),css=getComputedStyle(hud);
    return {
@@ -94,18 +97,20 @@ for(const width of [360,390,430]){
 }
 test('One OSRM geometry-only variant is skipped when another has real maneuvers',async()=>{
  const {page,errors}=await init(390,[geometryOnly,validRoute]);
- await page.locator('#mapAddressInput').fill('Park');
- await page.getByRole('button',{name:'Szukaj adresu'}).click();
- await page.waitForFunction(()=>document.querySelector('#map')?.dataset.hgNavigationPhase==='active');
+ await page.evaluate(()=>HealthGoMapV2.toggle('route'));
+ await page.locator('#mapV2RouteTo').fill('Park');
+ await page.getByRole('button',{name:/Wyznacz trasę i prowadź/}).click();
+ await page.waitForFunction(()=>document.querySelector('#map')?.dataset.hgNavigationPhase==='active',null,{timeout:7000});
  assert.equal(await page.locator('#hgProNavigation').isVisible(),true);
  assert.equal(await page.locator('#hg4RouteAlternatives button').count(),1);
  assert.deepEqual(errors,[]);await page.close();
 });
 test('All routes missing OSRM maneuvers produce visible error, not a fake live drive',async()=>{
  const {page,errors}=await init(390,[geometryOnly]);
- await page.locator('#mapAddressInput').fill('Park');
- await page.getByRole('button',{name:'Szukaj adresu'}).click();
- await page.waitForFunction(()=>document.querySelector('#map')?.dataset.hgNavigationPhase==='error');
+ await page.evaluate(()=>HealthGoMapV2.toggle('route'));
+ await page.locator('#mapV2RouteTo').fill('Park');
+ await page.getByRole('button',{name:/Wyznacz trasę i prowadź/}).click();
+ await page.waitForFunction(()=>document.querySelector('#map')?.dataset.hgNavigationPhase==='error',null,{timeout:7000});
  const result=await page.evaluate(()=>({
   status:document.getElementById('mapSearchStatus').textContent,
   panel:document.getElementById('mapV2RouteOutput').textContent,
