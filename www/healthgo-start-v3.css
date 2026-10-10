@@ -332,6 +332,8 @@ body:has(#start.hg-start-v3.active) .top { display:none!important; }
 @media(max-width:385px) {
  #hgStartV3{gap:15px;}
  #hgStartV3 .hgs-wordmark{font-size:39px;}
+ #hgStartV3 .hgs-brandrow{flex-wrap:wrap;align-items:flex-start;gap:10px;}
+ #hgStartV3 .hgs-date{margin-left:auto;}
  #hgStartV3 .hgs-topgrid{grid-template-columns:minmax(0,1fr);}
  #hgStartV3 .hgs-ring{width:min(100%,220px);}
  #hgStartV3 .hgs-metrics-stack{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto;}
