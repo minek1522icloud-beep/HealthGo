@@ -8,6 +8,7 @@
 body.hg-navigation-active #map #hgNavigationPerspective:not([hidden]){
  display:block!important;pointer-events:none!important;
 }
+#map #hgNavigationPerspective.hg-live-loading{visibility:hidden!important}
 #map #hgNavigationPerspective .maplibregl-canvas{outline:none}
 #map #hgNavigationPerspective .maplibregl-control-container{
  position:absolute;bottom:3px;right:5px;z-index:5;
