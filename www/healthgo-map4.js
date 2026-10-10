@@ -11,7 +11,7 @@
  const currentUser=()=>String(window.HealthGoServices?.state?.uid||'');
  let worksLayer=null,weatherController=null,worksController=null,lastWorksAt=0;
  let activeWeather=null,activeWeatherAt=0;
- const settingDefaults={theme:'auto',voice:false,follow:true,avoidMotorways:false,mode:'car'};
+ const settingDefaults={theme:'auto',voice:true,follow:true,avoidMotorways:false,mode:'car'};
  function storeName(suffix){const uid=currentUser();return uid?'healthgo.map4.'+suffix+'.'+uid:null}
  function load(key,fallback){try{const k=storeName(key);return k?JSON.parse(localStorage.getItem(k)||'null')??fallback:fallback}catch(_){return fallback}}
  function store(key,data){const k=storeName(key);if(!k)return false;try{localStorage.setItem(k,JSON.stringify(data));return true}catch(_){return false}}
@@ -52,11 +52,12 @@
  }
  function formatHour(iso){return String(iso||'').split('T')[1]?.slice(0,5)||'—'}
  function weatherPoint(){
+  // Use an already consented recent GPS fix when available; never trigger
+  // an extra permission prompt just to look at the weather.
   const recent=window.HealthGoMapV2?.getRecentPosition?.(300000);
-  // Prefer map center: refreshing weather must not request the phone's GPS.
+  if(recent&&valid(recent))return {lat:recent.lat,lon:recent.lon,source:'GPS'};
   const c=map()?.getCenter?.();
-  if(c&&valid({lat:c.lat,lon:c.lng}))return {lat:c.lat,lon:c.lng};
-  return recent&&valid(recent)?recent:null;
+  return c&&valid({lat:c.lat,lon:c.lng})?{lat:c.lat,lon:c.lng,source:'mapa'}:null;
  }
  async function refreshWeather(){
   const p=weatherPoint(),root=el('hg4WeatherCurrent'),hours=el('hg4WeatherHours');
@@ -68,9 +69,10 @@
   label('hg4WeatherStatus','Pobieram aktualną pogodę dla środka mapy…');
   const params=new URLSearchParams({
    latitude:String(p.lat.toFixed(4)),longitude:String(p.lon.toFixed(4)),
-   current:'temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,weather_code',
+   current:'temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,weather_code',
    hourly:'temperature_2m,precipitation_probability,weather_code',
-   forecast_days:'2',timezone:'auto'
+   daily:'temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code',
+   forecast_days:'7',timezone:'auto'
   });
   const timeout=setTimeout(()=>ctl.abort(),14000);
   try{
@@ -92,6 +94,7 @@
    const meta=document.createElement('p');meta.className='map-v2-muted';
    meta.textContent='Wiatr: '+Math.round(Number(cur.wind_speed_10m)||0)+' km/h · Wilgotność: '+
     Math.round(Number(cur.relative_humidity_2m)||0)+'% · Opad: '+Number(cur.precipitation||0).toFixed(1)+' mm';
+   if(Number.isFinite(Number(cur.apparent_temperature))){meta.textContent+=' · Odczuwalna: '+Math.round(Number(cur.apparent_temperature))+'°C';}
    root.appendChild(meta);
    hours.replaceChildren();
    const times=json.hourly?.time||[],rain=json.hourly?.precipitation_probability||[],temps=json.hourly?.temperature_2m||[];
@@ -103,7 +106,20 @@
     const prob=document.createElement('small');prob.textContent='Opady '+Math.round(Number(rain[j])||0)+'%';item.appendChild(prob);
     hours.appendChild(item);
    }
-   label('hg4WeatherStatus','Rzeczywista prognoza Open-Meteo · dla środka mapy · aktualizacja na żądanie.');
+   const days=el('hg4WeatherDaily');
+   if(days){
+    days.replaceChildren();
+    const d=json.daily||{},dates=d.time||[],high=d.temperature_2m_max||[],low=d.temperature_2m_min||[],rainDays=d.precipitation_probability_max||[];
+    for(let i=0;i<Math.min(7,dates.length);i++){
+     if(!Number.isFinite(Number(high[i]))||!Number.isFinite(Number(low[i])))continue;
+     const row=document.createElement('div');row.className='hg4-day';
+     const date=document.createElement('b');date.textContent=String(dates[i]);row.appendChild(date);
+     const temp=document.createElement('span');temp.textContent=Math.round(high[i])+'° / '+Math.round(low[i])+'°';row.appendChild(temp);
+     const chance=document.createElement('small');chance.textContent='Opady: '+(Number.isFinite(Number(rainDays[i]))?Math.round(rainDays[i])+'%':'—');row.appendChild(chance);
+     days.appendChild(row);
+    }
+   }
+   label('hg4WeatherStatus','Prognoza modelowa Open-Meteo · źródło: '+(p.source==='GPS'?'wcześniej zatwierdzona lokalizacja':'środek mapy')+' · aktualizacja na żądanie.');
    return true;
   }catch(e){
    if(ctl!==weatherController)return false;
