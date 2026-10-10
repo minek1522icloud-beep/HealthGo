@@ -39,7 +39,7 @@ async function ready(width,height){
  return {page,errors};
 }
 for(const [width,height] of [[360,740],[390,844],[430,932],[768,700]]){
- test('Premium More sheet behaves on mobile width '+width,async()=>{
+ test('Professional More list is responsive at '+width+'px',async()=>{
   const {page,errors}=await ready(width,height);
   const trigger=page.locator('[data-mobile-page="more"]');
   const sheet=page.locator('#mobileMoreSheet');
@@ -53,6 +53,10 @@ for(const [width,height] of [[360,740],[390,844],[430,932],[768,700]]){
    return {
     cards:sheet.querySelectorAll('.hg-more-action').length,
     svg:sheet.querySelectorAll('.hg-more-action>.hg-more-icon>svg').length,
+    chevrons:sheet.querySelectorAll('.hg-more-action>.hg-more-action-chevron>svg').length,
+    groups:sheet.querySelectorAll('.hg-more-group-label').length,
+    oneColumn:getComputedStyle(sheet.querySelector('.hg-more-list')).flexDirection,
+    bottomOffset:sheet.style.getPropertyValue('--hg-more-bottom'),
     families:sheet.querySelectorAll('[data-hg2-family]').length,
     content:sheet.innerText,
     box:{x:box.left,right:box.right,bottom:box.bottom,height:box.height},
@@ -66,6 +70,10 @@ for(const [width,height] of [[360,740],[390,844],[430,932],[768,700]]){
   });
   assert.equal(layout.cards,7);
   assert.equal(layout.svg,7,'Every item must have a vector icon');
+  assert.equal(layout.chevrons,7,'Every item must show the navigation chevron');
+  assert.equal(layout.groups,2,'Function and account groups should be labeled');
+  assert.equal(layout.oneColumn,'column','Items must be a single-column list');
+  assert.match(layout.bottomOffset,/px$/,'Sheet must follow measured iPhone nav height');
   assert.equal(layout.families,1,'Family is not duplicated');
   assert.doesNotMatch(layout.content,/🎮|🎯|🎒|❤️|⌚|👨‍👩‍👧|⚙️/);
   assert.equal(layout.open,'true');assert.equal(layout.active,'more');assert.equal(layout.locked,true);
@@ -105,6 +113,53 @@ test('Desktop keeps sidebar without showing mobile More sheet',async()=>{
  assert.equal(await page.locator('#mobileMoreSheet').isVisible(),false);
  assert.equal(await page.locator('#mobileMoreBackdrop').isVisible(),false);
  assert.equal(await page.locator('aside.sidebar').isVisible(),true);
+ assert.deepEqual(errors,[]);
+ await page.close();
+});
+
+
+test('Short iPhone scrolls the action list without covering the lower navigation',async()=>{
+ const {page,errors}=await ready(320,568);
+ await page.locator('[data-mobile-page="more"]').click();
+ const dimensions=await page.evaluate(()=>{
+  const sheet=document.getElementById('mobileMoreSheet');
+  const nav=document.getElementById('mobileNav');
+  const box=sheet.getBoundingClientRect();
+  return {
+   bottom:box.bottom,navTop:nav.getBoundingClientRect().top,
+   top:box.top,client:sheet.clientHeight,scroll:sheet.scrollHeight,
+   left:box.left,right:box.right,width:document.documentElement.clientWidth
+  };
+ });
+ assert.ok(dimensions.bottom<dimensions.navTop,'Sheet must stay above bottom navigation');
+ assert.ok(dimensions.top>=0,'Sheet must not extend beyond screen top');
+ assert.ok(dimensions.right<=dimensions.width+1&&dimensions.left>=0,'Sheet clipped horizontally');
+ assert.ok(dimensions.scroll>dimensions.client,'Short iPhone should scroll inside sheet');
+ const last=page.locator('#mobileMoreSheet .hg-more-action').last();
+ await last.click();
+ assert.equal(await page.locator('#settings.page.active').count(),1);
+ assert.equal(await page.locator('#mobileMoreSheet').isVisible(),false);
+ assert.deepEqual(errors,[]);
+ await page.close();
+});
+test('Resizing while More is open recalculates sheet offset and keeps all rows accessible',async()=>{
+ const {page,errors}=await ready(390,844);
+ await page.locator('[data-mobile-page="more"]').click();
+ await page.setViewportSize({width:360,height:640});
+ await page.waitForTimeout(120);
+ const state=await page.evaluate(()=>{
+  const sheet=document.getElementById('mobileMoreSheet');
+  return {
+   bottom:sheet.getBoundingClientRect().bottom,
+   navTop:document.getElementById('mobileNav').getBoundingClientRect().top,
+   offset:sheet.style.getPropertyValue('--hg-more-bottom'),
+   scrollbar:sheet.scrollHeight>sheet.clientHeight
+  };
+ });
+ assert.ok(state.bottom<=state.navTop+1,'iPhone rotation/resize overlapped navigation');
+ assert.match(state.offset,/px$/);
+ await page.locator('#mobileMoreSheet button[onclick="mobileGo(\'family\')"]').click();
+ assert.equal(await page.locator('#family.page.active').count(),1);
  assert.deepEqual(errors,[]);
  await page.close();
 });
