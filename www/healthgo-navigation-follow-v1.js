@@ -5,8 +5,9 @@
  */
 (function(){
  'use strict';
- const goodPoint=p=>p&&Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lon))&&
-   Math.abs(Number(p.lat))<=90&&Math.abs(Number(p.lon))<=180;
+ const goodPoint=p=>p&&typeof p.lat==='number'&&typeof p.lon==='number'&&
+   Number.isFinite(p.lat)&&Number.isFinite(p.lon)&&
+   Math.abs(p.lat)<=90&&Math.abs(p.lon)<=180;
  const radians=x=>x*Math.PI/180;
  const meters=(a,b)=>{
   const x=Math.sin(radians((Number(b.lat)-Number(a.lat))/2))**2+
