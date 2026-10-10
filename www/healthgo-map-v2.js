@@ -67,6 +67,10 @@
   resizeViewport();
   if(getMap()){
    getMap().invalidateSize({pan:false});
+   // go('map') schedules a delayed mount on mobile. If navigation has
+   // already started, that callback must NEVER re-center the 2D follow
+   // camera on an earlier GPS fix or re-enable discovery-map layout.
+   if(document.body?.classList?.contains?.('hg-navigation-active'))return;
    if(!mapEntryLocated){
     const recent=getRecentPosition();
     if(recent){mapEntryLocated=true;centerFromConsent(recent);}
@@ -80,6 +84,7 @@
  function noteSystemLocationGranted(){localStorageSet('healthgo.location.welcome.v1','allowed')}
  function noteSystemLocationDenied(){localStorageSet('healthgo.location.welcome.v1','denied')}
  function resizeViewport(){
+  if(document.body?.classList?.contains?.('hg-navigation-active'))return;
   const panel=el('map'),nav=document.querySelector?.('.mobile-nav');
   if(!panel||!panel.classList?.contains?.('active')||!nav)return;
   if(window.innerWidth>900){panel.style.removeProperty('height');return}
@@ -92,6 +97,7 @@
   }
  }
  function centerFromConsent(point){
+  if(document.body?.classList?.contains?.('hg-navigation-active'))return false;
   if(!validPoint(point)||!getMap()||!el('map')?.classList?.contains?.('active'))return false;
   getMap().setView([Number(point.lat),Number(point.lon)],16,{animate:true});
   return true;
