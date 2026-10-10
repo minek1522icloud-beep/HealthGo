@@ -17,7 +17,7 @@
  }
  function phase(name,message=''){
   navPhase=name;navProblem=name==='error'?message:'';
-  const panel=el('map');if(panel)panel.dataset.hgNavigationPhase=name;
+  const panel=el('map');if(panel?.dataset)panel.dataset.hgNavigationPhase=name;
   if(message){
    const output=el('mapV2RouteOutput');if(output)output.textContent=message;
    say(message);
@@ -495,7 +495,7 @@
      external.hidden=false;
      external.textContent='Otwórz trasę w OpenStreetMap ↗';
     }
-    phase('external','Trasa '+(routeMode==='foot'?'piesza':'rowerowa')+' jest dostępna w OpenStreetMap. HealthGo nie oferuje jeszcze prowadzenia dla tego trybu.');
+    phase('external','Trasa '+(routeMode==='foot'?'piesza':'rowerowa')+' jest dostępna w OpenStreetMap. Nie wyświetlam zmyślonego czasu ani instrukcji dla tego trybu.');
     return false;
    }
    phase('routing','Wyznaczam trasę samochodową z prawdziwymi skrętami…');
