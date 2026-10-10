@@ -123,7 +123,7 @@
   text('hgProNavDistance',nice(left));
   setProgress(navigationProgress(left));
   text('hgProNavSpeed',c.speed==null||!Number.isFinite(c.speed)?'—':String(Math.max(0,Math.round(c.speed*3.6))));
-  placeArrow(point,Number(c.heading));
+  placeArrow(point,c.heading==null?NaN:Number(c.heading));
   if(follow&&Date.now()-lastCamera>=1100){
    lastCamera=Date.now();map()?.setView?.([point.lat,point.lon],Math.max(16,map()?.getZoom?.()||16),{animate:true});
   }
