@@ -193,9 +193,20 @@
    setProgress(100);
   }
  }
+ function syncVoiceButton(){
+  const button=node('hgNavVoiceQuick');
+  if(!button)return;
+  const supported=!!window.speechSynthesis&&!!window.SpeechSynthesisUtterance;
+  const enabled=supported&&voice;
+  button.disabled=!supported;
+  button.setAttribute('aria-pressed',String(enabled));
+  button.setAttribute('aria-label',supported?(enabled?'Wycisz komunikaty głosowe':'Włącz komunikaty głosowe'):'Odczyt głosowy niedostępny na tym telefonie');
+  button.title=supported?(enabled?'Głos nawigacji: włączony':'Głos nawigacji: wyłączony'):'Brak syntezy mowy';
+ }
  function loadOptions(){
   const pref=window.HealthGoMap4?.getSettings?.()||{};
   voice=!!pref.voice;follow=pref.follow!==false;
+  syncVoiceButton();
   const b=node('hgProVoice');if(b){b.textContent=voice?'Głos: włączony':'Głos: wyłączony';b.setAttribute('aria-pressed',String(voice))}
   const f=node('hgProFollow');if(f){f.textContent=follow?'Śledź położenie':'Mapa swobodna';f.setAttribute('aria-pressed',String(follow))}
   setNight(pref.theme==='dark'||(pref.theme!=='light'&&new Date().getHours()>=19));
@@ -260,6 +271,7 @@
   voice=!voice;lastSpeech='';
   const b=node('hgProVoice');if(b){b.textContent=voice?'Głos: włączony':'Głos: wyłączony';b.setAttribute('aria-pressed',String(voice))}
   window.HealthGoMap4?.saveSettings?.({voice});
+  syncVoiceButton();
   return voice;
  }
  function toggleFollow(){

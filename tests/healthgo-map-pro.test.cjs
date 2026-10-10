@@ -127,7 +127,7 @@ test('Driving screen has white ETA card, single exit X and optional controls',()
  assert.match(style,/\.hg-drive-progress-fill/);
  assert.match(style,/\.hg-drive-options:not\(\[open\]\) \.hg-pro-nav-buttons\{display:none!important/);
  assert.match(html,/healthgo-drive-ui\.css\?v=1/);
- assert.match(html,/healthgo-map-pro\.js\?v=5/);
+ assert.match(html,/healthgo-map-pro\.js\?v=6/);
 });
 test('Voice and follow controls are adjustable; permission remains opt-in',()=>{
  const h=harness();
