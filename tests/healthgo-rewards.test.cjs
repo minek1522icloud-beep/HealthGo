@@ -15,7 +15,7 @@ function harness(){
  const win={HealthGoServices:services,HealthGoEngine:{viewAchievements(){return badges;}},healthGoCurrentUid:'alice'};
  const document={getElementById(){return null;},createElement(){throw Error('Unexpected DOM interaction');}};
  const localStorage={getItem(k){return storage.get(k)||null;},setItem(k,v){storage.set(k,v);}};
- vm.runInNewContext(source,{window:win,document,localStorage,encodeURIComponent,Math,console});
+ vm.runInNewContext(source,{window:win,document,localStorage,encodeURIComponent,Math,console,setTimeout:()=>1,clearTimeout(){}});
  return{win,services,storage,badges};
 }
 test('profile gifts only follow real earned achievements and are never paid',()=>{
