@@ -3,7 +3,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const html=fs.readFileSync('www/index.html','utf8');
+const html=fs.readFileSync('www/index.html','utf8').replace(/\r\n/g,'\n');
 const css=fs.readFileSync('www/healthgo-chat-modern.css','utf8');
 
 test('Phone chat has one standard interface, without cloud/offline installer panels',()=>{
