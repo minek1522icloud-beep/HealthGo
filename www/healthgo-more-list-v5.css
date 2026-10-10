@@ -1,0 +1,247 @@
+/* HealthGo More 5.0
+ * A single-column, accessible mobile action list with vector icons.
+ * Scoped to the More sheet: no changes to other tabs or health data.
+ */
+@media (max-width:900px){
+ body.hg-emerald.hg-more-open{
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+ }
+ body.hg-emerald #mobileMoreBackdrop.mobile-more-backdrop{
+  display:block!important;
+  position:fixed!important;inset:0!important;
+  z-index:9995!important;
+  background:rgba(0,17,13,.54)!important;
+  -webkit-backdrop-filter:blur(6px);
+  backdrop-filter:blur(6px);
+  opacity:0!important;visibility:hidden!important;
+  pointer-events:none!important;
+  transition:opacity .2s ease,visibility .2s ease!important;
+ }
+ body.hg-emerald #mobileMoreBackdrop.mobile-more-backdrop.show{
+  opacity:1!important;visibility:visible!important;
+  pointer-events:auto!important;
+ }
+ body.hg-emerald #mobileNav.mobile-nav{
+  z-index:10000!important;
+ }
+ body.hg-emerald #mobileMoreSheet.mobile-more-sheet{
+  display:block!important;
+  position:fixed!important;
+  z-index:10010!important;
+  box-sizing:border-box!important;
+  left:50%!important;right:auto!important;top:auto!important;
+  bottom:var(--hg-more-bottom,calc(101px + env(safe-area-inset-bottom)))!important;
+  width:min(464px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  height:auto!important;
+  max-height:calc(100vh - var(--hg-more-bottom,105px) - 20px)!important;
+  max-height:min(624px,calc(100dvh - var(--hg-more-bottom,105px) - env(safe-area-inset-top) - 12px))!important;
+  padding:0!important;margin:0!important;
+  overflow-x:hidden!important;overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch;
+  border:1px solid rgba(85,173,140,.35)!important;
+  border-radius:25px!important;
+  background:linear-gradient(160deg,#102f25 0%,#082219 54%,#061a14 100%)!important;
+  box-shadow:0 21px 70px rgba(0,12,8,.6),inset 0 1px rgba(255,255,255,.055)!important;
+  transform:translate(-50%,18px) scale(.985)!important;
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+  transition:opacity .21s ease,transform .24s cubic-bezier(.2,.75,.15,1),visibility .21s ease!important;
+  scrollbar-width:thin;scrollbar-color:#34735b transparent;
+ }
+ body.hg-emerald #mobileMoreSheet.mobile-more-sheet.show{
+  transform:translate(-50%,0) scale(1)!important;
+  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-content{
+  box-sizing:border-box!important;
+  padding:12px 13px 15px!important;
+  display:flex!important;flex-direction:column!important;
+  gap:11px!important;min-width:0!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-grip{
+  display:block!important;
+  width:40px!important;height:4px!important;
+  margin:0 auto 2px!important;
+  border-radius:99px!important;background:#557d6d!important;
+  opacity:.75!important;flex-shrink:0!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-header{
+  display:flex!important;align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;min-width:0!important;
+  padding:3px 3px 6px!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-header-main{
+  min-width:0!important;
+  display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+  gap:3px!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-eyebrow{
+  color:#47edbe!important;
+  font-size:10px!important;font-weight:850!important;
+  letter-spacing:.14em!important;line-height:1.35!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-title{
+  color:#f6fff9!important;margin:0!important;
+  font-size:25px!important;line-height:1.12!important;
+  font-weight:850!important;letter-spacing:-.045em!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-subtitle{
+  color:#9ac7b5!important;margin:1px 0 0!important;
+  font-size:12px!important;line-height:1.45!important;
+ }
+ body.hg-emerald #mobileMoreSheet button.hg-more-close{
+  display:grid!important;place-items:center!important;
+  flex:0 0 42px!important;width:42px!important;
+  height:42px!important;min-height:42px!important;
+  padding:0!important;
+  border:1px solid #326b55!important;border-radius:13px!important;
+  color:#c8f6e3!important;background:rgba(36,87,65,.42)!important;
+  box-shadow:none!important;
+ }
+ body.hg-emerald #mobileMoreSheet button.hg-more-close svg{
+  width:21px!important;height:21px!important;
+  fill:none!important;stroke:currentColor!important;
+  stroke-width:1.9!important;stroke-linecap:round!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-list{
+  display:flex!important;flex-direction:column!important;
+  align-items:stretch!important;gap:5px!important;
+  width:100%!important;min-width:0!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-group-label{
+  color:#72ad96!important;
+  font-size:10px!important;letter-spacing:.13em!important;
+  font-weight:800!important;line-height:1.4!important;
+  margin:0!important;padding:3px 8px 4px!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-account-label{
+  margin-top:7px!important;padding-top:11px!important;
+  border-top:1px solid rgba(94,162,128,.19)!important;
+ }
+ body.hg-emerald #mobileMoreSheet button.hg-more-action{
+  box-sizing:border-box!important;
+  width:100%!important;min-width:0!important;
+  min-height:65px!important;height:auto!important;
+  display:flex!important;flex-direction:row!important;
+  align-items:center!important;justify-content:flex-start!important;
+  gap:12px!important;
+  text-align:left!important;
+  padding:10px 11px!important;
+  margin:0!important;
+  border:1px solid rgba(95,160,130,.18)!important;
+  border-radius:15px!important;
+  color:#effff8!important;background:rgba(21,64,47,.58)!important;
+  box-shadow:none!important;
+  font-size:13px!important;font-weight:740!important;
+  line-height:1.25!important;white-space:normal!important;
+  transition:background .14s ease,border-color .14s ease,transform .14s ease!important;
+ }
+ body.hg-emerald #mobileMoreSheet button.hg-more-action:hover,
+ body.hg-emerald #mobileMoreSheet button.hg-more-action:focus-visible{
+  background:rgba(30,91,66,.8)!important;border-color:#39d8a7!important;
+ }
+ body.hg-emerald #mobileMoreSheet button.hg-more-action:active{
+  transform:scale(.986)!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-icon{
+  display:grid!important;place-items:center!important;
+  flex:0 0 43px!important;
+  width:43px!important;height:43px!important;min-width:43px!important;
+  padding:0!important;
+  border-radius:13px!important;
+  background:linear-gradient(145deg,rgba(37,155,118,.22),rgba(32,101,77,.24))!important;
+  border:1px solid rgba(75,192,149,.18)!important;
+  color:#47ebbd!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-icon svg{
+  display:block!important;
+  width:23px!important;height:23px!important;max-width:none!important;
+  fill:none!important;
+  stroke:currentColor!important;stroke-width:1.85!important;
+  stroke-linecap:round!important;stroke-linejoin:round!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-action-copy{
+  display:flex!important;flex-direction:column!important;
+  align-items:flex-start!important;justify-content:center!important;
+  gap:3px!important;min-width:0!important;flex:1 1 auto!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-action-name{
+  color:#f3fff8!important;font-size:14px!important;
+  font-weight:800!important;line-height:1.25!important;
+  letter-spacing:-.01em!important;overflow-wrap:anywhere!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-action-note{
+  color:#a0c8b8!important;font-size:11px!important;
+  font-weight:530!important;line-height:1.35!important;
+  overflow-wrap:anywhere!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-action-chevron{
+  display:grid!important;place-items:center!important;
+  flex:0 0 19px!important;
+  width:19px!important;height:24px!important;
+  margin-left:auto!important;
+  color:#7bd6b3!important;opacity:.9!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-action-chevron svg{
+  width:18px!important;height:18px!important;
+  fill:none!important;stroke:currentColor!important;
+  stroke-width:2.1!important;stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-divider{
+  margin:0 6px!important;width:auto!important;
+  height:1px!important;min-height:1px!important;
+  background:rgba(95,166,135,.2)!important;
+  border:0!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-footnote{
+  margin:0!important;padding:0 8px!important;
+  text-align:center!important;
+  color:#91bfa9!important;font-size:10px!important;
+  line-height:1.45!important;
+ }
+ body.hg-emerald #mobileMoreSheet :is(button):focus-visible{
+  outline:2px solid #3cf0bf!important;outline-offset:2px!important;
+ }
+}
+@media(max-width:380px){
+ body.hg-emerald #mobileMoreSheet.mobile-more-sheet{
+  width:calc(100vw - 16px)!important;
+  max-width:calc(100vw - 16px)!important;
+  border-radius:20px!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-content{
+  padding:10px 10px 12px!important;gap:8px!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-header{padding-bottom:3px!important}
+ body.hg-emerald #mobileMoreSheet .hg-more-title{font-size:23px!important}
+ body.hg-emerald #mobileMoreSheet button.hg-more-action{
+  min-height:61px!important;padding:8px 9px!important;gap:10px!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-icon{
+  flex-basis:39px!important;width:39px!important;height:39px!important;min-width:39px!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-icon svg{width:21px!important;height:21px!important}
+ body.hg-emerald #mobileMoreSheet .hg-more-action-name{font-size:13px!important}
+ body.hg-emerald #mobileMoreSheet .hg-more-action-note{font-size:10px!important}
+}
+@media(max-height:680px) and (max-width:900px){
+ body.hg-emerald #mobileMoreSheet.mobile-more-sheet{
+  max-height:calc(100dvh - var(--hg-more-bottom,100px) - env(safe-area-inset-top) - 8px)!important;
+ }
+}
+@media(min-width:901px){
+ #mobileMoreSheet.mobile-more-sheet,#mobileMoreBackdrop.mobile-more-backdrop{
+  display:none!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body.hg-emerald #mobileMoreSheet.mobile-more-sheet,
+ body.hg-emerald #mobileMoreBackdrop.mobile-more-backdrop,
+ body.hg-emerald #mobileMoreSheet button.hg-more-action{
+  transition:none!important;
+ }
+}
