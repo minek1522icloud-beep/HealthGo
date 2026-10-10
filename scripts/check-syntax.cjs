@@ -11,7 +11,7 @@ if(!html.includes('healthgo-ai-emerald-v3.css?v=2'))throw Error('Missing HealthG
 if(!fs.existsSync('www/healthgo-ai-emerald-v3.css'))throw Error('Missing HealthGo AI Emerald CSS file');
 if(!html.includes('healthgo-navigation-follow-v1.css?v=1'))throw Error('Missing moving GPS arrow stylesheet');
 if(!fs.existsSync('www/healthgo-navigation-follow-v1.css'))throw Error('Moving GPS arrow stylesheet file is absent');
-if(!html.includes('healthgo-plan-emerald-v4.css?v=1'))throw Error('Missing HealthGo Planner 4 CSS');
+if(!html.includes('healthgo-plan-emerald-v4.css?v=2'))throw Error('Missing HealthGo Planner 4 CSS');
 if(!fs.existsSync('www/healthgo-plan-emerald-v4.css'))throw Error('Missing HealthGo Planner CSS file');
 if(!html.includes('healthgo-plan-v4.js?v=1'))throw Error('Missing HealthGo Planner 4 JS');
 console.log('Validated application, Emerald assets and '+count+' inline scripts.');
