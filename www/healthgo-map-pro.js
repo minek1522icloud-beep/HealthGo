@@ -234,7 +234,9 @@
  }
  function loadOptions(){
   const pref=window.HealthGoMap4?.getSettings?.()||{};
-  voice=!!pref.voice;follow=pref.follow!==false;
+  // Every new trip should automatically follow the GPS arrow, even if the
+  // previous trip used free-look mode.
+  voice=!!pref.voice;follow=true;
   window.HealthGoNavigationFollow?.setFollowing?.(follow);
   syncVoiceButton();
   const b=node('hgProVoice');if(b){b.textContent=voice?'Głos: włączony':'Głos: wyłączony';b.setAttribute('aria-pressed',String(voice))}
@@ -332,7 +334,7 @@
  function toggleFollow(){
   follow=!follow;
   const b=node('hgProFollow');if(b){b.textContent=follow?'Śledź położenie':'Mapa swobodna';b.setAttribute('aria-pressed',String(follow))}
-  window.HealthGoMap4?.saveSettings?.({follow});
+  // Free-look applies to this navigation session only; next trip follows GPS.
   window.HealthGoNavigationFollow?.setFollowing?.(follow);
   return follow;
  }
