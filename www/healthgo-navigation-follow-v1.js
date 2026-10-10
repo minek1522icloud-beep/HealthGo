@@ -178,7 +178,7 @@
     const p=m.project(center,zoom),size=m.getSize();
     const ahead=Math.min(110,Math.max(0,Number(size?.y)||0)*.13);
     const shifted=m.unproject([p.x,p.y-ahead],zoom);
-    if(goodPoint(shifted))center=[shifted.lat,shifted.lng??shifted.lon];
+    if(Number.isFinite(shifted?.lat)&&Number.isFinite(shifted?.lng))center=[shifted.lat,shifted.lng];
    }
   }catch(_){center=[point.lat,point.lon];}
   const far=lastCameraPoint?meters(lastCameraPoint,point)>200:false;
