@@ -433,3 +433,16 @@ test('An invisible navigation HUD is treated as a failed start, not a success',a
  assert.equal(api.navigationState().phase,'error');
  assert.match(app.node('mapV2RouteOutput').textContent,/ekran prowadzenia GPS nie uruchomił/);
 });
+
+test('Delayed map mount cannot override live GPS-follow camera',()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ let resets=0;
+ app.map.setView=()=>{resets++;return app.map;};
+ app.node('map').classList.add('active');
+ api.rememberPosition({lat:52.2,lon:21.01,accuracy:12});
+ app.document.body.classList.add('hg-navigation-active');
+ api.mount(); // A delayed go("map") callback is allowed but must not re-center.
+ assert.equal(resets,0,'discovery-map centering must not overwrite guidance camera');
+ assert.equal(api.centerIfSystemGranted() instanceof Promise,true);
+ assert.equal(resets,0);
+});
