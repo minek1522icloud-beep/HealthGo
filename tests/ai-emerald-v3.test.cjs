@@ -8,8 +8,8 @@ function read(file){return fs.readFileSync(path.join(__dirname,'..',file),'utf8'
 
 test('Emerald AI 3.0 loads last, retains the established five chat modes and history',()=>{
  const html=read('www/index.html');
- assert.match(html,/healthgo-ai-emerald-v3\.css\?v=1/);
- assert.match(html,/healthgo-ai-emerald-v3\.js\?v=1/);
+ assert.match(html,/healthgo-ai-emerald-v3\.css\?v=2/);
+ assert.match(html,/healthgo-ai-emerald-v3\.js\?v=2/);
  assert.ok(html.indexOf('healthgo-ai-emerald-v3.css')>html.indexOf('healthgo-emerald-2.css'));
  assert.ok(html.indexOf('healthgo-ai-emerald-v3.js')>html.indexOf('healthgo-emerald-dashboard.js'));
  for(const mode of ['assistant','plan','food','activity','explore'])
