@@ -99,6 +99,7 @@
   // OSRM starts with a departure maneuver at the origin. Move on to the
   // next instruction once that origin is reached instead of displaying
   // the misleading "start driving" banner indefinitely.
+  if(stepIndex===0&&route.steps.length>1&&route.steps[0]?.maneuver?.type==='depart')stepIndex=1;
   let step=route.steps[stepIndex],loc=step?.maneuver?.location;
   let target=Array.isArray(loc)?{lat:loc[1],lon:loc[0]}:null;
   let distanceTo=target?meters(point,target):null;
