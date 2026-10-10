@@ -7,6 +7,7 @@
  let voice=false,follow=true,night=false,lastSpeech='',lastCamera=0,position=null;
  let furthestProgress=0;
  let offRouteTicks=0,lastReroute=0,rerouting=false,rerouteCtl=null,voiceStep=-1,voiceStage='';
+ let arrivalCount=0,arrivalTimer=null;
  const text=(id,value)=>{const n=node(id);if(n)n.textContent=String(value)};
  const show=(id,visible)=>{const n=node(id);if(n)n.hidden=!visible};
  const radians=x=>x*Math.PI/180;
@@ -126,6 +127,7 @@
    route={geometry,steps,meters:Number(updated.distance)||0,seconds:Number(updated.duration)||0,destination:current};
    suffix(geometry);stepIndex=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';setProgress(0);
    window.HealthGoMapV2?.updateLiveRoute?.(updated);
+   window.HealthGoNavigationFollow?.setRoute?.(updated);
    window.HealthGoNavigationLive?.setRoute?.(updated);
    speak('Trasa została przeliczona','route-recomputed-'+lastReroute);
    text('hgProNavNext','Zaktualizowano trasę na podstawie GPS');
@@ -166,7 +168,10 @@
   text('hgProNavDistance',nice(left));
   setProgress(navigationProgress(left));
   text('hgProNavSpeed',c.speed==null||!Number.isFinite(c.speed)?'—':String(Math.max(0,Math.round(c.speed*3.6))));
-  placeArrow(point,c.heading==null?NaN:Number(c.heading));
+  // A single GPS marker driven by real watchPosition samples. When the new
+  // lightweight controller is unavailable, preserve the old Leaflet marker.
+  const followed=window.HealthGoNavigationFollow?.update?.(pos);
+  if(!followed)placeArrow(point,c.heading==null?NaN:Number(c.heading));
   window.HealthGoNavigationLive?.update?.(pos);
   if(Number(c.accuracy)<35&&Number(c.speed)>=0.8&&route?.geometry?.length>1){
    const away=nearestRouteDistance(point);
@@ -175,7 +180,8 @@
     offRouteTicks=0;requestReroute(point);
    }
   }else offRouteTicks=0;
-  if(follow&&Date.now()-lastCamera>=1100){
+  if(!window.HealthGoNavigationFollow?.status?.().active &&
+      follow&&Date.now()-lastCamera>=1100){
    lastCamera=Date.now();map()?.setView?.([point.lat,point.lon],Math.max(16,map()?.getZoom?.()||16),{animate:true});
   }
   if(voiceStep!==stepIndex){voiceStep=stepIndex;voiceStage='';}
@@ -187,10 +193,20 @@
    speak('Za '+nice(distanceTo)+' '+instruction(step)[0],'approach-'+stepIndex);voiceStage='approach';
   }
   const finish=route.geometry[route.geometry.length-1];
-  if(meters(point,{lat:finish[1],lon:finish[0]})<25){
+  // An arrival requires two accurate GPS fixes near the end of the *actual*
+  // route. One noisy position never ends a trip.
+  const reached=Number.isFinite(c.accuracy)&&c.accuracy<=35&&
+   meters(point,{lat:finish[1],lon:finish[0]})<25&&left<45;
+  arrivalCount=reached?arrivalCount+1:0;
+  if(reached){
    text('hgProNavDirection','Dotarcie do celu');text('hgProNavTurnDistance','Cel');
    text('hgProNavStreet',route.destination);text('hgProNavNext','Sprawdź dokładne położenie');
    setProgress(100);
+   if(arrivalCount>=2&&!arrivalTimer){
+    speak('Dotarłeś do celu. Kończę prowadzenie.','destination-arrived');
+    // Leave a moment to see the real arrival on screen, then return to Map.
+    arrivalTimer=window.setTimeout?.(()=>{arrivalTimer=null;if(active)stopNavigation();},4500)||null;
+   }
   }
  }
  function syncVoiceButton(){
@@ -206,6 +222,7 @@
  function loadOptions(){
   const pref=window.HealthGoMap4?.getSettings?.()||{};
   voice=!!pref.voice;follow=pref.follow!==false;
+  window.HealthGoNavigationFollow?.setFollowing?.(follow);
   syncVoiceButton();
   const b=node('hgProVoice');if(b){b.textContent=voice?'Głos: włączony':'Głos: wyłączony';b.setAttribute('aria-pressed',String(voice))}
   const f=node('hgProFollow');if(f){f.textContent=follow?'Śledź położenie':'Mapa swobodna';f.setAttribute('aria-pressed',String(follow))}
@@ -220,7 +237,7 @@
   if(active)return true;
   if(!route?.steps?.length){text('mapV2RouteOutput','Nie udało się pobrać skrętów trasy. Wyznacz trasę ponownie.');return false}
   if(!navigator.geolocation){text('mapV2RouteOutput','GPS niedostępny. Możesz użyć podglądu trasy z wpisanego adresu.');return false}
-  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';
+  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';arrivalCount=0;
   setProgress(0);
   const options=node('hgProNavOptions');if(options)options.open=false;
   // During driving show a legible 2D street map instead of Esri satellite
@@ -236,6 +253,8 @@
   node('mapWorkspace')?.classList?.add('map-pro-navigating');
   show('hgProNavigation',true);
   loadOptions();
+  removeArrow();
+  window.HealthGoNavigationFollow?.begin?.({geometry:{coordinates:route.geometry}},{follow});
   // Keep 2D Leaflet guidance lightweight and immediate on iPhone. The
   // optional perspective renderer is not started in 2D guidance.
   window.HealthGoNavigationLive?.stop?.();
@@ -269,8 +288,11 @@
  }
  function stopNavigation(){
   active=false;
+  if(arrivalTimer){window.clearTimeout?.(arrivalTimer);arrivalTimer=null;}
+  arrivalCount=0;
   if(rerouteCtl){rerouteCtl.abort();rerouteCtl=null}rerouting=false;
   window.HealthGoNavigationLive?.stop?.();
+  window.HealthGoNavigationFollow?.stop?.();
   if(watchId!==null)try{navigator.geolocation?.clearWatch?.(watchId)}catch(_){}
   watchId=null;position=null;removeArrow();
   show('hgProNavigation',false);
@@ -296,6 +318,7 @@
   follow=!follow;
   const b=node('hgProFollow');if(b){b.textContent=follow?'Śledź położenie':'Mapa swobodna';b.setAttribute('aria-pressed',String(follow))}
   window.HealthGoMap4?.saveSettings?.({follow});
+  window.HealthGoNavigationFollow?.setFollowing?.(follow);
   return follow;
  }
  function toggleNavigationTheme(){setNight(!night);window.HealthGoMap4?.saveSettings?.({theme:night?'dark':'light'});return night}
