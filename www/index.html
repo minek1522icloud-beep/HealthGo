@@ -6,9 +6,9 @@
 <meta name="healthgo-build" content="development">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>HealthGo</title>
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#061a14">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="HealthGo">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="./manifest.webmanifest">
@@ -343,8 +343,9 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-navigation-screen.css?v=1">
 <link rel="stylesheet" href="./healthgo-drive-ui.css?v=1">
 <link rel="stylesheet" href="./healthgo-navigation-live.css?v=1">
+<link rel="stylesheet" href="./healthgo-emerald-2.css?v=1">
 </head>
-<body style="background:#07111f">
+<body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
   <div class="splash-glow"></div>
   <div class="splash-content">
@@ -2510,7 +2511,7 @@ function renderManualActivityLog(){
 function toggleDark(){
  const dark=document.body.dataset.dark==='1';document.body.dataset.dark=dark?'0':'1';localStorage.setItem('healthgo_dark',dark?'0':'1');
 }
-try{document.body.dataset.dark=localStorage.getItem('healthgo_dark')==='1'?'1':'0'}catch(_){}
+try{document.body.dataset.dark=localStorage.getItem('healthgo_dark')==='0'?'0':'1'}catch(_){}
 
 let tutStep=0, tutActive=false, tutCleanup=null, tutTimer=null;
 const tut=[
@@ -2906,5 +2907,6 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-navigation-live.js?v=1"></script>
 <script src="./healthgo-map-pro.js?v=5"></script>
 <script src="./healthgo-map4.js?v=2"></script>
+<script src="./healthgo-emerald-dashboard.js?v=1"></script>
 </body>
 </html>

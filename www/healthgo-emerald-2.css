@@ -1,0 +1,329 @@
+/* HealthGo 2.0 — Emerald design system.
+ * UI-only stylesheet: do not replace application logic, GPS, health or AI data.
+ * Loaded last to coexist with existing components and fullscreen guidance.
+ */
+body.hg-emerald {
+  --emerald-bg:#061a14;--emerald-panel:#10271e;--emerald-panel-2:#123429;
+  --emerald-soft:#193b30;--emerald-border:#275044;
+  --emerald-fg:#f5fbf8;--emerald-muted:#a5c5b8;--emerald-accent:#19dfbc;
+  --emerald-accent-ink:#002e24;
+  --bg:var(--emerald-bg);--card:var(--emerald-panel);
+  --text:var(--emerald-fg);--muted:var(--emerald-muted);
+  --primary:var(--emerald-accent);--primary2:#26cba9;
+  --border:var(--emerald-border);--green:var(--emerald-accent);
+  --soft:var(--emerald-soft);--sidebar:#071e17;--hover:#1c4436;
+  --shadow:0 13px 30px rgba(0,0,0,.22);
+  background:var(--emerald-bg)!important;color:var(--emerald-fg);
+  color-scheme:dark;
+}
+body.hg-emerald[data-dark="0"] {
+  --emerald-bg:#eaf5ef;--emerald-panel:#ffffff;--emerald-panel-2:#f4fbf6;
+  --emerald-soft:#e1f2e9;--emerald-border:#c6e5d6;
+  --emerald-fg:#123427;--emerald-muted:#49695a;--emerald-accent:#078a71;
+  --emerald-accent-ink:#ffffff;
+  --sidebar:#e9f5ee;--hover:#d6ebdf;
+  --shadow:0 10px 26px rgba(9,67,47,.10);
+  color-scheme:light;
+}
+body.hg-emerald .app{background:var(--emerald-bg)}
+body.hg-emerald .sidebar{
+  background:linear-gradient(165deg,var(--sidebar),var(--emerald-bg));
+  border-right:1px solid var(--emerald-border);
+}
+body.hg-emerald .logo,body.hg-emerald .logo span{color:var(--emerald-fg)}
+body.hg-emerald .logo span{color:var(--emerald-accent)}
+body.hg-emerald .nav button{color:var(--emerald-muted);transition:background .18s,color .18s}
+body.hg-emerald .nav button:hover,
+body.hg-emerald .nav button.active{background:var(--emerald-panel-2);color:var(--emerald-accent)}
+body.hg-emerald .sidebar-account,
+body.hg-emerald .account-pill,
+body.hg-emerald .profile-mini,
+body.hg-emerald .settings-gear{
+  background:var(--emerald-panel)!important;color:var(--emerald-fg)!important;
+  border:1px solid var(--emerald-border)!important;
+}
+body.hg-emerald .top{background:transparent}
+body.hg-emerald .top h1{letter-spacing:-.025em;font-weight:800}
+body.hg-emerald .card,
+body.hg-emerald .stat,
+body.hg-emerald .hg2-card,
+body.hg-emerald .hg-mobile-card,
+body.hg-emerald .plan-board,
+body.hg-emerald .plan-editor,
+body.hg-emerald .settings-section,
+body.hg-emerald .level-panel,
+body.hg-emerald .challenge-panel,
+body.hg-emerald .pack-summary,
+body.hg-emerald .badge-panel,
+body.hg-emerald .activity-ring-card,
+body.hg-emerald .activity-data-card,
+body.hg-emerald .restaurant,
+body.hg-emerald .challenge,
+body.hg-emerald .game,
+body.hg-emerald .food {
+  background:var(--emerald-panel)!important;
+  color:var(--emerald-fg)!important;
+  border:1px solid var(--emerald-border)!important;
+  border-radius:22px!important;
+  box-shadow:var(--shadow);
+}
+body.hg-emerald .hero,
+body.hg-emerald .dashboard-hero,
+body.hg-emerald .ai-hero{
+  color:var(--emerald-fg);
+  border:1px solid var(--emerald-border);
+  background:radial-gradient(circle at 94% 0%,rgba(25,223,188,.20),transparent 49%),
+             linear-gradient(120deg,var(--emerald-panel-2),var(--emerald-bg))!important;
+  box-shadow:var(--shadow);
+  border-radius:25px;
+}
+body.hg-emerald .dashboard-hero h2{font-size:clamp(25px,3vw,36px);font-weight:850}
+body.hg-emerald .dashboard-hero p,
+body.hg-emerald .hero p,
+body.hg-emerald .ai-hero p{color:var(--emerald-muted)}
+body.hg-emerald .muted,
+body.hg-emerald .stat-label,
+body.hg-emerald .hg2-meta,
+body.hg-emerald .hg2-note,
+body.hg-emerald .plan-board-title p,
+body.hg-emerald .activity-source{color:var(--emerald-muted)!important}
+body.hg-emerald .stat-value,
+body.hg-emerald .level-number,
+body.hg-emerald .hg-mobile-kpi{color:var(--emerald-fg)}
+body.hg-emerald .stat-icon,
+body.hg-emerald .hg2-stat,
+body.hg-emerald .hg2-icon,
+body.hg-emerald .hg-mobile-status,
+body.hg-emerald .hg-mobile-toggle-row,
+body.hg-emerald .tag,
+body.hg-emerald .date-pill,
+body.hg-emerald .quick,
+body.hg-emerald .plan-item,
+body.hg-emerald .activity-metric,
+body.hg-emerald .hg2-family-role-card{
+  background:var(--emerald-panel-2)!important;
+  color:var(--emerald-fg)!important;
+  border:1px solid var(--emerald-border)!important;
+  border-radius:16px;
+}
+body.hg-emerald .date-pill{border-radius:999px}
+body.hg-emerald .stat-icon{font-size:24px}
+body.hg-emerald .quick:hover,
+body.hg-emerald .nav button:hover{filter:brightness(1.12)}
+body.hg-emerald .btn,
+body.hg-emerald .map-bar-btn.primary,
+body.hg-emerald .auth-main-btn,
+body.hg-emerald .auth-create-btn,
+body.hg-emerald .install-primary{
+  color:var(--emerald-accent-ink)!important;
+  background:var(--emerald-accent)!important;
+  border:1px solid transparent;
+  border-radius:14px;
+  font-weight:750;
+}
+body.hg-emerald .btn.secondary,
+body.hg-emerald .btn.gray,
+body.hg-emerald .hg-mobile-actions button.secondary,
+body.hg-emerald .plan-icon-btn,
+body.hg-emerald .ai-welcome-suggestions button{
+  color:var(--emerald-fg)!important;
+  background:var(--emerald-panel-2)!important;
+  border:1px solid var(--emerald-border)!important;
+}
+body.hg-emerald button:focus-visible,
+body.hg-emerald a:focus-visible,
+body.hg-emerald input:focus-visible,
+body.hg-emerald textarea:focus-visible{
+  outline:3px solid var(--emerald-accent)!important;outline-offset:2px;
+}
+body.hg-emerald input,
+body.hg-emerald textarea,
+body.hg-emerald select {
+  background:var(--emerald-panel-2)!important;
+  border-color:var(--emerald-border)!important;
+  color:var(--emerald-fg)!important;
+}
+body.hg-emerald input::placeholder,
+body.hg-emerald textarea::placeholder{color:var(--emerald-muted)}
+body.hg-emerald .progress,
+body.hg-emerald .xp-track,
+body.hg-emerald .hg2-progress{background:var(--emerald-soft)!important}
+body.hg-emerald .progress>div,
+body.hg-emerald .xp-track>div,
+body.hg-emerald .hg2-progress>span{background:var(--emerald-accent)!important;color:var(--emerald-accent)!important}
+body.hg-emerald .health-note,
+body.hg-emerald .device-health-note,
+body.hg-emerald .settings-note{
+  background:var(--emerald-panel-2)!important;
+  color:var(--emerald-muted)!important;
+  border:1px solid var(--emerald-border)!important;
+}
+body.hg-emerald .mobile-nav{
+  background:color-mix(in srgb,var(--emerald-bg) 90%,transparent)!important;
+  border:1px solid var(--emerald-border);
+  box-shadow:0 -8px 38px rgba(0,0,0,.27);
+  backdrop-filter:blur(16px);
+}
+body.hg-emerald .mobile-nav button{color:var(--emerald-muted)}
+body.hg-emerald .mobile-nav button.active{color:var(--emerald-accent)!important;background:var(--emerald-panel-2)!important}
+body.hg-emerald .mobile-nav button.active svg{color:var(--emerald-accent)}
+body.hg-emerald .mobile-more-sheet,
+body.hg-emerald .modalbox,
+body.hg-emerald .hg2-dialog,
+body.hg-emerald .badge-award-card{
+  background:var(--emerald-panel)!important;
+  color:var(--emerald-fg)!important;
+  border:1px solid var(--emerald-border);
+}
+body.hg-emerald .mobile-more-sheet button{color:var(--emerald-fg)!important}
+body.hg-emerald .ai-workspace,
+body.hg-emerald #ai .ai-workspace,
+body.hg-emerald #ai .ai-chat-panel,
+body.hg-emerald #ai .ai-tools,
+body.hg-emerald #ai .ai-messages,
+body.hg-emerald #ai .ai-chat-top,
+body.hg-emerald #ai .ai-topic-bar,
+body.hg-emerald #ai .ai-composer{
+  background:var(--emerald-panel)!important;color:var(--emerald-fg)!important;
+  border-color:var(--emerald-border)!important;
+}
+body.hg-emerald #ai .ai-chat-panel{background:var(--emerald-bg)!important}
+body.hg-emerald #ai .ai-tools{background:var(--emerald-panel-2)!important}
+body.hg-emerald #ai .ai-new,
+body.hg-emerald #ai .ai-history-item,
+body.hg-emerald #ai .ai-topic,
+body.hg-emerald #ai .ai-response-mode,
+body.hg-emerald #ai .ai-welcome-suggestions button{
+  background:var(--emerald-panel-2)!important;color:var(--emerald-fg)!important;
+  border-color:var(--emerald-border)!important;
+}
+body.hg-emerald #ai .ai-topic.active,
+body.hg-emerald #ai .ai-response-mode.active,
+body.hg-emerald #ai .ai-history-item.active{
+  background:var(--emerald-soft)!important;
+  color:var(--emerald-accent)!important;
+  border-color:var(--emerald-accent)!important;
+}
+body.hg-emerald #ai .ai-welcome,
+body.hg-emerald #ai .ai-welcome h2,
+body.hg-emerald #ai .ai-bubble,
+body.hg-emerald #ai .ai-chat-top b{color:var(--emerald-fg)!important}
+body.hg-emerald #ai .ai-welcome p,
+body.hg-emerald #ai .ai-footnote,
+body.hg-emerald #ai .ai-chat-top span{color:var(--emerald-muted)!important}
+body.hg-emerald #ai .ai-bubble{background:transparent!important}
+body.hg-emerald #ai .ai-msg.user .ai-bubble{
+  background:var(--emerald-panel-2)!important;
+  color:var(--emerald-fg)!important;
+  border-radius:20px!important;
+  padding:11px 16px!important;
+}
+body.hg-emerald #ai .ai-composer{border-radius:24px!important;box-shadow:var(--shadow)!important}
+body.hg-emerald #ai .ai-send{
+  background:var(--emerald-accent)!important;
+  color:var(--emerald-accent-ink)!important;
+}
+body.hg-emerald #ai .ai-send:after{color:var(--emerald-accent-ink)!important}
+body.hg-emerald .ai-chat-actions button{color:var(--emerald-muted)!important}
+body.hg-emerald .settings-menu button{color:var(--emerald-fg)}
+body.hg-emerald .settings-menu button:hover{background:var(--emerald-panel-2)}
+body.hg-emerald .map-toolbar,
+body.hg-emerald .map-v2-banner,
+body.hg-emerald .map-v2-actions,
+body.hg-emerald .map-toolbar-row{
+  color:var(--emerald-fg);
+  border-color:var(--emerald-border);
+}
+body.hg-emerald .map-bar-btn,
+body.hg-emerald .map-category,
+body.hg-emerald .map-v2-actions button{
+  background:var(--emerald-panel-2)!important;
+  color:var(--emerald-fg)!important;
+  border:1px solid var(--emerald-border)!important;
+}
+body.hg-emerald .map-category.active,
+body.hg-emerald .map-v2-actions button.active{
+  background:var(--emerald-accent)!important;color:var(--emerald-accent-ink)!important;
+}
+/* Never force dark styling onto map tiles or live fullscreen route guidance. */
+body.hg-emerald #healthgoMap,
+body.hg-emerald #hgNavigationPerspective{filter:none}
+body.hg-emerald .hg2-family-main{
+  background:linear-gradient(135deg,var(--emerald-panel-2),var(--emerald-bg))!important;
+  border:1px solid var(--emerald-border);
+}
+body.hg-emerald .hg2-family-main p{color:var(--emerald-muted)}
+body.hg-emerald .auth-screen{
+  background:radial-gradient(circle at 20% 10%,rgba(25,223,188,.16),transparent 35%),
+  linear-gradient(145deg,var(--emerald-bg),var(--emerald-panel-2))!important;
+}
+body.hg-emerald .auth-panel,
+body.hg-emerald .auth-shell,
+body.hg-emerald .account-setup-card,
+body.hg-emerald .hg-location-card{border-color:var(--emerald-border)}
+body.hg-emerald .splash-screen{
+  background:radial-gradient(circle at 50% 35%,#136955 0%,#0a352a 32%,#061a14 73%,#04110e 100%)!important;
+}
+body.hg-emerald .splash-title span{color:var(--emerald-accent)}
+body.hg-emerald .splash-loader:after{background:var(--emerald-accent)}
+body.hg-emerald .splash-glow{background:rgba(25,223,188,.22)}
+body.hg-emerald .hg-emerald-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:0 0 16px}
+body.hg-emerald .hg-emerald-day{
+  text-align:center;border-radius:25px;padding:10px 2px;
+  background:var(--emerald-panel-2);border:1px solid var(--emerald-border);
+  display:flex;align-items:center;flex-direction:column;gap:7px;
+}
+body.hg-emerald .hg-emerald-day span{font-size:11px;color:var(--emerald-muted)}
+body.hg-emerald .hg-emerald-day strong{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;font-size:12px}
+body.hg-emerald .hg-emerald-day[aria-current="date"] strong{
+  color:var(--emerald-accent-ink);background:var(--emerald-accent);
+}
+body.hg-emerald .hg-emerald-dash{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px;
+}
+body.hg-emerald .hg-emerald-dash-card{
+  padding:19px;background:var(--emerald-panel);border:1px solid var(--emerald-border);
+  border-radius:22px;min-width:0;display:flex;flex-direction:column;gap:9px;
+}
+body.hg-emerald .hg-emerald-dash-card h3{margin:0;font-size:14px}
+body.hg-emerald .hg-emerald-dash-value{font-size:27px;font-weight:850;letter-spacing:-.04em;color:var(--emerald-accent)}
+body.hg-emerald .hg-emerald-dash-card p{color:var(--emerald-muted);font-size:12px;line-height:1.5;margin:0}
+body.hg-emerald .hg-emerald-dash-card button{
+  border:1px solid var(--emerald-border);border-radius:12px;
+  background:var(--emerald-panel-2);color:var(--emerald-accent);
+  padding:10px;text-align:center;font-weight:750;margin-top:auto;
+}
+body.hg-emerald .hg-emerald-dash-card button:active{transform:scale(.98)}
+body.hg-emerald .hg2-empty,body.hg-emerald .hg2-note{color:var(--emerald-muted)}
+@media(max-width:900px){
+  body.hg-emerald .main{padding-bottom:calc(98px + env(safe-area-inset-bottom))}
+  body.hg-emerald .mobile-nav{
+    bottom:calc(9px + env(safe-area-inset-bottom));
+    left:10px;right:10px;width:auto;
+    border-radius:24px;padding:8px 7px;
+  }
+  body.hg-emerald .mobile-nav button{border-radius:18px;min-height:54px}
+  body.hg-emerald .hg-emerald-dash{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.hg-emerald .hg-emerald-dash-card:last-child{grid-column:1/-1}
+}
+@media(max-width:520px){
+  body.hg-emerald .main{padding:12px 12px calc(112px + env(safe-area-inset-bottom))}
+  body.hg-emerald .dashboard-hero{padding:19px}
+  body.hg-emerald .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  body.hg-emerald .stat{padding:15px!important;min-height:129px}
+  body.hg-emerald .stat-value{font-size:clamp(17px,5vw,27px);overflow-wrap:anywhere}
+  body.hg-emerald .hg-emerald-dash{gap:10px}
+  body.hg-emerald .hg-emerald-dash-card{padding:14px}
+  body.hg-emerald .hg-emerald-day{padding:8px 1px}
+}
+@media(max-width:370px){
+  body.hg-emerald .hg-emerald-week{gap:3px}
+  body.hg-emerald .hg-emerald-day strong{width:26px;height:26px}
+  body.hg-emerald .hg-emerald-dash{grid-template-columns:1fr}
+  body.hg-emerald .hg-emerald-dash-card:last-child{grid-column:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  body.hg-emerald *,body.hg-emerald *:before,body.hg-emerald *:after{
+    animation-duration:.01ms!important;transition-duration:.01ms!important;
+  }
+}

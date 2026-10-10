@@ -5,7 +5,7 @@ if(!Services)return;
 
 const DEFAULTS={
  version:1,
- theme:'system',
+ theme:'dark',
  compact:false,
  goals:{movement:true,sleepRoutine:true,screenBreaks:true},
  notifications:{activity:true,sleep:true,family:true,device:true,weekly:true},
