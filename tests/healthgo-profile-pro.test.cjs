@@ -52,7 +52,7 @@ test('profile script mounts the actual avatar menu and preserves account scope',
  assert.match(x.avatars.topAvatar.innerHTML,/<svg/);
  x.window.HealthGoProfile.open('me');
  assert.ok(x.dialog);
- assert.match(x.dialog.innerHTML,/HEALTHGO PROFILE/);
+ assert.match(x.dialog.innerHTML,/HEALTHGO COLLECTOR PROFILE/);
  assert.match(x.dialog.innerHTML,/Moja kolekcja/);
  assert.match(x.dialog.innerHTML,/Edytuj profil/);
  await Promise.resolve();await Promise.resolve();
