@@ -34,7 +34,7 @@
  }
  function showLayer(on){
   const box=$('hgNavigationPerspective');
-  if(box)box.hidden=!on;
+  if(box){box.hidden=!on;box.classList?.toggle?.('hg-live-loading',false)}
   document.body?.classList?.toggle?.('hg-live-perspective',!!on);
  }
  function stop(){
@@ -80,12 +80,12 @@
    if(!active||token!==generation)return false;
    const container=$('hgNavigationPerspective');
    if(!container)return false;
-   container.hidden=false;
+   container.hidden=false;container.classList?.add?.('hg-live-loading');
    gl=new lib.Map({
     container,style:colorStyle,center:[point.lon,point.lat],zoom:16.5,
     pitch:52,bearing:Number.isFinite(heading)?heading:0,
     attributionControl:true,interactive:false,antialias:false,
-    maxZoom:19,minZoom:3,fadeDuration:0,pixelRatio:1
+    maxZoom:19,minZoom:3,fadeDuration:0
    });
    gl.on('load',()=>{
     if(!active||token!==generation||!gl)return;
