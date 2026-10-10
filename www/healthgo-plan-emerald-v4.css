@@ -1,0 +1,390 @@
+/* HealthGo PLAN 4 — consistent Emerald design, responsive to iPhone safe areas.
+ * Only the #plan page is affected. No changes to other application modules.
+ */
+body.hg-emerald #plan{
+ --hgp-bg:var(--emerald-bg);--hgp-panel:var(--emerald-panel);
+ --hgp-panel-2:var(--emerald-panel-2);--hgp-soft:var(--emerald-soft);
+ --hgp-text:var(--emerald-fg);--hgp-muted:var(--emerald-muted);
+ --hgp-border:var(--emerald-border);--hgp-accent:var(--emerald-accent);
+ --hgp-on-accent:var(--emerald-accent-ink);
+ color:var(--hgp-text);min-width:0;padding-bottom:24px;
+}
+body.hg-emerald #plan,body.hg-emerald #plan *{box-sizing:border-box}
+body.hg-emerald #plan .hero{
+ background:radial-gradient(ellipse at 78% 24%,rgba(27,229,179,.18),transparent 46%),
+   linear-gradient(125deg,#093a2c,#071f17 78%)!important;
+ border:1px solid #276d54!important;border-radius:25px!important;
+ padding:25px 27px!important;box-shadow:0 16px 34px #001c1254!important;
+ color:#f1fff9!important;
+}
+body.hg-emerald #plan .hero h2{font-size:clamp(24px,3vw,31px)!important;letter-spacing:-.04em}
+body.hg-emerald #plan .hero p{color:#b0ead2!important;line-height:1.55}
+body.hg-emerald #plan .hgp-heading-label{
+ display:inline-flex;align-items:center;gap:7px;
+ text-transform:uppercase;letter-spacing:.17em;font-size:10px;
+ font-weight:850;color:#3defc0;margin-bottom:10px;
+}
+body.hg-emerald #plan .hgp-overview{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:12px;margin-bottom:16px;
+}
+body.hg-emerald #plan .hgp-stat{
+ border:1px solid var(--hgp-border)!important;border-radius:19px;
+ padding:16px;background:linear-gradient(155deg,var(--hgp-panel-2),var(--hgp-panel))!important;
+ display:flex;flex-direction:column;gap:8px;min-width:0;
+ box-shadow:0 8px 20px rgba(0,24,17,.13);
+}
+body.hg-emerald #plan .hgp-stat-label{
+ display:flex;align-items:center;gap:6px;min-width:0;
+ color:var(--hgp-muted);font-size:12px;font-weight:700;
+}
+body.hg-emerald #plan .hgp-stat-value{
+ display:block;color:var(--hgp-text);font-weight:900;
+ font-size:clamp(20px,3vw,28px);letter-spacing:-.06em;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+body.hg-emerald #plan .hgp-stat-value.highlight{color:var(--hgp-accent)}
+body.hg-emerald #plan .hgp-stat-note{
+ display:block;font-size:11px;line-height:1.4;color:var(--hgp-muted);
+}
+body.hg-emerald #plan .plan-shell{
+ display:grid;grid-template-columns:minmax(0,1.55fr) minmax(305px,.85fr);
+ align-items:start;gap:15px;
+}
+body.hg-emerald #plan .plan-board,
+body.hg-emerald #plan .plan-editor{
+ border:1px solid var(--hgp-border)!important;
+ color:var(--hgp-text)!important;background:var(--hgp-panel)!important;
+ border-radius:23px!important;
+ box-shadow:0 14px 32px rgba(0,28,18,.16)!important;min-width:0;
+}
+body.hg-emerald #plan .plan-board{overflow:hidden}
+body.hg-emerald #plan .plan-board-head{
+ background:linear-gradient(150deg,var(--hgp-panel-2),var(--hgp-panel));
+ border-bottom:1px solid var(--hgp-border)!important;padding:21px!important;
+}
+body.hg-emerald #plan .plan-board-title{min-width:0}
+body.hg-emerald #plan .plan-board-title h2{
+ color:var(--hgp-text)!important;font-size:20px!important;
+ line-height:1.2;letter-spacing:-.035em;
+}
+body.hg-emerald #plan .plan-board-title p{color:var(--hgp-muted)!important;line-height:1.45}
+body.hg-emerald #plan .plan-day-control input{
+ min-height:43px;padding:8px 11px!important;max-width:210px;
+ background:var(--hgp-panel-2)!important;color:var(--hgp-text)!important;
+ border:1px solid var(--hgp-border)!important;border-radius:12px!important;
+ color-scheme:dark;
+}
+body.hg-emerald[data-dark="0"] #plan .plan-day-control input{color-scheme:light}
+body.hg-emerald #plan .hgp-calendar-bar{
+ padding:14px 16px 11px;border-bottom:1px solid var(--hgp-border);
+}
+body.hg-emerald #plan .hgp-view-top{
+ display:flex;align-items:center;justify-content:space-between;gap:9px;
+ margin-bottom:12px;flex-wrap:wrap;
+}
+body.hg-emerald #plan .hgp-calendar-label{
+ color:var(--hgp-text);font-size:12px;font-weight:850;
+}
+body.hg-emerald #plan .hgp-view-switch{
+ display:inline-flex;gap:4px;padding:3px;
+ border:1px solid var(--hgp-border);border-radius:12px;
+ background:var(--hgp-panel-2);
+}
+body.hg-emerald #plan .hgp-view-switch button{
+ padding:8px 11px;border-radius:9px;
+ background:transparent;color:var(--hgp-muted);font-size:12px;font-weight:800;
+}
+body.hg-emerald #plan .hgp-view-switch button[aria-pressed="true"]{
+ background:var(--hgp-accent)!important;color:var(--hgp-on-accent)!important;
+}
+body.hg-emerald #plan .hgp-week-strip{
+ display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;
+}
+body.hg-emerald #plan .hgp-day-tile,
+body.hg-emerald #plan .hgp-month-day{
+ border:1px solid var(--hgp-border)!important;border-radius:13px;
+ color:var(--hgp-text)!important;background:var(--hgp-panel-2)!important;
+ min-width:0;padding:10px 2px!important;
+ display:flex;flex-direction:column;align-items:center;gap:6px;
+ font-weight:700;
+}
+body.hg-emerald #plan .hgp-day-tile:hover,
+body.hg-emerald #plan .hgp-month-day:hover{border-color:var(--hgp-accent)!important}
+body.hg-emerald #plan .hgp-day-tile[aria-current="date"],
+body.hg-emerald #plan .hgp-month-day[aria-current="date"]{
+ background:var(--hgp-accent)!important;color:var(--hgp-on-accent)!important;
+ border-color:var(--hgp-accent)!important;
+}
+body.hg-emerald #plan .hgp-day-tile .day-name{font-size:10px;opacity:.72;text-transform:uppercase}
+body.hg-emerald #plan .hgp-day-tile .day-num{font-size:17px;font-weight:900}
+body.hg-emerald #plan .hgp-dots{
+ display:flex;align-items:center;justify-content:center;gap:3px;min-height:5px;
+}
+body.hg-emerald #plan .hgp-dots span{
+ display:block;width:5px;height:5px;border-radius:50%;
+ background:var(--hgp-accent);opacity:.8;
+}
+body.hg-emerald #plan [aria-current="date"] .hgp-dots span{background:var(--hgp-on-accent)}
+body.hg-emerald #plan .hgp-month-grid{
+ display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;
+}
+body.hg-emerald #plan .hgp-month-heading{
+ text-align:center;font-size:10px;color:var(--hgp-muted);
+ padding:5px 0;font-weight:800;
+}
+body.hg-emerald #plan .hgp-month-day{
+ min-height:55px;font-size:13px;justify-content:center;
+}
+body.hg-emerald #plan .hgp-month-day.outside{
+ color:var(--hgp-muted)!important;opacity:.5;
+}
+body.hg-emerald #plan .hgp-section-note{
+ color:var(--hgp-muted);font-size:11px;margin:10px 0 0;line-height:1.45;
+}
+body.hg-emerald #plan .plan-toolbar{
+ display:flex;align-items:center;gap:7px;padding:12px 14px!important;
+ background:var(--hgp-panel)!important;
+ border-color:var(--hgp-border)!important;
+}
+body.hg-emerald #plan .plan-toolbar button,
+body.hg-emerald #plan .hgp-actions button,
+body.hg-emerald #plan .hgp-quick button,
+body.hg-emerald #plan .hgp-editor-tools button,
+body.hg-emerald #plan .hgp-skipped button{
+ background:var(--hgp-panel-2)!important;color:var(--hgp-text)!important;
+ border:1px solid var(--hgp-border)!important;border-radius:12px!important;
+ font-weight:750;min-height:39px;padding:9px 11px;
+ font-size:12px;
+}
+body.hg-emerald #plan .plan-toolbar button:hover,
+body.hg-emerald #plan .hgp-actions button:hover,
+body.hg-emerald #plan .hgp-quick button:hover,
+body.hg-emerald #plan .hgp-editor-tools button:hover{
+ border-color:var(--hgp-accent)!important;
+}
+body.hg-emerald #plan .plan-toolbar button.hgp-primary,
+body.hg-emerald #plan .hgp-add-now,
+body.hg-emerald #plan .plan-editor-actions .btn{
+ background:var(--hgp-accent)!important;color:var(--hgp-on-accent)!important;
+ border:1px solid var(--hgp-accent)!important;border-radius:13px!important;
+ font-weight:850;
+}
+body.hg-emerald #plan .plan-editor-actions .btn.gray{
+ background:var(--hgp-panel-2)!important;color:var(--hgp-text)!important;
+ border:1px solid var(--hgp-border)!important;
+}
+body.hg-emerald #plan .plan-search,
+body.hg-emerald #plan .hgp-filters select,
+body.hg-emerald #plan .plan-field input,
+body.hg-emerald #plan .plan-field select,
+body.hg-emerald #plan .plan-field textarea{
+ background:var(--hgp-panel-2)!important;color:var(--hgp-text)!important;
+ border:1px solid var(--hgp-border)!important;border-radius:12px!important;
+ box-shadow:none!important;font-family:inherit;
+}
+body.hg-emerald #plan input::placeholder,
+body.hg-emerald #plan textarea::placeholder{color:var(--hgp-muted)!important;opacity:.8}
+body.hg-emerald #plan .hgp-filters{
+ display:flex;gap:8px;padding:8px 14px 13px;
+ border-bottom:1px solid var(--hgp-border);
+}
+body.hg-emerald #plan .hgp-filters label{min-width:0;flex:1;font-size:11px;font-weight:750;color:var(--hgp-muted)}
+body.hg-emerald #plan .hgp-filters select{width:100%;min-width:0;min-height:38px;padding:6px 8px!important;margin:4px 0 0!important;font-size:12px}
+body.hg-emerald #plan .plan-search{
+ flex:1 1 150px;min-height:40px!important;
+}
+body.hg-emerald #plan .plan-progress{
+ display:flex;flex-direction:row;align-items:center;gap:12px;
+ padding:13px 15px!important;border-color:var(--hgp-border)!important;
+ color:var(--hgp-muted)!important;
+}
+body.hg-emerald #plan .plan-progress-track{
+ background:var(--hgp-soft)!important;height:8px!important;
+}
+body.hg-emerald #plan #planProgressBar{
+ background:linear-gradient(90deg,#0faa87,#37f8c4)!important;
+}
+body.hg-emerald #plan .hgp-now{
+ margin:13px 15px 0;padding:13px 15px;
+ display:flex;flex-wrap:wrap;align-items:center;gap:7px;
+ background:var(--hgp-panel-2);border:1px solid var(--hgp-border);
+ border-radius:15px;color:var(--hgp-muted);font-size:12px;
+}
+body.hg-emerald #plan .hgp-now strong{color:var(--hgp-accent);font-size:12px}
+body.hg-emerald #plan .hgp-now .hgp-warning{color:#ffd294}
+body.hg-emerald #plan .plan-copy-status{
+ color:var(--hgp-muted)!important;line-height:1.5;padding-top:8px!important;
+}
+body.hg-emerald #plan .plan-list{
+ display:grid;gap:10px;padding:14px!important;
+}
+body.hg-emerald #plan .plan-item{
+ display:grid;grid-template-columns:76px minmax(0,1fr) auto;gap:12px;
+ align-items:center;padding:15px!important;border-radius:17px!important;
+ border:1px solid var(--hgp-border)!important;
+ background:var(--hgp-panel-2)!important;min-width:0;
+ position:relative;
+}
+body.hg-emerald #plan .plan-item::before{
+ content:"";position:absolute;width:4px;top:18px;bottom:18px;left:0;
+ border-radius:0 5px 5px 0;background:var(--hgp-accent);
+}
+body.hg-emerald #plan .plan-item.done{opacity:.75}
+body.hg-emerald #plan .plan-item.done::before{background:var(--hgp-muted)}
+body.hg-emerald #plan .plan-item.hgp-conflict{
+ border-color:#c69a5c!important;
+}
+body.hg-emerald #plan .plan-item.hgp-active{
+ background:linear-gradient(145deg,var(--hgp-soft),var(--hgp-panel-2))!important;
+ border-color:var(--hgp-accent)!important;
+}
+body.hg-emerald #plan .plan-item-time{
+ color:var(--hgp-accent)!important;font-size:18px!important;
+}
+body.hg-emerald #plan .plan-item-end{color:var(--hgp-muted)!important}
+body.hg-emerald #plan .plan-item-main{min-width:0}
+body.hg-emerald #plan .plan-item-main b{
+ color:var(--hgp-text)!important;overflow-wrap:anywhere;
+}
+body.hg-emerald #plan .plan-item-main p,
+body.hg-emerald #plan .plan-item-place{
+ color:var(--hgp-muted)!important;overflow-wrap:anywhere;
+}
+body.hg-emerald #plan .plan-meta{gap:6px}
+body.hg-emerald #plan .plan-chip{
+ background:var(--hgp-soft)!important;color:var(--hgp-muted)!important;
+ border:1px solid var(--hgp-border);padding:5px 8px!important;
+}
+body.hg-emerald #plan .plan-chip.high{border-color:#9c6464!important;color:#ffb3b1!important}
+body.hg-emerald #plan .plan-chip.medium{border-color:#9d8658!important;color:#ffd291!important}
+body.hg-emerald #plan .plan-chip.low{border-color:#447d62!important;color:#b5edc9!important}
+body.hg-emerald #plan .plan-chip.hgp-warning-chip{color:#ffd291!important;border-color:#9d8658!important}
+body.hg-emerald #plan .plan-item-actions{display:flex;flex-wrap:wrap;gap:5px}
+body.hg-emerald #plan .plan-icon-btn{
+ width:37px;height:38px;flex:0 0 37px;display:grid;place-items:center;
+ background:var(--hgp-soft)!important;color:var(--hgp-text)!important;
+ border:1px solid var(--hgp-border)!important;border-radius:11px!important;
+ font-size:15px;
+}
+body.hg-emerald #plan .plan-icon-btn:hover{border-color:var(--hgp-accent)!important}
+body.hg-emerald #plan .plan-icon-btn.danger{color:#ffaca9!important;background:var(--hgp-soft)!important}
+body.hg-emerald #plan .plan-done-btn{
+ background:var(--hgp-soft)!important;color:#afffe3!important;
+}
+body.hg-emerald #plan .plan-item.done .plan-done-btn{
+ color:#c3f5e2!important;background:#285043!important;
+}
+body.hg-emerald #plan .plan-empty{
+ background:var(--hgp-panel-2)!important;border-radius:18px;
+ border:1px dashed var(--hgp-border);padding:55px 15px!important;
+}
+body.hg-emerald #plan .plan-empty b{color:var(--hgp-text)!important}
+body.hg-emerald #plan .hgp-skipped{margin:0 14px 13px;display:grid;gap:8px}
+body.hg-emerald #plan .hgp-skipped:empty{display:none}
+body.hg-emerald #plan .hgp-skipped-item{
+ display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;
+ align-items:center;padding:11px 13px;border:1px dashed var(--hgp-border);
+ border-radius:14px;font-size:12px;color:var(--hgp-muted);
+}
+body.hg-emerald #plan .plan-editor{
+ padding:20px!important;position:sticky;top:12px!important;
+}
+body.hg-emerald #plan .plan-editor h3{color:var(--hgp-text)!important}
+body.hg-emerald #plan .plan-editor>p{color:var(--hgp-muted)!important}
+body.hg-emerald #plan .plan-field label{
+ color:var(--hgp-muted)!important;font-weight:800;
+}
+body.hg-emerald #plan .plan-field input,
+body.hg-emerald #plan .plan-field select{
+ min-height:44px;padding:9px 11px!important;
+}
+body.hg-emerald #plan .plan-field textarea{
+ padding:12px!important;min-height:75px!important;
+}
+body.hg-emerald #plan .hgp-quick{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:8px;margin:4px 0 19px;
+}
+body.hg-emerald #plan .hgp-quick button{text-align:left!important;min-height:47px!important}
+body.hg-emerald #plan .hgp-quick small{
+ display:block;color:var(--hgp-muted);margin-top:4px;font-size:10px;
+}
+body.hg-emerald #plan .hgp-editor-tools{
+ margin-top:16px;padding-top:15px;border-top:1px solid var(--hgp-border);
+ display:grid;gap:10px;
+}
+body.hg-emerald #plan .hgp-actions{display:flex;flex-wrap:wrap;gap:7px}
+body.hg-emerald #plan .hgp-editor-tools h4{margin:0;color:var(--hgp-text);font-size:13px}
+body.hg-emerald #plan .hgp-small{
+ margin:0!important;font-size:11px!important;line-height:1.55!important;color:var(--hgp-muted)!important;
+}
+body.hg-emerald #plan #planEditorStatus{
+ line-height:1.5;color:var(--hgp-muted)!important;
+}
+body.hg-emerald #plan .hgp-status{font-size:12px;line-height:1.55;min-height:14px;color:var(--hgp-muted)}
+body.hg-emerald #plan .hgp-status.error{color:#ffb6a8}
+body.hg-emerald #plan .hgp-status.good{color:#a6f4d2}
+body.hg-emerald #plan .hgp-hidden-upload{display:none!important}
+body.hg-emerald #plan :is(button,input,select,textarea):focus-visible{
+ outline:2px solid var(--hgp-accent)!important;outline-offset:2px!important;
+}
+@media(max-width:1200px){
+ body.hg-emerald #plan .plan-shell{grid-template-columns:minmax(0,1fr) 315px}
+ body.hg-emerald #plan .plan-item{grid-template-columns:68px minmax(0,1fr)}
+ body.hg-emerald #plan .plan-item-actions{grid-column:2;justify-content:flex-start}
+}
+@media(max-width:950px){
+ body.hg-emerald #plan .plan-shell{grid-template-columns:minmax(0,1fr)}
+ body.hg-emerald #plan .plan-editor{position:static!important}
+}
+@media(max-width:650px){
+ body.hg-emerald #plan{padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+ body.hg-emerald #plan .hero{padding:21px 18px!important;border-radius:21px!important}
+ body.hg-emerald #plan .hgp-overview{gap:7px}
+ body.hg-emerald #plan .hgp-stat{padding:11px!important;gap:6px;border-radius:15px}
+ body.hg-emerald #plan .hgp-stat-label{font-size:10px}
+ body.hg-emerald #plan .hgp-stat-value{font-size:clamp(17px,5vw,23px)}
+ body.hg-emerald #plan .hgp-stat-note{font-size:10px}
+ body.hg-emerald #plan .plan-board-head{padding:16px!important;gap:13px}
+ body.hg-emerald #plan .plan-board-title h2{font-size:18px!important}
+ body.hg-emerald #plan .plan-day-control{width:100%}
+ body.hg-emerald #plan .plan-day-control input{width:100%;max-width:none!important}
+ body.hg-emerald #plan .hgp-calendar-bar{padding:12px}
+ body.hg-emerald #plan .hgp-week-strip{gap:4px}
+ body.hg-emerald #plan .hgp-day-tile{min-height:69px;border-radius:10px;padding:9px 2px!important}
+ body.hg-emerald #plan .hgp-day-tile .day-num{font-size:15px}
+ body.hg-emerald #plan .hgp-dots span{width:4px;height:4px}
+ body.hg-emerald #plan .hgp-month-grid{gap:4px}
+ body.hg-emerald #plan .hgp-month-day{min-height:48px;padding:6px 0!important;border-radius:9px}
+ body.hg-emerald #plan .plan-toolbar{padding:11px!important;gap:6px}
+ body.hg-emerald #plan .plan-toolbar button{min-height:40px;font-size:11px}
+ body.hg-emerald #plan .plan-search{flex-basis:100%!important;order:1}
+ body.hg-emerald #plan .hgp-filters{padding:8px 11px 12px;gap:6px}
+ body.hg-emerald #plan .plan-progress{padding:11px!important;align-items:stretch;flex-direction:column}
+ body.hg-emerald #plan .hgp-now{margin:10px 11px 0}
+ body.hg-emerald #plan .plan-list{padding:11px!important}
+ body.hg-emerald #plan .plan-item{
+  grid-template-columns:56px minmax(0,1fr);padding:12px!important;gap:10px;
+ }
+ body.hg-emerald #plan .plan-item-time{font-size:15px!important}
+ body.hg-emerald #plan .plan-item-actions{
+  grid-column:1/-1;justify-content:flex-end;border-top:1px solid var(--hgp-border);
+  padding-top:9px;
+ }
+ body.hg-emerald #plan .plan-icon-btn{width:43px;height:43px;flex-basis:43px}
+ body.hg-emerald #plan .plan-editor{padding:16px!important}
+ body.hg-emerald #plan .plan-editor-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:380px){
+ body.hg-emerald #plan .plan-editor-grid{grid-template-columns:1fr}
+ body.hg-emerald #plan .plan-toolbar button{padding:8px!important}
+ body.hg-emerald #plan .hgp-overview{grid-template-columns:repeat(3,minmax(0,1fr))}
+ body.hg-emerald #plan .hgp-stat{padding:8px!important}
+ body.hg-emerald #plan .hgp-stat-note{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.hg-emerald #plan *,body.hg-emerald #plan *::before,body.hg-emerald #plan *::after{
+  scroll-behavior:auto!important;transition-duration:.01ms!important;
+ }
+}
