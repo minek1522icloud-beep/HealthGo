@@ -230,13 +230,14 @@
    restoreMapLayer='satellite';mapModule.chooseLayer?.('street');
   }
   window.HealthGoMapV2?.close?.();
-  document.querySelectorAll?.('#map .map-v2-panel')?.forEach?.(panel=>{panel.hidden=true;});
+  const panels=document.querySelectorAll?.('#map .map-v2-panel');
+  panels?.forEach?.(panel=>{panel.hidden=true;});
   document.body?.classList?.add('hg-navigation-active');
   node('mapWorkspace')?.classList?.add('map-pro-navigating');
   show('hgProNavigation',true);
   loadOptions();
   // Keep 2D Leaflet guidance lightweight and immediate on iPhone. The
-  // optional MapLibre renderer is never started without explicit preference.
+  // optional perspective renderer is not started in 2D guidance.
   window.HealthGoNavigationLive?.stop?.();
   speak('Rozpoczynam prowadzenie. Sprawdzam pozycję GPS.','navigation-start');
   text('hgProNavDestination',route.destination);
