@@ -349,6 +349,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-map-emerald-v5.css?v=1">
 <link rel="stylesheet" href="./healthgo-weather-emerald-v5.css?v=1">
 <link rel="stylesheet" href="./healthgo-navigation-follow-v1.css?v=1">
+<link rel="stylesheet" href="./healthgo-plan-emerald-v4.css?v=1">
 </head>
 <body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -907,7 +908,13 @@ html.hg-session-known #authScreen{display:none!important}
 
     <aside class="plan-editor">
       <h3 id="planEditorTitle">＋ Dodaj punkt planu</h3>
-      <p>Dodaj czas, kategorię i szczegóły. Pola końca, miejsca i notatki są opcjonalne.</p>
+      <p>Wpisz prawdziwy termin. Szablony wypełniają tylko formularz i <strong>niczego nie zapisują</strong> bez potwierdzenia.</p>
+      <div class="hgp-quick" aria-label="Szybkie szablony">
+        <button type="button" id="hgpTemplateLearning">📚 Nauka<small>Zadania lub powtórka</small></button>
+        <button type="button" id="hgpTemplateOutdoors">🌳 Spacer<small>Czas na świeżym powietrzu</small></button>
+        <button type="button" id="hgpTemplateRelax">🎮 Odpoczynek<small>Chwila dla siebie</small></button>
+        <button type="button" id="hgpTemplateMeeting">👥 Spotkanie<small>Przyjaciele i rodzina</small></button>
+      </div>
 
       <div class="plan-editor-grid">
         <div class="plan-field">
@@ -936,6 +943,9 @@ html.hg-session-known #authScreen{display:none!important}
             <option value="meeting">👥 Spotkanie</option>
             <option value="travel">🚌 Wyjście / podróż</option>
             <option value="rest">🎮 Odpoczynek</option>
+            <option value="hobby">🎨 Zainteresowania</option>
+            <option value="home">🏠 Dom / obowiązki</option>
+            <option value="family">👨‍👩‍👧 Rodzina</option>
           </select>
         </div>
         <div class="plan-field">
@@ -956,9 +966,23 @@ html.hg-session-known #authScreen{display:none!important}
           <option value="daily">Codziennie</option>
           <option value="weekdays">Poniedziałek–piątek</option>
           <option value="weekly">Co tydzień w ten sam dzień</option>
+          <option value="fortnight">Co dwa tygodnie</option>
+          <option value="weekends">Sobota i niedziela</option>
+          <option value="monthly">Co miesiąc tego samego dnia</option>
         </select>
       </div>
 
+      <div class="plan-field">
+        <label for="planReminderMinutes">Przypomnij mi (opcjonalnie)</label>
+        <select id="planReminderMinutes">
+          <option value="0">Nie przypominaj</option>
+          <option value="5">5 minut wcześniej</option>
+          <option value="10">10 minut wcześniej</option>
+          <option value="15">15 minut wcześniej</option>
+          <option value="30">30 minut wcześniej</option>
+          <option value="60">Godzinę wcześniej</option>
+        </select>
+      </div>
       <div class="plan-field">
         <label for="planPlace">Gdzie?</label>
         <input id="planPlace" type="text" maxlength="120" placeholder="np. Park Lisiniec, kino, dom babci">
@@ -973,9 +997,25 @@ html.hg-session-known #authScreen{display:none!important}
         <button id="planSaveBtn" class="btn" type="button" onclick="savePlanItem()">Dodaj do planu</button>
         <button id="planCancelBtn" class="btn gray" type="button" onclick="cancelPlanEdit()" style="display:none">Anuluj</button>
       </div>
-      <div id="planEditorStatus" class="plan-editor-status"></div>
+      <div id="planEditorStatus" class="plan-editor-status" role="status"></div>
+      <div class="hgp-editor-tools">
+        <h4>🔔 Przypomnienia</h4>
+        <p class="hgp-small">Powiadomienia są opcjonalne. Działają tylko wtedy, gdy HealthGo jest otwarte i aktywne. Na iPhonie nie zastępują natywnych alarmów w tle.</p>
+        <div class="hgp-actions"><button type="button" id="hgpToggleReminders">Włącz przypomnienia</button></div>
+        <div id="hgpReminderStatus" class="hgp-status" role="status"></div>
+        <h4>📤 Zapis i kalendarz</h4>
+        <div class="hgp-actions">
+          <button type="button" id="hgpCalendarExport">Eksportuj do kalendarza (.ics)</button>
+          <button type="button" id="hgpBackupExport">Pobierz kopię (.json)</button>
+          <button type="button" id="hgpBackupImport">Importuj kopię</button>
+        </div>
+        <input type="file" id="hgpBackupInput" class="hgp-hidden-upload" accept=".json,application/json" aria-label="Wybierz kopię planu JSON">
+        <p class="hgp-small">Import dodaje wpisy do bieżącego konta, nie usuwa istniejących. Eksport nie synchronizuje kalendarza automatycznie.</p>
+        <div id="hgpBackupStatus" class="hgp-status" role="status"></div>
+      </div>
     </aside>
   </div>
+  <div id="hgpReminderToast" class="hgp-reminder-toast" role="status" aria-live="polite" hidden></div>
 </section>
 
 <section id="challenges" class="page">
@@ -3040,5 +3080,6 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-map4.js?v=3"></script>
 <script src="./healthgo-emerald-dashboard.js?v=3"></script>
 <script src="./healthgo-ai-emerald-v3.js?v=2"></script>
+<script src="./healthgo-plan-v4.js?v=1"></script>
 </body>
 </html>
