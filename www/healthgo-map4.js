@@ -86,7 +86,7 @@
    const cur=json?.current;
    if(!cur||!isNumber(cur.temperature_2m))throw Error('WEATHER_DATA');
    activeWeather=json;activeWeatherAt=Date.now();
-   const [desc,symbol]=weatherLabel(Number(cur.weather_code));
+   const [desc,symbol]=isNumber(cur.weather_code)?weatherLabel(cur.weather_code):['Brak opisu warunków','—'];
    root.replaceChildren();
    const heading=document.createElement('div');heading.className='hg4-weather-summary';
    const icon=document.createElement('span');icon.className='hg4-weather-icon';icon.textContent=symbol;heading.appendChild(icon);
@@ -127,7 +127,7 @@
     const item=document.createElement('div');item.className='hg4-hour';
     const time=document.createElement('b');time.textContent=formatHour(times[j]);item.appendChild(time);
     const symbol=document.createElement('span');symbol.className='hg5-hour-icon';
-    symbol.textContent=isNumber(codes[j])?weatherLabel(codes[j])[1]:'☁';item.appendChild(symbol);
+    symbol.textContent=isNumber(codes[j])?weatherLabel(codes[j])[1]:'—';item.appendChild(symbol);
     const deg=document.createElement('span');deg.textContent=fmtValue(temps[j],'°C');item.appendChild(deg);
     const prob=document.createElement('small');prob.textContent='Opady '+fmtValue(rain[j],'%');item.appendChild(prob);
     hours.appendChild(item);
