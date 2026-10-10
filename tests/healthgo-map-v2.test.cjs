@@ -443,6 +443,6 @@ test('Delayed map mount cannot override live GPS-follow camera',()=>{
  app.document.body.classList.add('hg-navigation-active');
  api.mount(); // A delayed go("map") callback is allowed but must not re-center.
  assert.equal(resets,0,'discovery-map centering must not overwrite guidance camera');
- assert.equal(api.centerIfSystemGranted() instanceof Promise,true);
+ assert.equal(typeof api.centerIfSystemGranted().then,'function','async API must remain awaitable across VM realms');
  assert.equal(resets,0);
 });
