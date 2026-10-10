@@ -114,7 +114,8 @@ test('Windows AI uses the bundled cloud client with local fallback and other-mem
   const html=fs.readFileSync('www/index.html','utf8');
   const ui=fs.readFileSync('www/healthgo-v2-ui.js','utf8');
   const workflow=fs.readFileSync('.github/workflows/windows-release.yml','utf8');
-  assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData\)/);
+  assert.match(html,/healthGoAITimed\(askHealthGoMobileAI\(q,imageData,\{/);
+  assert.match(html,/mode:requestMode,responseMode:requestLevel,history:requestHistory/);
   assert.match(html,/CLOUD_AND_LOCAL_AI_UNAVAILABLE/);
   assert.match(html,/healthgo-ai-bundle\.js\?v=13/);
   assert.match(workflow,/Zbuduj pakiet HealthGo Cloud AI/);
