@@ -14,7 +14,7 @@ test('Map 4.0 retains existing Leaflet map and adds new panels',()=>{
  for(const p of ['route','layers','favorites','activity','tools','weather','saved','settings'])
   assert.match(html,new RegExp('data-map-panel="'+p+'"'));
  assert.match(html,/window\.HealthGoMapV2\?\.mount\(\)/);
- assert.match(html,/healthgo-map-v2\.js\?v=2/);
+ assert.match(html,/healthgo-map-v2\.js\?v=3/);
  assert.match(html,/healthgo-map-v2\.css\?v=3/);
  assert.match(html,/healthgo-spacious-ui\.css\?v=2/);
  assert.match(css,/#map \.map-v2-panel\[hidden\]/);
@@ -44,16 +44,16 @@ test('Map search results expose real route and save-place actions without faking
  assert.match(html,/https:\/\/router\.project-osrm\.org/);
  assert.match(html,/https:\/\/server\.arcgisonline\.com/);
  assert.match(html,/Za Twoją zgodą systemową/);
- assert.match(source,/manualStart\?await locateByName\(manualStart\):await locateOptIn\(\)/);
+ assert.match(source,/const startPromise=manualStart\?locateByName\(manualStart\):locateOptIn\(\)/);
  assert.match(source,/if\(routeStartWasManual\)\{const nav=el\('hgNavStartButton'\)/);
 });
 
 test('Map module parses and requests GPS only after a user action',()=>{
  new vm.Script(source,{filename:'healthgo-map-v2.js'});
  assert.match(source,/function locateOptIn\(\)/);
- assert.match(source,/const known=getRecentPosition\(\)/);
+ assert.match(source,/const known=getRecentPosition\(10000\)/);
  assert.match(source,/function locateOptIn\(\)/);
- assert.match(source,/async function planRoute\(\)/);
+ assert.match(source,/async function planRoute\(options=\{\}\)/);
  assert.match(source,/navigator\.geolocation\.watchPosition\(/);
  assert.match(source,/document\.addEventListener\('visibilitychange'/);
  assert.match(source,/window\.addEventListener\('pagehide'/);
@@ -171,13 +171,24 @@ test('Opening saved destinations and settings exits planner cleanly',()=>{
  assert.equal(app.document.body.classList.contains('hg-route-planner-open'),false);
 });
 
-test('Selecting destination while planner is open must not unexpectedly close it',()=>{
+test('Choosing a real destination requests phone GPS immediately and closes planner after guidance starts',async()=>{
  const app=harness(),api=app.window.HealthGoMapV2;
+ let started=0,initial=null;
+ app.window.HealthGoMapPro={
+  clearRoute(){},setRoute(){},
+  startNavigation(fix){started++;initial=fix;api.close();return true;}
+ };
  api.toggle('route');
- api.selectDestination('Rynek',52.2,21.01);
- assert.equal(app.document.body.classList.contains('hg-route-planner-open'),true);
- assert.equal(app.node('panel-route').hidden,false);
+ const routePromise=api.selectDestination('Rynek',52.2,21.01);
+ assert.equal(app.locationCalls.current,1,'GPS is requested immediately on destination selection');
+ assert.equal(app.document.body.classList.contains('hg-route-planner-open'),true,'planner stays until GPS and route are ready');
  assert.equal(app.node('mapV2RouteTo').value,'Rynek');
+ app.locationCalls.lastSuccess({coords:{latitude:52.2,longitude:21.0,accuracy:12}});
+ await routePromise;
+ assert.equal(started,1,'live navigation begins without a second button click');
+ assert.equal(initial.lat,52.2);assert.equal(initial.lon,21);assert.equal(initial.accuracy,12);
+ assert.equal(app.document.body.classList.contains('hg-route-planner-open'),false);
+ assert.ok(app.fetchCalls.some(url=>url.includes('/route/v1/driving/21,52.2;21.01,52.2')));
 });
 
 test('No location tracking starts at map load; favorites are account-specific',()=>{
@@ -283,7 +294,7 @@ test('iPhone GPS denial cannot be mistaken for granted OS permission',()=>{
 });
 test('Manual origin is recognized without triggering GPS tracking',()=>{
  assert.match(html,/id="mapV2RouteFrom"/);
- assert.match(source,/manualStart\?await locateByName\(manualStart\):await locateOptIn\(\)/);
+ assert.match(source,/const startPromise=manualStart\?locateByName\(manualStart\):locateOptIn\(\)/);
  assert.match(source,/Podgląd trasy z wpisanego adresu startowego, bez śledzenia GPS/);
  assert.match(source,/help\.hidden=msg!=='GPS_DENIED'/);
  assert.match(source,/START_NOT_FOUND/);
