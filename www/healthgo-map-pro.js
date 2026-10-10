@@ -358,7 +358,14 @@
  function toggleNavigationTheme(){setNight(!night);window.HealthGoMap4?.saveSettings?.({theme:night?'dark':'light'});return night}
  function isNavigating(){
   const hud=node('hgProNavigation');
-  return active&&!!document.body?.classList?.contains?.('hg-navigation-active')&&hud?.hidden===false;
+  if(!active||!document.body?.classList?.contains?.('hg-navigation-active')||hud?.hidden!==false)return false;
+  // Catch cases where conflicting mobile CSS hides the HUD even though
+  // JavaScript has marked it active.
+  if(typeof getComputedStyle==='function'){
+   const style=getComputedStyle(hud);
+   if(style?.display==='none'||style?.visibility==='hidden')return false;
+  }
+  return true;
  }
  function leaveMap(){stopNavigation()}
  // Fresh app launches always begin in regular map mode. The HUD is mounted
