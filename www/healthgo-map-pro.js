@@ -77,9 +77,16 @@
  }
  function setRoute(item,destination){
   const coords=item?.geometry?.coordinates;
-  if(!Array.isArray(coords)||coords.length<2||coords.some(p=>!Array.isArray(p)||!Number.isFinite(p[0])||!Number.isFinite(p[1])))return false;
+  if(!Array.isArray(coords)||coords.length<2||coords.some(p=>!Array.isArray(p)||
+    p.length<2||!Number.isFinite(p[0])||!Number.isFinite(p[1])))return false;
+  const steps=(Array.isArray(item.legs)?item.legs:[]).flatMap(l=>Array.isArray(l.steps)?l.steps:[]);
+  if(!steps.some(step=>step?.maneuver&&Array.isArray(step.maneuver.location)&&
+    step.maneuver.location.length===2&&Number.isFinite(step.maneuver.location[0])&&
+    Number.isFinite(step.maneuver.location[1]))){
+   text('mapV2RouteOutput','Ta trasa nie zawiera prawdziwych instrukcji skrętów. Spróbuj ponownie.');
+   return false;
+  }
   stopNavigation();
-  const steps=(item.legs||[]).flatMap(l=>Array.isArray(l.steps)?l.steps:[]);
   route={geometry:coords,steps,meters:Number(item.distance)||0,seconds:Number(item.duration)||0,destination:String(destination||'Cel podróży').slice(0,100)};
   suffix(coords);stepIndex=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';setProgress(0);
   show('hgNavStartButton',steps.length>0);
@@ -324,6 +331,7 @@
   try{window.speechSynthesis?.cancel?.()}catch(_){}
   if(restoreMapLayer){window.HealthGoMapV2?.chooseLayer?.(restoreMapLayer);restoreMapLayer=null;}
   window.HealthGoMapV2?.resizeViewport?.();
+  window.HealthGoMapV2?.navigationStopped?.();
   window.setTimeout?.(()=>map()?.invalidateSize?.({pan:false}),50);
  }
  function toggleVoice(){
@@ -349,6 +357,17 @@
   return true;
  }
  function toggleNavigationTheme(){setNight(!night);window.HealthGoMap4?.saveSettings?.({theme:night?'dark':'light'});return night}
+ function isNavigating(){
+  const hud=node('hgProNavigation');
+  if(!active||!document.body?.classList?.contains?.('hg-navigation-active')||hud?.hidden!==false)return false;
+  // Catch cases where conflicting mobile CSS hides the HUD even though
+  // JavaScript has marked it active.
+  if(typeof getComputedStyle==='function'){
+   const style=getComputedStyle(hud);
+   if(style?.display==='none'||style?.visibility==='hidden')return false;
+  }
+  return true;
+ }
  function leaveMap(){stopNavigation()}
  // Fresh app launches always begin in regular map mode. The HUD is mounted
  // in HTML but cannot be shown until startNavigation explicitly opens it.
@@ -356,6 +375,6 @@
  document.body?.classList?.remove('hg-navigation-active');
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopNavigation()});
  window.addEventListener('pagehide',stopNavigation);
- window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,toggleVoice,toggleFollow,resumeFollow,
+ window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,isNavigating,toggleVoice,toggleFollow,resumeFollow,
   toggleNavigationTheme,leaveMap,routeRemaining,instruction,maneuverInfo,navigationProgress,nearestRouteDistance};
 })();

@@ -40,8 +40,8 @@ test('Minimal navigation HUD has direct voice control and real endpoints',()=>{
  assert.match(html,/HealthGoMapPro\.stopNavigation\(\)/);
  assert.match(html,/HealthGoMapV2\.goHome\(\)/);
  assert.match(html,/HealthGoMapV2\.clearRecent\(\)/);
- assert.match(html,/healthgo-map-v2\.js\?v=3/);
- assert.match(html,/healthgo-map-pro\.js\?v=8/);
+ assert.match(html,/healthgo-map-v2\.js\?v=4/);
+ assert.match(html,/healthgo-map-pro\.js\?v=9/);
 });
 
 test('Unsupported walking and cycling routes remain external, not fabricated',()=>{
