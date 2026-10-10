@@ -533,7 +533,8 @@
     try{started=window.HealthGoMapPro?.startNavigation?.(start)===true;}
     catch(err){console.warn('HealthGo navigation start:',err);}
     const hud=el('hgProNavigation');
-    const active=!!document.body?.classList?.contains?.('hg-navigation-active')&&hud?.hidden===false;
+    const active=window.HealthGoMapPro?.isNavigating?.()??
+     (!!document.body?.classList?.contains?.('hg-navigation-active')&&hud?.hidden===false);
     if(!started||!active){
      if(started)window.HealthGoMapPro?.stopNavigation?.();
      throw new Error('NAV_START_FAILED');
