@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='healthgo-pwa-v34-nav-transition-20261010';
+const CACHE_NAME='healthgo-pwa-v35-plan-day-20261010';
 // The 850+ KB local AI worker and model weights must never be downloaded
 // while opening HealthGo. Install them only after user consent in AI.
 // Keep first-time install inexpensive on iOS WebKit; opened assets are cached
