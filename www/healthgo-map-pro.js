@@ -85,7 +85,11 @@
   if(typeof L==='undefined'||!L.divIcon||!L.marker||!map())return;
   if(!arrow){
    arrow=L.marker([point.lat,point.lon],{
-    icon:L.divIcon({className:'hg-nav-user-icon',html:'<span class="hg-nav-arrow">▲</span>',iconSize:[48,48],iconAnchor:[24,24]}),
+    icon:L.divIcon({className:'hg-nav-user-icon',
+     html:'<span class="hg-nav-arrow"><svg width="38" height="44" viewBox="0 0 38 44" aria-hidden="true">'+
+       '<path d="M19 2 30 12 32 33 26 39 12 39 6 33 8 12Z" fill="#166ef0" stroke="white" stroke-width="2.5"/>'+
+       '<path d="m13 16 6-6 6 6v7H13Z" fill="#d6efff"/><path d="M13 29h12" stroke="#fff" stroke-width="3"/></svg></span>',
+     iconSize:[48,48],iconAnchor:[24,24]}),
     interactive:false,zIndexOffset:3000
    }).addTo(map());
   }else arrow.setLatLng([point.lat,point.lon]);
@@ -141,12 +145,12 @@
   if(stepIndex===0&&route.steps.length>1&&route.steps[0]?.maneuver?.type==='depart')stepIndex=1;
   let step=route.steps[stepIndex],loc=step?.maneuver?.location;
   let target=Array.isArray(loc)?{lat:loc[1],lon:loc[0]}:null;
-  let distanceTo=target?meters(point,target):null;
+  let distanceTo=target?Math.max(0,routeRemaining(point)-routeRemaining(target)):null;
   if(distanceTo!==null&&distanceTo<30&&stepIndex<route.steps.length-1){
    stepIndex++;
    step=route.steps[stepIndex];loc=step?.maneuver?.location;
    target=Array.isArray(loc)?{lat:loc[1],lon:loc[0]}:null;
-   distanceTo=target?meters(point,target):null;
+   distanceTo=target?Math.max(0,routeRemaining(point)-routeRemaining(target)):null;
   }
   const chosen=maneuverInfo(step);
   text('hgProNavDirection',chosen.action);
