@@ -281,7 +281,12 @@
   text('hgProNavNext','Pozycja jest używana tylko podczas prowadzenia.');
   text('hgProNavEta','—');text('hgProNavTime',String(Math.max(1,Math.ceil(route.seconds/60))));
   text('hgProNavDistance',nice(route.meters));
-  window.setTimeout?.(()=>map()?.invalidateSize?.({pan:false}),80);
+  // Leaflet caches the size from the discovery map. Refresh its viewport
+  // after the fullscreen layout settles, then recenter the real GPS arrow.
+  window.setTimeout?.(()=>{
+   map()?.invalidateSize?.({pan:false});
+   if(active&&follow)window.HealthGoNavigationFollow?.setFollowing?.(true);
+  },110);
   try{
    watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
     const message=err?.code===1?'Telefon nie zezwolił na GPS. Sprawdź uprawnienia lokalizacji albo wpisz punkt startowy.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
