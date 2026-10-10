@@ -346,6 +346,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-emerald-2.css?v=1">
 <link rel="stylesheet" href="./healthgo-start-v3.css?v=1">
 <link rel="stylesheet" href="./healthgo-ai-emerald-v3.css?v=2">
+<link rel="stylesheet" href="./healthgo-map-emerald-v5.css?v=1">
 </head>
 <body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -565,6 +566,9 @@ html.hg-session-known #authScreen{display:none!important}
             <span id="hgProNavStreet">Nazwa ulicy po ustaleniu pozycji</span>
             <span id="hgProNavNext" class="hg-drive-assist" aria-live="polite">Czekam na sygnał GPS</span>
           </div>
+          <button type="button" id="hgNavVoiceQuick" class="hg-nav-quickvoice" aria-label="Włącz lub wyłącz komunikaty głosowe" aria-pressed="false" onclick="HealthGoMapPro.toggleVoice()" title="Głos nawigacji">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4Z"/><path d="M17 9a4 4 0 0 1 0 6"/><path d="M20 6a8 8 0 0 1 0 12"/></svg>
+          </button>
         </section>
         <p id="hgLiveMapStatus" class="hg-live-status" role="status" hidden></p>
         <p id="hgLiveWeather" class="hg-live-weather" role="status" hidden></p>
@@ -691,6 +695,18 @@ html.hg-session-known #authScreen{display:none!important}
           <button type="button" class="hg4-outline" onclick="HealthGoMapV2.toggle('favorites')">Zobacz ulubione miejsca</button>
           <h4>Zapisane trasy</h4>
           <div id="hg4SavedRoutes"></div>
+          <h4 class="hg-map-recent-title">Dom — prywatny skrót</h4>
+          <p class="map-v2-muted">Przesuń mapę na wybrane miejsce i zapisz je jako Dom. Zapis pozostanie na tym urządzeniu i na Twoim koncie.</p>
+          <div class="hg-map-recent-home">
+            <button type="button" onclick="HealthGoMapV2.saveHomeFromCenter()">⌂ Zapisz środek mapy jako Dom</button>
+            <button type="button" onclick="HealthGoMapV2.goHome()">↗ Trasa do Domu</button>
+            <button type="button" onclick="HealthGoMapV2.clearHome()">Usuń Dom</button>
+          </div>
+          <h4 class="hg-map-recent-title">Ostatnio wybierane cele</h4>
+          <div id="hgMapRecentDestinations" aria-live="polite"></div>
+          <div class="hg-map-recent-actions">
+            <button type="button" onclick="HealthGoMapV2.clearRecent()">Wyczyść historię celów</button>
+          </div>
           <button type="button" class="hg4-outline" onclick="HealthGoMapV2.toggle('route')">＋ Nowa trasa</button>
         </div>
       </section>
