@@ -23,7 +23,7 @@
  }
  function segmentProgress(point){
   if(!route?.geometry?.length||!remaining.length)return {distance:Infinity,left:0};
-  const p=route.geometry,latScale=111320,lonScale=Math.cos(rad(point.lat))*111320;
+  const p=route.geometry,latScale=111320,lonScale=Math.cos(radians(point.lat))*111320;
   let best=Infinity,left=remaining[0]||0;
   // Project the GPS position onto actual route segments, rather than using
   // only the closest route vertex (which can be far away on straight roads).
