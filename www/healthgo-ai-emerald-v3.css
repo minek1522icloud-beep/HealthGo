@@ -61,7 +61,7 @@ body.hg-emerald #ai .ai-new{
  width:100%;min-height:44px;flex:0 0 auto;
  display:flex;align-items:center;justify-content:center;
  font-size:13px;font-weight:800;
- color:#002e24!important;background:var(--hga-accent)!important;
+ color:var(--emerald-accent-ink)!important;background:var(--hga-accent)!important;
  border:1px solid transparent!important;border-radius:14px!important;
  box-shadow:0 5px 18px rgba(9,183,141,.14);
 }
@@ -182,7 +182,7 @@ body.hg-emerald #ai .ai-topic{
 body.hg-emerald #ai .ai-topic.active,
 body.hg-emerald #ai .ai-topic[aria-pressed="true"]{
  background:var(--hga-accent)!important;
- color:#002e24!important;border-color:var(--hga-accent)!important;
+ color:var(--emerald-accent-ink)!important;border-color:var(--hga-accent)!important;
  box-shadow:0 4px 15px rgba(0,183,151,.15);
 }
 body.hg-emerald #ai .ai-messages{
@@ -347,7 +347,7 @@ body.hg-emerald #ai .ai-response-mode{
  box-shadow:none!important;
 }
 body.hg-emerald #ai .ai-response-mode.active{
- color:#002e24!important;
+ color:var(--emerald-accent-ink)!important;
  background:var(--hga-accent)!important;
  border-color:var(--hga-accent)!important;
 }
@@ -395,7 +395,7 @@ body.hg-emerald #ai .ai-composer-tools button:hover{
 body.hg-emerald #ai .ai-send{
  display:grid;place-items:center;flex:0 0 43px;
  width:43px!important;height:43px!important;
- background:var(--hga-accent)!important;color:#002e24!important;
+ background:var(--hga-accent)!important;color:var(--emerald-accent-ink)!important;
  border:0!important;border-radius:14px!important;font-size:21px;
 }
 body.hg-emerald #ai .ai-send:disabled{opacity:.48;cursor:wait}
