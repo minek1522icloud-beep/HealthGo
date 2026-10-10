@@ -1,0 +1,164 @@
+/* HealthGo More 4.0 — compact iPhone action sheet with the same outlined
+ * SVG icon language as the persistent bottom navigation. Other app tabs are
+ * deliberately unaffected. Overrides the early legacy .mobile-more-sheet. */
+@media (max-width:900px){
+ body.hg-emerald.hg-more-open{overflow:hidden!important}
+ body.hg-emerald #mobileMoreBackdrop.mobile-more-backdrop{
+  display:block!important;position:fixed!important;inset:0!important;
+  z-index:9995!important;background:rgba(0,16,11,.49)!important;
+  -webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+  transition:opacity .19s ease,visibility .19s ease!important;
+ }
+ body.hg-emerald #mobileMoreBackdrop.mobile-more-backdrop.show{
+  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+ }
+ /* Preserve working bottom navigation (z-index >= 10000). The overlay
+    does not swallow taps on Home, AI, Map or Plan. */
+ body.hg-emerald #mobileNav.mobile-nav{z-index:10000!important}
+ body.hg-emerald #mobileMoreSheet.mobile-more-sheet{
+  display:block!important;position:fixed!important;
+  box-sizing:border-box!important;
+  z-index:10010!important;
+  left:50%!important;right:auto!important;
+  bottom:calc(84px + env(safe-area-inset-bottom))!important;
+  width:min(488px,calc(100vw - 22px))!important;
+  max-width:calc(100vw - 22px)!important;
+  max-height:min(610px,calc(100dvh - 116px - env(safe-area-inset-top) - env(safe-area-inset-bottom)))!important;
+  overflow-y:auto!important;overscroll-behavior:contain!important;
+  padding:0!important;margin:0!important;
+  border-radius:28px!important;
+  background:linear-gradient(153deg,#102f25,#061a13 76%)!important;
+  border:1px solid rgba(87,192,155,.29)!important;
+  box-shadow:0 16px 55px rgba(0,13,9,.47),inset 0 1px rgba(255,255,255,.06)!important;
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  transform:translate(-50%,18px) scale(.98)!important;
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+  transition:opacity .19s ease,transform .25s cubic-bezier(.2,.8,.2,1),visibility .19s ease!important;
+  scrollbar-width:thin;scrollbar-color:#367c61 transparent;
+ }
+ body.hg-emerald #mobileMoreSheet.mobile-more-sheet.show{
+  transform:translate(-50%,0) scale(1)!important;
+  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-content{
+  padding:16px 15px 17px!important;display:grid;gap:13px;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-grip{
+  height:4px;width:39px;margin:0 auto 1px;border-radius:99px;
+  background:#3e7360;opacity:.85;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-header{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:1px 3px 0;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-header-main{min-width:0;display:grid;gap:3px}
+ body.hg-emerald #mobileMoreSheet .hg-more-eyebrow{
+  color:#42ebbd!important;font-size:10px!important;font-weight:850!important;
+  letter-spacing:.15em!important;line-height:1.4!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-title{
+  margin:0!important;color:#effff6!important;font-size:23px!important;
+  line-height:1.18!important;font-weight:870!important;letter-spacing:-.04em!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-subtitle{
+  margin:0!important;color:#9bc7b5!important;font-size:12px!important;
+  line-height:1.45!important;
+ }
+ body.hg-emerald #mobileMoreSheet button.hg-more-close{
+  flex:0 0 40px!important;display:grid!important;place-items:center!important;
+  width:40px!important;height:40px!important;min-height:40px!important;
+  padding:0!important;border-radius:14px!important;
+  border:1px solid #35624e!important;background:#14382d!important;
+  color:#d5f9e9!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-quick{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;min-width:0;
+ }
+ body.hg-emerald #mobileMoreSheet button.hg-more-action{
+  min-width:0!important;width:100%!important;min-height:88px!important;
+  box-sizing:border-box!important;display:flex!important;align-items:center!important;
+  justify-content:flex-start!important;text-align:left!important;
+  gap:11px!important;padding:13px!important;
+  background:rgba(26,67,51,.72)!important;border:1px solid rgba(100,171,144,.24)!important;
+  border-radius:18px!important;
+  color:#effff7!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03)!important;
+  font-size:13px!important;font-weight:780!important;line-height:1.2!important;
+  white-space:normal!important;
+  transition:border-color .15s ease,background .15s ease,transform .15s ease!important;
+ }
+ body.hg-emerald #mobileMoreSheet button.hg-more-action:hover,
+ body.hg-emerald #mobileMoreSheet button.hg-more-action:focus-visible{
+  background:rgba(34,89,68,.92)!important;border-color:#35cd9f!important;
+ }
+ body.hg-emerald #mobileMoreSheet button.hg-more-action:active{transform:scale(.985)}
+ body.hg-emerald #mobileMoreSheet button.hg-more-featured{
+  grid-column:1/-1!important;min-height:76px!important;
+  background:linear-gradient(115deg,#10513f,#143a2c)!important;
+  border-color:rgba(36,211,165,.45)!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-icon{
+  flex:0 0 40px!important;display:grid!important;place-items:center!important;
+  width:40px!important;height:40px!important;border-radius:13px!important;
+  background:rgba(56,210,166,.105)!important;
+  color:#45e9bd!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-icon svg{
+  width:23px!important;height:23px!important;display:block!important;
+  fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;
+  stroke-linecap:round!important;stroke-linejoin:round!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-action-copy{
+  min-width:0!important;display:flex!important;flex-direction:column!important;
+  align-items:flex-start!important;gap:4px!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-action-name{
+  color:#f5fff9!important;font-size:13px!important;font-weight:830!important;
+  line-height:1.2!important;overflow-wrap:break-word!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-action-note{
+  color:#9ec6b5!important;font-size:10px!important;font-weight:550!important;
+  line-height:1.3!important;overflow-wrap:break-word!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-action-chevron{
+  margin-left:auto!important;flex:0 0 16px!important;color:#67dfbb!important;
+  width:16px!important;height:16px!important;
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-divider{
+  margin:1px 2px 0!important;height:1px;background:rgba(105,180,146,.2);
+ }
+ body.hg-emerald #mobileMoreSheet .hg-more-footnote{
+  margin:0!important;padding:0 2px!important;
+  font-size:10px!important;color:#8dbca8!important;line-height:1.35!important;
+  text-align:center!important;
+ }
+ body.hg-emerald #mobileMoreSheet button:focus-visible{
+  outline:2px solid #37eabc!important;outline-offset:3px!important;
+ }
+}
+@media(max-width:380px){
+ body.hg-emerald #mobileMoreSheet .hg-more-content{padding:13px 12px!important;gap:10px!important}
+ body.hg-emerald #mobileMoreSheet button.hg-more-action{min-height:77px!important;padding:10px 9px!important;gap:8px!important;border-radius:14px!important}
+ body.hg-emerald #mobileMoreSheet .hg-more-icon{flex-basis:34px!important;width:34px!important;height:34px!important;border-radius:11px!important}
+ body.hg-emerald #mobileMoreSheet .hg-more-icon svg{width:21px!important;height:21px!important}
+ body.hg-emerald #mobileMoreSheet .hg-more-action-name{font-size:12px!important}
+ body.hg-emerald #mobileMoreSheet .hg-more-action-note{font-size:9px!important}
+ body.hg-emerald #mobileMoreSheet .hg-more-quick{gap:7px}
+ body.hg-emerald #mobileMoreSheet .hg-more-title{font-size:21px!important}
+}
+@media(max-height:680px) and (max-width:900px){
+ body.hg-emerald #mobileMoreSheet.mobile-more-sheet{
+  bottom:calc(72px + env(safe-area-inset-bottom))!important;
+  max-height:calc(100dvh - 93px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+ }
+}
+@media(min-width:901px){
+ #mobileMoreSheet.mobile-more-sheet,#mobileMoreBackdrop.mobile-more-backdrop{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+ body.hg-emerald #mobileMoreSheet.mobile-more-sheet,
+ body.hg-emerald #mobileMoreBackdrop.mobile-more-backdrop,
+ body.hg-emerald #mobileMoreSheet button.hg-more-action{transition:none!important}
+}
