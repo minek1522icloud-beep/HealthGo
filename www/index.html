@@ -821,10 +821,15 @@ html.hg-session-known #authScreen{display:none!important}
 
 <section id="plan" class="page">
   <div class="hero">
-    <h2>📅 Plan Dnia</h2>
-    <p>Twój prawdziwy harmonogram z kategoriami, priorytetami, powtarzaniem i oznaczaniem wykonanych zadań.</p>
+    <span class="hgp-heading-label">✦ HEALTHGO PLANNER 4.0</span>
+    <h2>📅 Twój Plan Dnia</h2>
+    <p>Twoje godziny, wydarzenia i cele w jednym miejscu. Kalendarz tygodnia i miesiąca, przypomnienia za zgodą, powtarzanie oraz postęp dnia — bez wymyślonych zadań.</p>
   </div>
-
+  <div class="hgp-overview" aria-label="Podsumowanie wybranego dnia">
+    <div class="hgp-stat"><span class="hgp-stat-label">📅 Wydarzenia</span><strong class="hgp-stat-value" id="hgpStatCount">0</strong><span class="hgp-stat-note" id="hgpStatCountNote">Brak zadań</span></div>
+    <div class="hgp-stat"><span class="hgp-stat-label">✓ Ukończone</span><strong class="hgp-stat-value highlight" id="hgpStatProgress">—</strong><span class="hgp-stat-note" id="hgpStatProgressNote">Dodaj pierwszy punkt</span></div>
+    <div class="hgp-stat"><span class="hgp-stat-label">↗ Kolejne</span><strong class="hgp-stat-value" id="hgpStatUpcoming">—</strong><span class="hgp-stat-note" id="hgpStatUpcomingNote">Brak kolejnego punktu</span></div>
+  </div>
   <div class="plan-shell">
     <section class="plan-board">
       <div class="plan-board-head">
@@ -837,19 +842,58 @@ html.hg-session-known #authScreen{display:none!important}
         </div>
       </div>
 
+      <div class="hgp-calendar-bar">
+        <div class="hgp-view-top">
+          <span class="hgp-calendar-label" id="hgpCalendarTitle">Kalendarz</span>
+          <div class="hgp-view-switch" aria-label="Widok kalendarza">
+            <button type="button" id="hgpWeekButton" aria-pressed="true">Tydzień</button>
+            <button type="button" id="hgpMonthButton" aria-pressed="false">Miesiąc</button>
+          </div>
+        </div>
+        <div id="hgpWeekStrip" class="hgp-week-strip" aria-label="Dni tygodnia"></div>
+        <div id="hgpMonthGrid" class="hgp-month-grid" aria-label="Dni miesiąca" hidden></div>
+        <p class="hgp-section-note">Kropki oznaczają dni z wpisami. Dotknij dnia, aby zobaczyć szczegóły.</p>
+      </div>
       <div class="plan-toolbar">
         <button type="button" onclick="movePlanDay(-1)">← Poprzedni</button>
         <button type="button" onclick="goPlanToday()">Dzisiaj</button>
         <button type="button" onclick="movePlanDay(1)">Następny →</button>
         <input id="planSearch" class="plan-search" type="search" placeholder="Szukaj w planie…" oninput="renderPlanDay()">
         <button type="button" onclick="copyPlanDayToNext()">Kopiuj dzień +1</button>
+        <button type="button" class="hgp-primary" id="hgpOpenEditor">＋ Dodaj punkt</button>
       </div>
 
+      <div class="hgp-filters">
+        <label>Kategoria
+          <select id="hgpCategoryFilter" aria-label="Filtruj kategorię">
+            <option value="all">Wszystkie kategorie</option>
+            <option value="school">Szkoła / nauka</option>
+            <option value="activity">Aktywność</option>
+            <option value="health">Zdrowie</option>
+            <option value="meeting">Spotkania</option>
+            <option value="travel">Podróże</option>
+            <option value="rest">Odpoczynek</option>
+            <option value="hobby">Zainteresowania</option>
+            <option value="home">Dom</option>
+            <option value="family">Rodzina</option>
+            <option value="other">Inne</option>
+          </select>
+        </label>
+        <label>Status
+          <select id="hgpStatusFilter" aria-label="Filtruj status i priorytet">
+            <option value="all">Wszystkie</option>
+            <option value="pending">Do zrobienia</option>
+            <option value="done">Wykonane</option>
+            <option value="important">Ważne / średnie</option>
+          </select>
+        </label>
+      </div>
       <div class="plan-progress">
         <span id="planProgressLabel">0 / 0 wykonane</span>
         <div class="plan-progress-track"><div id="planProgressBar"></div></div>
       </div>
-      <div id="planCopyStatus" class="plan-copy-status"></div>
+      <div id="planCopyStatus" class="plan-copy-status" role="status"></div>
+      <div id="hgpLiveStatus" class="hgp-now" role="status" aria-live="polite"><strong>📅 Wybrany dzień</strong><span>Nie masz jeszcze planu.</span></div>
 
       <div id="planList" class="plan-list">
         <div class="plan-empty">
@@ -858,6 +902,7 @@ html.hg-session-known #authScreen{display:none!important}
           <span>Dodaj pierwszy punkt po prawej stronie.</span>
         </div>
       </div>
+      <div id="hgpSkipped" class="hgp-skipped" aria-label="Pominięte powtarzające się wydarzenia"></div>
     </section>
 
     <aside class="plan-editor">
