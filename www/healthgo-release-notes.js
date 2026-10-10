@@ -3,9 +3,27 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-2.1-gifts-20261010';
-var TITLE='Prezenty, skrzynie i Twój profil';
+var RELEASE='healthgo-2.2-welcome-friends-20261010';
+var TITLE='80 naklejek, skrzynia startowa i znajomi';
 var sections=[
+ {title:'🎁 Skrzynia powitalna',items:[
+  'Po pierwszym zalogowaniu się do HealthGo otrzymujesz jedną darmową skrzynię na konto.',
+  'Skrzynia zawiera losową kosmetyczną nagrodę: naklejkę albo tapetę profilu.',
+  'Możesz obejrzeć animację otwierania albo kliknąć „Pomiń animację” i od razu zobaczyć prezent.',
+  'Skrzynia startowa jest zapisywana na koncie, więc nie można jej odbierać ponownie przez zmianę telefonu.'
+ ]},
+ {title:'🤝 Znajomi i zaproszenia',items:[
+  'W Ustawienia → Konto dostępny jest nowy panel znajomych.',
+  'Każdy ma prywatny kod zaproszeń, który można dobrowolnie udostępnić drugiej osobie.',
+  'Przyjmuj lub odrzucaj zaproszenia, usuwaj znajomych i blokuj niechciane kontakty.',
+  'System nie ujawnia znajomym adresu e-mail, lokalizacji ani danych zdrowotnych.'
+ ]},
+ {title:'✨ Wielka kolekcja naklejek',items:[
+  'Nowa kolekcja obejmuje 80 naklejek profilowych o różnych kolorach, kształtach i motywach.',
+  'Ozdoby są bezpłatne i dostępne za osiągnięcia oraz w skrzyniach.',
+  'Skrzynie losują naklejkę z szansą 75% albo tapetę z szansą 25%. Wszystkie są tylko kosmetyczne.',
+  'Możesz zmieniać wyposażoną naklejkę i tapetę w Plecak → Prezenty.'
+ ]},
  {title:'🎁 Nowość: prezenty za osiągnięcia',items:[
   'Każde rzeczywiście zdobyte osiągnięcie w HealthGo odblokowuje jeden darmowy prezent.',
   'W Plecaku znajdziesz nową gablotę „Prezenty i skrzynie” z liczbą upominków do odebrania.',
@@ -87,7 +105,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.1</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.2</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+

@@ -1,0 +1,30 @@
+/* HealthGo Friends 2.2 — private, account-scoped contact management */
+#hgFriendsPanel.hgf-panel{margin-top:20px;border:1px solid #365b4a;border-radius:18px;padding:18px;background:#11251c;color:#eafff4;display:grid;gap:15px}
+#hgFriendsPanel *{box-sizing:border-box}
+#hgFriendsPanel .hgf-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+#hgFriendsPanel .hgf-eyebrow{color:#75eabd;font-size:10px;font-weight:800;letter-spacing:.16em}
+#hgFriendsPanel h3{font-size:21px;margin:6px 0;color:#f0fff5}
+#hgFriendsPanel .hgf-heading p{font-size:12px;color:#b4cebd;line-height:1.5;margin:0}
+#hgFriendsPanel button{border:1px solid #64dba6;background:#256647;color:#e9fff4;border-radius:10px;padding:9px 12px;min-height:38px;font-size:12px;font-weight:750;cursor:pointer}
+#hgFriendsPanel button:disabled{opacity:.5;cursor:default}
+#hgFriendsPanel button.hgf-subtle{background:#1a3529;border-color:#42644f;color:#d4ebdc}
+#hgFriendsPanel button.hgf-danger{background:#422827;border-color:#a36e6e;color:#ffd5d5}
+#hgFriendsPanel .hgf-status{color:#ddf4e5;border:1px solid #547d62;background:#214430;padding:10px;border-radius:11px;font-size:12px;margin:0}
+#hgFriendsPanel .hgf-my-code{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;background:#1b382b;border:1px solid #3f7356;border-radius:14px}
+#hgFriendsPanel .hgf-my-code span{display:block;font-size:10px;color:#b0d2bc;margin-bottom:5px}
+#hgFriendsPanel .hgf-my-code strong{display:block;letter-spacing:.1em;font-size:15px;overflow-wrap:anywhere}
+#hgFriendsPanel .hgf-send{display:grid;gap:8px}
+#hgFriendsPanel .hgf-send label{font-size:12px;font-weight:780;color:#d8f9e5}
+#hgFriendsPanel .hgf-send div{display:flex;gap:8px;min-width:0}
+#hgFriendsPanel .hgf-send input{min-width:0;flex:1;padding:9px 12px;border-radius:10px;border:1px solid #416d51;background:#091a13;color:#fff;font-size:13px;text-transform:uppercase}
+#hgFriendsPanel .hgf-section h4{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 8px;font-size:13px;color:#c8f0d9}
+#hgFriendsPanel .hgf-section h4 span{padding:3px 8px;border-radius:10px;background:#214632;color:#91ebbb}
+#hgFriendsPanel .hgf-section{border-top:1px solid #2d4c39;padding-top:13px}
+#hgFriendsPanel .hgf-person{display:flex;gap:9px;align-items:center;padding:10px 0;border-top:1px solid #ffffff11;min-width:0}
+#hgFriendsPanel .hgf-person-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:11px;background:#246c50;display:grid;place-items:center;color:#eaffef;font-weight:850}
+#hgFriendsPanel .hgf-person-name{min-width:65px;flex:1;overflow-wrap:anywhere;font-size:12px}
+#hgFriendsPanel .hgf-person-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+#hgFriendsPanel .hgf-pending{font-size:10px;color:#a1c7b0}
+#hgFriendsPanel .hgf-empty{font-size:12px;color:#acc4b3;margin:0;line-height:1.5}
+#hgFriendsPanel .hgf-privacy{font-size:11px;color:#96baa4;line-height:1.6;margin:0;border-top:1px solid #2d4c39;padding-top:12px}
+@media(max-width:480px){#hgFriendsPanel.hgf-panel{padding:12px}#hgFriendsPanel .hgf-heading{flex-wrap:wrap}#hgFriendsPanel .hgf-my-code{flex-wrap:wrap}#hgFriendsPanel .hgf-my-code strong{font-size:13px}#hgFriendsPanel .hgf-person{flex-wrap:wrap}#hgFriendsPanel .hgf-person-actions{flex:1 1 100%;justify-content:flex-start}#hgFriendsPanel .hgf-send div{flex-direction:column}}

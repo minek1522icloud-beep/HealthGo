@@ -186,7 +186,7 @@
   }
   function render(){
     syncAccount();
-    root.innerHTML=hero()+tabs()+'<div id="hgpackPanel">'+(owner?viewHtml():emptyPanel('Zaloguj się do HealthGo','Plecak pokazuje nagrody i zapisuje listy dopiero po rozpoznaniu Twojego konta.','lock'))+'</div>';
+    root.innerHTML=hero()+tabs()+(window.HealthGoRewards?window.HealthGoRewards.starterBanner():'')+'<div id="hgpackPanel">'+(owner?viewHtml():emptyPanel('Zaloguj się do HealthGo','Plecak pokazuje nagrody i zapisuje listy dopiero po rozpoznaniu Twojego konta.','lock'))+'</div>';
     page.classList.add('hgpack-ready');
     if(ui.modal&&owner)displayModal();
   }
@@ -278,6 +278,7 @@
     var btn=event.target.closest('[data-action]');if(!btn||!root.contains(btn))return;
     var action=btn.getAttribute('data-action'),id=btn.getAttribute('data-id'),value=btn.getAttribute('data-value');
     if(action==='close'){closeModal();return;}
+    if(action==='gift-starter-open'){ui.tab='chests';render();if(window.HealthGoRewards)window.HealthGoRewards.openStarter();return;}
     if(action.indexOf('gift-')===0){if(window.HealthGoRewards&&window.HealthGoRewards.handle(action,id)){render();window.HealthGoRewards.decorateProfile();}return;}
     if(action==='settings'||action==='new'){openModal(action==='new'?'new':'settings');return;}
     if(action==='ai'){navigate('ai');return;}
