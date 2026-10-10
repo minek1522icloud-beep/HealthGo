@@ -249,3 +249,15 @@ body.hg-navigation-active #map #hgProNavigation summary:focus-visible{
 @media(prefers-reduced-motion:reduce){
  body.hg-navigation-active #map #hgProNavigation .hg-drive-progress-fill{transition:none!important}
 }
+
+/* Keep provider attribution visible above the arrival panel. */
+body.hg-navigation-active #map .leaflet-control-attribution{
+ margin-bottom:calc(171px + env(safe-area-inset-bottom))!important;
+ margin-right:8px!important;
+ max-width:calc(100vw - 100px)!important;
+ background:rgba(255,255,255,.94)!important;
+ border-radius:7px!important;
+ padding:2px 5px!important;
+ font-size:9px!important;
+ box-shadow:0 2px 8px rgba(15,44,79,.12)!important
+}
