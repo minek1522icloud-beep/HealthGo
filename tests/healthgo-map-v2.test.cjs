@@ -43,7 +43,7 @@ test('Map search results expose real route and save-place actions without faking
  assert.match(html,/window\.HealthGoMapV2\.selectDestination\(name,p\.lat,p\.lon\)/);
  assert.match(html,/https:\/\/router\.project-osrm\.org/);
  assert.match(html,/https:\/\/server\.arcgisonline\.com/);
- assert.match(html,/GPS wymaga pozwolenia|Współrzędne trasy wysyłamy do OSRM lub OpenStreetMap/);
+ assert.match(html,/Za Twoją zgodą systemową/);
  assert.match(source,/manualStart\?await locateByName\(manualStart\):await locateOptIn\(\)/);
  assert.match(source,/if\(routeStartWasManual\)\{const nav=el\('hgNavStartButton'\)/);
 });
