@@ -1,0 +1,375 @@
+/* HealthGo Maps 5 — dark-emerald discovery and minimal live route HUD.
+ * CSS only affects map and guidance; raster tiles and attribution remain real.
+ * GPS/navigation data is handled by the existing OSRM and geolocation modules.
+ */
+body.hg-emerald #map {
+ --hgm-bg:var(--emerald-bg);
+ --hgm-panel:var(--emerald-panel);
+ --hgm-2:var(--emerald-panel-2);
+ --hgm-border:var(--emerald-border);
+ --hgm-text:var(--emerald-fg);
+ --hgm-muted:var(--emerald-muted);
+ --hgm-accent:var(--emerald-accent);
+ --hgm-accent-text:var(--emerald-accent-ink);
+ color:var(--hgm-text);
+ background:var(--hgm-bg)!important;
+}
+body.hg-emerald #map .map-workspace,
+body.hg-emerald #map .map-toolbar,
+body.hg-emerald #map .map-v2-banner,
+body.hg-emerald #map .map-v2-panel,
+body.hg-emerald #map .map-v2-panel-head,
+body.hg-emerald #map .map-v2-panel-content,
+body.hg-emerald #map .map-v2-bottom,
+body.hg-emerald #map .map-results-panel,
+body.hg-emerald #map .map-results-head {
+ color:var(--hgm-text)!important;
+ background:var(--hgm-panel)!important;
+ border-color:var(--hgm-border)!important;
+}
+body.hg-emerald #map .map-workspace{
+ border-radius:24px!important;overflow:hidden;
+ box-shadow:0 15px 35px rgba(0,0,0,.18);
+}
+body.hg-emerald #map .map-toolbar{
+ padding:13px 15px 11px!important;
+ border-bottom:1px solid var(--hgm-border)!important;
+}
+body.hg-emerald #map .map-v2-banner{
+ font-size:12px;font-weight:850;letter-spacing:.018em;
+ color:var(--hgm-accent)!important;margin:0 0 6px;
+}
+body.hg-emerald #map .map-v2-tag{
+ color:var(--hgm-accent)!important;
+ background:var(--hgm-2)!important;
+ border:1px solid var(--hgm-border)!important;
+}
+body.hg-emerald #map .map-address-wrap,
+body.hg-emerald #map .map-v2-input,
+body.hg-emerald #map .hg-route-manual-origin,
+body.hg-emerald #map .hg-route-location-info,
+body.hg-emerald #map .map-v2-alert,
+body.hg-emerald #map .hg4-route-alternatives {
+ color:var(--hgm-text)!important;
+ background:var(--hgm-2)!important;
+ border:1px solid var(--hgm-border)!important;
+ border-radius:15px!important;
+}
+body.hg-emerald #map #mapAddressInput,
+body.hg-emerald #map input,
+body.hg-emerald #map select,
+body.hg-emerald #map .map-v2-input {
+ background:var(--hgm-2)!important;
+ color:var(--hgm-text)!important;
+ border-color:var(--hgm-border)!important;
+}
+body.hg-emerald #map input::placeholder{
+ color:var(--hgm-muted)!important;
+}
+body.hg-emerald #map .map-v2-muted,
+body.hg-emerald #map .map-v2-field,
+body.hg-emerald #map .hg-route-manual-origin summary,
+body.hg-emerald #map .hg-route-location-info span,
+body.hg-emerald #map .map-v2-banner .map-v2-tag {
+ color:var(--hgm-muted)!important;
+}
+body.hg-emerald #map .map-categories{
+ display:flex;gap:8px;overflow-x:auto;
+ padding:5px 0 6px!important;
+ scrollbar-width:none;touch-action:pan-x;
+}
+body.hg-emerald #map .map-category,
+body.hg-emerald #map .map-bar-btn,
+body.hg-emerald #map .map-v2-actions button,
+body.hg-emerald #map .map-v2-float button,
+body.hg-emerald #map .map-v2-map-control,
+body.hg-emerald #map .map-v2-close,
+body.hg-emerald #map .map-v2-buttons button,
+body.hg-emerald #map .hg4-outline,
+body.hg-emerald #map .hg4-alternative,
+body.hg-emerald #map .map-v2-item button,
+body.hg-emerald #map .map-v2-tab,
+body.hg-emerald #map .hg-nav-planner-shortcuts button {
+ background:var(--hgm-2)!important;
+ color:var(--hgm-text)!important;
+ border:1px solid var(--hgm-border)!important;
+ border-radius:14px!important;
+ font-weight:700;
+}
+body.hg-emerald #map .map-category{
+ border-radius:100px!important;white-space:nowrap;
+ min-height:37px!important;
+}
+body.hg-emerald #map .map-category.active,
+body.hg-emerald #map .map-v2-tab.active,
+body.hg-emerald #map .map-v2-actions button.active,
+body.hg-emerald #map .hg4-alternative.active,
+body.hg-emerald #map .map-v2-buttons button.active,
+body.hg-emerald #map [data-map-mode].active {
+ background:var(--hgm-accent)!important;
+ color:var(--hgm-accent-text)!important;
+ border-color:var(--hgm-accent)!important;
+}
+body.hg-emerald #map .map-bar-btn.primary,
+body.hg-emerald #map .map-v2-panel .map-v2-primary,
+body.hg-emerald #map .hg-nav-planner-go,
+body.hg-emerald #map .map-v2-measure-done {
+ color:var(--hgm-accent-text)!important;
+ background:var(--hgm-accent)!important;
+ border-color:var(--hgm-accent)!important;
+ border-radius:14px!important;
+ font-weight:850;
+}
+body.hg-emerald #map .map-v2-panel:not([hidden]){
+ box-shadow:0 18px 50px rgba(0,0,0,.3)!important;
+ border-radius:23px!important;
+}
+body.hg-emerald #map .map-v2-panel-head h3,
+body.hg-emerald #map .map-v2-panel h4,
+body.hg-emerald #map .map-results-head b {
+ color:var(--hgm-text)!important;
+}
+body.hg-emerald #map .map-v2-item {
+ border-color:var(--hgm-border)!important;
+}
+body.hg-emerald #map .map-v2-item span,
+body.hg-emerald #map .map-v2-item small,
+body.hg-emerald #map .map-v2-tab,
+body.hg-emerald #map .map-results-head span {
+ color:var(--hgm-muted)!important;
+}
+body.hg-emerald #map .map-v2-item button:hover,
+body.hg-emerald #map .map-v2-tab:hover,
+body.hg-emerald #map .map-category:hover {
+ border-color:var(--hgm-accent)!important;
+}
+body.hg-emerald #map .map-v2-bottom{
+ background:color-mix(in srgb,var(--hgm-panel) 92%,transparent)!important;
+ box-shadow:0 9px 29px rgba(0,0,0,.24)!important;
+ border-radius:21px!important;
+ backdrop-filter:blur(14px);
+}
+body.hg-emerald #map .map-v2-tab{
+ background:transparent!important;
+ border:1px solid transparent!important;
+ color:var(--hgm-muted)!important;
+ border-radius:15px!important;
+}
+body.hg-emerald #map .map-v2-tab.active{
+ background:var(--hgm-2)!important;
+ color:var(--hgm-accent)!important;
+ border-color:var(--hgm-border)!important;
+}
+body.hg-emerald #map .map-v2-float button{
+ background:var(--hgm-panel)!important;
+ color:var(--hgm-accent)!important;
+ box-shadow:0 8px 25px rgba(0,0,0,.2)!important;
+}
+body.hg-emerald #map .map-status-pill{
+ background:var(--hgm-panel)!important;
+ color:var(--hgm-muted)!important;
+ border:1px solid var(--hgm-border)!important;
+}
+body.hg-emerald #map .map-v2-measure-hud,
+body.hg-emerald #map .map-v2-measure-controls button{
+ background:var(--hgm-panel)!important;
+ color:var(--hgm-text)!important;
+ border-color:var(--hgm-border)!important;
+}
+body.hg-emerald #map .map-v2-results-actions,
+body.hg-emerald #map .map-place-card,
+body.hg-emerald #map .map-results-item{
+ background:var(--hgm-2)!important;color:var(--hgm-text)!important;border-color:var(--hgm-border)!important;
+}
+body.hg-emerald #map .hg-map-recent-title{
+ color:var(--hgm-text)!important;
+ font-size:14px;font-weight:800;
+ margin:20px 0 10px;
+}
+body.hg-emerald #map .hg-map-recent-empty{
+ font-size:12px;color:var(--hgm-muted);
+ line-height:1.55;padding:10px 0;
+}
+body.hg-emerald #map .hg-map-recent-list .map-v2-item{
+ padding:12px 0;gap:10px;
+}
+body.hg-emerald #map .hg-map-recent-list .map-v2-item span{
+ overflow-wrap:anywhere;
+ color:var(--hgm-text)!important;
+}
+body.hg-emerald #map .hg-map-recent-list .map-v2-item small{
+ color:var(--hgm-muted)!important;
+}
+body.hg-emerald #map .hg-map-recent-list .map-v2-buttons{
+ display:flex;flex:0 0 auto;
+}
+body.hg-emerald #map .hg-map-recent-home{
+ display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 5px;
+}
+body.hg-emerald #map .hg-map-recent-home button,
+body.hg-emerald #map .hg-map-recent-actions button {
+ background:var(--hgm-2)!important;
+ color:var(--hgm-text)!important;
+ border:1px solid var(--hgm-border)!important;
+ border-radius:13px;padding:10px 12px;
+ font-weight:700;font-size:12px;
+}
+body.hg-emerald #map .hg-map-recent-actions{
+ display:flex;justify-content:flex-end;margin-top:8px;
+}
+/* Fullscreen turn guidance: clear destination, next maneuver, voice, ETA and distance. */
+body.hg-navigation-active #map .hg-live-weather,
+body.hg-navigation-active #map .hg-drive-speed {
+ display:none!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-turn {
+ background:linear-gradient(125deg,#0b6853,#0c493a)!important;
+ border:1px solid rgba(50,242,196,.45)!important;
+ box-shadow:0 10px 32px rgba(0,28,20,.37)!important;
+ border-radius:21px!important;
+ color:#fff!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-turn .hg-pro-direction-symbol{
+ color:#38ffcb!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-turn .hg-drive-assist{
+ color:#b1f3db!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-turn .hg-nav-quickvoice {
+ display:grid!important;place-items:center!important;
+ width:42px!important;height:42px!important;min-width:42px!important;
+ flex:0 0 42px!important;
+ border:1px solid rgba(105,234,200,.6)!important;
+ border-radius:14px!important;
+ background:rgba(3,38,29,.6)!important;
+ color:#8fffe1!important;
+ padding:0!important;margin:0!important;
+ pointer-events:auto!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-nav-quickvoice[aria-pressed="false"]{
+ color:#b8d9cc!important;border-color:#659485!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-nav-quickvoice:disabled{opacity:.45}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-turn .hg-nav-quickvoice svg{
+ width:22px!important;height:22px!important;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-footer {
+ background:rgba(7,36,28,.96)!important;
+ color:#f3fff9!important;
+ border:1px solid rgba(44,172,133,.45)!important;
+ border-radius:23px!important;
+ box-shadow:0 13px 32px rgba(0,25,18,.3)!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-metric strong{
+ color:#f9fffc!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-metric span,
+body.hg-navigation-active #map #hgProNavigation .hg-drive-footer-end #hgProNavDestination{
+ color:#abcfbe!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-progress-track{
+ background:#234c3f!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-progress-fill{
+ background:#19dfbc!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-exit{
+ background:#19dfbc!important;
+ border-color:transparent!important;
+ color:#022d21!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-options summary,
+body.hg-navigation-active #map #hgProNavigation .hg-drive-options .hg-pro-nav-buttons button{
+ background:#0e4233!important;
+ border:1px solid #286b55!important;
+ color:#a7ffdd!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-options[open] .hg-pro-nav-buttons{
+ background:#082e22!important;
+ border-color:#28745b!important;
+}
+body.hg-navigation-active #map .leaflet-control-attribution{
+ background:rgba(7,36,28,.9)!important;
+ color:#e4fff0!important;
+}
+body.hg-navigation-active #map #hgProNavigation button:focus-visible,
+body.hg-navigation-active #map #hgProNavigation summary:focus-visible,
+body.hg-emerald #map button:focus-visible {
+ outline:3px solid var(--hgm-accent)!important;outline-offset:2px!important;
+}
+/* The existing fullscreen planner had hardcoded white and cobalt backgrounds. */
+body.hg-route-planner-open.hg-emerald #map .hg-nav-planner-head{
+ background:linear-gradient(125deg,#0b6a52,#073c2e)!important;
+ color:#f4fff9!important;
+ border-color:#287b62!important;
+}
+body.hg-route-planner-open.hg-emerald #map .hg-nav-planner-title h3{
+ color:#fafffc!important;
+}
+body.hg-route-planner-open.hg-emerald #map .hg-nav-planner-title small,
+body.hg-route-planner-open.hg-emerald #map .hg-nav-planner-title span{
+ color:#aeebd3!important;
+}
+body.hg-route-planner-open.hg-emerald #map .map-v2-panel[data-map-panel="route"] .map-v2-panel-content{
+ background:var(--hgm-panel)!important;
+ color:var(--hgm-text)!important;
+ border:1px solid var(--hgm-border)!important;
+}
+body.hg-route-planner-open.hg-emerald #map .map-v2-panel[data-map-panel="route"] .map-v2-input,
+body.hg-route-planner-open.hg-emerald #map .map-v2-panel[data-map-panel="route"] .map-v2-alert,
+body.hg-route-planner-open.hg-emerald #map .hg-nav-planner-shortcuts button,
+body.hg-route-planner-open.hg-emerald #map .hg4-alternative{
+ background:var(--hgm-2)!important;
+ color:var(--hgm-text)!important;
+ border-color:var(--hgm-border)!important;
+}
+body.hg-route-planner-open.hg-emerald #map .map-v2-panel[data-map-panel="route"] .map-v2-field,
+body.hg-route-planner-open.hg-emerald #map .map-v2-panel[data-map-panel="route"] .map-v2-muted{
+ color:var(--hgm-muted)!important;
+}
+body.hg-route-planner-open.hg-emerald #map .map-v2-panel[data-map-panel="route"] .map-v2-primary{
+ background:var(--hgm-accent)!important;color:var(--hgm-accent-text)!important;
+ border-color:var(--hgm-accent)!important;
+}
+body.hg-route-planner-open.hg-emerald #map .map-v2-panel[data-map-panel="route"] [data-map-mode].active{
+ background:var(--hgm-accent)!important;color:var(--hgm-accent-text)!important;
+ border-color:var(--hgm-accent)!important;
+}
+/* Keep route line vivid, map remains a real OSM or Esri raster layer. */
+body.hg-emerald #map .map-v2-route-line {
+ stroke:#12d3b3!important;
+}
+@media(max-width:900px){
+ body.hg-emerald #map .map-workspace{border-radius:0!important}
+ body.hg-emerald #map .map-toolbar{padding:9px 11px 7px!important}
+ body.hg-emerald #map .map-categories{gap:6px}
+ body.hg-emerald #map .map-category{padding:8px 12px}
+ body.hg-emerald #map .map-v2-panel:not([hidden]){
+  max-height:75%!important;
+ }
+ body.hg-navigation-active #map #hgProNavigation .hg-drive-turn{
+  gap:9px!important;padding:10px 12px!important;
+ }
+ body.hg-navigation-active #map #hgProNavigation .hg-drive-turn .hg-nav-quickvoice{
+  width:37px!important;height:37px!important;min-width:37px!important;flex-basis:37px!important;
+ }
+ body.hg-navigation-active #map #hgProNavigation .hg-drive-metrics{
+  gap:6px!important;
+ }
+ body.hg-emerald #map .hg-map-recent-list .map-v2-item{
+  flex-direction:column;
+ }
+}
+@media(max-width:360px){
+ body.hg-navigation-active #map #hgProNavigation .hg-drive-turn .hg-nav-quickvoice {
+  width:33px!important;height:33px!important;min-width:33px!important;flex-basis:33px!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body.hg-emerald #map *,
+ body.hg-emerald #map *::before,
+ body.hg-emerald #map *::after{
+  transition-duration:.01ms!important;
+  animation-duration:.01ms!important;
+ }
+}
