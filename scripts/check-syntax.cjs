@@ -14,4 +14,7 @@ if(!fs.existsSync('www/healthgo-navigation-follow-v1.css'))throw Error('Moving G
 if(!html.includes('healthgo-plan-emerald-v4.css?v=2'))throw Error('Missing HealthGo Planner 4 CSS');
 if(!fs.existsSync('www/healthgo-plan-emerald-v4.css'))throw Error('Missing HealthGo Planner CSS file');
 if(!html.includes('healthgo-plan-v4.js?v=2'))throw Error('Missing HealthGo Planner 4 JS');
+if(!html.includes('healthgo-more-v4.css?v=1'))throw Error('Missing premium More menu stylesheet link');
+if(!fs.existsSync('www/healthgo-more-v4.css'))throw Error('Missing premium More menu stylesheet');
+if(!html.includes('id="hgMoreHeading"')||!html.includes('data-hg2-family="1"'))throw Error('More menu missing header or Family slot');
 console.log('Validated application, Emerald assets and '+count+' inline scripts.');
