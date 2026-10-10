@@ -98,3 +98,25 @@ body.hgp-profile-open{overflow:hidden}
 .hgp-loading{font-size:13px;text-align:center;padding:30px 12px;color:#cbefdb}
 @media(max-width:520px){.hgp-profile-overlay{padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-inset-right,0px)) max(4px,env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}.hgp-profile-panel{border-radius:17px;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 8px)}.hgp-profile-scroll{padding:9px 10px 18px}.hgp-profile-identity{gap:12px}.hgp-profile-avatar{width:79px;height:79px;flex-basis:79px}.hgp-identity-label h2{font-size:19px}}
 @media(prefers-reduced-motion:reduce){.hgp-profile-avatar:after{animation:none}}
+
+/* Steam-inspired, original HealthGo display treatment — layered enamel/metal UI. */
+#hgProfileProOverlay .hgp-profile-panel{background:radial-gradient(ellipse at 100% 0%,#214b3b,#091a15 45%,#0b1c17);border:1px solid #508b6a;box-shadow:0 30px 110px #000d,inset 0 1px 0 #cbffdf24}
+#hgProfileProOverlay .hgp-toolbar{background:linear-gradient(110deg,#112c22,#123b2c,#0d221c);border-bottom:1px solid #44765a}
+#hgProfileProOverlay .hgp-profile-cover{height:160px;border-color:#71b395;box-shadow:inset 0 0 28px #080f1288,0 10px 30px #0005}
+#hgProfileProOverlay .hgp-profile-cover:before{background:radial-gradient(ellipse at 63% 12%,#c8ffe160,transparent 44%),repeating-linear-gradient(122deg,#ffffff12 0 1px,transparent 1px 20px)}
+#hgProfileProOverlay .hgp-profile-identity{margin-top:-42px}
+#hgProfileProOverlay .hgp-profile-avatar{width:104px;height:104px;flex-basis:104px;border-width:5px}
+#hgProfileProOverlay .hgp-profile-avatar .hgp-profile-sticker{overflow:visible;display:grid;place-items:center;width:41px;height:41px;background:transparent;border:0;box-shadow:none;right:-17px;bottom:-2px}
+#hgProfileProOverlay .hgp-profile-avatar .hgp-profile-sticker svg.hgr-sticker-svg{width:44px;height:45px;filter:drop-shadow(0 3px 5px #000c)}
+#hgProfileProOverlay .hgp-avatar-current .hgp-avatar-sticker{overflow:visible;background:transparent;border:0}
+#hgProfileProOverlay .hgp-menu-action{background:linear-gradient(117deg,#1d3d31,#10291f)!important;border:1px solid #426a55!important;border-left:3px solid #71dab0!important;box-shadow:inset 0 1px 0 #eafff514,0 3px 12px #0003}
+#hgProfileProOverlay .hgp-menu-action:active{transform:translateY(1px)}
+#hgProfileProOverlay .hgp-profile-statrow>span{background:linear-gradient(130deg,#1d4233,#112a21);border-color:#48775d;box-shadow:inset 0 1px 0 #ffffff15}
+#hgProfileProOverlay .hgp-profile-about,#hgProfileProOverlay .hgp-profile-badges{background:linear-gradient(145deg,#17362a,#0f231b);border-color:#46765b;box-shadow:inset 0 1px 0 #ffffff10,0 6px 15px #0003}
+#hgProfileProOverlay .hgp-feature{background:linear-gradient(160deg,#234735,#0d2019);border-color:#4d795e}
+#hgProfileProOverlay .hgp-feature svg.hgp-medal-svg{filter:drop-shadow(0 5px 8px #000a)}
+#hgProfileProOverlay .hgp-decal-choice svg.hgr-sticker-svg{width:40px;height:42px;max-width:100%;max-height:100%}
+#topAvatar.hgp-avatar-current .hgp-avatar-sticker svg.hgr-sticker-svg,#sidebarAvatar.hgp-avatar-current .hgp-avatar-sticker svg.hgr-sticker-svg{width:21px;height:23px}
+#topAvatar.hgp-avatar-current,#sidebarAvatar.hgp-avatar-current{overflow:visible}
+@media(max-width:430px){#hgProfileProOverlay .hgp-profile-cover{height:138px}#hgProfileProOverlay .hgp-profile-avatar{height:90px;width:90px;flex-basis:90px}#hgProfileProOverlay .hgp-identity-label h2{font-size:18px}}
+@media(prefers-reduced-motion:reduce){#hgProfileProOverlay .hgp-menu-action:active{transform:none}}

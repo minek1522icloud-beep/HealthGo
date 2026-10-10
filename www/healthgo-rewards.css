@@ -77,3 +77,44 @@
 #hgPackProRoot .hgr-cosmetic-card:hover{border-color:#76e9aa}
 @media(max-width:480px){#hgPackProRoot .hgr-starter-banner{flex-wrap:wrap}#hgPackProRoot .hgr-starter-banner button{flex:1 1 100%}}
 @media(prefers-reduced-motion:reduce){#hgPackProRoot .hgr-chest-spin{animation:none}}
+
+/* HealthGo 2.4: genuine illustration-backed material finishes on every unique sticker. */
+#hgPackProRoot .hgr-collectible-art{display:block;width:92px;height:100px;flex-shrink:0;overflow:visible;filter:drop-shadow(0 8px 9px #0009)}
+#hgPackProRoot .hgr-gift-figure svg.hgr-collectible-art{width:78px;height:77px}
+#hgPackProRoot .hgr-cosmetic-art svg.hgr-sticker-svg{width:94px;height:94px;max-height:100%}
+#hgPackProRoot .hgr-reveal-art svg.hgr-sticker-svg{width:118px;height:118px;max-width:100%;max-height:100%}
+#hgPackProRoot .hgr-gift-figure:has(svg.hgr-chest-svg){background:radial-gradient(circle,#375f52,#0c241c)}
+#hgPackProRoot .hgr-collectible-art [data-art-id]{filter:drop-shadow(0 4px 8px #000)}
+#hgPackProRoot .hgr-inspect{border:1px solid #517560;border-radius:9px;background:#20392d;color:#d6f7e4;min-height:37px;font-size:11px;font-weight:650}
+#hgPackProRoot .hgr-inspection{display:grid;justify-items:center;gap:8px;padding:20px;border:1px solid #91ecc3;border-radius:16px;background:radial-gradient(ellipse at 50% 10%,#27684f,#0d231c 70%);text-align:center}
+#hgPackProRoot .hgr-inspection-art{height:180px;display:grid;place-items:center;width:100%}
+#hgPackProRoot .hgr-inspection-art svg.hgr-collectible-art{width:168px;height:170px}
+#hgPackProRoot .hgr-inspection-art .hgr-wallpaper{height:160px;max-width:250px}
+#hgPackProRoot .hgr-inspection p{font-size:12px;color:#badfcc}
+#hgPackProRoot .hgr-daily-banner{display:flex;align-items:center;gap:12px;padding:14px;margin:10px 0 18px;border:1px solid #4da788;border-radius:17px;background:radial-gradient(ellipse at 15% 30%,#276857,#102a22 70%);box-shadow:inset 0 1px 0 #ffffff22,0 8px 17px #0004}
+#hgPackProRoot .hgr-daily-illustration{flex:0 0 68px;width:68px;height:63px;display:grid;place-items:center}
+#hgPackProRoot .hgr-daily-illustration svg.hgr-collectible-art{width:70px;height:67px}
+#hgPackProRoot .hgr-daily-banner>div:nth-child(2){display:grid;gap:4px;flex:1;min-width:0}
+#hgPackProRoot .hgr-daily-banner strong{font-size:13px;color:#edfff3}
+#hgPackProRoot .hgr-daily-banner small{font-size:10px;line-height:1.4;color:#a9d1be}
+#hgPackProRoot .hgr-daily-banner>button{background:linear-gradient(130deg,#79f2c0,#44bd8b);color:#0b2a19;padding:10px 14px;border:0;border-radius:10px;font-size:12px;font-weight:850;min-height:42px}
+#hgPackProRoot .hgr-daily-banner>button:disabled{opacity:.48}
+#hgPackProRoot .hgr-daily-done{color:#badccc;font-size:11px;padding:10px 12px;border:1px solid #2e5644;border-radius:11px;background:#112d22;margin:10px 0}
+#hgPackProRoot .hgr-reel-shell{height:121px;width:100%;max-width:470px;position:relative;overflow:hidden;border:1px solid #74cba5;border-radius:13px;background:linear-gradient(90deg,#091b19,#244e3e 18%,#1b3931 75%,#091b19);box-shadow:inset 0 0 25px #0008}
+#hgPackProRoot .hgr-reel-shell:before,#hgPackProRoot .hgr-reel-shell:after{content:"";position:absolute;z-index:4;top:0;bottom:0;width:38px;pointer-events:none}
+#hgPackProRoot .hgr-reel-shell:before{left:0;background:linear-gradient(90deg,#061513dd,transparent)}
+#hgPackProRoot .hgr-reel-shell:after{right:0;background:linear-gradient(270deg,#061513dd,transparent)}
+#hgPackProRoot .hgr-reel-pointer{position:absolute;left:50%;height:100%;width:3px;background:#e9fbd8;box-shadow:0 0 9px #9bffd6;z-index:5;transform:translateX(-50%);pointer-events:none}
+#hgPackProRoot .hgr-reel-pointer:before,#hgPackProRoot .hgr-reel-pointer:after{content:"";display:block;position:absolute;left:-6px;border-left:7px solid transparent;border-right:7px solid transparent}
+#hgPackProRoot .hgr-reel-pointer:before{top:0;border-top:10px solid #e5ffc6}
+#hgPackProRoot .hgr-reel-pointer:after{bottom:0;border-bottom:10px solid #e5ffc6}
+#hgPackProRoot .hgr-reel-track{position:absolute;left:50%;top:9px;display:flex;gap:6px;width:max-content;animation:hgr-reel-roll 4.4s cubic-bezier(.1,.75,.12,1) both;will-change:transform}
+#hgPackProRoot .hgr-reel-cell{display:grid;place-items:center;width:100px;height:102px;flex:0 0 100px;border:1px solid #4c8068;background:linear-gradient(140deg,#1e3b2f,#081e18);border-radius:9px;position:relative;overflow:hidden}
+#hgPackProRoot .hgr-reel-cell .hgr-wallpaper{width:82px;height:78px}
+#hgPackProRoot .hgr-reel-cell svg.hgr-sticker-svg{width:86px;height:89px}
+#hgPackProRoot .hgr-reel-cell.hgr-landing{border-color:#ffe19c;box-shadow:inset 0 0 14px #efce7133}
+@keyframes hgr-reel-roll{0%{transform:translateX(105px)}72%{transform:translateX(-1350px)}88%{transform:translateX(-1302px)}100%{transform:translateX(-1322px)}}
+#hgPackProRoot .hgr-animation{gap:12px;padding:15px 10px}
+#hgPackProRoot .hgr-opening-chest svg.hgr-chest-svg{width:130px;height:115px}
+@media(max-width:420px){#hgPackProRoot .hgr-daily-banner{flex-wrap:wrap}#hgPackProRoot .hgr-daily-banner>button{flex:1 1 100%}}
+@media(prefers-reduced-motion:reduce){#hgPackProRoot .hgr-reel-track{animation:none;transform:translateX(-1322px);will-change:auto}}

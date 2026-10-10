@@ -34,6 +34,57 @@ function emblem(item,h){
  };
  return art[type]||art.star;
 }
+
+/* Every badge receives its OWN seed, geometry, enamel engraving, foil graining and serial. */
+function seeded(seed){var n=seed>>>0;return function(){n=(Math.imul(n,1664525)+1013904223)>>>0;return n/4294967296;};}
+function uniqueRelief(item,seed,uid,ink,shine){
+ var rng=seeded(seed),styles=[
+  'M110 77 134 114 110 148 86 114Z','M77 143 94 89 127 89 145 143Z','M82 90H139L153 120 139 147H82L67 120Z',
+  'M91 154 110 78 129 154 110 141Z','M77 118 110 86 143 118 110 151Z','M110 80 143 110 132 147 88 147 77 110Z',
+  'M75 119Q109 69 145 119Q129 158 110 150Q91 158 75 119Z',
+  'M73 103Q102 82 135 105L149 134 110 154 71 134Z',
+  'M110 77 123 98 147 98 130 121 137 148 110 134 83 148 90 121 73 98 97 98Z',
+  'M84 151Q72 96 110 80Q148 96 136 151L110 139Z',
+  'M69 118 89 90 110 107 131 90 152 118 135 150 110 133 85 150Z',
+  'M88 152 76 104 110 77 144 104 132 152Z'
+ ];
+ var style=styles[seed%styles.length],art='',scratches='',mesh='',chips='';
+ var serial='HG-'+('0000'+(seed%99999)).slice(-5);
+ var baseHue=(seed>>>7)%360,aspect=seed%6;
+ for(var i=0;i<27;i++){
+  var x=44+rng()*132,y=40+rng()*147,ang=rng()*6.28,length=4+rng()*19;
+  scratches+='<path d="M'+x.toFixed(1)+' '+y.toFixed(1)+'l'+(Math.cos(ang)*length).toFixed(1)+' '+(Math.sin(ang)*length).toFixed(1)+'" stroke="'+(i%3?'#fff':ink)+'" stroke-width="'+(.32+rng()*.74).toFixed(2)+'" opacity="'+(.08+rng()*.28).toFixed(2)+'"/>';
+ }
+ for(var j=0;j<14;j++){
+  var y2=68+j*6,x2=61+Math.sin(j+(seed%9))*(11+rng()*7);
+  mesh+='<path d="M'+x2.toFixed(1)+' '+y2+'q'+(16+rng()*12).toFixed(1)+' '+(rng()*11-5).toFixed(1)+' '+(50+rng()*25).toFixed(1)+' '+(rng()*11-5).toFixed(1)+'" fill="none" stroke="'+(j%2?shine:'#071d25')+'" stroke-opacity="'+(.12+rng()*.26).toFixed(2)+'" stroke-width=".9"/>';
+ }
+ for(var k=0;k<9;k++){
+  var ang=k*.698+(seed%53)*.017,rad=48+rng()*10;
+  var xx=110+rad*Math.cos(ang),yy=115+rad*Math.sin(ang);
+  chips+='<path d="M'+xx.toFixed(1)+' '+yy.toFixed(1)+'l'+(2+rng()*7).toFixed(1)+' '+(-3-rng()*9).toFixed(1)+' '+(-3-rng()*5).toFixed(1)+' '+(5+rng()*9).toFixed(1)+'Z" fill="'+shine+'" opacity="'+(.2+rng()*.37).toFixed(2)+'"/>';
+ }
+ var scene='';
+ if(aspect===0)scene='<path d="M72 145 89 108 100 126 111 93 147 145Z" fill="'+shine+'" opacity=".61"/><path d="M99 112 111 93 127 116 113 110Z" fill="#fff" opacity=".74"/>';
+ if(aspect===1)scene='<circle cx="110" cy="113" r="41" fill="none" stroke="'+shine+'" stroke-width="5" opacity=".75"/><path d="M110 71V155 M68 113H152 M80 82 140 144 M140 82 80 144" stroke="#fff" stroke-width="1.5" opacity=".38"/>';
+ if(aspect===2)scene='<path d="M82 153Q84 102 110 81Q139 103 137 153M95 153V111M124 153V111" stroke="'+shine+'" fill="none" stroke-width="8" opacity=".68"/>';
+ if(aspect===3)scene='<path d="M75 125Q89 78 110 106Q134 76 146 125Q117 156 110 156Q84 146 75 125Z" stroke="'+shine+'" stroke-width="6" fill="none" opacity=".72"/>';
+ if(aspect===4)scene='<path d="M110 72 126 102 158 114 127 126 110 158 95 128 64 114 95 102Z" fill="'+shine+'" opacity=".5"/>';
+ if(aspect===5)scene='<path d="M79 144Q95 96 128 79Q145 117 113 146Q94 155 79 144Z" fill="'+shine+'" opacity=".68"/><path d="M83 155Q110 128 126 87" stroke="#fff" stroke-width="4" opacity=".7"/>';
+ var mark='<path d="'+style+'" fill="'+ink+'" opacity=".48" stroke="'+shine+'" stroke-width="4" stroke-linejoin="round"/>'+
+ '<path d="'+style+'" transform="translate(0 3)" fill="none" stroke="#000" stroke-opacity=".48" stroke-width="2"/>';
+ var group='<defs><clipPath id="'+uid+'-relief"><circle cx="110" cy="113" r="66"/></clipPath>'+
+ '<linearGradient id="'+uid+'-engrave" x1="0" x2="1" y1="0" y2="1"><stop stop-color="'+shine+'" stop-opacity=".82"/><stop offset=".48" stop-color="'+ink+'" stop-opacity=".8"/><stop offset="1" stop-color="#fff" stop-opacity=".36"/></linearGradient></defs>'+
+ '<g clip-path="url(#'+uid+'-relief)" data-texture-serial="'+serial+'">'+
+ '<circle cx="110" cy="112" r="65" fill="url(#'+uid+'-engrave)" opacity=".17"/>'+
+ scratches+mesh+chips+scene+mark+
+ '<circle cx="110" cy="114" r="'+(24+seed%12)+'" fill="none" stroke="'+shine+'" stroke-width="2" opacity=".47"/>'+
+ '<text x="110" y="120" font-family="Arial,sans-serif" fill="'+shine+'" stroke="'+ink+'" stroke-width=".4" font-size="17" font-weight="900" text-anchor="middle" letter-spacing="1">'+('0'+((seed>>>3)%99)).slice(-2)+'</text>'+
+ '<path d="M60 161Q110 '+(143+(seed%17))+' 160 161" stroke="'+shine+'" opacity=".57" stroke-width="1.6" fill="none"/>'+
+ '</g>';
+ return group;
+}
+
 function render(item,big){
  item=item||{};
  var h=hash(item.id||item.name),category=Object.prototype.hasOwnProperty.call(shapes,item.category)?item.category:'badges';
@@ -41,7 +92,7 @@ function render(item,big){
  var id='hg-medal-'+h.toString(36)+'-'+(big?'large':'small'),locked=!item.earned,studs='',leaves='';
  for(var i=0;i<8;i++){var a=i*Math.PI/4-Math.PI/2;studs+='<circle cx="'+(110+73*Math.cos(a)).toFixed(1)+'" cy="'+(110+73*Math.sin(a)).toFixed(1)+'" r="2.3" fill="'+shine+'" opacity=".88"/>';}
  for(var j=0;j<5;j++){var y=95+j*13,x=63-j*1.5;leaves+='<ellipse cx="'+x+'" cy="'+y+'" rx="5" ry="10" transform="rotate(-32 '+x+' '+y+')"/><ellipse cx="'+(220-x)+'" cy="'+y+'" rx="5" ry="10" transform="rotate(32 '+(220-x)+' '+y+')"/>';}
- return '<svg class="hgp-medal-svg '+(locked?'is-locked':'is-earned')+'" data-medal-category="'+category+'" viewBox="0 0 220 238" focusable="false" aria-hidden="true">'+
+ return '<svg class="hgp-medal-svg '+(locked?'is-locked':'is-earned')+'" data-medal-category="'+category+'" data-individual-texture="'+h.toString(36)+'" viewBox="0 0 220 238" focusable="false" aria-hidden="true">'+
  '<defs>'+
  '<linearGradient id="'+id+'-metal" x1="0" x2="1" y1="0" y2="1"><stop stop-color="'+metal+'"/><stop offset=".18" stop-color="'+shine+'"/><stop offset=".4" stop-color="'+shadow+'"/><stop offset=".62" stop-color="'+metal+'"/><stop offset=".81" stop-color="'+shadow+'"/><stop offset="1" stop-color="'+shine+'"/></linearGradient>'+
  '<radialGradient id="'+id+'-core" cx=".3" cy=".15" r="1"><stop stop-color="'+shadow+'"/><stop offset=".53" stop-color="'+enamel+'"/><stop offset="1" stop-color="#080e11"/></radialGradient>'+
@@ -59,7 +110,7 @@ function render(item,big){
  '<g>'+studs+'</g>'+
  '<rect x="62" y="49" width="96" height="18" rx="5" fill="'+enamel+'" stroke="'+shine+'" stroke-width="2"/>'+
  '<text x="110" y="61.7" text-anchor="middle" fill="'+shine+'" font-family="Arial,sans-serif" font-size="9" font-weight="800" letter-spacing="1.5">HEALTHGO</text>'+
- '<g transform="translate(66 77) scale(.88)" style="color:'+metal+'">'+emblem(item,h)+'</g>'+
+ uniqueRelief(item,h,id,enamel,shine)+
  '<path d="M76 173H144L154 184 144 196H76L66 184Z" fill="'+enamel+'" stroke="'+shine+'" stroke-width="2"/>'+
  '<text x="110" y="189" text-anchor="middle" fill="'+shine+'" font-family="Arial,sans-serif" font-size="14" font-weight="900" letter-spacing="2">HG</text>'+
  '</g>'+

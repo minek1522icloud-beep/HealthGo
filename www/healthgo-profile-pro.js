@@ -83,7 +83,7 @@ function avatarTopMarkup(){
  var p=state.local||defaults();
  var inner=avatarMarkup(p.avatar,false);
  var sticker=rewardState().sticker;
- return inner+(sticker?'<span class="hgp-avatar-sticker" aria-hidden="true">'+esc(stickerLabel(sticker))+'</span>':'');
+ return inner+(sticker?'<span class="hgp-avatar-sticker" aria-hidden="true">'+(window.HealthGoCollectibleArt?window.HealthGoCollectibleArt.sticker(sticker):esc(stickerLabel(sticker)))+'</span>':'');
 }
 function applyAvatar(){
  if(!state.uid)return;
@@ -99,8 +99,8 @@ function headerCard(p,isSelf){
  var art=avatarMarkup(legalAvatar(p.avatar)?p.avatar:'leaf',!isSelf);
  var tag=p.sticker||(!isSelf?'':rewardState().sticker);
  var list=isSelf?badges().filter(x=>(state.local.featured||[]).includes(x.id)).slice(0,3):(Array.isArray(p.featured)?p.featured.slice(0,3):[]);
- return '<div class="hgp-profile-cover hgr-wallpaper-'+wall+'"><span class="hgp-cover-label">HEALTHGO PROFILE</span><span class="hgp-cover-glow" aria-hidden="true"></span></div>'+
- '<div class="hgp-profile-identity"><div class="hgp-profile-avatar hgp-frame-'+frame+'">'+art+(tag?'<span class="hgp-profile-sticker">'+esc(stickerLabel(tag))+'</span>':'')+'</div>'+
+ return '<div class="hgp-profile-cover hgr-wallpaper-'+wall+'"><span class="hgp-cover-label">HEALTHGO COLLECTOR PROFILE</span><span class="hgp-cover-glow" aria-hidden="true"></span></div>'+
+ '<div class="hgp-profile-identity"><div class="hgp-profile-avatar hgp-frame-'+frame+'">'+art+(tag?'<span class="hgp-profile-sticker">'+(window.HealthGoCollectibleArt?window.HealthGoCollectibleArt.sticker(tag):esc(stickerLabel(tag)))+'</span>':'')+'</div>'+
  '<div class="hgp-identity-label"><h2>'+esc(nick)+'</h2><p>Poziom '+lv+' · '+(isSelf?'Twój profil':'Profil użytkownika HealthGo')+'</p></div></div>'+
  '<div class="hgp-profile-statrow">'+
  '<span><strong>'+lv+'</strong><small>Poziom</small></span>'+
@@ -117,7 +117,7 @@ function menu(){
  '<div class="hgp-menu">'+
  menuButton('edit','Edytuj profil','Awatar, tapeta, ramka i opis','settings')+
  menuButton('friends','Znajomi','Znajomi i zaproszenia','users')+
- menuButton('cosmetics','Moja kolekcja','Naklejki, skrzynie i tapety','gift')+
+ menuButton('cosmetics','Moja kolekcja','Naklejki, skrzynie, tekstury i tapety','gift')+
  menuButton('looks','Zapisane zestawy','Szybka zmiana wyglądu','layers')+
  menuButton('privacy','Prywatność profilu','Kto może oglądać mój profil','lock')+
  menuButton('updates','Co nowego?','Dziennik zmian HealthGo','sparkles')+

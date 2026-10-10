@@ -3,9 +3,13 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-2.3-profile-pro-20261010';
-var TITLE='Profil PRO i nowe możliwości konta';
+var RELEASE='healthgo-2.4-textured-daily-20261010';
+var TITLE='Nowe tekstury odznak, naklejek i nagrody dzienne';
 var sections=[
+ {title:'🏅 Osobna faktura każdej odznaki',items:['Każda odznaka ma indywidualną grafikę reliefu, grawerunek i numer seryjny przypisany do modelu.','Odznaki tej samej rzadkości różnią się wzorem i strukturą powierzchni, a nie tylko kolorem.']},
+ {title:'✨ Kolekcjonerskie naklejki',items:['80 naklejek otrzymało indywidualne wzory i faktury holograficzne, metaliczne lub foliowane.','Dodaliśmy powiększony podgląd tekstury i dokładniejsze ilustracje skrzyń.']},
+ {title:'🎁 Otwieranie i codzienne prezenty',items:['Przewijana taśma pokazuje kolekcję przedmiotów, a następnie zatrzymuje się na przyznanej ozdobie.','Pomiń animację w dowolnym momencie, by natychmiast zobaczyć ten sam wynik.','Codziennie możesz odebrać jedną bezpłatną ozdobę na konto, bez serii i kar za pominięte dni.','Nie ma płatnych skrzyń, zakładów, wymiany ani nagród o wartości pieniężnej.']},
+ {title:'👤 Profil w stylu platformy gamingowej',items:['Profil i gablota mają nowe wielowarstwowe panele, metaliczne obramowania i teksturowane naklejki.','Publicznie udostępniasz tylko wybrane ozdoby. Prywatne dane zdrowotne pozostają chronione.']},
  {title:'👤 Profil PRO',items:[
   'Kliknij swój awatar w prawym górnym rogu, aby otworzyć pełną kartę profilu HealthGo.',
   'Wybierz jeden z ośmiu autorskich awatarów, zmień tapetę, ramkę, naklejkę i opis „O mnie”.',
@@ -119,7 +123,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.3</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.4</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+

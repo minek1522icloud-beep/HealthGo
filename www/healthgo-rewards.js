@@ -51,6 +51,7 @@ var WALLPAPERS=[
 var owner='',data=empty(),lastReveal=null;
 var starter=null,starterOwner='',starterLoading=false,starterBusy=false;
 var animating=null,skipRequested=false,revealTimer=null;
+var daily=null,dailyOwner='',dailyDay='',dailyBusy=false,inspectReward=null;
 function rerender(){if(window.HealthGoPackPro&&window.HealthGoPackPro.render)window.HealthGoPackPro.render();}
 function cancelTimer(){if(revealTimer&&typeof clearTimeout==='function')clearTimeout(revealTimer);revealTimer=null;}
 function reveal(){
@@ -60,7 +61,7 @@ function reveal(){
 function startAnimation(prize){
  cancelTimer();animating=prize;
  if(skipRequested)reveal();
- else revealTimer=setTimeout(reveal,1800);
+ else revealTimer=setTimeout(reveal,4600);
 }
 function saveStarterResult(response){
  if(!response||!response.opened)return false;
@@ -101,6 +102,68 @@ async function openStarter(){
   return false;
  }finally{starterBusy=false;}
 }
+
+function utcDay(){return new Date().toISOString().slice(0,10);}
+function importDaily(res){
+ if(!res||!res.claimed||!res.date)return false;
+ if(!['sticker','wallpaper'].includes(res.reward_kind))return false;
+ if(res.reward_kind==='sticker'&&!sticker(res.reward_item))return false;
+ if(res.reward_kind==='wallpaper'&&!wallpaper(res.reward_item))return false;
+ var next=normalize(data);
+ next.claimed['daily:'+res.date]={kind:res.reward_kind,item:res.reward_item,chest:true};
+ return save(next);
+}
+function loadDaily(){
+ sync();var today=utcDay();
+ if(!owner||!Supabase||!Supabase.db||dailyBusy||(dailyOwner===owner&&dailyDay===today))return;
+ var uid=owner;dailyOwner=uid;dailyDay=today;dailyBusy=true;
+ Supabase.db.rpc('healthgo_daily_status',{}).then(function(res){
+  if(uid!==owner)return;
+  daily=res;
+  if(res&&res.claimed)importDaily(res);
+ }).catch(function(e){
+  if(uid===owner){daily={error:'Nagroda dzienna jest chwilowo niedostępna.'};console.warn('Daily gift:',e);}
+ }).finally(function(){if(uid===owner){dailyBusy=false;rerender();}});
+}
+async function claimDaily(){
+ sync();if(!owner||dailyBusy||!Supabase||!Supabase.db)return false;
+ var uid=owner;dailyBusy=true;daily={loading:true};rerender();
+ try{
+  var res=await Supabase.db.rpc('healthgo_daily_claim',{});
+  if(uid!==owner)return false;
+  daily=res;
+  if(!importDaily(res))throw Error('Nie można zapisać prezentu.');
+  skipRequested=false;startAnimation({kind:res.reward_kind,item:res.reward_item,chest:true});
+  rerender();return true;
+ }catch(e){
+  if(uid===owner){daily={error:'Spróbuj ponownie: '+(e.message||'Błąd połączenia')};rerender();}
+  return false;
+ }finally{dailyBusy=false;}
+}
+function dailyBanner(){
+ sync();if(!owner)return '';
+ if(dailyOwner!==owner||dailyDay!==utcDay())loadDaily();
+ if(!daily)return '';
+ if(daily.error)return '<p class="hgr-daily-info" role="status">'+escapeHtml(daily.error)+'</p>';
+ if(daily.claimed)return '<div class="hgr-daily-done">✓ Dzisiejszy darmowy prezent został już odebrany. Możesz wrócić jutro, jeśli masz ochotę.</div>';
+ return '<section class="hgr-daily-banner"><div class="hgr-daily-illustration">'+
+ (window.HealthGoCollectibleArt?window.HealthGoCollectibleArt.chest('daily'):'✦')+
+ '</div><div><span class="hgr-kicker">NAGRODA DZIENNA</span><strong>Darmowy upominek na dziś</strong><small>Bez obowiązku codziennego logowania i bez utraty postępów.</small></div>'+
+ '<button type="button" data-action="gift-daily-open" '+(dailyBusy?'disabled':'')+'>Odbierz</button></section>';
+}
+function revealReel(prize){
+ var cells=[],final=12;
+ for(var i=0;i<21;i++){
+  var item=i===final?prize:(Math.random()<.25?
+   {kind:'wallpaper',item:WALLPAPERS[randomInt(WALLPAPERS.length)].id}:
+   {kind:'sticker',item:STICKERS[randomInt(STICKERS.length)].id});
+  cells.push('<div class="hgr-reel-cell '+(i===final?'hgr-landing':'')+'">'+
+   (item.kind==='sticker'?stickerHtml(item.item):wallpaperHtml(item.item))+'</div>');
+ }
+ return '<div class="hgr-reel-shell"><div class="hgr-reel-pointer" aria-hidden="true"></div>'+
+ '<div class="hgr-reel-track">'+cells.join('')+'</div></div>';
+}
+
 function starterBanner(){
  sync();
  if(!owner||!starter||!starter.available)return '';
@@ -115,7 +178,7 @@ function wallpaper(id){return WALLPAPERS.find(function(x){return x.id===id;})||n
 function normalize(raw){
  var out=empty();if(!raw||typeof raw!=='object')return out;
  if(raw.claimed&&typeof raw.claimed==='object'&&!Array.isArray(raw.claimed)){
-  Object.keys(raw.claimed).slice(0,300).forEach(function(id){
+  Object.keys(raw.claimed).slice(-1500).forEach(function(id){
    var value=raw.claimed[id];
    if(id.length>120||!value||!['sticker','wallpaper'].includes(value.kind))return;
    if(value.kind==='sticker'&&!sticker(value.item))return;
@@ -131,7 +194,7 @@ function storageKey(){return owner?'healthgo.rewards.v1.'+encodeURIComponent(own
 function sync(){
  var uid=String(Services.state.uid||'').trim();
  if(uid===owner)return;
- owner=uid;data=empty();lastReveal=null;starter=null;starterOwner='';starterLoading=false;animating=null;skipRequested=false;cancelTimer();
+ owner=uid;data=empty();lastReveal=null;starter=null;starterOwner='';starterLoading=false;animating=null;skipRequested=false;daily=null;dailyOwner='';dailyDay='';dailyBusy=false;inspectReward=null;cancelTimer();
  if(owner){try{data=normalize(JSON.parse(localStorage.getItem(storageKey())||'null'));}catch(_){}}
 }
 function save(next){
@@ -153,18 +216,20 @@ function owned(kind,id){
 }
 function stickerHtml(id){
  var info=sticker(id);
- return info?'<span class="hgr-sticker hgr-tone-'+info.tone+'" aria-label="'+escapeHtml(info.name)+'"><span>'+info.symbol+'</span></span>':'';
+ if(!info)return '';
+ if(window.HealthGoCollectibleArt)return window.HealthGoCollectibleArt.sticker(id,{label:info.name});
+ return '<span class="hgr-sticker hgr-tone-'+info.tone+'" aria-label="'+escapeHtml(info.name)+'"><span>'+info.symbol+'</span></span>';
 }
 function wallpaperHtml(id){
  var info=wallpaper(id);
  return info?'<span class="hgr-wallpaper hgr-wallpaper-'+info.id+'" aria-label="'+escapeHtml(info.name)+'"></span>':'';
 }
 function infoFor(reward){return reward.kind==='sticker'?sticker(reward.item):wallpaper(reward.item);}
-function countAvailable(){sync();return earned().filter(function(x){return !data.claimed[x.id];}).length+(starter&&starter.available?1:0);}
+function countAvailable(){sync();return earned().filter(function(x){return !data.claimed[x.id];}).length+(starter&&starter.available?1:0)+(daily&&daily.available?1:0);}
 function cardFor(gift){
  var claimed=data.claimed[gift.id],kind=freeGiftKind(gift.id);
  return '<div class="hgr-gift-card">'+
-  '<div class="hgr-gift-figure '+(claimed?'hgr-gift-claimed':'')+'">'+(kind==='chest'?'<span class="hgr-chest-art">✦<span>HG</span></span>':stickerHtml('mint-star'))+'</div>'+
+  '<div class="hgr-gift-figure '+(claimed?'hgr-gift-claimed':'')+'">'+(kind==='chest'&&window.HealthGoCollectibleArt?window.HealthGoCollectibleArt.chest('achievement-'+gift.id):(kind==='chest'?'<span class="hgr-chest-art">✦<span>HG</span></span>':stickerHtml('mint-star')))+'</div>'+
   '<div class="hgr-gift-copy"><strong>'+escapeHtml(kind==='chest'?'Skrzynia osiągnięcia':'Naklejka za osiągnięcie')+'</strong><small>Za: '+escapeHtml(gift.name||'osiągnięcie')+'</small>'+
   '<small>'+(claimed?'Odebrano · '+escapeHtml((infoFor(claimed)||{}).name||'Nagroda'):kind==='chest'?'W środku: tapeta albo naklejka':'Darmowa naklejka profilowa')+'</small></div>'+
   (claimed?'<span class="hgr-gift-state">Odebrane</span>':'<button type="button" class="hgr-open" data-action="gift-open" data-id="'+escapeHtml(gift.id)+'">'+(kind==='chest'?'Otwórz':'Odbierz')+'</button>')+'</div>';
@@ -172,19 +237,27 @@ function cardFor(gift){
 function rewardCard(item,kind){
  var isEquipped=kind==='sticker'?data.sticker===item.id:data.wallpaper===item.id;
  return '<div class="hgr-cosmetic-card"><div class="hgr-cosmetic-art">'+(kind==='sticker'?stickerHtml(item.id):wallpaperHtml(item.id))+'</div>'+
- '<strong>'+escapeHtml(item.name)+'</strong><small>'+(kind==='sticker'?'Naklejka':'Tapeta profilowa')+'</small>'+
+ '<strong>'+escapeHtml(item.name)+'</strong><small>'+(kind==='sticker'?'Naklejka · '+(window.HealthGoCollectibleArt?window.HealthGoCollectibleArt.finish(item.id):'kolekcjonerska'):'Tapeta profilowa')+'</small>'+
+ '<button type="button" class="hgr-inspect" data-action="gift-inspect" data-id="'+escapeHtml(item.id)+'">Obejrzyj teksturę</button>'+ 
  '<button type="button" class="hgr-equip" data-action="gift-equip-'+kind+'" data-id="'+escapeHtml(item.id)+'" '+(isEquipped?'disabled':'')+'>'+(isEquipped?'Wyposażono':'Wyposaż')+'</button></div>';
 }
 function renderGifts(){
  sync();
  var items=earned(),ready=items.filter(function(x){return !data.claimed[x.id];});
  if(owner&&!starter&&!starterLoading)loadStarter();
+ if(owner&&(!daily||dailyDay!==utcDay())&&!dailyBusy)loadDaily();
  var unlockedStickers=STICKERS.filter(function(x){return owned('sticker',x.id);});
  var unlockedWallpapers=WALLPAPERS.filter(function(x){return owned('wallpaper',x.id);});
- var output='<div class="hgr-section-head"><div><span class="hgr-kicker">DARMOWE NAGRODY</span><h3>Prezenty i skrzynie</h3></div><span class="hgr-counter">'+ready.length+' do odebrania</span></div>'+
+ var output=dailyBanner()+'<div class="hgr-section-head"><div><span class="hgr-kicker">DARMOWE NAGRODY</span><h3>Prezenty i skrzynie</h3></div><span class="hgr-counter">'+ready.length+' do odebrania</span></div>'+
  '<div class="hgr-note">Wszystkie skrzynie są bezpłatne. Zawierają wyłącznie ozdoby profilu (75% naklejka, 25% tapeta). Nagrodę można odsłonić od razu przyciskiem „Pomiń animację”. Bez zakupów, wymiany na pieniądze ani wpływu na XP.</div>';
  if(starter&&starter.error)output+='<p class="hgr-note" role="status">'+escapeHtml(starter.error)+'</p>';
- if(animating)output+='<div class="hgr-animation" role="status"><div class="hgr-chest-spin" aria-hidden="true">✦ HG ✦</div><strong>Otwieranie skrzyni…</strong><button type="button" class="hgr-equip" data-action="gift-skip">Pomiń animację i pokaż nagrodę</button></div>';
+ if(animating)output+='<div class="hgr-animation" role="status" aria-label="Przewijanie nagród">'+
+ (window.HealthGoCollectibleArt?'<div class="hgr-opening-chest">'+window.HealthGoCollectibleArt.chest('opening')+'</div>':'')+
+ '<strong>Otwieranie darmowej skrzyni…</strong>'+revealReel(animating)+
+ '<button type="button" class="hgr-equip" data-action="gift-skip">Pomiń animację i pokaż wynik</button></div>';
+ if(inspectReward){var selection=infoFor(inspectReward);
+  output+='<div class="hgr-inspection" role="region" aria-label="Podgląd tekstury kolekcji"><div class="hgr-inspection-art">'+(inspectReward.kind==='sticker'?stickerHtml(inspectReward.item):wallpaperHtml(inspectReward.item))+'</div><strong>'+escapeHtml(selection?.name||'Kolekcja')+'</strong><p>Oryginalna, indywidualna faktura '+escapeHtml(window.HealthGoCollectibleArt?.finish(inspectReward.item)||'HealthGo')+'</p><button type="button" class="hgr-equip" data-action="gift-inspect-close">Zamknij podgląd</button></div>';
+ }
  if(lastReveal){
   var info=infoFor(lastReveal);
   output+='<div class="hgr-reveal" role="status"><span class="hgr-kicker">PREZENT OTWARTY</span><div class="hgr-reveal-art">'+(lastReveal.kind==='sticker'?stickerHtml(lastReveal.item):wallpaperHtml(lastReveal.item))+'</div><strong>'+escapeHtml((info||{}).name||'Nowa nagroda')+'</strong><span>'+(lastReveal.kind==='sticker'?'Nowa naklejka profilowa!':'Nowa tapeta na profil!')+'</span><button type="button" class="hgr-equip" data-action="gift-equip-'+lastReveal.kind+'" data-id="'+escapeHtml(lastReveal.item)+'">Wyposaż teraz</button></div>';
@@ -203,6 +276,12 @@ function renderGifts(){
 }
 function handle(action,id){
  sync();if(!owner)return false;
+ if(action==='gift-inspect-close'){inspectReward=null;return true;}
+ if(action==='gift-inspect'){
+  var kind=sticker(id)?'sticker':wallpaper(id)?'wallpaper':null;
+  if(!kind||!owned(kind,id))return false;
+  inspectReward={kind:kind,item:id};return true;
+ }
  if(action==='gift-skip'){
   if(!animating)return false;
   if(starterBusy){skipRequested=true;return true;}
@@ -259,7 +338,7 @@ function decorateProfile(){
  '<button type="button" class="hgr-open" data-hgr-open="1">Otwórz prezenty i zmień wygląd profilu</button>'+
  '<p>Wyposażone dodatki są widoczne na Twoim podglądzie profilu i avatarze w HealthGo.</p>';
 }
-function refresh(){sync();decorateProfile();loadStarter();}
+function refresh(){sync();decorateProfile();loadStarter();loadDaily();}
 Services.subscribe(function(){refresh();});
-window.HealthGoRewards={renderGifts:renderGifts,handle:handle,decorateProfile:decorateProfile,countAvailable:countAvailable,getState:function(){sync();return normalize(data);},starterBanner:starterBanner,openStarter:openStarter,getStarter:function(){sync();return starter;},stickerCount:function(){return STICKERS.length;}};
+window.HealthGoRewards={renderGifts:renderGifts,handle:handle,decorateProfile:decorateProfile,countAvailable:countAvailable,getState:function(){sync();return normalize(data);},starterBanner:starterBanner,openStarter:openStarter,getStarter:function(){sync();return starter;},stickerCount:function(){return STICKERS.length;},dailyBanner:dailyBanner,claimDaily:claimDaily,getDaily:function(){sync();return daily;}};
 })();
