@@ -238,6 +238,7 @@
   if(!validPoint(p))return;
   destination=p;
   rememberDestination(p);
+  drawRecentDestinations();
   window.HealthGoMapPro?.clearRoute();
   const field=el('mapV2RouteTo');if(field)field.value=p.name;
   const map=getMap();
