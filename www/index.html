@@ -341,6 +341,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-map-v2.css?v=3">
 <link rel="stylesheet" href="./healthgo-spacious-ui.css?v=2">
 <link rel="stylesheet" href="./healthgo-navigation-screen.css?v=1">
+<link rel="stylesheet" href="./healthgo-drive-ui.css?v=1">
 </head>
 <body style="background:#07111f">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -550,33 +551,45 @@ html.hg-session-known #authScreen{display:none!important}
         <button type="button" title="Moja lokalizacja" aria-label="Pokaż moją lokalizację" onclick="HealthGoMapV2.centerGPS()"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-pin"></use></svg></button>
         <button type="button" title="Dodatkowe funkcje" aria-label="Więcej możliwości mapy" onclick="HealthGoMapV2.toggle('tools')"><svg class="hg-pro-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#hg-map-menu"></use></svg></button>
       </div>
-      <aside id="hgProNavigation" class="hg-pro-nav" role="region" aria-label="Prowadzenie po trasie" hidden>
-        <div class="hg-pro-nav-main">
+      <aside id="hgProNavigation" class="hg-pro-nav hg-drive-hud" role="region" aria-label="Prowadzenie po trasie" hidden>
+        <section class="hg-pro-nav-main hg-drive-turn" aria-label="Najbliższy manewr">
           <div id="hgProNavIcon" class="hg-pro-direction-symbol" aria-hidden="true">↑</div>
           <div class="hg-pro-direction-copy">
-            <small class="hg-pro-eyebrow">NASTĘPNY MANEWR</small>
-            <b id="hgProNavDirection" aria-live="polite">Ustalam pozycję…</b>
-            <span id="hgProNavNext">Czekam na sygnał GPS</span>
+            <span class="hg-pro-eyebrow" id="hgProNavDirection">Oczekiwanie na GPS</span>
+            <b id="hgProNavTurnDistance">—</b>
+            <span id="hgProNavStreet">Nazwa ulicy po ustaleniu pozycji</span>
+            <span id="hgProNavNext" class="hg-drive-assist" aria-live="polite">Czekam na sygnał GPS</span>
           </div>
-          <button type="button" class="hg-pro-nav-close" aria-label="Zakończ nawigację" onclick="HealthGoMapPro.stopNavigation()">×</button>
+        </section>
+        <div class="hg-pro-speed hg-drive-speed" aria-label="Prędkość z GPS">
+          <strong id="hgProNavSpeed">—</strong><small>km/h</small>
         </div>
-        <div class="hg-pro-speed" aria-label="Prędkość z GPS">
-          <small>GPS</small><strong id="hgProNavSpeed">—</strong><small>km/h</small>
-        </div>
-        <div class="hg-pro-nav-footer">
-          <div class="hg-pro-nav-progress">
-            <strong id="hgProNavEta">—</strong>
-            <span id="hgProNavDistance">Obliczam pozostałą trasę…</span>
-            <small id="hgProNavDestination">Cel podróży</small>
+        <footer class="hg-pro-nav-footer hg-drive-footer">
+          <div class="hg-drive-metrics">
+            <div class="hg-drive-metric"><strong id="hgProNavEta">—</strong><span>Przyjazd</span></div>
+            <div class="hg-drive-metric"><strong id="hgProNavTime">—</strong><span>min</span></div>
+            <div class="hg-drive-metric"><strong id="hgProNavDistance">—</strong><span>Pozostało</span></div>
+            <button type="button" class="hg-drive-exit" aria-label="Zakończ prowadzenie i wróć do mapy" onclick="HealthGoMapPro.stopNavigation()">×</button>
           </div>
-          <div class="hg-pro-nav-buttons">
-            <button id="hgProVoice" type="button" aria-label="Włącz lub wyłącz głos" aria-pressed="false" onclick="HealthGoMapPro.toggleVoice()">Głos: wyłączony</button>
-            <button id="hgProFollow" type="button" aria-pressed="true" onclick="HealthGoMapPro.toggleFollow()">Śledź położenie</button>
-            <button id="hgProNavTheme" type="button" onclick="HealthGoMapPro.toggleNavigationTheme()">Motyw</button>
-            <button type="button" class="hg-pro-stop" onclick="HealthGoMapPro.stopNavigation()">Zakończ</button>
+          <div class="hg-drive-progress-block">
+            <div class="hg-drive-progress-track" role="progressbar" aria-label="Postęp trasy" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="hgProNavProgressTrack">
+              <div class="hg-drive-progress-fill" id="hgProNavProgress"></div>
+              <span class="hg-drive-progress-arrow" aria-hidden="true">➤</span>
+            </div>
+            <div class="hg-drive-footer-end">
+              <small id="hgProNavDestination">Cel podróży</small>
+              <details class="hg-drive-options" id="hgProNavOptions">
+                <summary>Opcje</summary>
+                <div class="hg-pro-nav-buttons">
+                  <button id="hgProVoice" type="button" aria-label="Włącz lub wyłącz głos" aria-pressed="false" onclick="HealthGoMapPro.toggleVoice()">Głos: wyłączony</button>
+                  <button id="hgProFollow" type="button" aria-pressed="true" onclick="HealthGoMapPro.toggleFollow()">Śledź położenie</button>
+                  <button id="hgProNavTheme" type="button" onclick="HealthGoMapPro.toggleNavigationTheme()">Motyw</button>
+                </div>
+              </details>
+            </div>
           </div>
-        </div>
-        <small class="hg-pro-nav-warning">Wskazówki orientacyjne, bez korków i danych o ograniczeniach prędkości. Nie obsługuj telefonu podczas prowadzenia.</small>
+        </footer>
+        <p class="hg-pro-nav-warning">Wskazówki orientacyjne, bez danych o korkach i ograniczeniach prędkości. Nie obsługuj telefonu podczas prowadzenia.</p>
       </aside>
       <aside id="mapV2MeasureHud" class="map-v2-measure-hud" role="status" aria-live="polite" hidden>
         <div class="map-v2-measure-info">
@@ -2881,7 +2894,7 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-v2-ui.js"></script>
 <script src="./healthgo-mobile-suite.js"></script>
 <script src="./healthgo-map-v2.js?v=1"></script>
-<script src="./healthgo-map-pro.js?v=3"></script>
+<script src="./healthgo-map-pro.js?v=4"></script>
 <script src="./healthgo-map4.js?v=1"></script>
 </body>
 </html>
