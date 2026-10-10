@@ -168,3 +168,72 @@ test('Plan 4 exports a real ICS calendar and imports safe JSON without deleting 
  assert.deepEqual(errors,[]);
  await page.close();
 });
+
+
+for(const width of [360,390,430]){
+ test('Bottom full monthly calendar is visible, responsive and selects a date at '+width+'px',async()=>{
+  const {page,errors}=await openPlan(width,844);
+  const bottom=page.locator('#hgpFullCalendarSection');
+  assert.equal(await bottom.isVisible(),true,'Calendar hidden below day planner');
+  await page.locator('#hgpFullCalendarGrid .hgp-fullcalendar-date').first().waitFor();
+  const start=await page.evaluate(()=>({
+   month:document.getElementById('hgpFullCalendarMonth').textContent,
+   days:document.querySelectorAll('#hgpFullCalendarGrid button[data-date]').length,
+   weekdays:document.querySelectorAll('#hgpFullCalendarSection .hgp-fullcalendar-weekdays span').length,
+   lastInPlan:document.getElementById('plan').lastElementChild?.id,
+   bottomBelowForm:document.getElementById('hgpFullCalendarSection').getBoundingClientRect().top>=
+    document.querySelector('#plan .plan-shell').getBoundingClientRect().bottom-2,
+   scrollWidth:document.documentElement.scrollWidth,
+   clientWidth:document.documentElement.clientWidth
+  }));
+  assert.match(start.month,/październik 2026/i);
+  assert.equal(start.days,35,'October 2026 should have five calendar rows');
+  assert.equal(start.weekdays,7);
+  assert.equal(start.bottomBelowForm,true,'Full calendar must be below plan, not next to form');
+  assert.ok(start.scrollWidth<=start.clientWidth+1,'Bottom calendar creates horizontal overflow');
+  await page.locator('#hgpFullCalendarNext').click();
+  assert.match(await page.locator('#hgpFullCalendarMonth').innerText(),/listopad 2026/i);
+  assert.equal(await page.locator('#planDate').inputValue(),'2026-10-10',
+    'Browsing another month must not change selected day');
+  await page.locator('#hgpFullCalendarPrevious').click();
+  assert.match(await page.locator('#hgpFullCalendarMonth').innerText(),/październik 2026/i);
+  await page.locator('#hgpFullCalendarGrid button[data-date="2026-10-12"]').click();
+  assert.equal(await page.locator('#planDate').inputValue(),'2026-10-12');
+  assert.match(await page.locator('#hgpFullCalendarSelectedDate').innerText(),/12 października 2026/i);
+  assert.equal(await page.locator('#hgpFullCalendarGrid button[aria-pressed="true"]').count(),1);
+  assert.deepEqual(errors,[]);
+  await page.close();
+ });
+}
+
+test('Bottom calendar shows real user entries and updates when another date is selected',async()=>{
+ const {page,errors}=await openPlan(390,844);
+ await page.locator('#planTime').fill('16:30');
+ await page.locator('#planTitleInput').fill('Spacer z przyjaciółmi');
+ await page.locator('#planSaveBtn').click();
+ const onDay=page.locator('#hgpFullCalendarGrid button[data-date="2026-10-10"]');
+ assert.ok(await onDay.locator('.hgp-fullcalendar-event-dots i').count()>=1,
+  'Saved event should be represented by a dot');
+ assert.match(await page.locator('#hgpFullCalendarAgenda').innerText(),/Spacer z przyjaciółmi/);
+ await page.locator('#hgpFullCalendarGrid button[data-date="2026-10-11"]').click();
+ assert.equal(await page.locator('#planDate').inputValue(),'2026-10-11');
+ assert.match(await page.locator('#hgpFullCalendarAgenda').innerText(),/Brak wydarzeń/);
+ await page.locator('#hgpFullCalendarGrid button[data-date="2026-10-10"]').click();
+ assert.match(await page.locator('#hgpFullCalendarAgenda').innerText(),/Spacer z przyjaciółmi/);
+ assert.equal(await page.locator('#planList .plan-item').count(),1);
+ assert.deepEqual(errors,[]);
+ await page.close();
+});
+
+test('Bottom calendar follows date picker changes and handles February 2028 leap day',async()=>{
+ const {page,errors}=await openPlan(390,844);
+ await page.locator('#planDate').fill('2028-02-29');
+ await page.locator('#planDate').dispatchEvent('change');
+ assert.match(await page.locator('#hgpFullCalendarMonth').innerText(),/luty 2028/i);
+ assert.equal(await page.locator('#hgpFullCalendarGrid button[data-date="2028-02-29"]').count(),1);
+ assert.equal(await page.locator('#hgpFullCalendarGrid button[data-date="2028-02-29"][aria-pressed="true"]').count(),1);
+ await page.locator('#hgpFullCalendarJump').click();
+ assert.equal(await page.locator('#planDate').inputValue(),'2028-02-29');
+ assert.deepEqual(errors,[]);
+ await page.close();
+});

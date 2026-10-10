@@ -349,7 +349,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-map-emerald-v5.css?v=1">
 <link rel="stylesheet" href="./healthgo-weather-emerald-v5.css?v=1">
 <link rel="stylesheet" href="./healthgo-navigation-follow-v1.css?v=1">
-<link rel="stylesheet" href="./healthgo-plan-emerald-v4.css?v=1">
+<link rel="stylesheet" href="./healthgo-plan-emerald-v4.css?v=2">
 </head>
 <body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -1015,6 +1015,39 @@ html.hg-session-known #authScreen{display:none!important}
       </div>
     </aside>
   </div>
+  <section class="hgp-fullcalendar-section" id="hgpFullCalendarSection" aria-label="Pełny kalendarz miesięczny">
+    <div class="hgp-fullcalendar-head">
+      <div class="hgp-fullcalendar-heading">
+        <span class="hgp-heading-label">✦ TWÓJ KALENDARZ</span>
+        <h3>📅 Kalendarz miesięczny</h3>
+        <p>Wszystkie dni miesiąca w jednym miejscu. Wybierz datę, aby zobaczyć zaplanowane wydarzenia.</p>
+      </div>
+      <div class="hgp-fullcalendar-controls" aria-label="Przełączanie miesięcy">
+        <button type="button" id="hgpFullCalendarPrevious" aria-label="Poprzedni miesiąc" title="Poprzedni miesiąc">‹</button>
+        <strong id="hgpFullCalendarMonth" aria-live="polite">Kalendarz</strong>
+        <button type="button" id="hgpFullCalendarNext" aria-label="Następny miesiąc" title="Następny miesiąc">›</button>
+        <button type="button" id="hgpFullCalendarToday" class="hgp-fullcalendar-today">Dzisiaj</button>
+      </div>
+    </div>
+    <div class="hgp-fullcalendar-weekdays" aria-hidden="true">
+      <span>Pn</span><span>Wt</span><span>Śr</span><span>Cz</span><span>Pt</span><span>So</span><span>Nd</span>
+    </div>
+    <div id="hgpFullCalendarGrid" class="hgp-fullcalendar-grid" aria-label="Dni wyświetlanego miesiąca"></div>
+    <div class="hgp-fullcalendar-legend">
+      <span><i class="hgp-fullcalendar-legend-dot"></i> Dzień z wydarzeniami</span>
+      <span><i class="hgp-fullcalendar-legend-today"></i> Dzisiaj</span>
+    </div>
+    <div class="hgp-fullcalendar-agenda">
+      <div class="hgp-fullcalendar-agenda-header">
+        <div>
+          <span>Wybrany dzień</span>
+          <strong id="hgpFullCalendarSelectedDate">Wybierz dzień</strong>
+        </div>
+        <button type="button" id="hgpFullCalendarJump">Pokaż plan dnia ↑</button>
+      </div>
+      <div id="hgpFullCalendarAgenda" class="hgp-fullcalendar-agenda-list" aria-live="polite">Wybierz dzień w kalendarzu, aby zobaczyć wydarzenia.</div>
+    </div>
+  </section>
   <div id="hgpReminderToast" class="hgp-reminder-toast" role="status" aria-live="polite" hidden></div>
 </section>
 
@@ -3106,6 +3139,6 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-map4.js?v=3"></script>
 <script src="./healthgo-emerald-dashboard.js?v=3"></script>
 <script src="./healthgo-ai-emerald-v3.js?v=2"></script>
-<script src="./healthgo-plan-v4.js?v=1"></script>
+<script src="./healthgo-plan-v4.js?v=2"></script>
 </body>
 </html>

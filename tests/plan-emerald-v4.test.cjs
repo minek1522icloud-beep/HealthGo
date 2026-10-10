@@ -38,8 +38,8 @@ function fixture(){
 }
 test('Plan 4 shipped files, valid syntax, accessible month/week and responsive layouts',()=>{
  assert.doesNotThrow(()=>new vm.Script(source));
- assert.ok(html.includes('healthgo-plan-v4.js?v=1'));
- assert.ok(html.includes('healthgo-plan-emerald-v4.css?v=1'));
+ assert.ok(html.includes('healthgo-plan-v4.js?v=2'));
+ assert.ok(html.includes('healthgo-plan-emerald-v4.css?v=2'));
  for(const id of ['hgpWeekStrip','hgpMonthGrid','hgpStatCount','hgpStatProgress','hgpLiveStatus','hgpToggleReminders','hgpBackupImport','hgpCategoryFilter','hgpReminderToast','planReminderMinutes']){
   assert.ok(html.includes('id="'+id+'"'),'Missing '+id);
  }
