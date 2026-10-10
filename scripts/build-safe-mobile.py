@@ -5,6 +5,7 @@ safe.html is a temporary troubleshooting route for Safari WebContent crashes.
 It must not alter accounts, session storage or normal index.html.
 """
 from pathlib import Path
+import re
 import sys
 
 if len(sys.argv) != 3:
@@ -27,9 +28,6 @@ optional = (
     '<script src="./healthgo-pro.js"></script>',
     '<script src="./healthgo-v2-ui.js"></script>',
     '<script src="./healthgo-mobile-suite.js"></script>',
-    '<script src="./healthgo-map-v2.js?v=1"></script>',
-    '<script src="./healthgo-map-pro.js?v=1"></script>',
-    '<script src="./healthgo-map4.js?v=1"></script>',
     '<script src="./healthgo-offline-ai.js"></script>',
     '<script src="./healthgo-devices.js"></script>',
     '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>',
@@ -45,6 +43,16 @@ for tag in optional:
         )
     if occurrences == 1:
         html = html.replace(tag, "", 1)
+
+# Cache-busted navigation scripts must also disappear from the diagnostic
+# build, even as the normal application increments its asset versions.
+for module in ("healthgo-map-v2", "healthgo-map-pro", "healthgo-map4"):
+    pattern = rf'<script\\s+src="\\./{re.escape(module)}\\.js(?:\\?v=\\d+)?"\\s*></script>'
+    tags = re.findall(pattern, html)
+    if len(tags) > 1:
+        raise SystemExit(f"Safe mode build found duplicate optional tags: {module}")
+    if tags:
+        html = html.replace(tags[0], "", 1)
 
 replace_once("if (typeof setupMobilePWA === 'function') setupMobilePWA();",
              "// Safe diagnostics: do not register SW or poll/refresh this page.")
