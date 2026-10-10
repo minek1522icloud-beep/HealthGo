@@ -66,7 +66,7 @@
    const distance=meters(previous.point,point);
    const accuracy=Math.max(Number(coords?.accuracy)||0,Number(previous.accuracy)||0);
    const gap=Date.now()-(previous.at||0);
-   if(distance>=Math.max(12,accuracy*1.4)&&gap>0&&gap<60000){
+   if(distance>=Math.max(12,accuracy*1.4)&&gap>=0&&gap<60000){
     const direction=bearing(previous.point,point);
     if(direction!==null)return {degrees:direction,source:'movement'};
    }
