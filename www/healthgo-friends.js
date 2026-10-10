@@ -26,7 +26,7 @@ function listRow(item,mode){
  :mode==='blocked'
  ?'<button type="button" class="hgf-subtle" data-friend-action="unblock" data-id="'+esc(item.user_id)+'">Odblokuj</button>'
  :'<span class="hgf-pending">Oczekuje na odpowiedź</span><button type="button" class="hgf-subtle" data-friend-action="remove" data-id="'+esc(item.id)+'">Anuluj</button>';
- return '<div class="hgf-person"><span class="hgf-person-avatar" aria-hidden="true">'+esc((item.nickname||'H').charAt(0).toUpperCase())+'</span><span class="hgf-person-name">'+esc(item.nickname||'Użytkownik HealthGo')+'</span><span class="hgf-person-actions">'+buttons+'</span></div>';
+ return '<div class="hgf-person"><span class="hgf-person-avatar" aria-hidden="true">'+esc((item.nickname||'H').charAt(0).toUpperCase())+'</span><span class="hgf-person-name">'+(mode==='friends'?'<button type="button" class="hgf-visit" data-friend-profile="'+esc(item.user_id)+'">'+esc(item.nickname||'Użytkownik HealthGo')+'</button>':esc(item.nickname||'Użytkownik HealthGo'))+'</span><span class="hgf-person-actions">'+buttons+'</span></div>';
 }
 function section(title,items,mode,empty){
  return '<div class="hgf-section"><h4>'+esc(title)+' <span>'+items.length+'</span></h4>'+
@@ -78,6 +78,7 @@ async function change(action,id){
  finally{busy=false;paint();}
 }
 function onClick(ev){
+ const visitor=ev.target.closest('[data-friend-profile]');if(visitor&&window.HealthGoProfile?.open){window.HealthGoProfile.open('visitor',visitor.getAttribute('data-friend-profile'));return;}
  const button=ev.target.closest('[data-friend-action]');if(!button)return;
  const action=button.getAttribute('data-friend-action'),id=button.getAttribute('data-id');
  if(action==='refresh'){load();return;}

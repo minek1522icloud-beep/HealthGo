@@ -40,7 +40,7 @@ test('patch notes display once per deployed build and can be reopened manually',
  assert.ok(x.timers.length);
  x.timers.shift()();
  assert.ok(x.modal);
- assert.match(x.modal.innerHTML,/AKTUALIZACJA 2.2/);
+ assert.match(x.modal.innerHTML,/AKTUALIZACJA 2.3/);
  assert.match(x.modal.innerHTML,/Skrzynia może zawierać naklejkę/);
  assert.match(x.modal.innerHTML,/HEALTHGO/);
  assert.ok(x.modal.listeners.click);
@@ -55,7 +55,7 @@ test('patch notes display once per deployed build and can be reopened manually',
 test('mobile changelog is shipped with safe-area and scroll support',()=>{
  const css=fs.readFileSync('www/healthgo-release-notes.css','utf8');
  const html=fs.readFileSync('www/index.html','utf8');
- assert.match(html,/healthgo-release-notes\.js\?v=2/);
+ assert.match(html,/healthgo-release-notes\.js\?v=3/);
  assert.match(html,/healthgo-release-notes\.css\?v=1/);
  assert.match(source,/healthgo-build/);
  assert.match(source,/localStorage\.setItem\(KEY,build\(\)\)/);
