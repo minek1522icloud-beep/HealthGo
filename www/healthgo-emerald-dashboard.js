@@ -59,6 +59,7 @@
    if(!$('map')?.classList.contains('active'))return;
    const selector=document.querySelector('#map .map-category[onclick*="restaurants"]');
    if(typeof window.selectMapCategory==='function')window.selectMapCategory('restaurants',selector||null);
+   if(typeof window.searchMapPlaces==='function')window.searchMapPlaces();
   },100);
  }
 
