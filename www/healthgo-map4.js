@@ -266,7 +266,15 @@
    buttons.appendChild(del);item.appendChild(buttons);root.appendChild(item);
   });
  }
- function init(){renderSettings();window.HealthGoMapV2?.chooseMode?.(getSettings().mode)}
+ function init(){
+  renderSettings();
+  window.HealthGoMapV2?.chooseMode?.(getSettings().mode);
+  el('hg5WeatherSearchButton')?.addEventListener('click',searchWeatherCity);
+  el('hg5WeatherResetButton')?.addEventListener('click',resetWeatherCity);
+  el('hg5WeatherCity')?.addEventListener('keydown',e=>{
+   if(e.key==='Enter'){e.preventDefault();searchWeatherCity();}
+  });
+ }
  document.addEventListener('visibilitychange',()=>{if(document.hidden){weatherController?.abort();worksController?.abort();}});
  window.addEventListener('pagehide',()=>{weatherController?.abort();worksController?.abort()});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
