@@ -349,7 +349,7 @@
      rememberPosition(point);noteSystemLocationGranted();
      resolve({lat:point.lat,lon:point.lon,accuracy:point.accuracy});
    },err=>{
-     const fallback=getRecentPosition(300000);
+     const fallback=getRecentPosition(10000);
      if(fallback&&err?.code!==1){resolve(fallback);return;}
      if(err?.code===1)localStorageSet('healthgo.location.welcome.v1','denied');
      reject(new Error(err?.code===1?'GPS_DENIED':err?.code===3?'GPS_TIMEOUT':'GPS_UNAVAILABLE'));
@@ -636,5 +636,5 @@
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,navigateToAddress,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart,updateLiveRoute,drawRecentDestinations,saveHomeFromCenter,goHome,clearHome,clearRecent,homePlace};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,navigateToAddress,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart,updateLiveRoute,getLayerKind:()=>tileKind,drawRecentDestinations,saveHomeFromCenter,goHome,clearHome,clearRecent,homePlace};
 })();
