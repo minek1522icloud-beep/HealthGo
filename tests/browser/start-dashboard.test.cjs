@@ -39,6 +39,8 @@ for(const width of [360,390,768,1440]){
    window.go('start');
   });
   await page.waitForTimeout(110);
+  // Decline first-login map location permissions before interacting with START controls.
+  await page.evaluate(()=>window.HealthGoMapV2?.chooseWelcomeLocation(false));
   assert.equal(await page.locator('#hgStartV3 .hgs-metric').count(),3);
   assert.equal(await page.locator('#hgsBars .hgs-bar-col').count(),7);
   assert.match(await page.locator('#hgsSteps').innerText(),/Brak danych/);
