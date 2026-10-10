@@ -10,6 +10,12 @@
  let arrivalCount=0,arrivalTimer=null;
  const text=(id,value)=>{const n=node(id);if(n)n.textContent=String(value)};
  const show=(id,visible)=>{const n=node(id);if(n)n.hidden=!visible};
+ function gpsAlert(message){
+  const el=node('hgNavGpsStatus');
+  if(!el)return;
+  el.hidden=!message;
+  if(message)el.textContent=message;
+ }
  const radians=x=>x*Math.PI/180;
  const meters=(a,b)=>{
   const dy=radians(b.lat-a.lat),dx=radians(b.lon-a.lon);
@@ -138,7 +144,13 @@
  function positionUpdate(pos){
   if(!active||!route)return;
   const c=pos.coords||{},point={lat:Number(c.latitude),lon:Number(c.longitude)};
-  if(!Number.isFinite(point.lat)||!Number.isFinite(point.lon)||Number(c.accuracy)>150)return;
+  if(!Number.isFinite(point.lat)||!Number.isFinite(point.lon)||
+      typeof c.accuracy!=='number'||!Number.isFinite(c.accuracy)||c.accuracy<0||
+      c.accuracy>150){
+   gpsAlert('Słaby lub niedostępny sygnał GPS — czekam na dokładniejszy odczyt.');
+   return;
+  }
+  gpsAlert(c.accuracy>80?'Dokładność GPS jest ograniczona. Sprawdź lokalizację przed jazdą.':'');
   position=point;
   window.HealthGoMapV2?.rememberPosition?.({lat:point.lat,lon:point.lon,accuracy:c.accuracy});
   // OSRM starts with a departure maneuver at the origin. Move on to the
@@ -252,6 +264,7 @@
   document.body?.classList?.add('hg-navigation-active');
   node('mapWorkspace')?.classList?.add('map-pro-navigating');
   show('hgProNavigation',true);
+  gpsAlert('');
   loadOptions();
   removeArrow();
   window.HealthGoNavigationFollow?.begin?.({geometry:{coordinates:route.geometry}},{follow});
@@ -269,7 +282,7 @@
   try{
    watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
     const message=err?.code===1?'Telefon nie zezwolił na GPS. Sprawdź uprawnienia lokalizacji albo wpisz punkt startowy.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
-    text('hgProNavNext',message);text('hgProNavStreet','GPS niedostępny');
+    text('hgProNavNext',message);text('hgProNavStreet','GPS niedostępny');gpsAlert(message);
     if(err?.code===1){
      stopNavigation();
      window.HealthGoMapV2?.toggle?.('route');
@@ -296,6 +309,7 @@
   if(watchId!==null)try{navigator.geolocation?.clearWatch?.(watchId)}catch(_){}
   watchId=null;position=null;removeArrow();
   show('hgProNavigation',false);
+  gpsAlert('');
   node('mapWorkspace')?.classList?.remove('map-pro-navigating');
   node('mapWorkspace')?.classList?.remove('hg-nav-dark');
   document.body?.classList?.remove('hg-navigation-active');
@@ -321,6 +335,11 @@
   window.HealthGoNavigationFollow?.setFollowing?.(follow);
   return follow;
  }
+ function resumeFollow(){
+  if(!follow)return toggleFollow();
+  window.HealthGoNavigationFollow?.setFollowing?.(true);
+  return true;
+ }
  function toggleNavigationTheme(){setNight(!night);window.HealthGoMap4?.saveSettings?.({theme:night?'dark':'light'});return night}
  function leaveMap(){stopNavigation()}
  // Fresh app launches always begin in regular map mode. The HUD is mounted
@@ -329,6 +348,6 @@
  document.body?.classList?.remove('hg-navigation-active');
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopNavigation()});
  window.addEventListener('pagehide',stopNavigation);
- window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,toggleVoice,toggleFollow,
+ window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,toggleVoice,toggleFollow,resumeFollow,
   toggleNavigationTheme,leaveMap,routeRemaining,instruction,maneuverInfo,navigationProgress,nearestRouteDistance};
 })();
