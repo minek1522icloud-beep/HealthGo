@@ -41,7 +41,7 @@ test('AI background, composer and chat cards use Emerald tokens in both themes',
   'body.hg-emerald #ai .ai-composer',
   'body.hg-emerald #ai .ai-welcome-suggestions',
   'body.hg-emerald #ai .ai-history',
-  'body.hg-emerald #ai .hga-copy'
+  'body.hg-emerald #ai .ai-msg.assistant .hga-copy'
  ])assert.ok(css.includes(selector),'Missing AI style '+selector);
  assert.match(css,/prefers-reduced-motion/);
  assert.match(css,/@media\(max-width:900px\)/);
