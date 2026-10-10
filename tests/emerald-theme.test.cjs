@@ -11,9 +11,11 @@ function read(file){return fs.readFileSync(path.join(base,file),'utf8')}
 test('Emerald assets are included after legacy styles and scripts',()=>{
  const html=read('index.html');
  const css='healthgo-emerald-2.css?v=1';
- const js='healthgo-emerald-dashboard.js?v=1';
+ const js='healthgo-emerald-dashboard.js?v=3';
  assert.ok(html.includes(css));
  assert.ok(html.includes(js));
+ assert.ok(html.includes('healthgo-start-v3.css?v=1'));
+ assert.ok(html.indexOf('healthgo-start-v3.css?v=1')>html.indexOf(css));
  assert.ok(html.indexOf(css)>html.indexOf('healthgo-navigation-live.css'));
  assert.ok(html.indexOf(js)>html.indexOf('healthgo-map4.js'));
  assert.ok(html.includes('<body class="hg-emerald"'));
