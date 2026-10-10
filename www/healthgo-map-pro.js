@@ -215,22 +215,29 @@
   night=!!value;
   node('mapWorkspace')?.classList?.toggle('hg-nav-dark',night);
  }
- function startNavigation(){
+ let restoreMapLayer=null;
+ function startNavigation(initialFix){
   if(active)return true;
-  if(!route?.steps?.length){text('mapV2RouteOutput','Najpierw wyznacz trasę samochodową.');return false}
+  if(!route?.steps?.length){text('mapV2RouteOutput','Nie udało się pobrać skrętów trasy. Wyznacz trasę ponownie.');return false}
   if(!navigator.geolocation){text('mapV2RouteOutput','GPS niedostępny. Możesz użyć podglądu trasy z wpisanego adresu.');return false}
   active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';
-  setProgress(0);const options=node('hgProNavOptions');if(options)options.open=false;
-  // Make navigation a single uncluttered full-screen state, not a map sheet.
+  setProgress(0);
+  const options=node('hgProNavOptions');if(options)options.open=false;
+  // During driving show a legible 2D street map instead of Esri satellite
+  // imagery. Restore the user's chosen layer after exiting guidance.
+  const mapModule=window.HealthGoMapV2;
+  if(mapModule?.getLayerKind?.()==='satellite'){
+   restoreMapLayer='satellite';mapModule.chooseLayer?.('street');
+  }
   window.HealthGoMapV2?.close?.();
-  const panels=document.querySelectorAll?.('#map .map-v2-panel');
-  panels?.forEach?.(panel=>{panel.hidden=true;});
+  document.querySelectorAll?.('#map .map-v2-panel')?.forEach?.(panel=>{panel.hidden=true;});
   document.body?.classList?.add('hg-navigation-active');
   node('mapWorkspace')?.classList?.add('map-pro-navigating');
   show('hgProNavigation',true);
   loadOptions();
-  window.HealthGoNavigationLive?.begin?.({geometry:{coordinates:route.geometry}});
-  // Start speech synthesis only inside a direct user gesture when available.
+  // Keep 2D Leaflet guidance lightweight and immediate on iPhone. The
+  // optional MapLibre renderer is never started without explicit preference.
+  window.HealthGoNavigationLive?.stop?.();
   speak('Rozpoczynam prowadzenie. Sprawdzam pozycję GPS.','navigation-start');
   text('hgProNavDestination',route.destination);
   text('hgProNavDirection','Ustalam pozycję');text('hgProNavIcon','↑');
@@ -238,16 +245,25 @@
   text('hgProNavNext','Pozycja jest używana tylko podczas prowadzenia.');
   text('hgProNavEta','—');text('hgProNavTime',String(Math.max(1,Math.ceil(route.seconds/60))));
   text('hgProNavDistance',nice(route.meters));
-  window.HealthGoMapV2?.close?.();
-  // Leaflet needs a size refresh after the map becomes full-screen.
   window.setTimeout?.(()=>map()?.invalidateSize?.({pan:false}),80);
   try{
    watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
     const message=err?.code===1?'Telefon nie zezwolił na GPS. Sprawdź uprawnienia lokalizacji albo wpisz punkt startowy.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
     text('hgProNavNext',message);text('hgProNavStreet','GPS niedostępny');
-    if(err?.code===1){stopNavigation();text('mapV2RouteOutput',message)}
+    if(err?.code===1){
+     stopNavigation();
+     window.HealthGoMapV2?.toggle?.('route');
+     text('mapV2RouteOutput',message);
+    }
    },{enableHighAccuracy:true,maximumAge:5000,timeout:17000});
   }catch(_){stopNavigation();return false}
+  // Immediate turn card and location from the authentic GPS fix obtained
+  // when the user chose the destination, while continuous watch starts.
+  const lat=Number(initialFix?.lat),lon=Number(initialFix?.lon),accuracy=Number(initialFix?.accuracy);
+  if(Number.isFinite(lat)&&Math.abs(lat)<=90&&Number.isFinite(lon)&&Math.abs(lon)<=180&&
+   Number.isFinite(accuracy)&&accuracy>=0&&accuracy<=150){
+   positionUpdate({coords:{latitude:lat,longitude:lon,accuracy,speed:null,heading:null}});
+  }
   return true;
  }
  function stopNavigation(){
@@ -261,6 +277,7 @@
   node('mapWorkspace')?.classList?.remove('hg-nav-dark');
   document.body?.classList?.remove('hg-navigation-active');
   try{window.speechSynthesis?.cancel?.()}catch(_){}
+  if(restoreMapLayer){window.HealthGoMapV2?.chooseLayer?.(restoreMapLayer);restoreMapLayer=null;}
   window.HealthGoMapV2?.resizeViewport?.();
   window.setTimeout?.(()=>map()?.invalidateSize?.({pan:false}),50);
  }
