@@ -25,7 +25,7 @@ test('Weather extras are derived from real API fields and never from fabricated 
   'surface_pressure','wind_direction_10m','apparent_temperature',
   'precipitation_probability','sunrise','sunset','uv_index_max',
   "source:'miasto'","function searchWeatherCity()","function resetWeatherCity()",
-  'Math.max(0,start)+12','typeof v===\\'number\\''
+  'Math.max(0,start)+12',"typeof v==='number'"
  ])assert.ok(js.includes(token),'Missing real weather field '+token);
  assert.match(js,/fmtValue\(rain\[j\],'%'\)/);
  assert.match(js,/fmtValue\(high\[i\],'°'\)/);
