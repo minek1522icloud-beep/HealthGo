@@ -406,3 +406,13 @@ body.hg-emerald #plan .hgp-reminder-toast:not([hidden]){
 body.hg-emerald #plan .hgp-editor-tools .hgp-status:not(:empty){padding:4px 0!important;}
 body.hg-emerald #plan .hgp-filters select:focus{border-color:var(--hgp-accent)!important;}
 body.hg-emerald #plan .hgp-add-now{min-height:42px!important}
+
+/* Location permission belongs to the MAP tab, never blocks the Day Plan.
+ * Preserve the modal state: it may appear on the Map tab later. */
+body.hg-emerald:has(#plan.active) #hgLocationWelcome{
+ display:none!important;pointer-events:none!important;
+}
+body.hg-emerald #plan .hgp-quick button,
+body.hg-emerald #plan .plan-editor :is(input,button,textarea,select){
+ scroll-margin-top:100px;scroll-margin-bottom:105px;
+}
