@@ -5,7 +5,7 @@ function harness(){
  const elements=new Map(),classes=new Set(),timers=[],counts={clear:0,watch:0};
  const element=id=>{
   if(!elements.has(id))elements.set(id,{id,hidden:true,textContent:'',style:{setProperty(){},width:''},
-   classList:{add(){},remove(){}},attributes:{},setAttribute(k,v){this.attributes[k]=v}});
+   classList:{add(){},remove(){},toggle(){}},attributes:{},setAttribute(k,v){this.attributes[k]=v}});
   return elements.get(id);
  };
  let gps;
