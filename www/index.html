@@ -2151,7 +2151,10 @@ const PLAN_CATEGORY_META={
  health:{icon:'❤️',label:'Zdrowie'},
  meeting:{icon:'👥',label:'Spotkanie'},
  travel:{icon:'🚌',label:'Wyjście / podróż'},
- rest:{icon:'🎮',label:'Odpoczynek'}
+ rest:{icon:'🎮',label:'Odpoczynek'},
+ hobby:{icon:'🎨',label:'Zainteresowania'},
+ home:{icon:'🏠',label:'Dom / obowiązki'},
+ family:{icon:'👨‍👩‍👧',label:'Rodzina'}
 };
 const PLAN_PRIORITY_META={
  normal:{label:'Zwykły',cls:''},
@@ -2163,7 +2166,10 @@ const PLAN_REPEAT_META={
  none:'Jednorazowo',
  daily:'Codziennie',
  weekdays:'Pon.–pt.',
- weekly:'Co tydzień'
+ weekly:'Co tydzień',
+ fortnight:'Co dwa tygodnie',
+ weekends:'Weekendy',
+ monthly:'Co miesiąc'
 };
 
 function planTodayKey(){
@@ -2182,13 +2188,16 @@ function healthGoPlanStorageKey(){
  return HEALTHGO_PLAN_KEY;
 }
 function normalizePlanItem(x){
+ const reminders=[0,5,10,15,30,60];
  return {
    ...x,
    endTime:x.endTime||'',
    category:x.category||'other',
    priority:x.priority||'normal',
    repeat:x.repeat||'none',
+   reminderMinutes:reminders.includes(Number(x.reminderMinutes))?Number(x.reminderMinutes):0,
    doneDates:Array.isArray(x.doneDates)?x.doneDates:[],
+   skipDates:Array.isArray(x.skipDates)?x.skipDates:[],
    done:!!x.done
  };
 }
@@ -2201,7 +2210,7 @@ function loadHealthGoPlan(){
      if(legacy&&window.healthGoLegacyOwnerUid===hgUid()&&hgUid()){localStorage.setItem(key,legacy);raw=legacy}
    }
    const data=JSON.parse(raw||'[]');
-   return Array.isArray(data)?data.map(normalizePlanItem):[];
+   return Array.isArray(data)?data.filter(x=>x&&typeof x==='object').map(normalizePlanItem):[];
  }catch(_){return []}
 }
 function saveHealthGoPlan(data){
@@ -2227,7 +2236,7 @@ function currentPlanDate(){
  return date&&date.value?date.value:planTodayKey();
 }
 function planOccursOnDate(item,date){
- if(!item||!item.date||date<item.date)return false;
+ if(!item||!item.date||date<item.date||Array.isArray(item.skipDates)&&item.skipDates.includes(date))return false;
  const repeat=item.repeat||'none';
  if(repeat==='none')return item.date===date;
  if(repeat==='daily')return true;
@@ -2237,6 +2246,12 @@ function planOccursOnDate(item,date){
    return day>=1&&day<=5;
  }
  if(repeat==='weekly')return d.getDay()===start.getDay();
+ if(repeat==='weekends')return d.getDay()===0||d.getDay()===6;
+ if(repeat==='monthly')return d.getDate()===start.getDate();
+ if(repeat==='fortnight'){
+   const delta=Math.round((d.getTime()-start.getTime())/86400000);
+   return delta>=0&&delta%14===0;
+ }
  return item.date===date;
 }
 function isPlanDoneOnDate(item,date){
@@ -2274,9 +2289,10 @@ function renderPlanDay(){
 
  const allItems=planItemsForDate(date);
  updatePlanProgress(allItems,date);
- let items=allItems;
+ window.HealthGoPlanner?.renderSupplemental?.(allItems,date);
+ let items=window.HealthGoPlanner?.updateFilters?.()||allItems;
  if(search){
-   items=allItems.filter(x=>[x.title,x.place,x.note,PLAN_CATEGORY_META[x.category]?.label].some(v=>String(v||'').toLowerCase().includes(search)));
+   items=items.filter(x=>[x.title,x.place,x.note,PLAN_CATEGORY_META[x.category]?.label].some(v=>String(v||'').toLowerCase().includes(search)));
  }
 
  const doneCount=allItems.filter(x=>isPlanDoneOnDate(x,date)).length;
@@ -2297,14 +2313,19 @@ function renderPlanDay(){
    const priority=PLAN_PRIORITY_META[item.priority]||PLAN_PRIORITY_META.normal;
    const repeat=PLAN_REPEAT_META[item.repeat]||PLAN_REPEAT_META.none;
    const row=document.createElement('article');
-   row.className='plan-item'+(done?' done':'');
+   const overlap=window.HealthGoPlanner?.clashes?.(allItems)?.ids.has(String(item.id))||false;
+   const inProgress=window.HealthGoPlanner?.isCurrent?.(item,date)||false;
+   row.className='plan-item'+(done?' done':'')+(overlap?' hgp-conflict':'')+(inProgress?' hgp-active':'');
    const details=[];
    if(item.place)details.push('📍 '+planEscape(item.place));
    if(item.note)details.push(planEscape(item.note));
    const meta=[
      '<span class="plan-chip">'+planEscape(cat.icon+' '+cat.label)+'</span>',
      item.priority!=='normal'?'<span class="plan-chip '+priority.cls+'">'+planEscape(priority.label)+'</span>':'',
-     item.repeat!=='none'?'<span class="plan-chip">🔁 '+planEscape(repeat)+'</span>':''
+     item.repeat!=='none'?'<span class="plan-chip">🔁 '+planEscape(repeat)+'</span>':'',
+     Number(item.reminderMinutes)>0?'<span class="plan-chip">🔔 '+Number(item.reminderMinutes)+' min</span>':'',
+     overlap?'<span class="plan-chip hgp-warning-chip">⚠ Nakłada się z innym</span>':'',
+     inProgress?'<span class="plan-chip">● Teraz</span>':''
    ].filter(Boolean).join('');
    const timeBlock='<div class="plan-item-time-wrap"><div class="plan-item-time">'+planEscape(item.time)+'</div>'+(item.endTime?'<div class="plan-item-end">do '+planEscape(item.endTime)+'</div>':'')+'</div>';
    row.innerHTML=timeBlock+
@@ -2315,13 +2336,15 @@ function renderPlanDay(){
        '<button class="plan-icon-btn plan-done-btn" type="button" title="'+(done?'Oznacz jako niewykonane':'Oznacz jako wykonane')+'">'+(done?'↩️':'✅')+'</button>'+
        '<button class="plan-icon-btn" type="button" title="Duplikuj">📄</button>'+
        '<button class="plan-icon-btn" type="button" title="Edytuj">✏️</button>'+
-       '<button class="plan-icon-btn danger" type="button" title="Usuń">🗑️</button>'+
+       '<button class="plan-icon-btn danger" type="button" title="Usuń wydarzenie lub całą serię" aria-label="Usuń wydarzenie">🗑️</button>'+
+     (item.repeat!=='none'?'<button class="plan-icon-btn" type="button" title="Pomiń tylko wybrany dzień" aria-label="Pomiń to wystąpienie">⤼</button>':'')+
      '</div>';
    const buttons=row.querySelectorAll('button');
    buttons[0].onclick=()=>togglePlanDone(item.id,date);
    buttons[1].onclick=()=>duplicatePlanItem(item.id,date);
    buttons[2].onclick=()=>editPlanItem(item.id);
    buttons[3].onclick=()=>deletePlanItem(item.id);
+   if(buttons[4])buttons[4].onclick=()=>window.HealthGoPlanner?.skipOccurrence?.(item.id,date);
    root.appendChild(row);
  });
 }
