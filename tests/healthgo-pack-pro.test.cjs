@@ -92,7 +92,7 @@ test('Checking items persists but cannot alter XP or earn locked achievements',(
 
 test('Plecak has original metal medals, locked states, large artwork and no invented XP',()=>{
   const app=harness();
-  assert.match(html,/healthgo-medals\.js\?v=1/);
+  assert.match(html,/healthgo-medals\.js\?v=2/);
   assert.match(app.root.innerHTML,/hgp-medal-svg/);
   assert.match(app.root.innerHTML,/HEALTHGO/);
   assert.match(app.root.innerHTML,/data-medal-category="cups"/);
