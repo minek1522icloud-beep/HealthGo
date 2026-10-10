@@ -104,6 +104,17 @@ test('Next OSRM maneuver updates blue banner with real distance and street name'
  assert.ok(Number.parseFloat(h.element('hgProNavProgress').style.width)>80);
  h.api.stopNavigation();
 });
+test('GPS is projected onto road segments even when route vertices are far apart',()=>{
+ const h=harness();
+ // Highway-like long straight section: midpoint is ~340m from either vertex
+ // but 0m from the actual road. No false off-route recalculation.
+ h.api.setRoute({geometry:{coordinates:[[21,52],[21.01,52]]},distance:685,duration:65,
+  legs:[{steps:[{maneuver:{type:'depart',location:[21,52]}}]}]},'Cel');
+ const point={lat:52,lon:21.005};
+ assert.ok(h.api.nearestRouteDistance(point)<3,'GPS near line must not be treated as off route');
+ assert.ok(h.api.routeRemaining(point)>300&&h.api.routeRemaining(point)<390,'remaining distance is roughly half');
+});
+
 test('Driving screen has white ETA card, single exit X and optional controls',()=>{
  const style=fs.readFileSync('www/healthgo-drive-ui.css','utf8');
  for(const id of ['hgProNavTurnDistance','hgProNavStreet','hgProNavTime','hgProNavProgress',
