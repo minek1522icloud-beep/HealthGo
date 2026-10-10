@@ -347,7 +347,6 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-start-v3.css?v=1">
 <link rel="stylesheet" href="./healthgo-ai-emerald-v3.css?v=2">
 <link rel="stylesheet" href="./healthgo-map-emerald-v5.css?v=1">
-<link rel="stylesheet" href="./healthgo-map-emerald-v5.css?v=1">
 </head>
 <body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -662,7 +661,7 @@ html.hg-session-known #authScreen{display:none!important}
             <button type="button" data-map-mode="bike" aria-pressed="false" onclick="HealthGoMapV2.chooseMode('bike')">🚲 Rower</button>
           </div>
           <p id="mapV2RouteModeHint" class="map-v2-muted">Trasa drogowa z publicznej usługi OSRM — orientacyjna.</p>
-          <button type="button" class="map-v2-primary" onclick="HealthGoMapV2.planRoute()">↗ Znajdź najlepszą trasę</button>
+          <button type="button" class="map-v2-primary" onclick="HealthGoMapV2.planRoute()">↗ Wyznacz trasę i prowadź</button>
           <div id="hg4RouteAlternatives" class="hg4-route-alternatives" aria-label="Warianty trasy"></div>
           <button type="button" class="hg4-outline" onclick="HealthGoMap4.saveCurrentRoute()">☆ Zapisz tę trasę</button>
           <p id="mapV2RouteOutput" class="map-v2-alert" role="status">Podaj cel lub wybierz miejsce z wyników mapy.</p>
@@ -1901,6 +1900,11 @@ async function searchMapAddress(){
  initHealthGoMap();if(!healthGoMap)return;
  const input=document.getElementById('mapAddressInput'),q=(input&&input.value||'').trim();
  if(!q){mapStatus('Wpisz adres, ulicę albo miasto.');return}
+ // The main address search now launches a real GPS-to-destination trip.
+ // Position is requested from this explicit user action, not at app launch.
+ if(window.HealthGoMapV2?.navigateToAddress){
+  return window.HealthGoMapV2.navigateToAddress(q);
+ }
  mapStatus('Szukam adresu…');
  try{
    const url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+encodeURIComponent(q);
@@ -2971,9 +2975,9 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-pro.js"></script>
 <script src="./healthgo-v2-ui.js"></script>
 <script src="./healthgo-mobile-suite.js"></script>
-<script src="./healthgo-map-v2.js?v=2"></script>
+<script src="./healthgo-map-v2.js?v=3"></script>
 <script src="./healthgo-navigation-live.js?v=1"></script>
-<script src="./healthgo-map-pro.js?v=6"></script>
+<script src="./healthgo-map-pro.js?v=7"></script>
 <script src="./healthgo-map4.js?v=2"></script>
 <script src="./healthgo-emerald-dashboard.js?v=3"></script>
 <script src="./healthgo-ai-emerald-v3.js?v=2"></script>
