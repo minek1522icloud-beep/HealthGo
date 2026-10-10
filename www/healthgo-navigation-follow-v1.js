@@ -94,6 +94,9 @@
  }
  function paintHeading(){
   const element=markerElement();if(!element)return;
+  element.setAttribute('aria-label',direction.source==='route'
+   ?'Twoja pozycja GPS; strzałka wskazuje kierunek zaplanowanej trasy'
+   :'Twoja pozycja GPS'+(Number.isFinite(direction.degrees)?'; kierunek ustalony z pomiaru':''));
   const known=Number.isFinite(direction.degrees);
   element.classList.toggle('hg-follow-heading-unknown',!known);
   if(known){
@@ -216,7 +219,16 @@
   const p=pointLatLon(coords),accuracy=Number(coords.accuracy);
   if(!goodPoint(p)||!Number.isFinite(accuracy)||accuracy<0||accuracy>150)return false;
   const now=Date.now();
-  const heading=updateHeading(p,coords,previous,direction);
+  const projected=geometry.length>=2?projection(p,geometry):null;
+  let heading=updateHeading(p,coords,previous,direction);
+  // When iOS has not supplied a movement heading yet, the *actual OSRM
+  // geometry* gives a useful planned bearing. It is labelled as a route
+  // direction, never as a measured direction of the phone.
+  if(heading.degrees===null&&projected&&projected.distance<=Math.max(45,accuracy*1.8)){
+   const a=geometry[projected.index],b=geometry[projected.index+1];
+   const routeDirection=bearing({lat:a[1],lon:a[0]},{lat:b[1],lon:b[0]});
+   if(routeDirection!==null)heading={degrees:routeDirection,source:'route'};
+  }
   // No synthetic movement: recorded track comes only from GPS callbacks.
   direction=heading;
   const moved=previous?meters(previous.point,p):Infinity;
@@ -226,10 +238,7 @@
   latestPoint=p;
   if(!remainingLayer)drawRoute();
   paintPosition(p);
-  if(geometry.length>=2){
-   const projected=projection(p,geometry);
-   if(projected)redrawProgress(projected);
-  }
+  if(projected)redrawProgress(projected);
   moveCamera(p,!lastCameraPoint);
   return true;
  }
