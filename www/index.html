@@ -2358,6 +2358,7 @@ function savePlanItem(){
  const category=document.getElementById('planCategory')?.value||'other';
  const priority=document.getElementById('planPriority')?.value||'normal';
  const repeat=document.getElementById('planRepeat')?.value||'none';
+ const reminderMinutes=Number(document.getElementById('planReminderMinutes')?.value)||0;
  const status=document.getElementById('planEditorStatus');
 
  if(!time||!title){
@@ -2372,11 +2373,11 @@ function savePlanItem(){
  let data=loadHealthGoPlan();
  if(planEditingId){
    const idx=data.findIndex(x=>x.id===planEditingId);
-   if(idx>=0)data[idx]={...data[idx],date,time,endTime,title,place,note,category,priority,repeat};
+   if(idx>=0)data[idx]={...data[idx],date,time,endTime,title,place,note,category,priority,repeat,reminderMinutes};
  }else{
    data.push({
      id:'plan_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-     date,time,endTime,title,place,note,category,priority,repeat,done:false,doneDates:[]
+     date,time,endTime,title,place,note,category,priority,repeat,reminderMinutes,done:false,doneDates:[],skipDates:[]
    });
  }
  saveHealthGoPlan(data);
@@ -2399,6 +2400,7 @@ function editPlanItem(id){
  document.getElementById('planCategory').value=item.category||'other';
  document.getElementById('planPriority').value=item.priority||'normal';
  document.getElementById('planRepeat').value=item.repeat||'none';
+ document.getElementById('planReminderMinutes').value=String(item.reminderMinutes||0);
  document.getElementById('planEditorTitle').textContent='✏️ Edytuj punkt planu';
  document.getElementById('planSaveBtn').textContent='Zapisz zmiany';
  document.getElementById('planCancelBtn').style.display='';
@@ -2411,6 +2413,7 @@ function cancelPlanEdit(){
  const cat=document.getElementById('planCategory');if(cat)cat.value='other';
  const pri=document.getElementById('planPriority');if(pri)pri.value='normal';
  const rep=document.getElementById('planRepeat');if(rep)rep.value='none';
+ const reminder=document.getElementById('planReminderMinutes');if(reminder)reminder.value='0';
  const title=document.getElementById('planEditorTitle');if(title)title.textContent='＋ Dodaj punkt planu';
  const save=document.getElementById('planSaveBtn');if(save)save.textContent='Dodaj do planu';
  const cancel=document.getElementById('planCancelBtn');if(cancel)cancel.style.display='none';
