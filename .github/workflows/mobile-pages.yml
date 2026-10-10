@@ -14,6 +14,7 @@ on:
       - "tests/healthgo-map4.test.cjs"
       - "tests/healthgo-spacious-ui.test.cjs"
       - "tests/healthgo-navigation-screen.test.cjs"
+      - "www/healthgo-drive-ui.css"
       - "tests/healthgo-chat-modern.test.cjs"
       - "tests/ai-multiturn.test.cjs"
       - "tests/mobile-suite.test.cjs"
@@ -82,6 +83,7 @@ jobs:
           test -s www/healthgo-map4.js
           test -s www/healthgo-spacious-ui.css
           test -s www/healthgo-navigation-screen.css
+          test -s www/healthgo-drive-ui.css
           test -s www/safe.html
           test -s www/diagnostics.html
           grep -q 'healthgo-safe-mode' www/safe.html
