@@ -45,7 +45,7 @@ test('Full-screen form leaves an interactive map visible and mobile sheet scroll
 
 test('GPS tracking is separate from opening the planner',()=>{
  assert.match(controller,/if\(name==='route'\)/.test(controller)?controller:/toggle\?\.\('hg-route-planner-open',name==='route'\)/);
- assert.match(live,/function startNavigation\(\)/);
+ assert.match(live,/function startNavigation\(initialFix\)/);
  assert.match(live,/navigator\.geolocation\.watchPosition\(positionUpdate/);
  assert.match(html,/Za Twoją zgodą systemową/);
  assert.match(controller,/Punkt startowy: GPS\./);
