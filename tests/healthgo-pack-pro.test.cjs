@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync('www/healthgo-pack-pro.js','utf8');
+const medalSource=fs.readFileSync('www/healthgo-medals.js','utf8');
 const html=fs.readFileSync('www/index.html','utf8');
 const css=fs.readFileSync('www/healthgo-pack-pro.css','utf8');
 
@@ -34,6 +35,7 @@ function harness(){
     addEventListener(){}};
   const localStorage={getItem(k){return storage.has(k)?storage.get(k):null;},setItem(k,v){storage.set(k,v);}};
   const navigator={};
+  vm.runInNewContext(medalSource,{window,Math});
   vm.runInNewContext(source,{window,document,localStorage,navigator,console,Date,Math,encodeURIComponent});
   function action(name,attrs={}){
     const btn={getAttribute(k){if(k==='data-action')return name;return attrs[k]||null;}};
@@ -46,8 +48,8 @@ function harness(){
   return {root,page,svc,storage,action,checkbox};
 }
 test('Plecak 2.0 loads after the existing app without removing achievement nodes',()=>{
-  assert.match(html,/healthgo-pack-pro\.css\?v=1/);
-  assert.match(html,/healthgo-pack-pro\.js\?v=1/);
+  assert.match(html,/healthgo-pack-pro\.css\?v=2/);
+  assert.match(html,/healthgo-pack-pro\.js\?v=2/);
   assert.match(css,/#backpack\.hgpack-ready/);
   const app=harness();
   assert.match(app.root.innerHTML,/Mój plecak/);
@@ -86,4 +88,27 @@ test('Checking items persists but cannot alter XP or earn locked achievements',(
   app.action('favorite',{'data-id':'earned'});
   const withFav=JSON.parse(app.storage.get('healthgo.pack.pro.2.alice'));
   assert.deepEqual(withFav.favorites,['earned']);
+});
+
+test('Plecak has original metal medals, locked states, large artwork and no invented XP',()=>{
+  const app=harness();
+  assert.match(html,/healthgo-medals\.js\?v=1/);
+  assert.match(app.root.innerHTML,/hgp-medal-svg/);
+  assert.match(app.root.innerHTML,/HEALTHGO/);
+  assert.match(app.root.innerHTML,/data-medal-category="cups"/);
+  assert.match(app.root.innerHTML,/is-locked/);
+  assert.match(app.root.innerHTML,/linearGradient/);
+  assert.match(css,/hgp-detail-medal/);
+  assert.equal(app.svc.state.engine.totalXp,600);
+});
+test('Medal art is deterministic and varies by achievement and category',()=>{
+  const window={};
+  vm.runInNewContext(medalSource,{window,Math});
+  const badge={id:'first',name:'Odznaka',category:'sports',rarity:'rare',earned:true};
+  const a=window.HealthGoMedalArt.render(badge,false);
+  assert.equal(a,window.HealthGoMedalArt.render(badge,false));
+  assert.match(a,/is-earned/);
+  assert.match(a,/data-medal-category="sports"/);
+  assert.notEqual(a,window.HealthGoMedalArt.render({...badge,category:'cups',rarity:'legendary'},false));
+  assert.match(window.HealthGoMedalArt.render({id:'secret',category:'secret',rarity:'epic',earned:false},false),/is-locked/);
 });

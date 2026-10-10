@@ -115,7 +115,7 @@
     var isStar=data.favorites.indexOf(item.id)>=0,isSpotlight=data.spotlight===item.id;
     return '<button type="button" class="hgp-card" data-action="badge" data-id="'+escapeHtml(item.id)+'" data-earned="'+(!!item.earned)+'" data-spotlight="'+isSpotlight+'">'+
       (isSpotlight?'<span class="hgp-status">Wyróżnione</span>':item.earned?'<span class="hgp-status">'+(isStar?'★ Ulubione':'Zdobyte')+'</span>':'')+
-      '<span class="hgp-art">'+svg(badgeIcon(item))+'</span><b>'+escapeHtml(item.name)+'</b>'+
+      '<span class="hgp-art hgp-medal-stage">'+(window.HealthGoMedalArt?window.HealthGoMedalArt.render(item,false):svg(badgeIcon(item)))+'</span><b>'+escapeHtml(item.name)+'</b>'+
       '<span class="hgp-rarity '+escapeHtml(item.rarity||'common')+'">'+escapeHtml(RARITY[item.rarity]||'Zwykły')+'</span>'+
       '<small>'+(item.earned?'Zdobyto'+(item.earnedAt?' · '+escapeHtml(new Date(item.earnedAt).toLocaleDateString('pl-PL')):''):(item.target==null?'Warunek ukryty':'Postęp: '+Math.round(item.progress||0)+' / '+Math.round(item.target||0)))+'</small></button>';
   }
@@ -192,7 +192,7 @@
   }
   function badgeDetail(item){
     var favorited=data.favorites.indexOf(item.id)>=0,spotlight=data.spotlight===item.id;
-    var info='<div class="hgp-detail-icon">'+svg(badgeIcon(item))+'</div>'+
+    var info='<div class="hgp-detail-icon hgp-detail-medal">'+(window.HealthGoMedalArt?window.HealthGoMedalArt.render(item,true):svg(badgeIcon(item)))+'</div>'+
       '<p class="hgp-detail-desc">'+escapeHtml(item.description||item.requirementText||'')+'</p>'+
       '<div class="hgp-detail-rows"><span>Rzadkość</span><b>'+escapeHtml(RARITY[item.rarity]||'Zwykły')+'</b></div>'+
       '<div class="hgp-detail-rows"><span>Status</span><b>'+(item.earned?'Zdobyte':'Nieodkryte')+'</b></div>'+

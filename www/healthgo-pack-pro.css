@@ -99,3 +99,17 @@
 @media(min-width:768px){#hgPackProRoot .hgp-overlay{align-items:center}#hgPackProRoot .hgp-dialog{border-radius:22px}}
 @media(max-width:600px){#backpack.hgpack-ready{padding-left:12px!important;padding-right:12px!important}#hgPackProRoot .hgp-hero{padding:14px;border-radius:18px}#hgPackProRoot .hgp-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#hgPackProRoot .hgp-card{padding:10px;min-height:154px}#hgPackProRoot .hgp-card .hgp-art{height:66px}#hgPackProRoot .hgp-stats{gap:6px}#hgPackProRoot .hgp-stat{padding:10px 5px}#hgPackProRoot .hgp-dialog{max-height:calc(100dvh - env(safe-area-inset-top,0px) - 38px)}}
 @media(prefers-reduced-motion:reduce){#hgPackProRoot .hgp-card{transition:none}}
+
+
+/* Original HealthGo 3D medal artwork: enamel coins, shields, ribbons and stamped relief. */
+#hgPackProRoot .hgp-card .hgp-art.hgp-medal-stage{height:132px;min-height:132px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 50%,rgba(120,207,169,.16),transparent 73%),linear-gradient(145deg,#1a2c24,#0c1814);border:1px solid #34513d;position:relative}
+#hgPackProRoot .hgp-card .hgp-art.hgp-medal-stage:before{content:"";position:absolute;inset:8px;border:1px solid rgba(190,233,206,.075);border-radius:9px;pointer-events:none}
+#hgPackProRoot .hgp-art svg.hgp-medal-svg{display:block;width:130px;height:130px;max-width:100%;max-height:100%;overflow:visible;filter:drop-shadow(0 4px 7px rgba(0,0,0,.35));transition:transform .24s ease,filter .24s ease}
+#hgPackProRoot .hgp-card[data-earned="false"] .hgp-art.hgp-medal-stage{opacity:1}
+#hgPackProRoot .hgp-art svg.hgp-medal-svg.is-locked{filter:grayscale(.87) brightness(.65) drop-shadow(0 5px 7px #0008);opacity:.85}
+#hgPackProRoot .hgp-card[data-earned="true"] .hgp-medal-stage{border-color:#4a765a}
+#hgPackProRoot .hgp-card[data-earned="true"]:hover .hgp-medal-svg{transform:translateY(-3px) rotate(-2deg) scale(1.05);filter:drop-shadow(0 8px 14px rgba(109,229,171,.28))}
+#hgPackProRoot .hgp-detail-icon.hgp-detail-medal{width:100%;max-width:100%;height:218px;margin:1px auto 17px;border:1px solid #3f634d;border-radius:16px;background:radial-gradient(ellipse,#2b523b 0%,#15271d 65%,#101c17 100%);overflow:hidden}
+#hgPackProRoot .hgp-detail-icon.hgp-detail-medal svg.hgp-medal-svg{width:198px;height:207px;max-width:100%;max-height:100%;color:inherit}
+@media(max-width:360px){#hgPackProRoot .hgp-card .hgp-art.hgp-medal-stage{height:112px;min-height:112px}#hgPackProRoot .hgp-art svg.hgp-medal-svg{width:111px;height:111px}}
+@media(prefers-reduced-motion:reduce){#hgPackProRoot .hgp-art svg.hgp-medal-svg{transition:none}#hgPackProRoot .hgp-card[data-earned="true"]:hover .hgp-medal-svg{transform:none}}
