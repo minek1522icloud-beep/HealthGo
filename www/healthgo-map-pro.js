@@ -331,6 +331,7 @@
   try{window.speechSynthesis?.cancel?.()}catch(_){}
   if(restoreMapLayer){window.HealthGoMapV2?.chooseLayer?.(restoreMapLayer);restoreMapLayer=null;}
   window.HealthGoMapV2?.resizeViewport?.();
+  window.HealthGoMapV2?.navigationStopped?.();
   window.setTimeout?.(()=>map()?.invalidateSize?.({pan:false}),50);
  }
  function toggleVoice(){
