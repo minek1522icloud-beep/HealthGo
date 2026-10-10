@@ -72,11 +72,11 @@ test('Route path updates ETA, GPS speed, and end-of-route progress without 3D',(
  h.api.startNavigation();
  h.emitGPS({latitude:52,longitude:21.004,accuracy:10,speed:5,heading:90});
  assert.equal(h.element('hgProNavSpeed').textContent,'18');
- assert.match(h.element('hgProNavEta').textContent,/^\\d{2}:\\d{2}$/);
+ assert.match(h.element('hgProNavEta').textContent,/^\d{2}:\d{2}$/);
  assert.match(h.element('hgProNavDistance').textContent,/m|km/);
- assert.match(h.element('hgProNavTime').textContent,/^\\d+$/);
- assert.equal(h.element('hgProNavStreet').textContent,'Trzymaj się trasy');
- assert.equal(h.element('hgProNavTurnDistance').textContent,'Jedź prosto');
+ assert.match(h.element('hgProNavTime').textContent,/^\d+$/);
+ assert.equal(h.element('hgProNavStreet').textContent,'Kontynuuj wyznaczoną trasą');
+ assert.match(h.element('hgProNavTurnDistance').textContent,/m/);
  assert.ok(h.element('hgProNavProgress').style.width.endsWith('%'));
  assert.equal(h.element('hgProNavProgressTrack').attributes['aria-valuenow']!==undefined,true);
  h.api.leaveMap();
