@@ -7,8 +7,15 @@
  let voice=false,follow=true,night=false,lastSpeech='',lastCamera=0,position=null;
  let furthestProgress=0;
  let offRouteTicks=0,lastReroute=0,rerouting=false,rerouteCtl=null,voiceStep=-1,voiceStage='';
+ let arrivalCount=0,arrivalTimer=null;
  const text=(id,value)=>{const n=node(id);if(n)n.textContent=String(value)};
  const show=(id,visible)=>{const n=node(id);if(n)n.hidden=!visible};
+ function gpsAlert(message){
+  const el=node('hgNavGpsStatus');
+  if(!el)return;
+  el.hidden=!message;
+  if(message)el.textContent=message;
+ }
  const radians=x=>x*Math.PI/180;
  const meters=(a,b)=>{
   const dy=radians(b.lat-a.lat),dx=radians(b.lon-a.lon);
@@ -126,6 +133,7 @@
    route={geometry,steps,meters:Number(updated.distance)||0,seconds:Number(updated.duration)||0,destination:current};
    suffix(geometry);stepIndex=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';setProgress(0);
    window.HealthGoMapV2?.updateLiveRoute?.(updated);
+   window.HealthGoNavigationFollow?.setRoute?.(updated);
    window.HealthGoNavigationLive?.setRoute?.(updated);
    speak('Trasa została przeliczona','route-recomputed-'+lastReroute);
    text('hgProNavNext','Zaktualizowano trasę na podstawie GPS');
@@ -135,8 +143,15 @@
  }
  function positionUpdate(pos){
   if(!active||!route)return;
-  const c=pos.coords||{},point={lat:Number(c.latitude),lon:Number(c.longitude)};
-  if(!Number.isFinite(point.lat)||!Number.isFinite(point.lon)||Number(c.accuracy)>150)return;
+  const c=pos.coords||{},point={lat:c.latitude,lon:c.longitude};
+  if(typeof point.lat!=='number'||typeof point.lon!=='number'||
+      !Number.isFinite(point.lat)||!Number.isFinite(point.lon)||
+      typeof c.accuracy!=='number'||!Number.isFinite(c.accuracy)||c.accuracy<0||
+      c.accuracy>150){
+   gpsAlert('Słaby lub niedostępny sygnał GPS — czekam na dokładniejszy odczyt.');
+   return;
+  }
+  gpsAlert(c.accuracy>80?'Dokładność GPS jest ograniczona. Sprawdź lokalizację przed jazdą.':'');
   position=point;
   window.HealthGoMapV2?.rememberPosition?.({lat:point.lat,lon:point.lon,accuracy:c.accuracy});
   // OSRM starts with a departure maneuver at the origin. Move on to the
@@ -166,7 +181,10 @@
   text('hgProNavDistance',nice(left));
   setProgress(navigationProgress(left));
   text('hgProNavSpeed',c.speed==null||!Number.isFinite(c.speed)?'—':String(Math.max(0,Math.round(c.speed*3.6))));
-  placeArrow(point,c.heading==null?NaN:Number(c.heading));
+  // A single GPS marker driven by real watchPosition samples. When the new
+  // lightweight controller is unavailable, preserve the old Leaflet marker.
+  const followed=window.HealthGoNavigationFollow?.update?.(pos);
+  if(!followed)placeArrow(point,c.heading==null?NaN:Number(c.heading));
   window.HealthGoNavigationLive?.update?.(pos);
   if(Number(c.accuracy)<35&&Number(c.speed)>=0.8&&route?.geometry?.length>1){
    const away=nearestRouteDistance(point);
@@ -175,7 +193,8 @@
     offRouteTicks=0;requestReroute(point);
    }
   }else offRouteTicks=0;
-  if(follow&&Date.now()-lastCamera>=1100){
+  if(!window.HealthGoNavigationFollow?.status?.().active &&
+      follow&&Date.now()-lastCamera>=1100){
    lastCamera=Date.now();map()?.setView?.([point.lat,point.lon],Math.max(16,map()?.getZoom?.()||16),{animate:true});
   }
   if(voiceStep!==stepIndex){voiceStep=stepIndex;voiceStage='';}
@@ -187,10 +206,20 @@
    speak('Za '+nice(distanceTo)+' '+instruction(step)[0],'approach-'+stepIndex);voiceStage='approach';
   }
   const finish=route.geometry[route.geometry.length-1];
-  if(meters(point,{lat:finish[1],lon:finish[0]})<25){
+  // An arrival requires two accurate GPS fixes near the end of the *actual*
+  // route. One noisy position never ends a trip.
+  const reached=Number.isFinite(c.accuracy)&&c.accuracy<=35&&
+   meters(point,{lat:finish[1],lon:finish[0]})<25&&left<45;
+  arrivalCount=reached?arrivalCount+1:0;
+  if(reached){
    text('hgProNavDirection','Dotarcie do celu');text('hgProNavTurnDistance','Cel');
    text('hgProNavStreet',route.destination);text('hgProNavNext','Sprawdź dokładne położenie');
    setProgress(100);
+   if(arrivalCount>=2&&!arrivalTimer){
+    speak('Dotarłeś do celu. Kończę prowadzenie.','destination-arrived');
+    // Leave a moment to see the real arrival on screen, then return to Map.
+    arrivalTimer=window.setTimeout?.(()=>{arrivalTimer=null;if(active)stopNavigation();},4500)||null;
+   }
   }
  }
  function syncVoiceButton(){
@@ -205,7 +234,10 @@
  }
  function loadOptions(){
   const pref=window.HealthGoMap4?.getSettings?.()||{};
-  voice=!!pref.voice;follow=pref.follow!==false;
+  // Every new trip should automatically follow the GPS arrow, even if the
+  // previous trip used free-look mode.
+  voice=!!pref.voice;follow=true;
+  window.HealthGoNavigationFollow?.setFollowing?.(follow);
   syncVoiceButton();
   const b=node('hgProVoice');if(b){b.textContent=voice?'Głos: włączony':'Głos: wyłączony';b.setAttribute('aria-pressed',String(voice))}
   const f=node('hgProFollow');if(f){f.textContent=follow?'Śledź położenie':'Mapa swobodna';f.setAttribute('aria-pressed',String(follow))}
@@ -220,7 +252,7 @@
   if(active)return true;
   if(!route?.steps?.length){text('mapV2RouteOutput','Nie udało się pobrać skrętów trasy. Wyznacz trasę ponownie.');return false}
   if(!navigator.geolocation){text('mapV2RouteOutput','GPS niedostępny. Możesz użyć podglądu trasy z wpisanego adresu.');return false}
-  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';
+  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';arrivalCount=0;
   setProgress(0);
   const options=node('hgProNavOptions');if(options)options.open=false;
   // During driving show a legible 2D street map instead of Esri satellite
@@ -235,7 +267,10 @@
   document.body?.classList?.add('hg-navigation-active');
   node('mapWorkspace')?.classList?.add('map-pro-navigating');
   show('hgProNavigation',true);
+  gpsAlert('');
   loadOptions();
+  removeArrow();
+  window.HealthGoNavigationFollow?.begin?.({geometry:{coordinates:route.geometry}},{follow});
   // Keep 2D Leaflet guidance lightweight and immediate on iPhone. The
   // optional perspective renderer is not started in 2D guidance.
   window.HealthGoNavigationLive?.stop?.();
@@ -246,11 +281,16 @@
   text('hgProNavNext','Pozycja jest używana tylko podczas prowadzenia.');
   text('hgProNavEta','—');text('hgProNavTime',String(Math.max(1,Math.ceil(route.seconds/60))));
   text('hgProNavDistance',nice(route.meters));
-  window.setTimeout?.(()=>map()?.invalidateSize?.({pan:false}),80);
+  // Leaflet caches the size from the discovery map. Refresh its viewport
+  // after the fullscreen layout settles, then recenter the real GPS arrow.
+  window.setTimeout?.(()=>{
+   map()?.invalidateSize?.({pan:false});
+   if(active&&follow)window.HealthGoNavigationFollow?.setFollowing?.(true);
+  },110);
   try{
    watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
     const message=err?.code===1?'Telefon nie zezwolił na GPS. Sprawdź uprawnienia lokalizacji albo wpisz punkt startowy.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
-    text('hgProNavNext',message);text('hgProNavStreet','GPS niedostępny');
+    text('hgProNavNext',message);text('hgProNavStreet','GPS niedostępny');gpsAlert(message);
     if(err?.code===1){
      stopNavigation();
      window.HealthGoMapV2?.toggle?.('route');
@@ -269,11 +309,15 @@
  }
  function stopNavigation(){
   active=false;
+  if(arrivalTimer){window.clearTimeout?.(arrivalTimer);arrivalTimer=null;}
+  arrivalCount=0;
   if(rerouteCtl){rerouteCtl.abort();rerouteCtl=null}rerouting=false;
   window.HealthGoNavigationLive?.stop?.();
+  window.HealthGoNavigationFollow?.stop?.();
   if(watchId!==null)try{navigator.geolocation?.clearWatch?.(watchId)}catch(_){}
   watchId=null;position=null;removeArrow();
   show('hgProNavigation',false);
+  gpsAlert('');
   node('mapWorkspace')?.classList?.remove('map-pro-navigating');
   node('mapWorkspace')?.classList?.remove('hg-nav-dark');
   document.body?.classList?.remove('hg-navigation-active');
@@ -295,8 +339,14 @@
  function toggleFollow(){
   follow=!follow;
   const b=node('hgProFollow');if(b){b.textContent=follow?'Śledź położenie':'Mapa swobodna';b.setAttribute('aria-pressed',String(follow))}
-  window.HealthGoMap4?.saveSettings?.({follow});
+  // Free-look applies to this navigation session only; next trip follows GPS.
+  window.HealthGoNavigationFollow?.setFollowing?.(follow);
   return follow;
+ }
+ function resumeFollow(){
+  if(!follow)return toggleFollow();
+  window.HealthGoNavigationFollow?.setFollowing?.(true);
+  return true;
  }
  function toggleNavigationTheme(){setNight(!night);window.HealthGoMap4?.saveSettings?.({theme:night?'dark':'light'});return night}
  function leaveMap(){stopNavigation()}
@@ -306,6 +356,6 @@
  document.body?.classList?.remove('hg-navigation-active');
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopNavigation()});
  window.addEventListener('pagehide',stopNavigation);
- window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,toggleVoice,toggleFollow,
+ window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,toggleVoice,toggleFollow,resumeFollow,
   toggleNavigationTheme,leaveMap,routeRemaining,instruction,maneuverInfo,navigationProgress,nearestRouteDistance};
 })();
