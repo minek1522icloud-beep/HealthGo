@@ -411,27 +411,33 @@
     'Prowadzenie GPS dostępne po kliknięciu Rozpocznij. Bez danych o korkach na żywo.');
   return true;
  }
- async function planRoute(){
+ async function planRoute(options={}){
+  const ticket=++routeRequestTicket;
   const field=el('mapV2RouteTo'),output=el('mapV2RouteOutput'),external=el('mapV2External');
   routeChoices=[];routeChosen=0;
   const container=el('hg4RouteAlternatives');if(container)container.replaceChildren();
   window.HealthGoMapPro?.clearRoute?.();
   const help=el('mapV2GpsHelp');if(help)help.hidden=true;
-  if(output)output.textContent='Szukam trasy…';
+  if(output)output.textContent='Ustalam pozycję GPS i szukam trasy…';
   if(external)external.hidden=true;
   const raw=clean(field?.value,180),manualStart=clean(el('mapV2RouteFrom')?.value,180);
-  if(!raw){if(output)output.textContent='Wpisz cel lub wybierz pinezkę miejsca.';return}
+  if(!raw){if(output)output.textContent='Wpisz cel lub wybierz pinezkę miejsca.';return false}
   try{
-   if(!destination||raw!==destination.name){destination=await locateByName(raw);}
-   if(!destination){if(output)output.textContent='Nie znalazłem takiego miejsca. Doprecyzuj adres.';return}
-   const start=manualStart?await locateByName(manualStart):await locateOptIn();
+   // Begin GPS while the destination-selection gesture is still active.
+   // Awaiting address geocoding first could delay iOS location permission.
+   const startPromise=manualStart?locateByName(manualStart):locateOptIn();
+   const targetPromise=destination&&raw===destination.name?Promise.resolve(destination):locateByName(raw);
+   const [start,target]=await Promise.all([startPromise,targetPromise]);
+   if(ticket!==routeRequestTicket)return false;
+   if(!target){if(output)output.textContent='Nie znalazłem celu. Sprawdź adres lub nazwę miejsca.';return false}
+   destination=target;
    if(!validPoint(start))throw new Error(manualStart?'START_NOT_FOUND':'GPS_UNAVAILABLE');
    if(routeMode!=='car'){
     const mode=routeMode==='foot'?'fossgis_osrm_foot':'fossgis_osrm_bike';
     const params=new URLSearchParams({engine:mode,route:start.lat+','+start.lon+';'+destination.lat+','+destination.lon});
     if(external){external.href='https://www.openstreetmap.org/directions?'+params.toString();external.hidden=false;external.textContent='Otwórz trasę w OpenStreetMap ↗';}
     if(output)output.textContent='Trasa '+(routeMode==='foot'?'piesza':'rowerowa')+' jest dostępna w zewnętrznej nawigacji. Nie wyświetlam zmyślonego czasu.';
-    return;
+    return false;
    }
    const url=routeUrl+encodeURIComponent(start.lon)+','+encodeURIComponent(start.lat)+';'+encodeURIComponent(destination.lon)+','+encodeURIComponent(destination.lat)+'?overview=full&geometries=geojson&steps=true&alternatives=true';
    const avoid=!!window.HealthGoMap4?.getSettings?.().avoidMotorways;
@@ -443,17 +449,35 @@
     if(!res.ok)throw new Error('ROUTE_HTTP_'+res.status);
     json=await res.json();
    }finally{clearTimeout(timer)}
+   if(ticket!==routeRequestTicket)return false;
    routeChoices=(Array.isArray(json?.routes)?json.routes:[]).filter(r=>r?.geometry?.coordinates?.length>=2).slice(0,3);
    if(!routeChoices.length)throw new Error('ROUTE_EMPTY');
    routeStartWasManual=!!manualStart;
-   chooseRoute(0);
+   chooseRoute(0,{fitBounds:false});
    if(fellBack&&output)output.textContent+=' Serwer nie obsłużył omijania autostrad; pokazano standardową trasę.';
    say('Wyznaczono '+routeChoices.length+' wariantów do: '+destination.name);
    if(external){const q=new URLSearchParams({engine:'fossgis_osrm_car',route:start.lat+','+start.lon+';'+destination.lat+','+destination.lon});external.href='https://www.openstreetmap.org/directions?'+q;external.textContent='Otwórz wskazówki dojazdu ↗';external.hidden=false;}
+   // A real GPS route closes the planner and shows turn guidance immediately.
+   // A typed emergency origin is only a preview, never fake live tracking.
+   if(!manualStart&&options.autoStart!==false&&activePanel==='route'){
+    const started=window.HealthGoMapPro?.startNavigation?.(start);
+    if(started){say('Prowadzenie GPS: '+destination.name);return true}
+    if(output)output.textContent='Trasa gotowa, ale prowadzenie nie wystartowało. Sprawdź uprawnienia i wybierz „Rozpocznij prowadzenie”.';
+    return false;
+   }
+   return true;
   }catch(err){
+   if(ticket!==routeRequestTicket)return false;
    const msg=String(err?.message||err);
    if(help)help.hidden=msg!=='GPS_DENIED';
-   if(output)output.textContent=msg==='GPS_DENIED'?'Telefon zablokował GPS. Sprawdź uprawnienia lokalizacji lub rozwiń awaryjny punkt startowy.':msg==='START_NOT_FOUND'?'Nie znaleziono punktu startowego. Wpisz pełniejszy adres.':msg==='GPS_TIMEOUT'?'GPS nie odpowiedział na czas. Spróbuj ponownie lub wpisz adres startowy.':msg==='GPS_UNAVAILABLE'?'Nie można ustalić pozycji. Wpisz adres startowy lub sprawdź uprawnienia telefonu.':'Nie udało się wyznaczyć trasy. Sprawdź adres i połączenie z usługą tras.';
+   if(output)output.textContent=
+    msg==='GPS_DENIED'?'Telefon zablokował GPS. Sprawdź uprawnienia lokalizacji lub rozwiń awaryjny punkt startowy.':
+    msg==='GPS_TIMEOUT'?'GPS nie odpowiedział na czas. Spróbuj ponownie, będąc na otwartej przestrzeni.':
+    msg==='GPS_INACCURATE'?'Sygnał GPS jest zbyt słaby, aby rozpocząć prowadzenie. Spróbuj ponownie.':
+    msg==='START_NOT_FOUND'?'Nie znaleziono punktu startowego. Wpisz pełniejszy adres.':
+    msg==='GPS_UNAVAILABLE'?'Nie można ustalić pozycji. Włącz usługi lokalizacji w telefonie i spróbuj ponownie.':
+    'Nie udało się wyznaczyć trasy. Sprawdź adres i połączenie z usługą tras.';
+   return false;
   }
  }
  function showFamily(){close();if(typeof showFamilyOnMap==='function')showFamilyOnMap();}
