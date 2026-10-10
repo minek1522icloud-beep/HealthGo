@@ -676,7 +676,16 @@ html.hg-session-known #authScreen{display:none!important}
         <div class="map-v2-panel-head"><h3>Pogoda w okolicy</h3><button type="button" class="map-v2-close" aria-label="Zamknij" onclick="HealthGoMapV2.close()">×</button></div>
         <div class="map-v2-panel-content">
           <p id="hg4WeatherStatus" class="map-v2-muted" role="status">Pogoda na podstawie środka widocznej mapy. Bez żądania GPS.</p>
+          <div class="hg5-weather-search">
+            <label class="map-v2-field" for="hg5WeatherCity">Wyszukaj miejscowość</label>
+            <div class="hg5-weather-search-row">
+              <input type="search" id="hg5WeatherCity" class="map-v2-input" placeholder="Wpisz miasto…">
+              <button type="button" id="hg5WeatherSearchButton">Szukaj</button>
+            </div>
+            <button type="button" class="hg5-weather-reset" id="hg5WeatherResetButton">Pogoda dla mapy</button>
+          </div>
           <div id="hg4WeatherCurrent" class="hg4-weather-card"></div>
+          <div id="hg5WeatherDetails" class="hg5-weather-details"></div>
           <h4>Najbliższe godziny</h4>
           <div id="hg4WeatherHours" class="hg4-weather-hours"></div>
           <h4>Prognoza na 7 dni</h4>
