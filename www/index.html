@@ -1319,8 +1319,33 @@ function aiClearChat(){
  aiPendingPhoto=null;aiHistory=[];const p=document.getElementById('aiAttachmentPreview');p.classList.remove('show');p.innerHTML='';aiScroll();
 }
 function aiPhotoSelected(input){
- const file=input.files&&input.files[0];if(!file)return;aiPendingPhoto=file;
- const prev=document.getElementById('aiAttachmentPreview');const reader=new FileReader();reader.onload=()=>{prev.innerHTML='<img src="'+reader.result+'" alt="Podgląd zdjęcia"><div><b>Zdjęcie dodane</b><br>'+aiEscape(file.name)+'</div><button type="button" style="margin-left:auto;background:transparent;font-size:18px" onclick="aiRemovePhoto()">×</button>';prev.classList.add('show')};reader.readAsDataURL(file);
+ const file=input.files&&input.files[0];if(!file)return;
+ const prev=document.getElementById('aiAttachmentPreview');
+ const allowed=['image/png','image/jpeg','image/webp'];
+ if(!allowed.includes(file.type)||!Number.isFinite(file.size)||file.size<=0||file.size>8*1024*1024){
+   aiPendingPhoto=null;input.value='';
+   prev.replaceChildren();
+   const label=document.createElement('span');
+   label.textContent=!allowed.includes(file.type)
+     ?'Obsługiwane zdjęcia: JPG, PNG lub WebP. Wybierz inny plik.'
+     :'Zdjęcie jest za duże (maksymalnie 8 MB). Wybierz mniejszy plik.';
+   prev.appendChild(label);prev.classList.add('show');
+   return;
+ }
+ aiPendingPhoto=file;
+ const reader=new FileReader();
+ reader.onload=()=>{
+   if(aiPendingPhoto!==file)return;
+   prev.innerHTML='<img src="'+reader.result+'" alt="Podgląd zdjęcia"><div><b>Zdjęcie dodane</b><br>'+aiEscape(file.name)+'</div><button type="button" style="margin-left:auto;background:transparent;font-size:18px" onclick="aiRemovePhoto()">×</button>';
+   prev.classList.add('show');
+ };
+ reader.onerror=()=>{
+   if(aiPendingPhoto!==file)return;
+   aiPendingPhoto=null;input.value='';
+   prev.textContent='Nie udało się odczytać zdjęcia. Spróbuj ponownie.';
+   prev.classList.add('show');
+ };
+ reader.readAsDataURL(file);
 }
 function aiRemovePhoto(){aiPendingPhoto=null;const i=document.getElementById('aiPhotoInput');if(i)i.value='';const p=document.getElementById('aiAttachmentPreview');p.classList.remove('show');p.innerHTML=''}
 function aiAction(page){go(page)}
@@ -1531,7 +1556,10 @@ async function askAI(){
        const cloudTimeout=aiResponseMode==='average'?18000:aiResponseMode==='medium'?30000:45000;
        try{
          aiSetConnection(true,'AI Cloud — próba połączenia…');
-         answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData),cloudTimeout);
+         answer=await healthGoAITimed(askHealthGoMobileAI(q,imageData,{
+           mode:requestMode,responseMode:requestLevel,history:requestHistory,
+           signal:mobileController.signal
+         }),cloudTimeout,mobileController);
        }catch(error){cloudError=error;}
      }
      if(!answer){
@@ -1574,6 +1602,17 @@ async function askAI(){
    const errorRow=aiAddMessage('assistant','<b>Nie mam teraz połączenia z AI.</b><p>'+aiEscape(detail)+'</p>');
    if(errorRow){
      errorRow.classList.add('ai-system-message');
+     if(q&&!photo){
+       const restore=document.createElement('button');
+       restore.type='button';restore.className='btn secondary';
+       restore.textContent='Przywróć pytanie';
+       restore.addEventListener('click',()=>{
+         const field=document.getElementById('aiInput');
+         if(!field)return;
+         field.value=q;aiGrowInput(field);field.focus();
+       });
+       errorRow.querySelector('.ai-bubble')?.appendChild(restore);
+     }
      if(isHostedMobileHealthGo()){
        const code=healthGoMobileErrorCode(err);
        const label=document.createElement('p');
