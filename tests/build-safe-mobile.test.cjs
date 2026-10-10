@@ -56,7 +56,7 @@ test('Safe mode still removes optional module if older shell includes it', () =>
 test('Safe mode excludes cache-busted navigation scripts after UI updates', () => {
   const result = generate(html);
   assert.equal(result.status, 0, result.output);
-  for (const module of ['healthgo-map-v2', 'healthgo-map-pro', 'healthgo-map4']) {
+  for (const module of ['healthgo-map-v2', 'healthgo-map-pro', 'healthgo-map4', 'healthgo-navigation-live']) {
     assert.doesNotMatch(result.html, new RegExp('<script src="\\./' + module + '\\.js'));
   }
 });
