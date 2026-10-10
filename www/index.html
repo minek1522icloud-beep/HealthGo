@@ -350,6 +350,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-weather-emerald-v5.css?v=1">
 <link rel="stylesheet" href="./healthgo-navigation-follow-v1.css?v=1">
 <link rel="stylesheet" href="./healthgo-plan-emerald-v4.css?v=2">
+<link rel="stylesheet" href="./healthgo-more-v4.css?v=1">
 </head>
 <body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -1147,17 +1148,33 @@ html.hg-session-known #authScreen{display:none!important}
 <button data-mobile-page="ai" onclick="mobileGo('ai')"><svg class="mobile-nav-icon hg-mobile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6M2 13h2m16 0h2"/><path d="M9 13h.01M15 13h.01M9 17h6"/></svg><span class="mobile-nav-label">AI</span></button>
 <button data-mobile-page="map" onclick="mobileGo('map')"><svg class="mobile-nav-icon hg-mobile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3Z"/><path d="M9 3v15M15 6v15"/></svg><span class="mobile-nav-label">Mapa</span></button>
 <button data-mobile-page="plan" onclick="mobileGo('plan')"><svg class="mobile-nav-icon hg-mobile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg><span class="mobile-nav-label">Plan</span></button>
-<button data-mobile-page="more" onclick="toggleMobileMore(true)"><svg class="mobile-nav-icon hg-mobile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span class="mobile-nav-label">Więcej</span></button>
+<button data-mobile-page="more" type="button" aria-controls="mobileMoreSheet" aria-expanded="false" aria-haspopup="dialog" onclick="toggleMobileMore()"><svg class="mobile-nav-icon hg-mobile-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span class="mobile-nav-label">Więcej</span></button>
 </div>
 
-<div id="mobileMoreBackdrop" class="mobile-more-backdrop" onclick="toggleMobileMore(false)"></div>
-<div id="mobileMoreSheet" class="mobile-more-sheet" aria-label="Więcej funkcji HealthGo">
-  <button type="button" onclick="mobileGo('games')">🎮 Minigry · wkrótce</button>
-  <button type="button" onclick="mobileGo('challenges')">🎯 Wyzwania i XP</button>
-  <button type="button" onclick="mobileGo('backpack')">🎒 Plecak i kolekcja</button>
-  <button type="button" onclick="mobileGo('activity')">❤️ Aktywność</button>
-  <button type="button" onclick="mobileGo('devices')">⌚ Urządzenia</button>
-  <button type="button" onclick="mobileGo('settings')">⚙️ Ustawienia i konto</button>
+<div id="mobileMoreBackdrop" class="mobile-more-backdrop" aria-hidden="true" onclick="toggleMobileMore(false)"></div>
+<div id="mobileMoreSheet" class="mobile-more-sheet" role="dialog" aria-modal="true" aria-labelledby="hgMoreHeading" aria-describedby="hgMoreSubtitle" aria-hidden="true" tabindex="-1">
+  <div class="hg-more-content">
+    <div class="hg-more-grip" aria-hidden="true"></div>
+    <div class="hg-more-header">
+      <div class="hg-more-header-main">
+        <span class="hg-more-eyebrow">HEALTHGO · CENTRUM</span>
+        <h2 class="hg-more-title" id="hgMoreHeading">Odkrywaj HealthGo</h2>
+        <p class="hg-more-subtitle" id="hgMoreSubtitle">Wybierz, dokąd chcesz przejść.</p>
+      </div>
+      <button type="button" class="hg-more-close" data-more-close aria-label="Zamknij menu Więcej" onclick="toggleMobileMore(false)"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="hg-more-quick" aria-label="Pozostałe funkcje HealthGo">
+      <button type="button" class="hg-more-action hg-more-featured" onclick="mobileGo('backpack')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="6" width="14" height="16" rx="4"/><path d="M9 6V5a3 3 0 0 1 6 0v1M9 13h6v5H9zM5 13H3v5h2m14-5h2v5h-2"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Plecak i kolekcja</span><span class="hg-more-action-note">Nagrody, ekwipunek i odznaki</span></span><span class="hg-more-action-chevron"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9 18 6-6-6-6"/></svg></span></button>
+      <button type="button" class="hg-more-action" onclick="mobileGo('challenges')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/><path d="m12 12 7-7m0 0h-4m4 0v4"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Wyzwania i XP</span><span class="hg-more-action-note">Misje, postępy i poziomy</span></span></button>
+      <button type="button" class="hg-more-action" onclick="mobileGo('activity')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/><path d="M5 12h4l2-3 2 6 2-3h4"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Aktywność</span><span class="hg-more-action-note">Twoje zapisane pomiary</span></span></button>
+      <button type="button" class="hg-more-action" onclick="mobileGo('devices')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="3"/><path d="M9 7 10 2h4l1 5m-6 10 1 5h4l1-5"/><path d="M12 10v2l2 1"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Urządzenia</span><span class="hg-more-action-note">Połączone urządzenia</span></span></button>
+      <button type="button" class="hg-more-action" onclick="mobileGo('family')" data-hg2-family="1"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3"/><path d="M17 14a4 4 0 0 1 4 4v2M16 4.2a3 3 0 0 1 0 5.6"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Rodzina</span><span class="hg-more-action-note">Członkowie i uprawnienia</span></span></button>
+      <button type="button" class="hg-more-action" onclick="mobileGo('games')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 8h11a4 4 0 0 1 3.8 3l1 6.1a2.8 2.8 0 0 1-4.4 2.7L15 17H9l-2.9 2.8a2.8 2.8 0 0 1-4.4-2.7l1-6.1a4 4 0 0 1 3.8-3Z"/><path d="M7 11v5m-2.5-2.5h5M16.5 12h.01M19 14h.01"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Minigry</span><span class="hg-more-action-note">Wkrótce w HealthGo</span></span></button>
+      <button type="button" class="hg-more-action" onclick="mobileGo('settings')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2v3m0 14v3M4.9 4.9 7 7m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.8"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Ustawienia</span><span class="hg-more-action-note">Konto, wygląd i prywatność</span></span></button>
+    </div>
+    <div class="hg-more-divider" aria-hidden="true"></div>
+    <p class="hg-more-footnote">Twoje dane i funkcje pozostają na Twoim koncie HealthGo.</p>
+  </div>
 </div>
 
 <div id="pwaInstallHint" class="pwa-install-hint" role="status">
@@ -1217,14 +1234,59 @@ function isHostedMobileHealthGo(){
 function isStandaloneHealthGo(){
  return window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
 }
-function toggleMobileMore(show){
- document.getElementById('mobileMoreSheet')?.classList.toggle('show',!!show);
- document.getElementById('mobileMoreBackdrop')?.classList.toggle('show',!!show);
+function toggleMobileMore(show,restoreFocus=true){
+ const sheet=document.getElementById('mobileMoreSheet');
+ const backdrop=document.getElementById('mobileMoreBackdrop');
+ const trigger=document.querySelector('[data-mobile-page="more"]');
+ if(!sheet||!backdrop)return;
+ const wasOpen=sheet.classList.contains('show');
+ const isMobile=window.matchMedia?.('(max-width:900px)')?.matches!==false;
+ const open=(typeof show==='boolean'?show:!wasOpen)&&isMobile;
+ sheet.classList.toggle('show',open);
+ backdrop.classList.toggle('show',open);
+ document.body.classList.toggle('hg-more-open',open);
+ sheet.setAttribute('aria-hidden',String(!open));
+ trigger?.setAttribute('aria-expanded',String(open));
+ if(open){
+  syncMobileNav('more');
+  sheet.querySelector('[data-more-close]')?.focus?.({preventScroll:true});
+ }else{
+  syncMobileNav(document.querySelector('.page.active')?.id||'start');
+  if(wasOpen&&restoreFocus)trigger?.focus?.({preventScroll:true});
+ }
 }
 function syncMobileNav(page){
- document.querySelectorAll('[data-mobile-page]').forEach(b=>b.classList.toggle('active',b.dataset.mobilePage===page));
+ document.querySelectorAll('[data-mobile-page]').forEach(b=>{
+  const active=b.dataset.mobilePage===page;
+  b.classList.toggle('active',active);
+  if(active)b.setAttribute('aria-current','page');
+  else b.removeAttribute('aria-current');
+ });
 }
-function mobileGo(page){toggleMobileMore(false);go(page);syncMobileNav(page)}
+function mobileGo(page){
+ toggleMobileMore(false,false);
+ go(page);
+ syncMobileNav(page);
+}
+document.addEventListener('keydown',event=>{
+ const sheet=document.getElementById('mobileMoreSheet');
+ if(!sheet?.classList.contains('show'))return;
+ if(event.key==='Escape'){
+  event.preventDefault();
+  toggleMobileMore(false);
+ }else if(event.key==='Tab'){
+  const focusable=[...sheet.querySelectorAll('button:not([disabled])')];
+  if(!focusable.length)return;
+  const first=focusable[0],last=focusable[focusable.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ }
+});
+window.addEventListener('resize',()=>{
+ if(window.innerWidth>900&&document.getElementById('mobileMoreSheet')?.classList.contains('show')){
+  toggleMobileMore(false,false);
+ }
+});
 function dismissPwaInstall(){
  document.getElementById('pwaInstallHint')?.classList.remove('show');
  try{localStorage.setItem('healthgo_pwa_hint_dismissed','1')}catch(_){}
@@ -1377,6 +1439,7 @@ let timerSec=0, timerInt=null;
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 function go(page){
  const target=document.getElementById(page);if(!target)return;
+ if(document.getElementById('mobileMoreSheet')?.classList.contains('show'))toggleMobileMore(false,false);
  if(page!=='map')window.HealthGoMapPro?.leaveMap();
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  target.classList.add('active');
