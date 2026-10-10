@@ -1,0 +1,62 @@
+/* Navigation Live: only renders pitched map after an actual GPS fix.
+   CSS never fakes a camera tilt when WebGL is unavailable. */
+#map #hgNavigationPerspective[hidden]{display:none!important}
+#map #hgNavigationPerspective{
+ position:absolute;inset:0;z-index:3;overflow:hidden;
+ background:#dbe9f6;
+}
+body.hg-navigation-active #map #hgNavigationPerspective:not([hidden]){
+ display:block!important;pointer-events:none!important;
+}
+#map #hgNavigationPerspective .maplibregl-canvas{outline:none}
+#map #hgNavigationPerspective .maplibregl-control-container{
+ position:absolute;bottom:3px;right:5px;z-index:5;
+}
+#map #hgNavigationPerspective .maplibregl-ctrl-attrib{
+ font-size:9px!important;background:rgba(255,255,255,.8)!important;
+}
+#map .hg-live-car{width:52px;height:62px;display:block;pointer-events:none;filter:drop-shadow(0 4px 7px rgba(0,31,84,.38))}
+#map .hg-live-car svg{display:block}
+#map .hg-live-weather{
+ position:absolute!important;right:12px!important;
+ top:calc(135px + env(safe-area-inset-top))!important;
+ width:max-content!important;max-width:min(62vw,275px)!important;
+ padding:7px 10px!important;border:1px solid #bdd4f0!important;
+ background:rgba(255,255,255,.96)!important;color:#16457d!important;
+ font-size:11px!important;font-weight:800!important;line-height:1.4!important;
+ border-radius:13px!important;box-shadow:0 5px 18px #0a2a4b22!important;
+ z-index:1205!important;pointer-events:none!important;
+}
+#map .hg-live-status{
+ position:absolute!important;left:12px!important;right:12px!important;
+ top:calc(123px + env(safe-area-inset-top))!important;
+ width:max-content!important;max-width:calc(100% - 24px)!important;
+ margin:0!important;padding:8px 12px!important;
+ background:rgba(17,43,76,.92)!important;color:#fff!important;
+ font-size:11px!important;border-radius:11px!important;
+ z-index:1200!important;pointer-events:none!important;
+}
+#map #hgLiveWeather[hidden],#map #hgLiveMapStatus[hidden]{display:none!important}
+body.hg-navigation-active #map .map-canvas-wrap{position:relative!important;isolation:isolate}
+body.hg-navigation-active #map #healthgoMap{z-index:1!important}
+body.hg-navigation-active #map #hgNavigationPerspective{z-index:3!important}
+body.hg-navigation-active #map #hgProNavigation:not([hidden]){z-index:5!important}
+body.hg-navigation-active #map .hg-drive-turn{z-index:8!important}
+body.hg-navigation-active #map .hg-drive-footer{z-index:8!important}
+body.hg-navigation-active #map .hg-drive-speed{z-index:9!important}
+#map .hg-route-location-info{
+ display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+ position:relative;padding:13px 13px 13px 35px;margin:9px 0;
+ border:1px solid #cae1f7;border-radius:14px;background:#edf6ff;
+ color:#1d4a79;font-size:12px;line-height:1.45;
+}
+#map .hg-route-location-info strong{font-size:13px}
+#map .hg-route-location-info span:not(.hg-route-gps-dot){color:#617b98}
+#map .hg-route-gps-dot{position:absolute;left:14px;top:19px;width:10px;height:10px;background:#17a66c;border:2px solid white;border-radius:50%;box-shadow:0 0 0 2px #a4e1c7}
+#map .hg-route-manual-origin{padding:8px 11px;margin:9px 0;border-radius:13px;border:1px solid #dae5f2;background:#f9fbff}
+#map .hg-route-manual-origin summary{font-size:12px;color:#21548b;font-weight:750;cursor:pointer;padding:5px 0}
+#map .hg-route-manual-origin[open] summary{margin-bottom:8px}
+@media(max-width:900px){
+ #map .hg-live-weather{top:calc(117px + env(safe-area-inset-top))!important;right:9px!important;max-width:65vw!important;font-size:10px!important}
+ #map .hg-live-status{top:calc(125px + env(safe-area-inset-top))!important;left:9px!important}
+}
