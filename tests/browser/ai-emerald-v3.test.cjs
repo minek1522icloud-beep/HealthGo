@@ -38,6 +38,9 @@ for(const width of [360,390,768,1440]){
    window.go('ai');
   });
   await page.waitForTimeout(150);
+  // The first-login location permission prompt is unrelated to AI; decline it as a user would.
+  // This prevents the modal from intercepting AI buttons on small screens.
+  await page.evaluate(()=>window.HealthGoMapV2?.chooseWelcomeLocation(false));
   assert.equal(await page.locator('#ai .hga-chat-avatar').count(),1);
   assert.equal(await page.locator('#ai .ai-topic').count(),5);
   const colors=await page.evaluate(()=>{
