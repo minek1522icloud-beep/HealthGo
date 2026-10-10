@@ -22,7 +22,7 @@ function fixture(){
    return null;
   },
   createElement(){
-   return {id:'',className:'',innerHTML:'',listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},
+   return {id:'',className:'',innerHTML:'',listeners:{},setAttribute(){},addEventListener(name,fn){this.listeners[name]=fn;},
      querySelector(){return{focus(){}};},remove(){if(this===modal)modal=null;}};
   },
   get activeElement(){return null;},
