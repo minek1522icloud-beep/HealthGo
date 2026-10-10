@@ -152,7 +152,7 @@
   if(name==='favorites')drawFavorites();
   if(name==='activity')drawActivity();
   if(name==='weather')window.HealthGoMap4?.refreshWeather?.();
-  if(name==='saved')window.HealthGoMap4?.drawRoutes?.();
+  if(name==='saved'){window.HealthGoMap4?.drawRoutes?.();drawRecentDestinations();}
   if(name==='settings')window.HealthGoMap4?.renderSettings?.();
   setTimeout(()=>getMap()?.invalidateSize({pan:false}),80);
  }
@@ -237,6 +237,7 @@
   const p={name:clean(name||'Wybrane miejsce'),lat:Number(lat),lon:Number(lon)};
   if(!validPoint(p))return;
   destination=p;
+  rememberDestination(p);
   window.HealthGoMapPro?.clearRoute();
   const field=el('mapV2RouteTo');if(field)field.value=p.name;
   const map=getMap();
@@ -246,6 +247,59 @@
   }
   if(activePanel!=='route')toggle('route');
   say('Cel trasy: '+p.name+'. Aby zaplanować trasę, kliknij „Wyznacz trasę”.');
+ }
+ // Opt-in per-account recent destinations, never passive location tracking.
+ function rememberedDestinations(){
+  const rows=read('recent');
+  return Array.isArray(rows)?rows.filter(x=>validPoint(x)&&clean(x.name)).slice(0,12):[];
+ }
+ function rememberDestination(point){
+  if(!currentUid()||!validPoint(point))return false;
+  const item={name:clean(point.name,100),lat:Number(point.lat),lon:Number(point.lon),at:new Date().toISOString()};
+  const all=rememberedDestinations().filter(x=>Math.abs(Number(x.lat)-item.lat)>0.00001||Math.abs(Number(x.lon)-item.lon)>0.00001);
+  return write('recent',[item,...all].slice(0,12));
+ }
+ function homePlace(){
+  const data=read('home');
+  return Array.isArray(data)?data.find(validPoint)||null:null;
+ }
+ function saveHomeFromCenter(){
+  if(!currentUid()){say('Zaloguj się, aby zapisać Dom osobno dla swojego konta.');return false}
+  const center=getMap()?.getCenter?.();
+  if(!center||!validPoint({lat:center.lat,lon:center.lng})){say('Najpierw wskaż miejsce na mapie.');return false}
+  const record={name:'Dom',lat:Number(center.lat),lon:Number(center.lng)};
+  if(!write('home',[record])){say('Nie udało się zapisać miejsca Dom.');return false}
+  say('Zapisano Dom — środek widocznej mapy. Lokalizacja pozostaje na Twoim urządzeniu.');
+  drawRecentDestinations();return true;
+ }
+ function goHome(){
+  const home=homePlace();
+  if(!home){say('Najpierw zapisz Dom ze środka widocznej mapy.');return false}
+  selectDestination('Dom',home.lat,home.lon);return true;
+ }
+ function clearHome(){
+  if(!write('home',[])){say('Nie udało się usunąć zapisanego miejsca.');return false}
+  drawRecentDestinations();say('Usunięto zapisaną lokalizację Dom.');return true;
+ }
+ function clearRecent(){
+  if(!write('recent',[])){say('Nie udało się usunąć historii miejsc.');return false}
+  drawRecentDestinations();say('Usunięto historię wybieranych celów.');return true;
+ }
+ function drawRecentDestinations(){
+  const root=el('hgMapRecentDestinations');if(!root)return;
+  root.replaceChildren();
+  if(!currentUid()){child(root,'p','Zaloguj się, aby zobaczyć ostatnio wybierane cele.','hg-map-recent-empty');return}
+  const places=rememberedDestinations();
+  if(!places.length){child(root,'p','Nie ma jeszcze wybieranych celów. Wyszukaj miejsce lub wybierz restaurację.','hg-map-recent-empty');return}
+  const list=child(root,'div',undefined,'hg-map-recent-list');
+  places.forEach(p=>{
+   const item=child(list,'div',undefined,'map-v2-item');
+   const name=child(item,'span',p.name);
+   child(name,'small',p.at?new Date(p.at).toLocaleString('pl-PL'):'Wybrane miejsce');
+   const controls=child(item,'div',undefined,'map-v2-buttons');
+   const route=child(controls,'button','Wyznacz trasę');
+   route.type='button';route.addEventListener('click',()=>selectDestination(p.name,p.lat,p.lon));
+  });
  }
  async function locateByName(query){
   if(!query)return null;
@@ -539,5 +593,5 @@
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart,updateLiveRoute};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart,updateLiveRoute,drawRecentDestinations,saveHomeFromCenter,goHome,clearHome,clearRecent,homePlace};
 })();
