@@ -31,6 +31,7 @@
   return n;
  };
  let view='week',lastKey='',pendingToast=null,notificationEnabledCache=null;
+ let bottomViewedMonth=null,bottomLastSelectedDate=null;
  const dayNames=['Pn','Wt','Śr','Cz','Pt','So','Nd'];
  const repetition=['none','daily','weekdays','weekly','weekends','monthly','fortnight'];
  const allowedPriorities=['normal','high','medium','low'];
@@ -170,6 +171,115 @@
   if(m)m.setAttribute('aria-pressed',String(view==='month'));
   if(view==='month')renderMonth(date,all);else renderWeek(date,all);
  }
+
+ // A standard full-month calendar at the BOTTOM of Plan Dnia. Unlike the
+ // compact week/month switch above, this calendar is always visible.
+ // Browsing a different month does not accidentally change the selected day.
+ function bottomMonthDate(value){
+  if(!/^\d{4}-\d{2}$/.test(str(value)))return null;
+  const [year,month]=value.split('-').map(Number);
+  if(year<1900||year>2100||month<1||month>12)return null;
+  return new Date(year,month-1,1,12);
+ }
+ function shiftBottomMonth(steps){
+  const selected=currentDay();
+  const base=bottomMonthDate(bottomViewedMonth)||bottomMonthDate(selected.slice(0,7));
+  if(!base)return false;
+  const next=new Date(base.getFullYear(),base.getMonth()+steps,1,12);
+  if(next.getFullYear()<1900||next.getFullYear()>2100)return false;
+  bottomViewedMonth=formatDay(next).slice(0,7);
+  renderBottomCalendar(selected);
+  return true;
+ }
+ function showBottomToday(){
+  const today=formatDay(now());
+  bottomViewedMonth=today.slice(0,7);
+  jumpToDay(today);
+  return true;
+ }
+ function selectBottomDate(day){
+  if(!validDay(day))return false;
+  bottomViewedMonth=day.slice(0,7);
+  return jumpToDay(day);
+ }
+ function bottomEventDots(items,date){
+  const total=filteredFor(date,items).length;
+  const dots=make('span','hgp-fullcalendar-event-dots');
+  for(let i=0;i<Math.min(3,total);i++)dots.appendChild(make('i'));
+  return dots;
+ }
+ function renderBottomCalendar(selectedDate){
+  const grid=find('hgpFullCalendarGrid');
+  if(!grid||!validDay(selectedDate))return false;
+  if(bottomLastSelectedDate!==selectedDate){
+   // Selecting a new day through the date picker or upper calendar also
+   // brings the bottom calendar to the correct month.
+   bottomViewedMonth=selectedDate.slice(0,7);
+   bottomLastSelectedDate=selectedDate;
+  }
+  const month=bottomMonthDate(bottomViewedMonth)||bottomMonthDate(selectedDate.slice(0,7));
+  if(!month)return false;
+  const first=new Date(month.getFullYear(),month.getMonth(),1,12);
+  const padding=(first.getDay()+6)%7;
+  const monthLength=new Date(month.getFullYear(),month.getMonth()+1,0).getDate();
+  const dayCount=Math.ceil((padding+monthLength)/7)*7;
+  const all=itemsAll(),today=formatDay(now());
+  const label=find('hgpFullCalendarMonth');
+  if(label)label.textContent=new Intl.DateTimeFormat('pl-PL',{month:'long',year:'numeric'}).format(first);
+  const previous=find('hgpFullCalendarPrevious'),next=find('hgpFullCalendarNext');
+  if(previous)previous.disabled=month.getFullYear()===1900&&month.getMonth()===0;
+  if(next)next.disabled=month.getFullYear()===2100&&month.getMonth()===11;
+  grid.replaceChildren();
+  for(let i=0;i<dayCount;i++){
+   const day=addDays(first,i-padding);
+   const date=formatDay(day),outside=day.getMonth()!==month.getMonth();
+   const entries=filteredFor(date,all),done=entries.filter(item=>finished(item,date)).length;
+   const button=make('button','hgp-fullcalendar-date'+(outside?' outside':'')+
+    (date===today?' today':'')+(date===selectedDate?' selected':''));
+   button.type='button';
+   button.dataset.date=date;
+   if(date===selectedDate)button.setAttribute('aria-pressed','true');
+   else button.setAttribute('aria-pressed','false');
+   if(date===today)button.setAttribute('aria-current','date');
+   const full=new Intl.DateTimeFormat('pl-PL',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(day);
+   button.setAttribute('aria-label',full+(entries.length?' — '+entries.length+' wydarzeń, '+done+' ukończonych':' — brak wydarzeń'));
+   button.title=full;
+   button.appendChild(make('span','hgp-fullcalendar-number',day.getDate()));
+   button.appendChild(bottomEventDots(all,date));
+   button.addEventListener('click',()=>selectBottomDate(date));
+   grid.appendChild(button);
+  }
+  const dateHeading=find('hgpFullCalendarSelectedDate');
+  if(dateHeading)dateHeading.textContent=new Intl.DateTimeFormat('pl-PL',
+   {weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(fromDay(selectedDate));
+  const agenda=find('hgpFullCalendarAgenda');
+  if(agenda){
+   agenda.replaceChildren();
+   const events=filteredFor(selectedDate,all).sort((a,b)=>str(a.time).localeCompare(str(b.time)));
+   if(!events.length){
+    agenda.appendChild(make('p','hgp-fullcalendar-empty','Brak wydarzeń na ten dzień. Możesz dodać nowe zadanie w Planie dnia.'));
+   }else{
+    for(const item of events.slice(0,6)){
+     const row=make('div','hgp-fullcalendar-agenda-entry');
+     row.appendChild(make('span','hgp-fullcalendar-agenda-time',item.time));
+     const details=make('span','hgp-fullcalendar-agenda-name',item.title);
+     if(finished(item,selectedDate))details.classList.add('done');
+     row.appendChild(details);
+     row.appendChild(make('span','hgp-fullcalendar-agenda-status',
+       finished(item,selectedDate)?'✓':'○'));
+     agenda.appendChild(row);
+    }
+    if(events.length>6)agenda.appendChild(make('p','hgp-fullcalendar-more',
+     'I jeszcze '+(events.length-6)+' wydarzeń — zobacz pełną listę w Planie dnia.'));
+   }
+  }
+  return true;
+ }
+ function jumpFromBottom(){
+  const board=find('plan')?.querySelector('.plan-board');
+  board?.scrollIntoView?.({behavior:'smooth',block:'start'});
+ }
+
  function setView(mode){
   view=mode==='month'?'month':'week';
   renderCalendar(currentDay());
@@ -193,6 +303,7 @@
   if(!validDay(date))return;
   updateStats(items,date);
   renderCalendar(date);
+  renderBottomCalendar(date);
   renderSkipped(date);
   lastKey=date;
  }
@@ -432,6 +543,10 @@
   return checked;
  }
  function insertEvents(){
+  find('hgpFullCalendarPrevious')?.addEventListener('click',()=>shiftBottomMonth(-1));
+  find('hgpFullCalendarNext')?.addEventListener('click',()=>shiftBottomMonth(1));
+  find('hgpFullCalendarToday')?.addEventListener('click',showBottomToday);
+  find('hgpFullCalendarJump')?.addEventListener('click',jumpFromBottom);
   find('hgpWeekButton')?.addEventListener('click',()=>setView('week'));
   find('hgpMonthButton')?.addEventListener('click',()=>setView('month'));
   find('hgpOpenEditor')?.addEventListener('click',()=>openEditor(true));
@@ -453,7 +568,7 @@
   });
  }
  window.HealthGoPlanner={
-  clashes,renderSupplemental,renderCalendar,setView,updateFilters,
+  clashes,renderSupplemental,renderCalendar,renderBottomCalendar,shiftBottomMonth,selectBottomDate,setView,updateFilters,
   skipOccurrence,restoreOccurrence,setupTemplate,openEditor,
   toggleReminders,checkReminders,createICS,exportCalendar,exportBackup,importBackup,
   updateReminderHelp,sanitizeImported,isCurrent,timeNumber,status,
