@@ -44,3 +44,19 @@ test('PWA branding uses the new background and new static assets exist',()=>{
  assert.ok(fs.existsSync(path.join(base,'healthgo-emerald-2.css')));
  assert.ok(fs.existsSync(path.join(base,'healthgo-emerald-dashboard.js')));
 });
+
+
+test('Dark theme removes legacy white panels while preserving map and GPS logic',()=>{
+ const css=read('healthgo-emerald-2.css');
+ for(const selector of [
+  '#ai .ai-response-bar','#ai .ai-welcome-mark',
+  '#map .map-address-wrap','#map .map-v2-panel',
+  '#map .map-v2-bottom','#map .hg4-weather-card',
+  '.settings-content','.hg2-family-invite'
+ ]){
+  assert.ok(css.includes(selector), 'Missing dark restyle for '+selector);
+ }
+ assert.match(css,/body\.hg-emerald\[data-dark="1"\]/);
+ assert.match(css,/fullscreen navigation overlay/);
+ assert.doesNotMatch(css,/#healthgoMap\s*\{[^}]*background:/);
+});
