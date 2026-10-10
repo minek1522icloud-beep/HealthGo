@@ -334,7 +334,7 @@ test('Weather is sourced from a real API and road works are never presented as l
  assert.match(map4,/api\.open-meteo\.com\/v1\/forecast/);
  assert.match(map4,/overpass-api\.de\/api\/interpreter/);
  assert.match(map4,/NIE są korki na żywo/);
- assert.match(source,/iPhone zablokował GPS/);
+ assert.match(source,/Telefon zablokował GPS/);
  assert.match(source,/Nie wyświetlam zmyślonego czasu/);
  assert.doesNotMatch(html,/id="hg3DMap"|id="hg3DButton"/);
 });
