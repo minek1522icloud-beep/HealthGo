@@ -388,3 +388,21 @@ body.hg-emerald #plan :is(button,input,select,textarea):focus-visible{
   scroll-behavior:auto!important;transition-duration:.01ms!important;
  }
 }
+
+/* Visibility, notifications, and browser-generated save feedback. */
+body.hg-emerald #plan [hidden]{display:none!important}
+body.hg-emerald #plan .hgp-reminder-toast:not([hidden]){
+ display:block!important;position:fixed!important;
+ left:50%!important;bottom:calc(95px + env(safe-area-inset-bottom))!important;
+ transform:translateX(-50%)!important;z-index:4000!important;
+ max-width:min(480px,calc(100vw - 28px))!important;width:max-content!important;
+ padding:13px 17px!important;
+ color:#f3fff9!important;background:#104534!important;
+ border:1px solid #26ddb0!important;border-radius:16px!important;
+ box-shadow:0 15px 44px #0009!important;font-size:13px!important;
+ line-height:1.5!important;font-weight:700!important;
+ overflow-wrap:anywhere!important;
+}
+body.hg-emerald #plan .hgp-editor-tools .hgp-status:not(:empty){padding:4px 0!important;}
+body.hg-emerald #plan .hgp-filters select:focus{border-color:var(--hgp-accent)!important;}
+body.hg-emerald #plan .hgp-add-now{min-height:42px!important}
