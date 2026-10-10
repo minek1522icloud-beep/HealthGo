@@ -53,7 +53,7 @@ for(const width of [360,390,430]){
    window.__cameraFrames=[];window.__layers=[];
    healthGoMap={
     getZoom(){return 16},
-    getSize(){return {x:width,y:800}},
+    getSize(){return {x:document.documentElement.clientWidth,y:800}},
     getCenter(){return {lat:50.12,lng:19.24}},
     project(coords){return {x:coords[1]*10000,y:-coords[0]*10000}},
     unproject(coords){return {lat:-coords[1]/10000,lng:coords[0]/10000}},
