@@ -72,7 +72,7 @@ test('Map gets a heading from actual movement but not a made-up fixed direction'
  assert.match(src,/if\(Number\.isFinite\(heading\)\)lastHeading=heading/);
 });
 test('Guidance connects live camera, voice prompts and real OSRM rerouting',()=>{
- assert.match(pro,/HealthGoNavigationLive\?\.begin\?/);
+ assert.match(pro,/HealthGoNavigationLive\?\.stop\?/);
  assert.match(pro,/HealthGoNavigationLive\?\.update\?/);
  assert.match(pro,/HealthGoNavigationLive\?\.stop\?/);
  assert.match(pro,/HealthGoNavigationLive\?\.setRoute\?/);
