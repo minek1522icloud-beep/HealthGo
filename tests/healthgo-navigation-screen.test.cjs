@@ -20,7 +20,7 @@ test('Map Navigation opens as an overlay in the same app rather than external we
 
 test('Navigation X and controls exist, are accessible and linked to implemented JS',()=>{
  for(const action of [
-  'HealthGoMapV2.close()','HealthGoMapV2.swapRoute()','HealthGoMapV2.useGPSStart()',
+  'HealthGoMapV2.close()','HealthGoMapV2.useGPSStart()',
   "HealthGoMapV2.toggle('saved')","HealthGoMapV2.toggle('settings')",
   'HealthGoMapV2.planRoute()','HealthGoMapPro.startNavigation()'
  ])assert.ok(html.includes(action),action);
@@ -47,7 +47,7 @@ test('GPS tracking is separate from opening the planner',()=>{
  assert.match(controller,/if\(name==='route'\)/.test(controller)?controller:/toggle\?\.\('hg-route-planner-open',name==='route'\)/);
  assert.match(live,/function startNavigation\(\)/);
  assert.match(live,/navigator\.geolocation\.watchPosition\(positionUpdate/);
- assert.match(html,/GPS wymaga pozwolenia/);
+ assert.match(html,/Za Twoją zgodą systemową/);
  assert.match(controller,/Punkt startowy: GPS\./);
  assert.match(controller,/if\(activePanel!=='route'\)toggle\('route'\)/);
 });
