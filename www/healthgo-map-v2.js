@@ -546,7 +546,7 @@
     return true;
    }
    phase('preview',(manualStart
-    ?'Podgląd trasy z wpisanego punktu startowego. Prowadzenie na żywo wymaga GPS.'
+    ?'Podgląd trasy z wpisanego adresu startowego, bez śledzenia GPS. Prowadzenie na żywo wymaga aktualnej lokalizacji.'
     :'Trasa została przygotowana. Wybierz rozpoczęcie prowadzenia.')+
     (fellBack?' Serwer nie obsłużył omijania autostrad; pokazano standardową trasę.':''));
    return true;
