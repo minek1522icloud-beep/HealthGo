@@ -7,6 +7,7 @@
  let measuring=false,measurePoints=[],measureLine=null,measureDots=[],mapSpacious=false;
  let mapEntryLocated=false,mapWelcomeShown=false,locationWelcomeObserver=null;
  let routeChoices=[],routeChosen=0,routeStartWasManual=false;
+ let routeRequestTicket=0; // async responses from an obsolete destination are ignored
  let recentFix=null; // precise GPS fix stays in memory; never persisted
  let mapLocationCheckBusy=false;
  const satellite='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
@@ -246,8 +247,21 @@
    if(destinationMarker)map.removeLayer(destinationMarker);
    destinationMarker=L.marker([p.lat,p.lon]).addTo(map).bindPopup('📍 '+(typeof healthGoEscape==='function'?healthGoEscape(p.name):p.name));
   }
+  // Choosing a destination is an explicit request to navigate from phone GPS.
+  const from=el('mapV2RouteFrom');if(from)from.value='';
   if(activePanel!=='route')toggle('route');
-  say('Cel trasy: '+p.name+'. Aby zaplanować trasę, kliknij „Wyznacz trasę”.');
+  say('Wybrano '+p.name+'. Ustalam aktualną pozycję i przygotowuję prowadzenie…');
+  return planRoute({autoStart:true});
+ }
+ function navigateToAddress(query){
+  const address=clean(query,180);
+  if(!address){say('Wpisz adres lub miasto.');return false}
+  destination=null;routeRequestTicket++;
+  const field=el('mapV2RouteTo');if(field)field.value=address;
+  const from=el('mapV2RouteFrom');if(from)from.value='';
+  if(activePanel!=='route')toggle('route');
+  say('Ustalam pozycję GPS i szukam drogi do '+address+'…');
+  return planRoute({autoStart:true});
  }
  // Opt-in per-account recent destinations, never passive location tracking.
  function rememberedDestinations(){
@@ -318,24 +332,28 @@
  }
  function getRecentPosition(maxAge=120000){
   return recentFix&&Date.now()-recentFix.at<maxAge&&recentFix.accuracy<=150?
-   {lat:recentFix.lat,lon:recentFix.lon}:null;
+   {lat:recentFix.lat,lon:recentFix.lon,accuracy:recentFix.accuracy}:null;
  }
  function locateOptIn(){
   // Reuse a recent fix from a previous user-authorized location request,
   // avoiding repeated system permission prompts when planning a route.
-  const known=getRecentPosition();
+  const known=getRecentPosition(10000);
   if(known)return Promise.resolve(known);
   return new Promise((resolve,reject)=>{
    if(!navigator.geolocation){reject(new Error('GPS_UNAVAILABLE'));return}
    navigator.geolocation.getCurrentPosition(pos=>{
      const point={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy};
-     rememberPosition(point);noteSystemLocationGranted();resolve({lat:point.lat,lon:point.lon});
+     if(!validPoint(point)||!Number.isFinite(point.accuracy)||point.accuracy>150){
+      reject(new Error('GPS_INACCURATE'));return;
+     }
+     rememberPosition(point);noteSystemLocationGranted();
+     resolve({lat:point.lat,lon:point.lon,accuracy:point.accuracy});
    },err=>{
-     const fallback=getRecentPosition(300000);
+     const fallback=getRecentPosition(10000);
      if(fallback&&err?.code!==1){resolve(fallback);return;}
      if(err?.code===1)localStorageSet('healthgo.location.welcome.v1','denied');
      reject(new Error(err?.code===1?'GPS_DENIED':err?.code===3?'GPS_TIMEOUT':'GPS_UNAVAILABLE'));
-   },{enableHighAccuracy:true,timeout:17000,maximumAge:30000});
+   },{enableHighAccuracy:true,timeout:18000,maximumAge:5000});
   });
  }
  function chooseMode(mode){
@@ -364,7 +382,7 @@
   // Preserve GPS-centred live guidance; never fitBounds in the middle of driving.
   return true;
  }
- function chooseRoute(index){
+ function chooseRoute(index,options={}){
   if(!Number.isInteger(index)||index<0||index>=routeChoices.length)return false;
   const route=routeChoices[index],geometry=route?.geometry?.coordinates;
   if(!Array.isArray(geometry)||geometry.length<2)return false;
@@ -375,7 +393,7 @@
   if(getMap()&&typeof L!=='undefined'){
    routeLayer=L.polyline(geometry.filter(p=>Array.isArray(p)&&p.length>=2).map(p=>[p[1],p[0]]),
     {color:'#216be8',weight:7,opacity:.95,className:'map-v2-route-line'}).addTo(getMap());
-   getMap().fitBounds(routeLayer.getBounds(),{padding:[42,42],maxZoom:16});
+   if(options.fitBounds!==false)getMap().fitBounds(routeLayer.getBounds(),{padding:[42,42],maxZoom:16});
   }
   const box=el('hg4RouteAlternatives');
   if(box){box.replaceChildren();routeChoices.forEach((item,i)=>{
@@ -393,27 +411,33 @@
     'Prowadzenie GPS dostępne po kliknięciu Rozpocznij. Bez danych o korkach na żywo.');
   return true;
  }
- async function planRoute(){
+ async function planRoute(options={}){
+  const ticket=++routeRequestTicket;
   const field=el('mapV2RouteTo'),output=el('mapV2RouteOutput'),external=el('mapV2External');
   routeChoices=[];routeChosen=0;
   const container=el('hg4RouteAlternatives');if(container)container.replaceChildren();
   window.HealthGoMapPro?.clearRoute?.();
   const help=el('mapV2GpsHelp');if(help)help.hidden=true;
-  if(output)output.textContent='Szukam trasy…';
+  if(output)output.textContent='Ustalam pozycję GPS i szukam trasy…';
   if(external)external.hidden=true;
   const raw=clean(field?.value,180),manualStart=clean(el('mapV2RouteFrom')?.value,180);
-  if(!raw){if(output)output.textContent='Wpisz cel lub wybierz pinezkę miejsca.';return}
+  if(!raw){if(output)output.textContent='Wpisz cel lub wybierz pinezkę miejsca.';return false}
   try{
-   if(!destination||raw!==destination.name){destination=await locateByName(raw);}
-   if(!destination){if(output)output.textContent='Nie znalazłem takiego miejsca. Doprecyzuj adres.';return}
-   const start=manualStart?await locateByName(manualStart):await locateOptIn();
+   // Begin GPS while the destination-selection gesture is still active.
+   // Awaiting address geocoding first could delay iOS location permission.
+   const startPromise=manualStart?locateByName(manualStart):locateOptIn();
+   const targetPromise=destination&&raw===destination.name?Promise.resolve(destination):locateByName(raw);
+   const [start,target]=await Promise.all([startPromise,targetPromise]);
+   if(ticket!==routeRequestTicket)return false;
+   if(!target){if(output)output.textContent='Nie znalazłem celu. Sprawdź adres lub nazwę miejsca.';return false}
+   destination=target;
    if(!validPoint(start))throw new Error(manualStart?'START_NOT_FOUND':'GPS_UNAVAILABLE');
    if(routeMode!=='car'){
     const mode=routeMode==='foot'?'fossgis_osrm_foot':'fossgis_osrm_bike';
     const params=new URLSearchParams({engine:mode,route:start.lat+','+start.lon+';'+destination.lat+','+destination.lon});
     if(external){external.href='https://www.openstreetmap.org/directions?'+params.toString();external.hidden=false;external.textContent='Otwórz trasę w OpenStreetMap ↗';}
     if(output)output.textContent='Trasa '+(routeMode==='foot'?'piesza':'rowerowa')+' jest dostępna w zewnętrznej nawigacji. Nie wyświetlam zmyślonego czasu.';
-    return;
+    return false;
    }
    const url=routeUrl+encodeURIComponent(start.lon)+','+encodeURIComponent(start.lat)+';'+encodeURIComponent(destination.lon)+','+encodeURIComponent(destination.lat)+'?overview=full&geometries=geojson&steps=true&alternatives=true';
    const avoid=!!window.HealthGoMap4?.getSettings?.().avoidMotorways;
@@ -425,17 +449,35 @@
     if(!res.ok)throw new Error('ROUTE_HTTP_'+res.status);
     json=await res.json();
    }finally{clearTimeout(timer)}
+   if(ticket!==routeRequestTicket)return false;
    routeChoices=(Array.isArray(json?.routes)?json.routes:[]).filter(r=>r?.geometry?.coordinates?.length>=2).slice(0,3);
    if(!routeChoices.length)throw new Error('ROUTE_EMPTY');
    routeStartWasManual=!!manualStart;
-   chooseRoute(0);
+   chooseRoute(0,{fitBounds:false});
    if(fellBack&&output)output.textContent+=' Serwer nie obsłużył omijania autostrad; pokazano standardową trasę.';
    say('Wyznaczono '+routeChoices.length+' wariantów do: '+destination.name);
    if(external){const q=new URLSearchParams({engine:'fossgis_osrm_car',route:start.lat+','+start.lon+';'+destination.lat+','+destination.lon});external.href='https://www.openstreetmap.org/directions?'+q;external.textContent='Otwórz wskazówki dojazdu ↗';external.hidden=false;}
+   // A real GPS route closes the planner and shows turn guidance immediately.
+   // A typed emergency origin is only a preview, never fake live tracking.
+   if(!manualStart&&options.autoStart!==false&&activePanel==='route'){
+    const started=window.HealthGoMapPro?.startNavigation?.(start);
+    if(started){say('Prowadzenie GPS: '+destination.name);return true}
+    if(output)output.textContent='Trasa gotowa, ale prowadzenie nie wystartowało. Sprawdź uprawnienia i wybierz „Rozpocznij prowadzenie”.';
+    return false;
+   }
+   return true;
   }catch(err){
+   if(ticket!==routeRequestTicket)return false;
    const msg=String(err?.message||err);
    if(help)help.hidden=msg!=='GPS_DENIED';
-   if(output)output.textContent=msg==='GPS_DENIED'?'Telefon zablokował GPS. Sprawdź uprawnienia lokalizacji lub rozwiń awaryjny punkt startowy.':msg==='START_NOT_FOUND'?'Nie znaleziono punktu startowego. Wpisz pełniejszy adres.':msg==='GPS_TIMEOUT'?'GPS nie odpowiedział na czas. Spróbuj ponownie lub wpisz adres startowy.':msg==='GPS_UNAVAILABLE'?'Nie można ustalić pozycji. Wpisz adres startowy lub sprawdź uprawnienia telefonu.':'Nie udało się wyznaczyć trasy. Sprawdź adres i połączenie z usługą tras.';
+   if(output)output.textContent=
+    msg==='GPS_DENIED'?'Telefon zablokował GPS. Sprawdź uprawnienia lokalizacji lub rozwiń awaryjny punkt startowy.':
+    msg==='GPS_TIMEOUT'?'GPS nie odpowiedział na czas. Spróbuj ponownie, będąc na otwartej przestrzeni.':
+    msg==='GPS_INACCURATE'?'Sygnał GPS jest zbyt słaby, aby rozpocząć prowadzenie. Spróbuj ponownie.':
+    msg==='START_NOT_FOUND'?'Nie znaleziono punktu startowego. Wpisz pełniejszy adres.':
+    msg==='GPS_UNAVAILABLE'?'Nie można ustalić pozycji. Włącz usługi lokalizacji w telefonie i spróbuj ponownie.':
+    'Nie udało się wyznaczyć trasy. Sprawdź adres i połączenie z usługą tras.';
+   return false;
   }
  }
  function showFamily(){close();if(typeof showFamilyOnMap==='function')showFamilyOnMap();}
@@ -594,5 +636,5 @@
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart,updateLiveRoute,drawRecentDestinations,saveHomeFromCenter,goHome,clearHome,clearRecent,homePlace};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,navigateToAddress,chooseMode,planRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart,updateLiveRoute,getLayerKind:()=>tileKind,drawRecentDestinations,saveHomeFromCenter,goHome,clearHome,clearRecent,homePlace};
 })();
