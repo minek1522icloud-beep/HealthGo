@@ -41,6 +41,7 @@ test('Safe mode builds against current simplified AI chat', () => {
   assert.match(result.html, /Tryb bezpieczny HealthGo/);
   assert.doesNotMatch(result.html, /<script src="\.\/healthgo-mobile-suite\.js"><\/script>/);
   assert.doesNotMatch(result.html, /<script src="\.\/healthgo-offline-ai\.js"><\/script>/);
+  assert.doesNotMatch(result.html, /<script src="\.\/healthgo-map-(?:v2|pro|4)\.js/);
   assert.doesNotMatch(result.html, /if \(typeof setupMobilePWA === 'function'\) setupMobilePWA\(\);/);
   assert.match(result.html, /healthgo-build/);
 });
@@ -50,6 +51,14 @@ test('Safe mode still removes optional module if older shell includes it', () =>
   const result = generate(legacy);
   assert.equal(result.status, 0, result.output);
   assert.doesNotMatch(result.html, /healthgo-offline-ai\.js/);
+});
+
+test('Safe mode excludes cache-busted navigation scripts after UI updates', () => {
+  const result = generate(html);
+  assert.equal(result.status, 0, result.output);
+  for (const module of ['healthgo-map-v2', 'healthgo-map-pro', 'healthgo-map4']) {
+    assert.doesNotMatch(result.html, new RegExp('<script src="\\./' + module + '\\.js'));
+  }
 });
 
 test('Safe mode rejects duplicate optional module tags', () => {
