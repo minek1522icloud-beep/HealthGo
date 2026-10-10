@@ -47,7 +47,7 @@ for tag in optional:
 # Cache-busted navigation scripts must also disappear from the diagnostic
 # build, even as the normal application increments its asset versions.
 for module in ("healthgo-map-v2", "healthgo-map-pro", "healthgo-map4"):
-    pattern = rf'<script\\s+src="\\./{re.escape(module)}\\.js(?:\\?v=\\d+)?"\\s*></script>'
+    pattern = rf'<script\s+src="\./{re.escape(module)}\.js(?:\?v=\d+)?"\s*></script>'
     tags = re.findall(pattern, html)
     if len(tags) > 1:
         raise SystemExit(f"Safe mode build found duplicate optional tags: {module}")
