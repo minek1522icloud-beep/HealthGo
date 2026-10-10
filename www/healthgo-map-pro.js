@@ -143,8 +143,9 @@
  }
  function positionUpdate(pos){
   if(!active||!route)return;
-  const c=pos.coords||{},point={lat:Number(c.latitude),lon:Number(c.longitude)};
-  if(!Number.isFinite(point.lat)||!Number.isFinite(point.lon)||
+  const c=pos.coords||{},point={lat:c.latitude,lon:c.longitude};
+  if(typeof point.lat!=='number'||typeof point.lon!=='number'||
+      !Number.isFinite(point.lat)||!Number.isFinite(point.lon)||
       typeof c.accuracy!=='number'||!Number.isFinite(c.accuracy)||c.accuracy<0||
       c.accuracy>150){
    gpsAlert('Słaby lub niedostępny sygnał GPS — czekam na dokładniejszy odczyt.');
