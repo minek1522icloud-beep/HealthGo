@@ -327,3 +327,100 @@ body.hg-emerald .hg2-empty,body.hg-emerald .hg2-note{color:var(--emerald-muted)}
     animation-duration:.01ms!important;transition-duration:.01ms!important;
   }
 }
+
+/* Stage 0: remove leftover white frames in dark mode without touching
+   fullscreen GPS guidance, map tiles, consent prompts or data pipelines. */
+body.hg-emerald[data-dark="1"] #ai .ai-response-bar,
+body.hg-emerald[data-dark="1"] #ai .ai-response-modes,
+body.hg-emerald[data-dark="1"] #ai .ai-attachment-preview,
+body.hg-emerald[data-dark="1"] #ai .ai-tools,
+body.hg-emerald[data-dark="1"] #ai .ai-chat-top,
+body.hg-emerald[data-dark="1"] #ai .ai-topic-bar,
+body.hg-emerald[data-dark="1"] #ai .ai-welcome-mark,
+body.hg-emerald[data-dark="1"] #ai .ai-welcome-suggestions button,
+body.hg-emerald[data-dark="1"] #ai .ai-inline-actions button,
+body.hg-emerald[data-dark="1"] #ai .ai-chat-actions button {
+  background:var(--emerald-panel-2)!important;
+  color:var(--emerald-fg)!important;
+  border-color:var(--emerald-border)!important;
+}
+body.hg-emerald[data-dark="1"] #ai .ai-response-bar,
+body.hg-emerald[data-dark="1"] #ai .ai-chat-top,
+body.hg-emerald[data-dark="1"] #ai .ai-topic-bar {
+  background:var(--emerald-panel)!important;
+}
+body.hg-emerald[data-dark="1"] #ai .ai-welcome-mark {
+  color:var(--emerald-accent)!important;
+}
+body.hg-emerald[data-dark="1"] #ai .ai-tools,
+body.hg-emerald[data-dark="1"] #ai .ai-composer {
+  box-shadow:var(--shadow)!important;
+}
+body.hg-emerald[data-dark="1"] #ai .ai-attachment-preview,
+body.hg-emerald[data-dark="1"] #ai .ai-response-label {
+  color:var(--emerald-muted)!important;
+}
+body.hg-emerald[data-dark="1"] #map .map-toolbar,
+body.hg-emerald[data-dark="1"] #map .map-address-wrap,
+body.hg-emerald[data-dark="1"] #map .map-v2-panel,
+body.hg-emerald[data-dark="1"] #map .map-v2-bottom,
+body.hg-emerald[data-dark="1"] #map .map-v2-panel-head,
+body.hg-emerald[data-dark="1"] #map .map-v2-panel-content,
+body.hg-emerald[data-dark="1"] #map .map-v2-item,
+body.hg-emerald[data-dark="1"] #map .map-v2-input,
+body.hg-emerald[data-dark="1"] #map .hg4-weather-card,
+body.hg-emerald[data-dark="1"] #map .hg4-weather-hour,
+body.hg-emerald[data-dark="1"] #map .hg4-weather-day {
+  background:var(--emerald-panel)!important;
+  color:var(--emerald-fg)!important;
+  border-color:var(--emerald-border)!important;
+}
+body.hg-emerald[data-dark="1"] #map .map-v2-bottom,
+body.hg-emerald[data-dark="1"] #map .map-address-wrap,
+body.hg-emerald[data-dark="1"] #map .map-v2-panel {
+  box-shadow:var(--shadow)!important;
+}
+body.hg-emerald[data-dark="1"] #map .map-v2-tab,
+body.hg-emerald[data-dark="1"] #map .map-v2-close,
+body.hg-emerald[data-dark="1"] #map .map-v2-buttons button,
+body.hg-emerald[data-dark="1"] #map .map-v2-map-control,
+body.hg-emerald[data-dark="1"] #map .map-v2-primary,
+body.hg-emerald[data-dark="1"] #map .map-bar-btn:not(.primary) {
+  background:var(--emerald-panel-2)!important;
+  color:var(--emerald-fg)!important;
+  border-color:var(--emerald-border)!important;
+}
+body.hg-emerald[data-dark="1"] #map .map-v2-tab.active,
+body.hg-emerald[data-dark="1"] #map .map-v2-panel .map-v2-primary {
+  background:var(--emerald-accent)!important;
+  color:var(--emerald-accent-ink)!important;
+  border-color:var(--emerald-accent)!important;
+}
+body.hg-emerald[data-dark="1"] #map .map-v2-panel .map-v2-muted {
+  color:var(--emerald-muted)!important;
+}
+body.hg-emerald[data-dark="1"] .plan-list,
+body.hg-emerald[data-dark="1"] .plan-empty,
+body.hg-emerald[data-dark="1"] .settings-content,
+body.hg-emerald[data-dark="1"] .hg2-family-step,
+body.hg-emerald[data-dark="1"] .hg2-family-invite,
+body.hg-emerald[data-dark="1"] .hg2-family-role-icon,
+body.hg-emerald[data-dark="1"] .hg2-dialog {
+  background:var(--emerald-panel)!important;
+  color:var(--emerald-fg)!important;
+  border-color:var(--emerald-border)!important;
+}
+body.hg-emerald[data-dark="1"] .settings-menu,
+body.hg-emerald[data-dark="1"] .hg-mobile-toggle-row,
+body.hg-emerald[data-dark="1"] .hg-mobile-quick {
+  background:var(--emerald-panel-2)!important;
+  color:var(--emerald-fg)!important;
+  border-color:var(--emerald-border)!important;
+}
+body.hg-emerald[data-dark="1"] .hg2-dialog button:focus-visible,
+body.hg-emerald[data-dark="1"] #ai button:focus-visible,
+body.hg-emerald[data-dark="1"] #map button:focus-visible {
+  outline:3px solid var(--emerald-accent)!important;
+  outline-offset:2px;
+}
+/* Do not override the safety-critical fullscreen navigation overlay. */
