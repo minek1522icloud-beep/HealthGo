@@ -59,7 +59,7 @@ test('Map module parses and requests GPS only after a user action',()=>{
  assert.match(source,/window\.addEventListener\('pagehide'/);
 });
 
-function harness(){
+function harness(routeOverride){
  const storage=new Map();
  const nodes=new Map();
  const classes=()=>{
@@ -113,7 +113,11 @@ function harness(){
   fetchCalls.push(String(url));
   if(String(url).includes('/search?'))return {ok:true,json:async()=>[{display_name:'Przykładowe miejsce',lat:'52.2',lon:'21.0'}]};
   if(String(url).includes('exclude=motorway'))return {ok:false,status:400};
-  return {ok:true,json:async()=>({routes:[{distance:1000,duration:240,geometry:{coordinates:[[21,52.2],[21.01,52.21]]},legs:[{steps:[]}]}]})};
+  return {ok:true,json:async()=>({routes:routeOverride||[{
+   distance:1000,duration:240,geometry:{coordinates:[[21,52.2],[21.01,52.21]]},
+   legs:[{steps:[{name:'Start',maneuver:{type:'depart',location:[21,52.2]}},
+    {name:'Cel',maneuver:{type:'arrive',location:[21.01,52.21]}}]}]
+  }]})};
  };
  const navigator={geolocation:{
   getCurrentPosition(success,error){locationCalls.current++;locationCalls.lastSuccess=success;locationCalls.lastError=error;},
@@ -175,8 +179,13 @@ test('Choosing a real destination requests phone GPS immediately and closes plan
  const app=harness(),api=app.window.HealthGoMapV2;
  let started=0,initial=null;
  app.window.HealthGoMapPro={
-  clearRoute(){},setRoute(){},
-  startNavigation(fix){started++;initial=fix;api.close();return true;}
+  clearRoute(){},setRoute(){return true},
+  startNavigation(fix){
+   started++;initial=fix;api.close();
+   app.document.body.classList.add('hg-navigation-active');
+   app.node('hgProNavigation').hidden=false;
+   return true;
+  }
  };
  api.toggle('route');
  const routePromise=api.selectDestination('Rynek',52.2,21.01);
@@ -348,4 +357,79 @@ test('Weather is sourced from a real API and road works are never presented as l
  assert.match(source,/Telefon zablokował GPS/);
  assert.match(source,/Nie wyświetlam zmyślonego czasu/);
  assert.doesNotMatch(html,/id="hg3DMap"|id="hg3DButton"/);
+});
+
+
+test('Routing starts even when no planner panel is selected',async()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ let starts=0;
+ app.window.HealthGoMapPro={
+  clearRoute(){},setRoute(){return true},isNavigating(){return true},
+  startNavigation(){
+   starts++;app.document.body.classList.add('hg-navigation-active');
+   app.node('hgProNavigation').hidden=false;return true;
+  }
+ };
+ app.node('mapV2RouteTo').value='Park';
+ const pending=api.planRoute();
+ assert.equal(app.locationCalls.current,1,'GPS starts without requiring the route panel');
+ app.locationCalls.lastSuccess({coords:{latitude:52.2,longitude:21,accuracy:9}});
+ assert.equal(await pending,true);
+ assert.equal(starts,1,'no implicit activePanel gate');
+ assert.equal(api.navigationState().phase,'active');
+});
+test('Closing planner during GPS request explicitly cancels and prevents late navigation',async()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ let starts=0;
+ app.window.HealthGoMapPro={clearRoute(){},setRoute(){return true},startNavigation(){starts++;return true}};
+ api.toggle('route');
+ const pending=api.navigateToAddress('Park');
+ assert.equal(app.locationCalls.current,1);
+ assert.equal(api.navigationState().pending,true);
+ api.close();
+ assert.equal(api.navigationState().phase,'cancelled');
+ app.locationCalls.lastSuccess({coords:{latitude:52.2,longitude:21,accuracy:9}});
+ assert.equal(await pending,false);
+ assert.equal(starts,0);
+ assert.equal(app.document.body.classList.contains('hg-route-planner-open'),false);
+});
+test('Route line is not mistaken for turn instructions',async()=>{
+ const geometryOnly=[{distance:1000,duration:200,
+  geometry:{coordinates:[[21,52.2],[21.01,52.21]]},legs:[{steps:[]}]}];
+ const app=harness(geometryOnly),api=app.window.HealthGoMapV2;
+ let starts=0;
+ app.window.HealthGoMapPro={clearRoute(){},setRoute(){return true},startNavigation(){starts++;return true}};
+ api.toggle('route');
+ const pending=api.selectDestination('Park',52.21,21.01);
+ app.locationCalls.lastSuccess({coords:{latitude:52.2,longitude:21,accuracy:9}});
+ assert.equal(await pending,false);
+ assert.equal(starts,0);
+ assert.equal(api.navigationState().phase,'error');
+ assert.match(app.node('mapV2RouteOutput').textContent,/bez instrukcji skrętów/);
+ assert.equal(app.node('hg4RouteAlternatives').children.length,0);
+});
+test('If guidance engine rejects the route, show error instead of route-ready claim',async()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ app.window.HealthGoMapPro={clearRoute(){},setRoute(){return false},startNavigation(){throw Error('must not start')}};
+ api.toggle('route');
+ const pending=api.selectDestination('Park',52.21,21.01);
+ app.locationCalls.lastSuccess({coords:{latitude:52.2,longitude:21,accuracy:9}});
+ assert.equal(await pending,false);
+ assert.equal(api.navigationState().phase,'error');
+ assert.match(app.node('mapV2RouteOutput').textContent,/Silnik prowadzenia nie przyjął/);
+});
+test('An invisible navigation HUD is treated as a failed start, not a success',async()=>{
+ const app=harness(),api=app.window.HealthGoMapV2;
+ let stopped=0;
+ app.window.HealthGoMapPro={
+  clearRoute(){},setRoute(){return true},stopNavigation(){stopped++},
+  startNavigation(){return true},isNavigating(){return false}
+ };
+ api.toggle('route');
+ const pending=api.selectDestination('Park',52.21,21.01);
+ app.locationCalls.lastSuccess({coords:{latitude:52.2,longitude:21,accuracy:9}});
+ assert.equal(await pending,false);
+ assert.equal(stopped,1);
+ assert.equal(api.navigationState().phase,'error');
+ assert.match(app.node('mapV2RouteOutput').textContent,/ekran prowadzenia GPS nie uruchomił/);
 });
