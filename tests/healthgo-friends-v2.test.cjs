@@ -5,7 +5,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const friends=fs.readFileSync('www/healthgo-friends.js','utf8');
 const gifts=fs.readFileSync('www/healthgo-rewards.js','utf8');
-async function tick(){await Promise.resolve();await Promise.resolve();await Promise.resolve();}
+async function tick(){await new Promise(resolve=>setImmediate(resolve));}
 test('Friend requests are backed by authenticated RPC and require acceptance',async()=>{
  let root=null;const calls=[];
  const snapshot={code:'ABCDEF0123456789AB',friends:[],incoming:[{id:'request1',nickname:'Przyjaciel'}],outgoing:[],blocked:[]};
