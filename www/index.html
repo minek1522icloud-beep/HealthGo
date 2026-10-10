@@ -342,6 +342,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-spacious-ui.css?v=2">
 <link rel="stylesheet" href="./healthgo-navigation-screen.css?v=1">
 <link rel="stylesheet" href="./healthgo-drive-ui.css?v=1">
+<link rel="stylesheet" href="./healthgo-navigation-live.css?v=1">
 </head>
 <body style="background:#07111f">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -539,6 +540,7 @@ html.hg-session-known #authScreen{display:none!important}
 
     <div class="map-canvas-wrap">
       <div id="healthgoMap" aria-label="Mapa prawdziwych miejsc"></div>
+      <div id="hgNavigationPerspective" aria-label="Pochylona mapa prowadzenia GPS" hidden></div>
       
       <div id="mapSearchStatus" class="map-status-pill">Przybliż mapę do wybranej okolicy albo użyj „Moje położenie”. Lokalizacja jest pobierana tylko po Twoim kliknięciu i zgodzie.</div>
       <div class="map-v2-actions" aria-label="Szybkie akcje mapy">
@@ -561,6 +563,8 @@ html.hg-session-known #authScreen{display:none!important}
             <span id="hgProNavNext" class="hg-drive-assist" aria-live="polite">Czekam na sygnał GPS</span>
           </div>
         </section>
+        <p id="hgLiveMapStatus" class="hg-live-status" role="status" hidden></p>
+        <p id="hgLiveWeather" class="hg-live-weather" role="status" hidden></p>
         <div class="hg-pro-speed hg-drive-speed" aria-label="Prędkość z GPS">
           <strong id="hgProNavSpeed">—</strong><small>km/h</small>
         </div>
@@ -630,14 +634,17 @@ html.hg-session-known #authScreen{display:none!important}
         </div>
         <div class="map-v2-panel-content">
           <p class="map-v2-muted hg-nav-planner-intro">Zaplanuj podróż bez wychodzenia z HealthGo. Lokalizacja GPS jest opcjonalna.</p>
-          <label class="map-v2-field" for="mapV2RouteFrom">Skąd? <span class="map-v2-tag">GPS lub adres</span></label>
-          <input id="mapV2RouteFrom" class="map-v2-input" type="search" autocomplete="street-address" placeholder="Moja lokalizacja lub wpisz miasto, ulicę…">
-          <p class="map-v2-muted">Gdy iPhone blokuje GPS, wpisz tutaj adres startowy — trasa nadal zadziała.</p>
+          <p class="hg-route-location-info"><span class="hg-route-gps-dot" aria-hidden="true"></span><strong>Start: aktualna lokalizacja telefonu</strong><span>Za Twoją zgodą systemową. Nie musisz wpisywać adresu początkowego.</span></p>
+          <details class="hg-route-manual-origin" id="hgRouteManualOrigin">
+            <summary>Nie działa GPS? Wpisz punkt startowy</summary>
+            <label class="map-v2-field" for="mapV2RouteFrom">Punkt startowy bez GPS</label>
+            <input id="mapV2RouteFrom" class="map-v2-input" type="search" autocomplete="street-address" placeholder="Miasto, ulica lub adres">
+            <p class="map-v2-muted">Ręczne wyznaczenie trasy daje podgląd; prowadzenie na żywo wymaga GPS.</p>
+          </details>
           <label class="map-v2-field" for="mapV2RouteTo">Dokąd?</label>
           <input id="mapV2RouteTo" class="map-v2-input" type="search" autocomplete="off" placeholder="Adres, park albo wybrane miejsce">
           <div class="hg-nav-planner-shortcuts" role="group" aria-label="Szybkie działania nawigacji">
-            <button type="button" onclick="HealthGoMapV2.swapRoute()" aria-label="Zamień adres startowy i cel">⇅ Zamień</button>
-            <button type="button" onclick="HealthGoMapV2.useGPSStart()">◎ Start: GPS</button>
+            <button type="button" onclick="HealthGoMapV2.useGPSStart()">◎ Moja lokalizacja</button>
             <button type="button" onclick="HealthGoMapV2.toggle('saved')">☆ Zapisane</button>
             <button type="button" onclick="HealthGoMapV2.toggle('settings')">⚙ Ustawienia</button>
           </div>
@@ -653,7 +660,7 @@ html.hg-session-known #authScreen{display:none!important}
           <p id="mapV2RouteOutput" class="map-v2-alert" role="status">Podaj cel lub wybierz miejsce z wyników mapy.</p>
           <p id="mapV2GpsHelp" class="map-v2-alert" hidden>Jeśli odmówiono lokalizacji, otwórz Ustawienia iPhone’a → Prywatność i ochrona → Usługi lokalizacji. Sprawdź uprawnienia HealthGo lub Witryn Safari. Możesz też wyznaczyć trasę, wpisując punkt startowy powyżej.</p>
           <button id="hgNavStartButton" class="map-v2-primary hg-nav-planner-go" type="button" hidden onclick="HealthGoMapPro.startNavigation()">➤ Rozpocznij prowadzenie GPS</button>
-          <p class="map-v2-muted hg-nav-planner-disclaimer">Szacowany czas bez korków na żywo. GPS wymaga pozwolenia i działa tylko przy uruchomionej nawigacji.</p>
+          <p class="map-v2-muted hg-nav-planner-disclaimer">Trasa i czas bez danych o korkach na żywo. Podczas prowadzenia telefon udostępnia pozycję tylko aplikacji, a po zjechaniu z trasy może wysłać współrzędne do publicznego serwera OSRM w celu przeliczenia. Nie obsługuj telefonu podczas poruszania się.</p>
           <a id="mapV2External" href="https://www.openstreetmap.org/directions" target="_blank" rel="noopener noreferrer" hidden>Otwórz wskazówki ↗</a>
         </div>
       </section>
@@ -2894,7 +2901,8 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-v2-ui.js"></script>
 <script src="./healthgo-mobile-suite.js"></script>
 <script src="./healthgo-map-v2.js?v=1"></script>
-<script src="./healthgo-map-pro.js?v=4"></script>
+<script src="./healthgo-navigation-live.js?v=1"></script>
+<script src="./healthgo-map-pro.js?v=5"></script>
 <script src="./healthgo-map4.js?v=1"></script>
 </body>
 </html>
