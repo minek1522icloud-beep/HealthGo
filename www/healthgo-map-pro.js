@@ -5,6 +5,7 @@
  const map=()=>typeof healthGoMap==='undefined'?null:healthGoMap;
  let route=null,remaining=[],watchId=null,active=false,stepIndex=0,arrow=null;
  let voice=false,follow=true,night=false,lastSpeech='',lastCamera=0,position=null;
+ let furthestProgress=0;
  const text=(id,value)=>{const n=node(id);if(n)n.textContent=String(value)};
  const show=(id,visible)=>{const n=node(id);if(n)n.hidden=!visible};
  const radians=x=>x*Math.PI/180;
@@ -33,16 +34,32 @@
   }
   return remaining[nearest]||0;
  }
- function instruction(step){
+ function maneuverInfo(step){
   const m=step?.maneuver||{},name=String(step?.name||'').slice(0,80);
-  if(m.type==='arrive')return ['Cel jest blisko','◆'];
-  if(m.type==='depart')return ['Rozpocznij prowadzenie','↑'];
-  if(m.type==='roundabout'||m.type==='rotary')return ['Wjedź na rondo','⟳'];
+  if(m.type==='arrive')return {action:'Dojeżdżasz do celu',street:name||'Cel podróży',icon:'◆'};
+  if(m.type==='depart')return {action:'Rozpocznij jazdę',street:name||'Trzymaj się trasy',icon:'↑'};
+  if(m.type==='roundabout'||m.type==='rotary')return {action:'Wjedź na rondo',street:name||'Rondo',icon:'⟳'};
   const direction=String(m.modifier||'');
-  const label=direction.includes('left')?'Skręć w lewo':direction.includes('right')?'Skręć w prawo':
-   direction==='uturn'?'Zawróć':'Jedź prosto';
-  const symbol=direction.includes('left')?'↰':direction.includes('right')?'↱':direction==='uturn'?'↶':'↑';
-  return [label+(name?' — '+name:''),symbol];
+  const action=direction==='uturn'?'Zawróć':direction.includes('left')?'Skręć w lewo':
+   direction.includes('right')?'Skręć w prawo':'Jedź prosto';
+  const icon=direction==='uturn'?'↶':direction.includes('left')?'↰':direction.includes('right')?'↱':'↑';
+  return {action,street:name||'Kontynuuj wyznaczoną trasą',icon};
+ }
+ function instruction(step){
+  const m=maneuverInfo(step);
+  return [m.action+(step?.name?' — '+m.street:''),m.icon];
+ }
+ function setProgress(percent){
+  const p=Math.min(100,Math.max(0,Number(percent)||0));
+  const fill=node('hgProNavProgress'),arrow=node('hgProNavProgressTrack');
+  if(fill)fill.style.width=p+'%';
+  if(arrow){arrow.setAttribute('aria-valuenow',String(Math.round(p)));
+   arrow.style.setProperty('--hg-drive-percent',p+'%');}
+ }
+ function navigationProgress(left){
+  const total=Math.max(route?.meters||0,remaining[0]||0,1);
+  furthestProgress=Math.max(furthestProgress,Math.min(100,100*(1-Math.min(1,left/total))));
+  return furthestProgress;
  }
  function setRoute(item,destination){
   const coords=item?.geometry?.coordinates;
@@ -50,12 +67,12 @@
   stopNavigation();
   const steps=(item.legs||[]).flatMap(l=>Array.isArray(l.steps)?l.steps:[]);
   route={geometry:coords,steps,meters:Number(item.distance)||0,seconds:Number(item.duration)||0,destination:String(destination||'Cel podróży').slice(0,100)};
-  suffix(coords);stepIndex=0;
+  suffix(coords);stepIndex=0;furthestProgress=0;setProgress(0);
   show('hgNavStartButton',steps.length>0);
   text('hgProNavDestination',route.destination);
   return true;
  }
- function clearRoute(){stopNavigation();route=null;remaining=[];show('hgNavStartButton',false)}
+ function clearRoute(){stopNavigation();route=null;remaining=[];furthestProgress=0;setProgress(0);show('hgNavStartButton',false)}
  function removeArrow(){if(arrow){try{map()?.removeLayer?.(arrow)}catch(_){}arrow=null}}
  function placeArrow(point,heading){
   if(typeof L==='undefined'||!L.divIcon||!L.marker||!map())return;
@@ -79,29 +96,42 @@
   if(!Number.isFinite(point.lat)||!Number.isFinite(point.lon)||Number(c.accuracy)>150)return;
   position=point;
   window.HealthGoMapV2?.rememberPosition?.({lat:point.lat,lon:point.lon,accuracy:c.accuracy});
-  const next=route.steps[stepIndex],loc=next?.maneuver?.location;
-  const target=Array.isArray(loc)?{lat:loc[1],lon:loc[0]}:null;
+  // OSRM starts with a departure maneuver at the origin. Move on to the
+  // next instruction once that origin is reached instead of displaying
+  // the misleading "start driving" banner indefinitely.
+  let step=route.steps[stepIndex],loc=step?.maneuver?.location;
+  let target=Array.isArray(loc)?{lat:loc[1],lon:loc[0]}:null;
   let distanceTo=target?meters(point,target):null;
   if(distanceTo!==null&&distanceTo<30&&stepIndex<route.steps.length-1){
-   stepIndex++;distanceTo=null;
+   stepIndex++;
+   step=route.steps[stepIndex];loc=step?.maneuver?.location;
+   target=Array.isArray(loc)?{lat:loc[1],lon:loc[0]}:null;
+   distanceTo=target?meters(point,target):null;
   }
-  const chosen=instruction(route.steps[stepIndex]);
-  text('hgProNavDirection',chosen[0]);text('hgProNavIcon',chosen[1]);
-  text('hgProNavNext',distanceTo===null?'Kontynuuj jazdę':nice(distanceTo)+' do manewru');
+  const chosen=maneuverInfo(step);
+  text('hgProNavDirection',chosen.action);
+  text('hgProNavIcon',chosen.icon);
+  text('hgProNavTurnDistance',distanceTo===null?'Jedź prosto':nice(distanceTo));
+  text('hgProNavStreet',chosen.street);
+  text('hgProNavNext',Number(c.accuracy)>60?'Słabszy sygnał GPS':'');
   const left=routeRemaining(point),full=Math.max(route.meters,remaining[0]||0,1);
-  const seconds=Math.round(route.seconds*Math.min(1,left/full));
+  const seconds=Math.max(0,Math.round(route.seconds*Math.min(1,left/full)));
   const eta=new Date(Date.now()+seconds*1000);
-  text('hgProNavEta','Przyjazd '+eta.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}));
-  text('hgProNavDistance',nice(left)+' · około '+Math.max(1,Math.ceil(seconds/60))+' min');
+  text('hgProNavEta',eta.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}));
+  text('hgProNavTime',String(Math.max(0,Math.ceil(seconds/60))));
+  text('hgProNavDistance',nice(left));
+  setProgress(navigationProgress(left));
   text('hgProNavSpeed',c.speed==null||!Number.isFinite(c.speed)?'—':String(Math.max(0,Math.round(c.speed*3.6))));
   placeArrow(point,Number(c.heading));
   if(follow&&Date.now()-lastCamera>=1100){
    lastCamera=Date.now();map()?.setView?.([point.lat,point.lon],Math.max(16,map()?.getZoom?.()||16),{animate:true});
   }
-  speak(chosen[0]);
+  speak(instruction(step)[0]);
   const finish=route.geometry[route.geometry.length-1];
   if(meters(point,{lat:finish[1],lon:finish[0]})<25){
-   text('hgProNavDirection','Jesteś w pobliżu celu');text('hgProNavNext','Sprawdź dokładne położenie');
+   text('hgProNavDirection','Dotarcie do celu');text('hgProNavTurnDistance','Cel');
+   text('hgProNavStreet',route.destination);text('hgProNavNext','Sprawdź dokładne położenie');
+   setProgress(100);
   }
  }
  function loadOptions(){
@@ -119,7 +149,8 @@
   if(active)return true;
   if(!route?.steps?.length){text('mapV2RouteOutput','Najpierw wyznacz trasę samochodową.');return false}
   if(!navigator.geolocation){text('mapV2RouteOutput','GPS niedostępny. Możesz użyć podglądu trasy z wpisanego adresu.');return false}
-  active=true;stepIndex=0;lastSpeech='';lastCamera=0;
+  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;
+  setProgress(0);const options=node('hgProNavOptions');if(options)options.open=false;
   // Make navigation a single uncluttered full-screen state, not a map sheet.
   window.HealthGoMapV2?.close?.();
   const panels=document.querySelectorAll?.('#map .map-v2-panel');
@@ -129,8 +160,10 @@
   show('hgProNavigation',true);
   loadOptions();
   text('hgProNavDestination',route.destination);
-  text('hgProNavDirection','Czekam na GPS…');text('hgProNavIcon','↑');
-  text('hgProNavNext','Pozycja zostanie użyta tylko podczas nawigacji.');
+  text('hgProNavDirection','Ustalam pozycję');text('hgProNavIcon','↑');
+  text('hgProNavTurnDistance','—');text('hgProNavStreet','Czekam na GPS');
+  text('hgProNavNext','Pozycja jest używana tylko podczas prowadzenia.');
+  text('hgProNavEta','—');text('hgProNavTime',String(Math.max(1,Math.ceil(route.seconds/60))));
   text('hgProNavDistance',nice(route.meters));
   window.HealthGoMapV2?.close?.();
   // Leaflet needs a size refresh after the map becomes full-screen.
@@ -138,7 +171,7 @@
   try{
    watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
     const message=err?.code===1?'iPhone odmówił dostępu do GPS. Sprawdź uprawnienia lub wpisz punkt startowy.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
-    text('hgProNavNext',message);
+    text('hgProNavNext',message);text('hgProNavStreet','GPS niedostępny');
     if(err?.code===1){stopNavigation();text('mapV2RouteOutput',message)}
    },{enableHighAccuracy:true,maximumAge:5000,timeout:17000});
   }catch(_){stopNavigation();return false}
@@ -180,5 +213,5 @@
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopNavigation()});
  window.addEventListener('pagehide',stopNavigation);
  window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,toggleVoice,toggleFollow,
-  toggleNavigationTheme,leaveMap,routeRemaining,instruction};
+  toggleNavigationTheme,leaveMap,routeRemaining,instruction,maneuverInfo,navigationProgress};
 })();
