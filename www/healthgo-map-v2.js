@@ -12,6 +12,9 @@
  function navigationState(){
   return {phase:navPhase,problem:navProblem,pending:!!pendingRouteRequest};
  }
+ function navigationStopped(){
+  if(navPhase==='active'||navPhase==='starting')phase('idle');
+ }
  function phase(name,message=''){
   navPhase=name;navProblem=name==='error'?message:'';
   const panel=el('map');if(panel)panel.dataset.hgNavigationPhase=name;
@@ -542,9 +545,10 @@
     phase('active','Prowadzenie GPS uruchomione. Śledzę bieżącą pozycję telefonu.');
     return true;
    }
-   phase('preview',manualStart
+   phase('preview',(manualStart
     ?'Podgląd trasy z wpisanego punktu startowego. Prowadzenie na żywo wymaga GPS.'
-    :'Trasa została przygotowana. Wybierz rozpoczęcie prowadzenia.');
+    :'Trasa została przygotowana. Wybierz rozpoczęcie prowadzenia.')+
+    (fellBack?' Serwer nie obsłużył omijania autostrad; pokazano standardową trasę.':''));
    return true;
   }catch(err){
    if(ticket!==routeRequestTicket)return false;
@@ -724,5 +728,5 @@
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,navigateToAddress,chooseMode,planRoute,navigationState,cancelPendingRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart,updateLiveRoute,getLayerKind:()=>tileKind,drawRecentDestinations,saveHomeFromCenter,goHome,clearHome,clearRecent,homePlace};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,navigateToAddress,chooseMode,planRoute,navigationState,navigationStopped,cancelPendingRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart,updateLiveRoute,getLayerKind:()=>tileKind,drawRecentDestinations,saveHomeFromCenter,goHome,clearHome,clearRecent,homePlace};
 })();
