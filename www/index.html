@@ -349,6 +349,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-map-emerald-v5.css?v=1">
 <link rel="stylesheet" href="./healthgo-weather-emerald-v5.css?v=1">
 <link rel="stylesheet" href="./healthgo-navigation-follow-v1.css?v=1">
+<link rel="stylesheet" href="./healthgo-plan-emerald-v4.css?v=1">
 </head>
 <body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -821,10 +822,15 @@ html.hg-session-known #authScreen{display:none!important}
 
 <section id="plan" class="page">
   <div class="hero">
-    <h2>📅 Plan Dnia</h2>
-    <p>Twój prawdziwy harmonogram z kategoriami, priorytetami, powtarzaniem i oznaczaniem wykonanych zadań.</p>
+    <span class="hgp-heading-label">✦ HEALTHGO PLANNER 4.0</span>
+    <h2>📅 Twój Plan Dnia</h2>
+    <p>Twoje godziny, wydarzenia i cele w jednym miejscu. Kalendarz tygodnia i miesiąca, przypomnienia za zgodą, powtarzanie oraz postęp dnia — bez wymyślonych zadań.</p>
   </div>
-
+  <div class="hgp-overview" aria-label="Podsumowanie wybranego dnia">
+    <div class="hgp-stat"><span class="hgp-stat-label">📅 Wydarzenia</span><strong class="hgp-stat-value" id="hgpStatCount">0</strong><span class="hgp-stat-note" id="hgpStatCountNote">Brak zadań</span></div>
+    <div class="hgp-stat"><span class="hgp-stat-label">✓ Ukończone</span><strong class="hgp-stat-value highlight" id="hgpStatProgress">—</strong><span class="hgp-stat-note" id="hgpStatProgressNote">Dodaj pierwszy punkt</span></div>
+    <div class="hgp-stat"><span class="hgp-stat-label">↗ Kolejne</span><strong class="hgp-stat-value" id="hgpStatUpcoming">—</strong><span class="hgp-stat-note" id="hgpStatUpcomingNote">Brak kolejnego punktu</span></div>
+  </div>
   <div class="plan-shell">
     <section class="plan-board">
       <div class="plan-board-head">
@@ -837,19 +843,58 @@ html.hg-session-known #authScreen{display:none!important}
         </div>
       </div>
 
+      <div class="hgp-calendar-bar">
+        <div class="hgp-view-top">
+          <span class="hgp-calendar-label" id="hgpCalendarTitle">Kalendarz</span>
+          <div class="hgp-view-switch" aria-label="Widok kalendarza">
+            <button type="button" id="hgpWeekButton" aria-pressed="true">Tydzień</button>
+            <button type="button" id="hgpMonthButton" aria-pressed="false">Miesiąc</button>
+          </div>
+        </div>
+        <div id="hgpWeekStrip" class="hgp-week-strip" aria-label="Dni tygodnia"></div>
+        <div id="hgpMonthGrid" class="hgp-month-grid" aria-label="Dni miesiąca" hidden></div>
+        <p class="hgp-section-note">Kropki oznaczają dni z wpisami. Dotknij dnia, aby zobaczyć szczegóły.</p>
+      </div>
       <div class="plan-toolbar">
         <button type="button" onclick="movePlanDay(-1)">← Poprzedni</button>
         <button type="button" onclick="goPlanToday()">Dzisiaj</button>
         <button type="button" onclick="movePlanDay(1)">Następny →</button>
         <input id="planSearch" class="plan-search" type="search" placeholder="Szukaj w planie…" oninput="renderPlanDay()">
         <button type="button" onclick="copyPlanDayToNext()">Kopiuj dzień +1</button>
+        <button type="button" class="hgp-primary" id="hgpOpenEditor">＋ Dodaj punkt</button>
       </div>
 
+      <div class="hgp-filters">
+        <label>Kategoria
+          <select id="hgpCategoryFilter" aria-label="Filtruj kategorię">
+            <option value="all">Wszystkie kategorie</option>
+            <option value="school">Szkoła / nauka</option>
+            <option value="activity">Aktywność</option>
+            <option value="health">Zdrowie</option>
+            <option value="meeting">Spotkania</option>
+            <option value="travel">Podróże</option>
+            <option value="rest">Odpoczynek</option>
+            <option value="hobby">Zainteresowania</option>
+            <option value="home">Dom</option>
+            <option value="family">Rodzina</option>
+            <option value="other">Inne</option>
+          </select>
+        </label>
+        <label>Status
+          <select id="hgpStatusFilter" aria-label="Filtruj status i priorytet">
+            <option value="all">Wszystkie</option>
+            <option value="pending">Do zrobienia</option>
+            <option value="done">Wykonane</option>
+            <option value="important">Ważne / średnie</option>
+          </select>
+        </label>
+      </div>
       <div class="plan-progress">
         <span id="planProgressLabel">0 / 0 wykonane</span>
         <div class="plan-progress-track"><div id="planProgressBar"></div></div>
       </div>
-      <div id="planCopyStatus" class="plan-copy-status"></div>
+      <div id="planCopyStatus" class="plan-copy-status" role="status"></div>
+      <div id="hgpLiveStatus" class="hgp-now" role="status" aria-live="polite"><strong>📅 Wybrany dzień</strong><span>Nie masz jeszcze planu.</span></div>
 
       <div id="planList" class="plan-list">
         <div class="plan-empty">
@@ -858,11 +903,18 @@ html.hg-session-known #authScreen{display:none!important}
           <span>Dodaj pierwszy punkt po prawej stronie.</span>
         </div>
       </div>
+      <div id="hgpSkipped" class="hgp-skipped" aria-label="Pominięte powtarzające się wydarzenia"></div>
     </section>
 
     <aside class="plan-editor">
       <h3 id="planEditorTitle">＋ Dodaj punkt planu</h3>
-      <p>Dodaj czas, kategorię i szczegóły. Pola końca, miejsca i notatki są opcjonalne.</p>
+      <p>Wpisz prawdziwy termin. Szablony wypełniają tylko formularz i <strong>niczego nie zapisują</strong> bez potwierdzenia.</p>
+      <div class="hgp-quick" aria-label="Szybkie szablony">
+        <button type="button" id="hgpTemplateLearning">📚 Nauka<small>Zadania lub powtórka</small></button>
+        <button type="button" id="hgpTemplateOutdoors">🌳 Spacer<small>Czas na świeżym powietrzu</small></button>
+        <button type="button" id="hgpTemplateRelax">🎮 Odpoczynek<small>Chwila dla siebie</small></button>
+        <button type="button" id="hgpTemplateMeeting">👥 Spotkanie<small>Przyjaciele i rodzina</small></button>
+      </div>
 
       <div class="plan-editor-grid">
         <div class="plan-field">
@@ -891,6 +943,9 @@ html.hg-session-known #authScreen{display:none!important}
             <option value="meeting">👥 Spotkanie</option>
             <option value="travel">🚌 Wyjście / podróż</option>
             <option value="rest">🎮 Odpoczynek</option>
+            <option value="hobby">🎨 Zainteresowania</option>
+            <option value="home">🏠 Dom / obowiązki</option>
+            <option value="family">👨‍👩‍👧 Rodzina</option>
           </select>
         </div>
         <div class="plan-field">
@@ -911,9 +966,23 @@ html.hg-session-known #authScreen{display:none!important}
           <option value="daily">Codziennie</option>
           <option value="weekdays">Poniedziałek–piątek</option>
           <option value="weekly">Co tydzień w ten sam dzień</option>
+          <option value="fortnight">Co dwa tygodnie</option>
+          <option value="weekends">Sobota i niedziela</option>
+          <option value="monthly">Co miesiąc tego samego dnia</option>
         </select>
       </div>
 
+      <div class="plan-field">
+        <label for="planReminderMinutes">Przypomnij mi (opcjonalnie)</label>
+        <select id="planReminderMinutes">
+          <option value="0">Nie przypominaj</option>
+          <option value="5">5 minut wcześniej</option>
+          <option value="10">10 minut wcześniej</option>
+          <option value="15">15 minut wcześniej</option>
+          <option value="30">30 minut wcześniej</option>
+          <option value="60">Godzinę wcześniej</option>
+        </select>
+      </div>
       <div class="plan-field">
         <label for="planPlace">Gdzie?</label>
         <input id="planPlace" type="text" maxlength="120" placeholder="np. Park Lisiniec, kino, dom babci">
@@ -928,9 +997,25 @@ html.hg-session-known #authScreen{display:none!important}
         <button id="planSaveBtn" class="btn" type="button" onclick="savePlanItem()">Dodaj do planu</button>
         <button id="planCancelBtn" class="btn gray" type="button" onclick="cancelPlanEdit()" style="display:none">Anuluj</button>
       </div>
-      <div id="planEditorStatus" class="plan-editor-status"></div>
+      <div id="planEditorStatus" class="plan-editor-status" role="status"></div>
+      <div class="hgp-editor-tools">
+        <h4>🔔 Przypomnienia</h4>
+        <p class="hgp-small">Powiadomienia są opcjonalne. Działają tylko wtedy, gdy HealthGo jest otwarte i aktywne. Na iPhonie nie zastępują natywnych alarmów w tle.</p>
+        <div class="hgp-actions"><button type="button" id="hgpToggleReminders">Włącz przypomnienia</button></div>
+        <div id="hgpReminderStatus" class="hgp-status" role="status"></div>
+        <h4>📤 Zapis i kalendarz</h4>
+        <div class="hgp-actions">
+          <button type="button" id="hgpCalendarExport">Eksportuj do kalendarza (.ics)</button>
+          <button type="button" id="hgpBackupExport">Pobierz kopię (.json)</button>
+          <button type="button" id="hgpBackupImport">Importuj kopię</button>
+        </div>
+        <input type="file" id="hgpBackupInput" class="hgp-hidden-upload" accept=".json,application/json" aria-label="Wybierz kopię planu JSON">
+        <p class="hgp-small">Import dodaje wpisy do bieżącego konta, nie usuwa istniejących. Eksport nie synchronizuje kalendarza automatycznie.</p>
+        <div id="hgpBackupStatus" class="hgp-status" role="status"></div>
+      </div>
     </aside>
   </div>
+  <div id="hgpReminderToast" class="hgp-reminder-toast" role="status" aria-live="polite" hidden></div>
 </section>
 
 <section id="challenges" class="page">
@@ -2066,7 +2151,10 @@ const PLAN_CATEGORY_META={
  health:{icon:'❤️',label:'Zdrowie'},
  meeting:{icon:'👥',label:'Spotkanie'},
  travel:{icon:'🚌',label:'Wyjście / podróż'},
- rest:{icon:'🎮',label:'Odpoczynek'}
+ rest:{icon:'🎮',label:'Odpoczynek'},
+ hobby:{icon:'🎨',label:'Zainteresowania'},
+ home:{icon:'🏠',label:'Dom / obowiązki'},
+ family:{icon:'👨‍👩‍👧',label:'Rodzina'}
 };
 const PLAN_PRIORITY_META={
  normal:{label:'Zwykły',cls:''},
@@ -2078,7 +2166,10 @@ const PLAN_REPEAT_META={
  none:'Jednorazowo',
  daily:'Codziennie',
  weekdays:'Pon.–pt.',
- weekly:'Co tydzień'
+ weekly:'Co tydzień',
+ fortnight:'Co dwa tygodnie',
+ weekends:'Weekendy',
+ monthly:'Co miesiąc'
 };
 
 function planTodayKey(){
@@ -2097,13 +2188,16 @@ function healthGoPlanStorageKey(){
  return HEALTHGO_PLAN_KEY;
 }
 function normalizePlanItem(x){
+ const reminders=[0,5,10,15,30,60];
  return {
    ...x,
    endTime:x.endTime||'',
    category:x.category||'other',
    priority:x.priority||'normal',
    repeat:x.repeat||'none',
+   reminderMinutes:reminders.includes(Number(x.reminderMinutes))?Number(x.reminderMinutes):0,
    doneDates:Array.isArray(x.doneDates)?x.doneDates:[],
+   skipDates:Array.isArray(x.skipDates)?x.skipDates:[],
    done:!!x.done
  };
 }
@@ -2116,7 +2210,7 @@ function loadHealthGoPlan(){
      if(legacy&&window.healthGoLegacyOwnerUid===hgUid()&&hgUid()){localStorage.setItem(key,legacy);raw=legacy}
    }
    const data=JSON.parse(raw||'[]');
-   return Array.isArray(data)?data.map(normalizePlanItem):[];
+   return Array.isArray(data)?data.filter(x=>x&&typeof x==='object').map(normalizePlanItem):[];
  }catch(_){return []}
 }
 function saveHealthGoPlan(data){
@@ -2142,7 +2236,7 @@ function currentPlanDate(){
  return date&&date.value?date.value:planTodayKey();
 }
 function planOccursOnDate(item,date){
- if(!item||!item.date||date<item.date)return false;
+ if(!item||!item.date||date<item.date||Array.isArray(item.skipDates)&&item.skipDates.includes(date))return false;
  const repeat=item.repeat||'none';
  if(repeat==='none')return item.date===date;
  if(repeat==='daily')return true;
@@ -2152,6 +2246,12 @@ function planOccursOnDate(item,date){
    return day>=1&&day<=5;
  }
  if(repeat==='weekly')return d.getDay()===start.getDay();
+ if(repeat==='weekends')return d.getDay()===0||d.getDay()===6;
+ if(repeat==='monthly')return d.getDate()===start.getDate();
+ if(repeat==='fortnight'){
+   const delta=Math.round((d.getTime()-start.getTime())/86400000);
+   return delta>=0&&delta%14===0;
+ }
  return item.date===date;
 }
 function isPlanDoneOnDate(item,date){
@@ -2189,9 +2289,10 @@ function renderPlanDay(){
 
  const allItems=planItemsForDate(date);
  updatePlanProgress(allItems,date);
- let items=allItems;
+ window.HealthGoPlanner?.renderSupplemental?.(allItems,date);
+ let items=window.HealthGoPlanner?.updateFilters?.()||allItems;
  if(search){
-   items=allItems.filter(x=>[x.title,x.place,x.note,PLAN_CATEGORY_META[x.category]?.label].some(v=>String(v||'').toLowerCase().includes(search)));
+   items=items.filter(x=>[x.title,x.place,x.note,PLAN_CATEGORY_META[x.category]?.label].some(v=>String(v||'').toLowerCase().includes(search)));
  }
 
  const doneCount=allItems.filter(x=>isPlanDoneOnDate(x,date)).length;
@@ -2212,14 +2313,19 @@ function renderPlanDay(){
    const priority=PLAN_PRIORITY_META[item.priority]||PLAN_PRIORITY_META.normal;
    const repeat=PLAN_REPEAT_META[item.repeat]||PLAN_REPEAT_META.none;
    const row=document.createElement('article');
-   row.className='plan-item'+(done?' done':'');
+   const overlap=window.HealthGoPlanner?.clashes?.(allItems)?.ids.has(String(item.id))||false;
+   const inProgress=window.HealthGoPlanner?.isCurrent?.(item,date)||false;
+   row.className='plan-item'+(done?' done':'')+(overlap?' hgp-conflict':'')+(inProgress?' hgp-active':'');
    const details=[];
    if(item.place)details.push('📍 '+planEscape(item.place));
    if(item.note)details.push(planEscape(item.note));
    const meta=[
      '<span class="plan-chip">'+planEscape(cat.icon+' '+cat.label)+'</span>',
      item.priority!=='normal'?'<span class="plan-chip '+priority.cls+'">'+planEscape(priority.label)+'</span>':'',
-     item.repeat!=='none'?'<span class="plan-chip">🔁 '+planEscape(repeat)+'</span>':''
+     item.repeat!=='none'?'<span class="plan-chip">🔁 '+planEscape(repeat)+'</span>':'',
+     Number(item.reminderMinutes)>0?'<span class="plan-chip">🔔 '+Number(item.reminderMinutes)+' min</span>':'',
+     overlap?'<span class="plan-chip hgp-warning-chip">⚠ Nakłada się z innym</span>':'',
+     inProgress?'<span class="plan-chip">● Teraz</span>':''
    ].filter(Boolean).join('');
    const timeBlock='<div class="plan-item-time-wrap"><div class="plan-item-time">'+planEscape(item.time)+'</div>'+(item.endTime?'<div class="plan-item-end">do '+planEscape(item.endTime)+'</div>':'')+'</div>';
    row.innerHTML=timeBlock+
@@ -2230,13 +2336,15 @@ function renderPlanDay(){
        '<button class="plan-icon-btn plan-done-btn" type="button" title="'+(done?'Oznacz jako niewykonane':'Oznacz jako wykonane')+'">'+(done?'↩️':'✅')+'</button>'+
        '<button class="plan-icon-btn" type="button" title="Duplikuj">📄</button>'+
        '<button class="plan-icon-btn" type="button" title="Edytuj">✏️</button>'+
-       '<button class="plan-icon-btn danger" type="button" title="Usuń">🗑️</button>'+
+       '<button class="plan-icon-btn danger" type="button" title="Usuń wydarzenie lub całą serię" aria-label="Usuń wydarzenie">🗑️</button>'+
+     (item.repeat!=='none'?'<button class="plan-icon-btn" type="button" title="Pomiń tylko wybrany dzień" aria-label="Pomiń to wystąpienie">⤼</button>':'')+
      '</div>';
    const buttons=row.querySelectorAll('button');
    buttons[0].onclick=()=>togglePlanDone(item.id,date);
    buttons[1].onclick=()=>duplicatePlanItem(item.id,date);
    buttons[2].onclick=()=>editPlanItem(item.id);
    buttons[3].onclick=()=>deletePlanItem(item.id);
+   if(buttons[4])buttons[4].onclick=()=>window.HealthGoPlanner?.skipOccurrence?.(item.id,date);
    root.appendChild(row);
  });
 }
@@ -2250,6 +2358,7 @@ function savePlanItem(){
  const category=document.getElementById('planCategory')?.value||'other';
  const priority=document.getElementById('planPriority')?.value||'normal';
  const repeat=document.getElementById('planRepeat')?.value||'none';
+ const reminderMinutes=Number(document.getElementById('planReminderMinutes')?.value)||0;
  const status=document.getElementById('planEditorStatus');
 
  if(!time||!title){
@@ -2264,11 +2373,11 @@ function savePlanItem(){
  let data=loadHealthGoPlan();
  if(planEditingId){
    const idx=data.findIndex(x=>x.id===planEditingId);
-   if(idx>=0)data[idx]={...data[idx],date,time,endTime,title,place,note,category,priority,repeat};
+   if(idx>=0)data[idx]={...data[idx],date,time,endTime,title,place,note,category,priority,repeat,reminderMinutes};
  }else{
    data.push({
      id:'plan_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-     date,time,endTime,title,place,note,category,priority,repeat,done:false,doneDates:[]
+     date,time,endTime,title,place,note,category,priority,repeat,reminderMinutes,done:false,doneDates:[],skipDates:[]
    });
  }
  saveHealthGoPlan(data);
@@ -2291,6 +2400,7 @@ function editPlanItem(id){
  document.getElementById('planCategory').value=item.category||'other';
  document.getElementById('planPriority').value=item.priority||'normal';
  document.getElementById('planRepeat').value=item.repeat||'none';
+ document.getElementById('planReminderMinutes').value=String(item.reminderMinutes||0);
  document.getElementById('planEditorTitle').textContent='✏️ Edytuj punkt planu';
  document.getElementById('planSaveBtn').textContent='Zapisz zmiany';
  document.getElementById('planCancelBtn').style.display='';
@@ -2303,6 +2413,7 @@ function cancelPlanEdit(){
  const cat=document.getElementById('planCategory');if(cat)cat.value='other';
  const pri=document.getElementById('planPriority');if(pri)pri.value='normal';
  const rep=document.getElementById('planRepeat');if(rep)rep.value='none';
+ const reminder=document.getElementById('planReminderMinutes');if(reminder)reminder.value='0';
  const title=document.getElementById('planEditorTitle');if(title)title.textContent='＋ Dodaj punkt planu';
  const save=document.getElementById('planSaveBtn');if(save)save.textContent='Dodaj do planu';
  const cancel=document.getElementById('planCancelBtn');if(cancel)cancel.style.display='none';
@@ -2995,5 +3106,6 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-map4.js?v=3"></script>
 <script src="./healthgo-emerald-dashboard.js?v=3"></script>
 <script src="./healthgo-ai-emerald-v3.js?v=2"></script>
+<script src="./healthgo-plan-v4.js?v=1"></script>
 </body>
 </html>
