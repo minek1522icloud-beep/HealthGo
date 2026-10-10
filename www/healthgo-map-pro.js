@@ -6,6 +6,7 @@
  let route=null,remaining=[],watchId=null,active=false,stepIndex=0,arrow=null;
  let voice=false,follow=true,night=false,lastSpeech='',lastCamera=0,position=null;
  let furthestProgress=0;
+ let offRouteTicks=0,lastReroute=0,rerouting=false,rerouteCtl=null,voiceStep=-1,voiceStage='';
  const text=(id,value)=>{const n=node(id);if(n)n.textContent=String(value)};
  const show=(id,visible)=>{const n=node(id);if(n)n.hidden=!visible};
  const radians=x=>x*Math.PI/180;
@@ -67,7 +68,7 @@
   stopNavigation();
   const steps=(item.legs||[]).flatMap(l=>Array.isArray(l.steps)?l.steps:[]);
   route={geometry:coords,steps,meters:Number(item.distance)||0,seconds:Number(item.duration)||0,destination:String(destination||'Cel podróży').slice(0,100)};
-  suffix(coords);stepIndex=0;furthestProgress=0;setProgress(0);
+  suffix(coords);stepIndex=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';setProgress(0);
   show('hgNavStartButton',steps.length>0);
   text('hgProNavDestination',route.destination);
   return true;
@@ -85,10 +86,56 @@
   const tip=arrow.getElement?.()?.querySelector?.('.hg-nav-arrow');
   if(tip&&Number.isFinite(heading)&&heading>=0)tip.style.transform='rotate('+heading+'deg)';
  }
- function speak(message){
-  if(!voice||!window.speechSynthesis||!window.SpeechSynthesisUtterance||message===lastSpeech)return;
-  lastSpeech=message;
+ function speak(message,key=message){
+  if(!voice||!window.speechSynthesis||!window.SpeechSynthesisUtterance||key===lastSpeech)return;
+  lastSpeech=key;
   try{window.speechSynthesis.cancel();const u=new window.SpeechSynthesisUtterance(message);u.lang='pl-PL';u.rate=.95;window.speechSynthesis.speak(u)}catch(_){}
+ }
+ function nearestRouteDistance(point){
+  if(!route?.geometry?.length)return Infinity;
+  // Approximate distance to road geometry (metres); avoid reacting to noise.
+  const pts=route.geometry,coarse=Math.max(1,Math.ceil(pts.length/350));
+  let best=Infinity,index=0;
+  for(let i=0;i<pts.length;i+=coarse){
+   const d=meters(point,{lat:pts[i][1],lon:pts[i][0]});
+   if(d<best){best=d;index=i}
+  }
+  for(let i=Math.max(0,index-coarse);i<=Math.min(pts.length-1,index+coarse);i++){
+   const d=meters(point,{lat:pts[i][1],lon:pts[i][0]});
+   if(d<best)best=d;
+  }
+  return best;
+ }
+ async function requestReroute(point){
+  if(rerouting||!active||!route?.geometry?.length||typeof fetch!=='function')return false;
+  lastReroute=Date.now();rerouting=true;
+  const destination=route.geometry[route.geometry.length-1];
+  const current=route.destination,oldRoute=route;
+  const url='https://router.project-osrm.org/route/v1/driving/'+
+   encodeURIComponent(point.lon)+','+encodeURIComponent(point.lat)+';'+
+   encodeURIComponent(destination[0])+','+encodeURIComponent(destination[1])+
+   '?overview=full&geometries=geojson&steps=true&alternatives=false';
+  const ctl=new AbortController();rerouteCtl=ctl;
+  const timeout=setTimeout(()=>ctl.abort(),14000);
+  text('hgProNavNext','Przeliczam trasę po zmianie kierunku…');
+  try{
+   const response=await fetch(url,{signal:ctl.signal});
+   if(!response.ok)throw Error('ROUTE_SERVER');
+   const data=await response.json(),updated=data?.routes?.[0];
+   const geometry=updated?.geometry?.coordinates;
+   if(!active||route!==oldRoute||!Array.isArray(geometry)||geometry.length<2||
+      geometry.some(p=>!Array.isArray(p)||!Number.isFinite(p[0])||!Number.isFinite(p[1])))return false;
+   const steps=(updated.legs||[]).flatMap(l=>Array.isArray(l.steps)?l.steps:[]);
+   if(!steps.length)return false;
+   route={geometry,steps,meters:Number(updated.distance)||0,seconds:Number(updated.duration)||0,destination:current};
+   suffix(geometry);stepIndex=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';setProgress(0);
+   window.HealthGoMapV2?.updateLiveRoute?.(updated);
+   window.HealthGoNavigationLive?.setRoute?.(updated);
+   speak('Trasa została przeliczona','route-recomputed-'+lastReroute);
+   text('hgProNavNext','Zaktualizowano trasę na podstawie GPS');
+   return true;
+  }catch(_){if(active)text('hgProNavNext','Nie udało się przeliczyć. Pozostaje poprzednia trasa.');return false}
+  finally{clearTimeout(timeout);if(rerouteCtl===ctl)rerouteCtl=null;rerouting=false}
  }
  function positionUpdate(pos){
   if(!active||!route)return;
@@ -124,10 +171,25 @@
   setProgress(navigationProgress(left));
   text('hgProNavSpeed',c.speed==null||!Number.isFinite(c.speed)?'—':String(Math.max(0,Math.round(c.speed*3.6))));
   placeArrow(point,c.heading==null?NaN:Number(c.heading));
+  window.HealthGoNavigationLive?.update?.(pos);
+  if(Number(c.accuracy)<35&&Number(c.speed)>=0.8&&route?.geometry?.length>1){
+   const away=nearestRouteDistance(point);
+   offRouteTicks=away>90?offRouteTicks+1:0;
+   if(offRouteTicks>=3&&!rerouting&&Date.now()-lastReroute>90000){
+    offRouteTicks=0;requestReroute(point);
+   }
+  }else offRouteTicks=0;
   if(follow&&Date.now()-lastCamera>=1100){
    lastCamera=Date.now();map()?.setView?.([point.lat,point.lon],Math.max(16,map()?.getZoom?.()||16),{animate:true});
   }
-  speak(instruction(step)[0]);
+  if(voiceStep!==stepIndex){voiceStep=stepIndex;voiceStage='';}
+  if(distanceTo===null){
+   if(voiceStage!=='next'){speak(instruction(step)[0],'step-'+stepIndex);voiceStage='next'}
+  }else if(distanceTo<60&&voiceStage!=='near'){
+   speak('Za '+nice(distanceTo)+' '+instruction(step)[0],'near-'+stepIndex);voiceStage='near';
+  }else if(distanceTo<300&&voiceStage!=='approach'&&voiceStage!=='near'){
+   speak('Za '+nice(distanceTo)+' '+instruction(step)[0],'approach-'+stepIndex);voiceStage='approach';
+  }
   const finish=route.geometry[route.geometry.length-1];
   if(meters(point,{lat:finish[1],lon:finish[0]})<25){
    text('hgProNavDirection','Dotarcie do celu');text('hgProNavTurnDistance','Cel');
@@ -150,7 +212,7 @@
   if(active)return true;
   if(!route?.steps?.length){text('mapV2RouteOutput','Najpierw wyznacz trasę samochodową.');return false}
   if(!navigator.geolocation){text('mapV2RouteOutput','GPS niedostępny. Możesz użyć podglądu trasy z wpisanego adresu.');return false}
-  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;
+  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';
   setProgress(0);const options=node('hgProNavOptions');if(options)options.open=false;
   // Make navigation a single uncluttered full-screen state, not a map sheet.
   window.HealthGoMapV2?.close?.();
@@ -160,6 +222,9 @@
   node('mapWorkspace')?.classList?.add('map-pro-navigating');
   show('hgProNavigation',true);
   loadOptions();
+  window.HealthGoNavigationLive?.begin?.({geometry:{coordinates:route.geometry}});
+  // Start speech synthesis only inside a direct user gesture when available.
+  speak('Rozpoczynam prowadzenie. Sprawdzam pozycję GPS.','navigation-start');
   text('hgProNavDestination',route.destination);
   text('hgProNavDirection','Ustalam pozycję');text('hgProNavIcon','↑');
   text('hgProNavTurnDistance','—');text('hgProNavStreet','Czekam na GPS');
@@ -171,7 +236,7 @@
   window.setTimeout?.(()=>map()?.invalidateSize?.({pan:false}),80);
   try{
    watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
-    const message=err?.code===1?'iPhone odmówił dostępu do GPS. Sprawdź uprawnienia lub wpisz punkt startowy.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
+    const message=err?.code===1?'Telefon nie zezwolił na GPS. Sprawdź uprawnienia lokalizacji albo wpisz punkt startowy.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
     text('hgProNavNext',message);text('hgProNavStreet','GPS niedostępny');
     if(err?.code===1){stopNavigation();text('mapV2RouteOutput',message)}
    },{enableHighAccuracy:true,maximumAge:5000,timeout:17000});
@@ -180,6 +245,8 @@
  }
  function stopNavigation(){
   active=false;
+  if(rerouteCtl){rerouteCtl.abort();rerouteCtl=null}rerouting=false;
+  window.HealthGoNavigationLive?.stop?.();
   if(watchId!==null)try{navigator.geolocation?.clearWatch?.(watchId)}catch(_){}
   watchId=null;position=null;removeArrow();
   show('hgProNavigation',false);
@@ -214,5 +281,5 @@
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopNavigation()});
  window.addEventListener('pagehide',stopNavigation);
  window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,toggleVoice,toggleFollow,
-  toggleNavigationTheme,leaveMap,routeRemaining,instruction,maneuverInfo,navigationProgress};
+  toggleNavigationTheme,leaveMap,routeRemaining,instruction,maneuverInfo,navigationProgress,nearestRouteDistance};
 })();
