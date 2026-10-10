@@ -105,10 +105,10 @@
       '<section class="hgp-hero" aria-label="Postępy plecaka"><div class="hgp-herohead"><div><div class="hgp-kicker">Twój progres</div><div class="hgp-level">'+(level?'Poziom '+level.level:'Poziom —')+'</div><p class="hgp-sub">'+(level&&level.needed?level.remaining+' XP do następnego poziomu':'Postępy z konta HealthGo')+'</p></div><div class="hgp-bagicon">'+svg('backpack')+'</div></div>'+
       '<div class="hgp-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+(level?Math.round(level.percent):0)+'"><span style="width:'+(level?level.percent:0)+'%"></span></div>'+
       '<div class="hgp-trackmeta"><span>'+escapeHtml(current)+'</span><span>'+(level?'Zweryfikowane osiągnięcia':'Czekamy na synchronizację')+'</span></div>'+
-      '<div class="hgp-stats"><div class="hgp-stat">'+svg('award')+'<b>'+earnedCount(items)+'</b><small>Zdobyte nagrody</small></div><div class="hgp-stat">'+svg('list')+'<b>'+packs+'</b><small>Moje listy</small></div><div class="hgp-stat">'+svg('gem')+'<b>—</b><small>HealthCoins wkrótce</small></div></div></section>';
+      '<div class="hgp-stats"><div class="hgp-stat">'+svg('award')+'<b>'+earnedCount(items)+'</b><small>Zdobyte nagrody</small></div><div class="hgp-stat">'+svg('list')+'<b>'+packs+'</b><small>Moje listy</small></div><div class="hgp-stat">'+svg('gift')+'<b>'+(window.HealthGoRewards?window.HealthGoRewards.countAvailable():0)+'</b><small>Prezenty do odbioru</small></div></div></section>';
   }
   function tabs(){
-    return '<div class="hgp-tabs" role="tablist" aria-label="Rodzaj plecaka"><button type="button" role="tab" data-action="tab" data-value="gear" aria-selected="'+(ui.tab==='gear')+'">'+svg('award')+' Ekwipunek</button><button type="button" role="tab" data-action="tab" data-value="daily" aria-selected="'+(ui.tab==='daily')+'">'+svg('list')+' Codzienny</button></div>';
+    return '<div class="hgp-tabs" role="tablist" aria-label="Rodzaj plecaka"><button type="button" role="tab" data-action="tab" data-value="gear" aria-selected="'+(ui.tab==='gear')+'">'+svg('award')+' Ekwipunek</button><button type="button" role="tab" data-action="tab" data-value="daily" aria-selected="'+(ui.tab==='daily')+'">'+svg('list')+' Codzienny</button><button type="button" role="tab" data-action="tab" data-value="gifts" aria-selected="'+(ui.tab==='chests')+'">'+svg('gift')+' Prezenty</button></div>';
   }
   function badgeIcon(item){return item.category==='cups'?'trophy':item.category==='sports'?'footprints':item.category==='secret'&&!item.earned?'lock':item.category==='special'?'sparkles':item.rarity==='mythic'?'gem':'award';}
   function badgeCard(item){
@@ -143,7 +143,7 @@
       (filtered.length?'<div class="hgp-grid">'+filtered.map(badgeCard).join('')+'</div>':
        emptyPanel(items.length?'Nic nie znaleziono':'Nagrody pojawią się po synchronizacji','Możesz zmienić filtry lub zdobywać odznaki przez prawdziwe wyzwania HealthGo.','trophy'))+
       '<div class="hgp-heading"><h3>'+svg('gift')+' Skrzynie i nagrody</h3><button type="button" class="hgp-secondary" data-action="chests">Zobacz '+svg('chevron')+'</button></div>'+
-      '<div class="hgp-info">Skrzynie i HealthCoins będą aktywne po podłączeniu bezpiecznego systemu nagród. Nie pokazujemy fikcyjnych skrzyń ani monet.</div>';
+      '<div class="hgp-info">Darmowe prezenty są przyznawane za zdobyte odznaki. Odbieraj naklejki lub otwieraj skrzynie z naklejką albo tapetą profilową. Bez zakupów i bez zwiększania XP.</div>';
   }
   function emptyPanel(title,subtitle,icon){
     return '<div class="hgp-empty">'+svg(icon||'backpack')+'<b>'+escapeHtml(title)+'</b><p>'+escapeHtml(subtitle)+'</p></div>';
@@ -176,8 +176,8 @@
         return '<button type="button" class="hgp-listcard" data-action="open-category" data-value="'+key+'"><span class="hgp-listhead">'+svg(key==='cups'?'trophy':key==='sports'?'footprints':'award')+'<span><b>'+CATEGORIES[key]+'</b><small>'+done+' / '+group.length+' zdobytych</small></span>'+svg('chevron')+'</span><span class="hgp-meter"><span style="width:'+progress+'%"></span></span><span class="hgp-listmeta">'+progress+'% kolekcji</span></button>';
       }).join('')+'</div>';
   }
-  function chests(){return '<div class="hgp-heading"><h3>'+svg('gift')+' Skrzynie</h3><button type="button" class="hgp-secondary" data-action="back-gear">Wróć</button></div>'+
-      emptyPanel('Skrzynie nie są jeszcze dostępne','Nie uruchamiamy losowych nagród bez prawdziwego systemu przyznawania. Zdobyte odznaki możesz obejrzeć w Ekwipunku.','gift');}
+  function chests(){return '<div class="hgp-heading"><h3>'+svg('gift')+' Moje prezenty</h3><button type="button" class="hgp-secondary" data-action="back-gear">Wróć</button></div>'+
+      (window.HealthGoRewards?window.HealthGoRewards.renderGifts():emptyPanel('Nagrody niedostępne','Otwórz aplikację ponownie.','gift'));}
   function viewHtml(){
     if(ui.tab==='daily')return daily();
     if(ui.tab==='collections')return collections();
@@ -242,7 +242,7 @@
     }else if(kind==='settings'){
       title='O Plecaku 2.0';
       body='<p class="hgp-detail-desc">Plecak Hybrydowy PRO korzysta z istniejących osiągnięć oraz XP HealthGo. Checklista, ulubione i wyróżnienie są zapisywane tylko lokalnie na tym urządzeniu, osobno dla każdego konta.</p>'+
-        '<div class="hgp-info">Powiadomienia w tle, synchronizacja list między urządzeniami, HealthCoins i skrzynie wymagają osobnego wdrożenia po stronie serwera.</div>';
+        '<div class="hgp-info">Darmowe prezenty kosmetyczne są zapisane lokalnie dla konta. Synchronizacja między urządzeniami i HealthCoins wymagają osobnego systemu serwerowego.</div>';
     }
     return '<div class="hgp-overlay" data-overlay="1"><div class="hgp-dialog" role="dialog" aria-modal="true" aria-label="'+escapeHtml(title)+'">'+
       '<div class="hgp-dialog-head"><h3>'+escapeHtml(title)+'</h3><button type="button" class="hgp-iconbtn" data-action="close" aria-label="Zamknij">'+svg('x')+'</button></div>'+
@@ -278,11 +278,12 @@
     var btn=event.target.closest('[data-action]');if(!btn||!root.contains(btn))return;
     var action=btn.getAttribute('data-action'),id=btn.getAttribute('data-id'),value=btn.getAttribute('data-value');
     if(action==='close'){closeModal();return;}
+    if(action.indexOf('gift-')===0){if(window.HealthGoRewards&&window.HealthGoRewards.handle(action,id)){render();window.HealthGoRewards.decorateProfile();}return;}
     if(action==='settings'||action==='new'){openModal(action==='new'?'new':'settings');return;}
     if(action==='ai'){navigate('ai');return;}
     if(action==='challenges'){navigate('challenges');return;}
     if(action==='badge'||action==='list'){openModal(action,id);return;}
-    if(action==='tab'){ui.tab=value==='daily'?'daily':'gear';ui.modal=null;ui.search='';render();return;}
+    if(action==='tab'){ui.tab=value==='daily'?'daily':value==='gifts'?'chests':'gear';ui.modal=null;ui.search='';render();return;}
     if(action==='filter'){ui.filter=value;render();return;}
     if(action==='collections'){ui.tab='collections';render();return;}
     if(action==='chests'){ui.tab='chests';render();return;}
@@ -372,6 +373,6 @@
   page.appendChild(root);
   Services.subscribe(function(){render();});
   window.addEventListener('pageshow',function(){render();});
-  window.HealthGoPackPro={render:render,open:function(tab){ui.tab=tab==='daily'?'daily':'gear';navigate('backpack');render();}};
+  window.HealthGoPackPro={render:render,open:function(tab){ui.tab=tab==='daily'?'daily':tab==='gifts'?'chests':'gear';navigate('backpack');render();}};
   render();
 })();

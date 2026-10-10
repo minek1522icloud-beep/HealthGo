@@ -1,0 +1,64 @@
+/* HealthGo Profile Gifts 2.1: custom cosmetic cards / safe-area design. */
+#hgPackProRoot .hgr-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 12px}
+#hgPackProRoot .hgr-section-head h3{font-size:17px;margin:0}
+.hgr-kicker{display:block;color:#7ff1bb;font-size:10px;letter-spacing:.15em;font-weight:800}
+#hgPackProRoot .hgr-counter{color:#89ebbd;font-size:11px;padding:7px 9px;border:1px solid #356d51;border-radius:999px;white-space:nowrap}
+#hgPackProRoot .hgr-note{color:#b9d6c6;font-size:12px;line-height:1.6;padding:13px;border:1px solid #2e523d;border-radius:14px;background:#11291f}
+#hgPackProRoot .hgr-empty{padding:20px;border:1px dashed #365946;color:#b5c9bc;border-radius:13px;font-size:13px;background:#112019}
+#hgPackProRoot .hgr-gift-list{display:grid;gap:10px}
+#hgPackProRoot .hgr-gift-card{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #385c48;background:linear-gradient(150deg,#1c372a,#101f18);border-radius:17px;min-width:0}
+#hgPackProRoot .hgr-gift-figure{height:68px;width:72px;flex:0 0 72px;display:grid;place-items:center;border-radius:13px;background:radial-gradient(circle,#305941,#13251a)}
+#hgPackProRoot .hgr-gift-copy{display:grid;gap:4px;min-width:0;flex:1}
+#hgPackProRoot .hgr-gift-copy strong{font-size:12px;overflow-wrap:anywhere}
+#hgPackProRoot .hgr-gift-copy small{color:#b5c8b8;font-size:11px;line-height:1.4}
+#hgPackProRoot .hgr-open,#hgPackProRoot .hgr-equip{border:1px solid #87f3be;color:#071f15;font-weight:850;background:linear-gradient(130deg,#91f7c8,#58d6a0);padding:10px;border-radius:11px;font-size:12px;min-height:39px;cursor:pointer}
+#hgPackProRoot .hgr-equip:disabled{background:#244836;border-color:#385f4b;color:#adf0c8;cursor:default}
+#hgPackProRoot .hgr-gift-state{font-size:10px;font-weight:700;color:#a8c8b5}
+#hgPackProRoot .hgr-collection-head{font-weight:780;color:#eaffee;font-size:14px;margin:18px 0 10px}
+#hgPackProRoot .hgr-cosmetics{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(146px,46%),1fr));gap:9px}
+#hgPackProRoot .hgr-cosmetic-card{border:1px solid #395a47;background:#14271d;border-radius:14px;padding:11px;display:grid;gap:5px;text-align:center;min-width:0}
+#hgPackProRoot .hgr-cosmetic-card strong{font-size:12px}
+#hgPackProRoot .hgr-cosmetic-card small{font-size:10px;color:#a4c3b0}
+#hgPackProRoot .hgr-cosmetic-art{height:98px;display:grid;place-items:center;border-radius:10px;background:#233e2f;overflow:hidden}
+#hgPackProRoot .hgr-actions{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}
+#hgPackProRoot .hgr-reveal{border:1px solid #88ecc2;background:radial-gradient(circle at top,#2e7453,#173526 78%);border-radius:20px;padding:20px;margin:18px 0;display:grid;place-items:center;gap:10px;text-align:center;box-shadow:0 8px 24px #0005}
+#hgPackProRoot .hgr-reveal strong{font-size:20px}
+#hgPackProRoot .hgr-reveal-art{height:120px;width:min(100%,240px);display:grid;place-items:center}
+#hgPackProRoot .hgr-reveal-art>.hgr-wallpaper{width:190px;height:110px}
+#hgPackProRoot .hgr-reveal-art>.hgr-sticker{height:93px;width:93px;font-size:56px}
+#hgPackProRoot .hgr-chest-art{position:relative;display:grid;place-items:center;font-weight:900;width:57px;height:49px;background:linear-gradient(145deg,#e9be68,#84551a);border:4px solid #ffe49b;border-radius:10px;box-shadow:0 7px 18px #0008;color:#fff8dc;font-size:27px}
+#hgPackProRoot .hgr-chest-art span{position:absolute;font-size:9px;bottom:2px;letter-spacing:.15em;color:#4b2b0c}
+.hgr-sticker{display:grid;place-items:center;width:62px;height:62px;border-radius:21px;transform:rotate(-8deg);border:4px solid #effff5;background:linear-gradient(140deg,var(--hgr-sticker1),var(--hgr-sticker2));box-shadow:0 6px 0 #0b1815,0 9px 18px #0008,inset 0 3px 6px #ffffff65;color:#fff;font-size:36px;font-weight:900;text-shadow:0 2px 5px #0005}
+.hgr-sticker span{transform:rotate(8deg)}
+.hgr-tone-mint{--hgr-sticker1:#55f2bf;--hgr-sticker2:#178f76}
+.hgr-tone-blue{--hgr-sticker1:#9cd7ff;--hgr-sticker2:#2265c4}
+.hgr-tone-orange{--hgr-sticker1:#ffe29b;--hgr-sticker2:#da6238}
+.hgr-tone-green{--hgr-sticker1:#b9f39d;--hgr-sticker2:#359653}
+.hgr-tone-gold{--hgr-sticker1:#ffe794;--hgr-sticker2:#a86c17}
+.hgr-tone-purple{--hgr-sticker1:#e1b9ff;--hgr-sticker2:#7a3bd0}
+.hgr-tone-coral{--hgr-sticker1:#ffc4bb;--hgr-sticker2:#dd5881}
+.hgr-wallpaper{display:block;height:90%;width:90%;border:1px solid #ffffff50;border-radius:12px;box-shadow:inset 0 3px 15px #fff2,0 8px 15px #0005;position:relative;overflow:hidden}
+.hgr-wallpaper:before,.hgr-profile-preview:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0 17px,#ffffff12 17px 18px);pointer-events:none}
+.hgr-wallpaper-aurora{background:radial-gradient(ellipse at 12% 11%,#79ffd5,transparent 49%),radial-gradient(ellipse at 90% 70%,#257c83,transparent 45%),linear-gradient(140deg,#022b2a,#114f36)}
+.hgr-wallpaper-nebula{background:radial-gradient(circle at 70% 19%,#b8a2ff,transparent 33%),radial-gradient(circle at 22% 75%,#55b7ff,transparent 40%),linear-gradient(140deg,#150e38,#172a58)}
+.hgr-wallpaper-sunset{background:radial-gradient(circle at 78% 26%,#ffe4a1,transparent 25%),linear-gradient(125deg,#c96758,#5b275a 54%,#1a213a)}
+.hgr-wallpaper-forest{background:radial-gradient(ellipse at 40% 30%,#6cc987,transparent 38%),linear-gradient(130deg,#062c20,#244d36,#0c1c17)}
+.hgr-wallpaper-violet{background:radial-gradient(circle at 35% 50%,#eea7ff,transparent 36%),linear-gradient(125deg,#311654,#0c0d35)}
+.hgr-wallpaper-arctic{background:radial-gradient(ellipse at 80% 15%,#d4ffff,transparent 35%),linear-gradient(115deg,#178fa4,#243d77,#0d1928)}
+.hgr-wallpaper-default{background:linear-gradient(125deg,#1b4234,#10231e)}
+#hgGiftProfilePanel.hgr-profile-panel{display:grid;gap:12px;padding:17px;border:1px solid #375b46;border-radius:17px;background:#13271e;color:#f0fff6;margin-top:20px}
+.hgr-profile-head{display:grid;gap:4px}
+.hgr-profile-head strong{font-size:17px}
+#hgGiftProfilePanel .hgr-profile-preview{min-height:126px;border-radius:15px;display:flex;gap:14px;align-items:center;padding:16px;position:relative;isolation:isolate;overflow:hidden}
+#hgGiftProfilePanel .hgr-profile-preview>div{z-index:1}
+#hgGiftProfilePanel .hgr-profile-preview strong,#hgGiftProfilePanel .hgr-profile-preview span{display:block}
+#hgGiftProfilePanel .hgr-profile-preview strong{font-size:18px;color:#fff;text-shadow:0 2px 4px #0007}
+#hgGiftProfilePanel .hgr-profile-preview span{font-size:11px;color:#e2f9ef;text-shadow:0 2px 4px #0007}
+#hgGiftProfilePanel .hgr-profile-avatar{width:64px;height:64px;flex:0 0 64px;border-radius:20px;display:grid;place-items:center;background:#082d24;border:2px solid #c8fbe5;font-size:26px;font-weight:900;color:#fff;position:relative}
+#hgGiftProfilePanel .hgr-profile-avatar .hgr-profile-decal{position:absolute;right:-10px;bottom:-8px;display:grid;place-items:center;font-size:22px;color:#ffef99;background:#166a50;border:2px solid #fff4d0;border-radius:50%;height:31px;width:31px}
+#hgGiftProfilePanel>p{color:#b2d1bd;font-size:12px;line-height:1.55;margin:0}
+#hgGiftProfilePanel .hgr-open{width:100%}
+.user-avatar.hgr-avatar-equipped{position:relative;overflow:visible}
+.user-avatar .hgr-avatar-sticker{position:absolute;right:-8px;bottom:-7px;width:19px;height:19px;background:#1c8566;border:1px solid #fff0bf;border-radius:50%;color:#fff6c5;display:grid;place-items:center;font-size:14px;text-shadow:0 1px 2px #0008;z-index:3}
+@media(max-width:470px){#hgPackProRoot .hgr-gift-card{flex-wrap:wrap}#hgPackProRoot .hgr-gift-copy{flex:1 1 130px}#hgPackProRoot .hgr-gift-card .hgr-open{flex:1 1 100%}#hgGiftProfilePanel .hgr-profile-preview{min-height:110px}}
+@media(prefers-reduced-motion:reduce){#hgPackProRoot .hgr-reveal{scroll-behavior:auto}}

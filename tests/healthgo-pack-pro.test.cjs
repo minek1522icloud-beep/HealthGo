@@ -49,7 +49,7 @@ function harness(){
 }
 test('Plecak 2.0 loads after the existing app without removing achievement nodes',()=>{
   assert.match(html,/healthgo-pack-pro\.css\?v=2/);
-  assert.match(html,/healthgo-pack-pro\.js\?v=2/);
+  assert.match(html,/healthgo-pack-pro\.js\?v=3/);
   assert.match(css,/#backpack\.hgpack-ready/);
   const app=harness();
   assert.match(app.root.innerHTML,/Mój plecak/);

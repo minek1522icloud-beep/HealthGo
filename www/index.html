@@ -352,6 +352,8 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-plan-emerald-v4.css?v=2">
 <link rel="stylesheet" href="./healthgo-more-list-v5.css?v=1">
   <link rel="stylesheet" href="./healthgo-pack-pro.css?v=2">
+  <link rel="stylesheet" href="./healthgo-rewards.css?v=1">
+  <link rel="stylesheet" href="./healthgo-release-notes.css?v=1">
 </head>
 <body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -2698,6 +2700,7 @@ function renderHealthGoProfile(){
  const nick=document.getElementById('settingsNickname');if(nick)nick.value=p.nickname||'';
  const type=document.getElementById('settingsAccountType');if(type){type.value=p.accountType||'standard';type.disabled=true;type.title='Zmiana typu połączonego konta wymaga bezpiecznego procesu.';}
  const em=document.getElementById('settingsEmail');if(em)em.textContent=email;
+ window.HealthGoRewards?.decorateProfile();
  const child=document.getElementById('childSafetyNote');
  if(child)child.textContent=p.accountType==='child'
    ?'🧸 Konto dziecka: typ konta jest zablokowany. Konto nie może samo zmienić się w konto dorosłego ani utworzyć rodziny.'
@@ -3226,6 +3229,8 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-ai-emerald-v3.js?v=2"></script>
 <script src="./healthgo-plan-v4.js?v=2"></script>
 <script src="./healthgo-medals.js?v=1"></script>
-<script src="./healthgo-pack-pro.js?v=2"></script>
+<script src="./healthgo-rewards.js?v=1"></script>
+<script src="./healthgo-pack-pro.js?v=3"></script>
+<script src="./healthgo-release-notes.js?v=1"></script>
 </body>
 </html>

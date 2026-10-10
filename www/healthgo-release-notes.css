@@ -1,0 +1,26 @@
+/* HealthGo 2.1 fullscreen patch notes. iPhone / Android safe areas included. */
+.hgu-notes-open{overflow:hidden}
+.hgu-overlay{position:fixed;inset:0;z-index:300000;background:rgba(0,8,7,.88);display:flex;align-items:center;justify-content:center;padding:max(14px,env(safe-area-inset-top,0px)) 12px max(14px,env(safe-area-inset-bottom,0px));overscroll-behavior:contain}
+.hgu-modal{color:#f2fff6;display:flex;flex-direction:column;width:min(100%,620px);max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 26px);min-height:0;overflow:hidden;border-radius:23px;border:1px solid #4a7a61;background:#101f19;box-shadow:0 30px 95px #000c;font-family:inherit}
+.hgu-hero{flex:0 0 auto;padding:24px 24px 18px;background:radial-gradient(ellipse at 80% 0%,#2c9867aa,transparent 62%),linear-gradient(130deg,#153c2e,#0a211a);border-bottom:1px solid #397054}
+.hgu-overline{font-weight:850;font-size:10px;color:#92ffd0;letter-spacing:.15em}
+.hgu-version{margin:12px 0 5px;font-size:10px;letter-spacing:.12em;color:#ffde9b;font-weight:850}
+.hgu-hero h2{font-size:clamp(22px,5vw,30px);font-weight:900;letter-spacing:-.03em;margin:0;color:#fff}
+.hgu-hero p{font-size:13px;line-height:1.55;color:#b9daca;margin:9px 0 0}
+.hgu-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:15px}
+.hgu-tags span{font-size:9px;font-weight:850;letter-spacing:.045em;color:#baffdd;border:1px solid #3b7959;background:#173b2c;border-radius:999px;padding:6px 9px}
+.hgu-body{overflow:auto;min-height:0;flex:1 1 auto;overscroll-behavior:contain;padding:8px 24px 22px;scrollbar-color:#3d745b transparent}
+.hgu-section{padding:16px 0;border-bottom:1px solid #2c4b3a}
+.hgu-section h3{font-size:15px;font-weight:850;margin:0 0 12px;color:#b5ffd6}
+.hgu-section ul{display:grid;gap:10px;list-style:none;padding:0;margin:0}
+.hgu-section li{font-size:12px;line-height:1.55;color:#d5ede0;position:relative;padding-left:20px}
+.hgu-section li:before{content:"✓";position:absolute;left:0;top:0;color:#84ebad;font-weight:900}
+.hgu-footer-note{padding:17px 0 0;font-size:11px;line-height:1.6;color:#a9c4b3}
+.hgu-footer-note a{color:#9ff2cb}
+.hgu-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 24px max(16px,env(safe-area-inset-bottom,0px));border-top:1px solid #2a5540;background:#122c20}
+.hgu-actions span{font-size:10px;color:#aac9b9}
+.hgu-actions button{border:0;border-radius:12px;background:linear-gradient(120deg,#95ffd1,#60dca5);color:#082017;padding:12px 23px;min-height:44px;font-size:13px;font-weight:850;cursor:pointer}
+.hgu-actions button:focus-visible,.hgu-modal a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.hgu-settings-button{margin-top:12px}
+@media(max-width:520px){.hgu-overlay{padding:max(6px,env(safe-area-inset-top,0px)) 6px max(6px,env(safe-area-inset-bottom,0px))}.hgu-modal{border-radius:16px;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 12px)}.hgu-hero{padding:17px 17px 15px}.hgu-tags span{font-size:8px}.hgu-body{padding:4px 17px 14px}.hgu-actions{padding:12px 17px max(14px,env(safe-area-inset-bottom,0px))}.hgu-actions span{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.hgu-modal{scroll-behavior:auto}}
