@@ -72,7 +72,7 @@ test('iPhone and desktop inspect allow touch orbit, pinch, wheel zoom and keyboa
  assert.match(css,/safe-area-inset-bottom/);
  assert.match(pack,/data-action="inspect-model"/);
  assert.match(pack,/data-action="inspect-3d"/);
- assert.match(pack,/Kolekcja 240 grafik/);
+ assert.match(pack,/Kolekcja 240 wzorów SVG/);
  assert.match(profile,/data-profile-inspect/);
  assert.match(profile,/maksymalnie 6 zdobytych odznak/);
 });
