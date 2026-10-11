@@ -42,6 +42,8 @@ for(const [width,height] of [[360,740],[390,844],[414,896],[430,932]]){
    window.go('ai');
   });
   await page.locator('#aiMessages .ai-welcome h2').waitFor({timeout:4500});
+  // First-time location permission is a separate modal; decline before AI controls.
+  await page.evaluate(()=>window.HealthGoMapV2?.chooseWelcomeLocation(false));
   const bounds=await page.evaluate(()=>{
    const sel=s=>document.querySelector(s);
    const rect=s=>{
