@@ -17,7 +17,7 @@ on:
       - "tests/healthgo-navigation-live.test.cjs"
       - "www/healthgo-drive-ui.css"
       - "tests/healthgo-chat-modern.test.cjs"
-      - "tests/healthgo-game-library.test.cjs"
+      - "tests/healthgo-unified-2026.test.cjs"
       - "tests/healthgo-photo-badges-v32.test.cjs"
       - "tests/healthgo-original-badges-v28.test.cjs"
       - "tests/healthgo-vector-badges-v29.test.cjs"
@@ -67,13 +67,13 @@ jobs:
 
       - name: Sprawdz pobieranie i wznawianie AI na telefonie
         shell: bash
-        run: node --test tests/healthgo-arcade40.test.cjs tests/healthgo-map-recovery.test.cjs tests/healthgo-navigation-live.test.cjs tests/healthgo-navigation-screen.test.cjs tests/healthgo-spacious-ui.test.cjs tests/healthgo-map4.test.cjs tests/healthgo-map-pro.test.cjs tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
+        run: node --test tests/healthgo-map-recovery.test.cjs tests/healthgo-navigation-live.test.cjs tests/healthgo-navigation-screen.test.cjs tests/healthgo-spacious-ui.test.cjs tests/healthgo-map4.test.cjs tests/healthgo-map-pro.test.cjs tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
 
       - name: Sprawdz grafike 240 modeli, proporcje, 3D i zachowanie Plecaka
         shell: bash
         run: |
           node scripts/check-syntax.cjs
-          node --test tests/healthgo-game-library.test.cjs tests/healthgo-arcade-map-recovery.test.cjs tests/healthgo-photo-badges-v32.test.cjs tests/healthgo-original-badges-v28.test.cjs tests/healthgo-vector-badges-v29.test.cjs tests/healthgo-badge-art-audit-v27.test.cjs tests/healthgo-badge-forge-v25.test.cjs tests/healthgo-collector-v26.test.cjs tests/healthgo-pack-pro.test.cjs tests/healthgo-profile-pro.test.cjs tests/healthgo-rewards.test.cjs
+          node --test tests/healthgo-unified-2026.test.cjs tests/healthgo-photo-badges-v32.test.cjs tests/healthgo-original-badges-v28.test.cjs tests/healthgo-vector-badges-v29.test.cjs tests/healthgo-badge-art-audit-v27.test.cjs tests/healthgo-badge-forge-v25.test.cjs tests/healthgo-collector-v26.test.cjs tests/healthgo-pack-pro.test.cjs tests/healthgo-profile-pro.test.cjs tests/healthgo-rewards.test.cjs
 
       - name: Przygotuj wersje mobilna
         shell: bash
