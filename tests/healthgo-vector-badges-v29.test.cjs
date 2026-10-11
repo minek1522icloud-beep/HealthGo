@@ -66,11 +66,11 @@ test('one close button, touch orbit and pinch, no bottom toolbar',()=>{
 test('PWA loads vector graphics before backpack and profile, never requesting legacy atlas',()=>{
  const html=read('www/index.html'),sw=read('www/service-worker.js');
  const find=x=>html.indexOf(x);
- assert.ok(find('healthgo-badge-3d.js?v=3')<find('healthgo-badge-vector.js?v=1'));
- assert.ok(find('healthgo-badge-vector.js?v=1')<find('healthgo-pack-pro.js?v=7'));
- assert.ok(find('healthgo-badge-vector.js?v=1')<find('healthgo-profile-pro.js?v=4'));
+ assert.ok(find('healthgo-badge-3d.js?v=3')<find('healthgo-badge-board.js?v=1'));
+ assert.ok(find('healthgo-badge-board.js?v=1')<find('healthgo-pack-pro.js?v=7'));
+ assert.ok(find('healthgo-badge-board.js?v=1')<find('healthgo-profile-pro.js?v=4'));
  assert.doesNotMatch(html,/healthgo-badge-gallery/);
- assert.match(sw,/healthgo-pwa-v50-original-svg-badges-20261011/);
+ assert.match(sw,/healthgo-pwa-v51-original-photo-board-20261011/);
  const pack=read('www/healthgo-pack-pro.js');
  const profile=read('www/healthgo-profile-pro.js');
  const room=read('www/healthgo-collector-room.js');

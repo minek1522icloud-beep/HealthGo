@@ -3,12 +3,24 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-2.9-original-vector-badges-20261011';
-var TITLE='Ostre odznaki wektorowe i prosty podgląd';
+var RELEASE='healthgo-3.0-original-photo-board-20261011';
+var TITLE='Odznaki dokładnie z Twojego obrazka';
 var sections=[
+ {title:'🏅 Odznaki z Twojej planszy',items:[
+  'Usunęliśmy poprzednie generowane medaliki z widoku Plecaka i gabloty. Zamiast nich każda miniatura pokazuje osobną grafikę wyciętą na żywo z przesłanej planszy.',
+  'Odznaki nie są już kolejną odmianą tej samej tarczy z innym kolorem: są oryginalnymi obrazkami z Twojej kolekcji.',
+  'Kolekcja 240 wzorów służy do przeglądania projektów. Zdobyte odznaki i XP wynikają wyłącznie z rzeczywistych osiągnięć.',
+  'Przy dużym powiększeniu szczegółowość zależy od rozdzielczości przesłanego obrazka.'
+ ]},
+ {title:'🔄 Prosty obrót z dwóch stron',items:[
+  'Dotknij odznaki w Plecaku lub gablocie, aby zobaczyć jej oryginalny obraz na karcie kolekcjonerskiej.',
+  'Obracaj palcem w poziomie i pionie. Powiększaj dwoma palcami; z tyłu widać autorski rewers HealthGo.',
+  'To przestrzenny obrót płaskiej grafiki, a nie pełny model 3D każdego fragmentu medalu. Dzięki temu wygląd przodu pozostaje wierny obrazkowi.',
+  'Jest tylko przycisk zamknięcia — bez skomplikowanego menu.'
+ ]},
  {title:'🏅 Oryginalne odznaki w jakości SVG',items:[
-  'Odznaki nie są już wycinane z przesłanej planszy: zaprojektowano nowe autorskie grafiki wektorowe inspirowane kolekcjonerskim stylem.',
-  '24 różne oprawy, 28 symboli i wielowarstwowe metaliczne zdobienia wyświetlają się ostro nawet po przybliżeniu.',
+  'Wersja 2.9 korzystała z grafik wektorowych; w wersji 3.0 zastąpiliśmy je rzeczywistymi obrazkami z Twojej planszy.',
+  'Poprzednie modele wektorowe są archiwalne; aktywne odznaki pokazują kolekcję ze zdjęcia.',
   'Naprawiono puste miniatury w Plecaku i rozmazane fragmenty wielkiej planszy.',
   'Zdobyte odznaki nadal wynikają z prawdziwych osiągnięć. Katalog wizualny nie przyznaje XP.'
  ]},
@@ -19,7 +31,7 @@ var sections=[
  ]},
  {title:'📜 Wcześniejsza wersja 2.8 — zastąpiona',items:[
  'Przygotowaliśmy atlas 252 osobnych grafik odznak bezpośrednio z przesłanego obrazu.',
- 'Odznaki w Plecaku, profilu i gablocie pokazują ilustracje z kolekcji zamiast podobnych medali tworzonych algorytmem.',
+ 'Ta metoda, wcześniej przetestowana w 2.8, została przywrócona i uproszczona w HealthGo 3.0.',
  'Każdy odblokowany przedmiot pozostaje powiązany z rzeczywiście zdobytym osiągnięciem. Grafika nie przyznaje dodatkowego XP.',
  'W katalogu do obejrzenia nadal dostępne są warianty wzorów, ale nie oznaczają one zdobytych osiągnięć.'
  ]},
@@ -192,7 +204,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.9</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 3.0</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+
