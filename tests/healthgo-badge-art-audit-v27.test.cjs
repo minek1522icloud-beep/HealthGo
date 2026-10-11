@@ -77,6 +77,6 @@ test('new app references and service worker are versioned to evict stale PWA ass
  assert.match(html,/healthgo-badge-3d\.css\?v=3/);
  assert.match(html,/healthgo-pack-pro\.css\?v=3/);
  assert.match(html,/healthgo-profile-pro\.css\?v=4/);
- assert.match(sw,/healthgo-pwa-v57-simple-color-badges-20261011/);
+ assert.match(sw,/healthgo-pwa-v58-original-photo-crop-20261011/);
  assert.match(html,/healthgo-collector-room\.js\?v=1/);
 });
