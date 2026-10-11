@@ -71,5 +71,6 @@ test('PWA loads new gallery after legacy 3D and before profile and backpack',()=
  assert.ok(find('healthgo-badge-gallery.js?v=1')<find('healthgo-pack-pro.js?v=7'));
  assert.ok(find('healthgo-badge-gallery.js?v=1')<find('healthgo-profile-pro.js?v=4'));
  assert.match(html,/healthgo-badge-gallery\.css\?v=1/);
- assert.match(sw,/healthgo-pwa-v48-photo-badge-collection-20261011/);
+ assert.match(sw,/healthgo-pwa-v49-photo-badge-collection-offline-20261011/);
+ assert.match(sw,/avif\|webp/);
 });

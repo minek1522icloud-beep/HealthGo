@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='healthgo-pwa-v48-photo-badge-collection-20261011';
+const CACHE_NAME='healthgo-pwa-v49-photo-badge-collection-offline-20261011';
 // The 850+ KB local AI worker and model weights must never be downloaded
 // while opening HealthGo. Install them only after user consent in AI.
 // Keep first-time install inexpensive on iOS WebKit; opened assets are cached
@@ -54,7 +54,7 @@ self.addEventListener('fetch',event=>{
  if(url.pathname.startsWith('/auth/')||url.searchParams.has('code')||url.searchParams.has('error'))return;
  // Cache only the static shell. Never persist API responses or another account's data.
  if(url.pathname.startsWith('/api/')||url.pathname.endsWith('/version.json'))return;
- const isShell=req.mode==='navigate'||/\.(?:html|js|css|png|ico|webmanifest)$/.test(url.pathname);
+ const isShell=req.mode==='navigate'||/\.(?:html|js|css|png|avif|webp|ico|webmanifest)$/.test(url.pathname);
  if(!isShell)return;
  event.respondWith((async()=>{
   const enabled=await offlineEnabled();
