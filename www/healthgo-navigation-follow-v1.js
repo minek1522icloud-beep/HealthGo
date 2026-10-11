@@ -85,8 +85,9 @@
    '<span class="hg-follow-marker-halo"></span>'+
    '<span class="hg-follow-arrow-shape" aria-hidden="true">'+
     '<svg viewBox="0 0 64 70" width="64" height="70">'+
-     '<path d="M32 4 56 56 33 48 9 56Z" fill="#13ddba" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>'+
-     '<path d="M32 17 42 42 32 38 22 42Z" fill="#00382b" opacity=".9"/>'+
+     '<path d="M32 3 58 62 33 51 6 62Z" fill="#09dbb4" stroke="#fff" stroke-width="4.5" stroke-linejoin="round"/>'+
+     '<path d="M32 17 43 45 32 40 21 45Z" fill="#004535" opacity=".95"/>'+
+     '<path d="M14 61 32 53 50 61" fill="none" stroke="#07775b" stroke-width="2" opacity=".65"/>'+
     '</svg>'+
    '</span><span class="hg-follow-unknown" aria-hidden="true"></span></span>';
  }

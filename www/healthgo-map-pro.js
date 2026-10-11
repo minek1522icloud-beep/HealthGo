@@ -1,4 +1,4 @@
-/* HealthGo Map 4.0: light 2D turn-by-turn guidance, no 3D/WebGL dependencies. */
+/* HealthGo map: GPS route and directions with 2D / tilted 3D choice. */
 (function(){
  'use strict';
  const node=id=>document.getElementById(id);
@@ -142,6 +142,7 @@
    window.HealthGoMapV2?.updateLiveRoute?.(updated);
    window.HealthGoNavigationFollow?.setRoute?.(updated);
    window.HealthGoNavigationLive?.setRoute?.(updated);
+   window.HealthGoNavigationMode?.setRoute?.(updated);
    speak('Trasa została przeliczona','route-recomputed-'+lastReroute);
    text('hgProNavNext','Zaktualizowano trasę na podstawie GPS');
    return true;
@@ -191,6 +192,7 @@
   // A single GPS marker driven by real watchPosition samples. When the new
   // lightweight controller is unavailable, preserve the old Leaflet marker.
   const followed=window.HealthGoNavigationFollow?.update?.(pos);
+  window.HealthGoNavigationMode?.rememberFix?.(pos);
   if(!followed)placeArrow(point,c.heading==null?NaN:Number(c.heading));
   window.HealthGoNavigationLive?.update?.(pos);
   if(Number(c.accuracy)<35&&Number(c.speed)>=0.8&&route?.geometry?.length>1){
@@ -278,9 +280,9 @@
   loadOptions();
   removeArrow();
   window.HealthGoNavigationFollow?.begin?.({geometry:{coordinates:route.geometry}},{follow});
-  // Keep 2D Leaflet guidance lightweight and immediate on iPhone. The
-  // optional perspective renderer is not started in 2D guidance.
-  window.HealthGoNavigationLive?.stop?.();
+  // Begin the preferred view; 3D waits for the first real GPS fix.
+  // Existing OSRM instructions and GPS watch remain authoritative.
+  window.HealthGoNavigationMode?.begin?.({geometry:{coordinates:route.geometry}});
   speak('Rozpoczynam prowadzenie. Sprawdzam pozycję GPS.','navigation-start');
   text('hgProNavDestination',route.destination);
   text('hgProNavDirection','Ustalam pozycję');text('hgProNavIcon','↑');
@@ -296,11 +298,12 @@
   },110);
   try{
    watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
-    const message=err?.code===1?'Telefon nie zezwolił na GPS. Sprawdź uprawnienia lokalizacji albo wpisz punkt startowy.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
+    const message=err?.code===1?'Telefon nie zezwolił na GPS. Sprawdź uprawnienia lokalizacji w ustawieniach iPhone’a.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
     text('hgProNavNext',message);text('hgProNavStreet','GPS niedostępny');gpsAlert(message);
     if(err?.code===1){
      stopNavigation();
      window.HealthGoMapV2?.toggle?.('route');
+     const btn=node('hgGpsConsentAction');if(btn)btn.hidden=false;
      text('mapV2RouteOutput',message);
     }
    },{enableHighAccuracy:true,maximumAge:5000,timeout:17000});
@@ -319,6 +322,7 @@
   if(arrivalTimer){window.clearTimeout?.(arrivalTimer);arrivalTimer=null;}
   arrivalCount=0;
   if(rerouteCtl){rerouteCtl.abort();rerouteCtl=null}rerouting=false;
+  window.HealthGoNavigationMode?.stop?.();
   window.HealthGoNavigationLive?.stop?.();
   window.HealthGoNavigationFollow?.stop?.();
   if(watchId!==null)try{navigator.geolocation?.clearWatch?.(watchId)}catch(_){}

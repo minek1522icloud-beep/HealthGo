@@ -62,14 +62,13 @@
  function makeCar(){
   const node=document.createElement('div');
   node.className='hg-live-car';
-  node.setAttribute('aria-label','Aktualna pozycja GPS');
-  // Silhouette is decorative; only the real GPS location is placed on the map.
+  node.setAttribute('aria-label','Strzałka bieżącej pozycji GPS');
+  // Decorative geometry only; position always comes from the actual GPS fix.
   node.innerHTML='<svg width="52" height="62" viewBox="0 0 52 62" aria-hidden="true">'+
-   '<ellipse cx="26" cy="34" rx="20" ry="25" fill="#2467d7" opacity=".18"/>'+
-   '<path d="M26 2 39 15 41 45 35 54 17 54 11 45 13 15Z" fill="#0871ec" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>'+
-   '<path d="M18 20 26 13 34 20 34 30 18 30Z" fill="#bce5ff"/>'+
-   '<rect x="17" y="34" width="18" height="10" rx="3" fill="#e8f5ff"/>'+
-   '<path d="M16 49h5m10 0h5" stroke="#fff" stroke-width="3" stroke-linecap="round"/>'+
+   '<ellipse cx="26" cy="33" rx="19" ry="21" fill="#28ddba" opacity=".17"/>'+
+   '<path d="M26 3 49 54 27 45 4 54Z" fill="#04d8ad" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>'+
+   '<path d="M26 17 34 39 26 35 18 39Z" fill="#065743" opacity=".96"/>'+
+   '<path d="M9 53 26 46 43 53" fill="none" stroke="#003a2d" stroke-width="2" opacity=".6"/>'+
    '</svg>';
   return node;
  }
@@ -92,13 +91,14 @@
     try{
      gl.addSource('hg-route',{type:'geojson',data:line(coords)});
      gl.addLayer({id:'hg-route-outline',type:'line',source:'hg-route',
-      paint:{'line-color':'#fff','line-width':12,'line-opacity':.92}});
+      paint:{'line-color':'#f1fff7','line-width':12,'line-opacity':.92}});
      gl.addLayer({id:'hg-route',type:'line',source:'hg-route',
-      paint:{'line-color':'#176efa','line-width':8,'line-opacity':1}});
-     marker=new lib.Marker({element:makeCar(),rotationAlignment:'map',pitchAlignment:'viewport'})
+      paint:{'line-color':'#11dfb2','line-width':8,'line-opacity':1}});
+     marker=new lib.Marker({element:makeCar(),rotationAlignment:'viewport',pitchAlignment:'viewport'})
       .setLngLat([point.lon,point.lat]).addTo(gl);
-     if(Number.isFinite(heading))marker.setRotation(heading);
+     if(Number.isFinite(heading))marker.setRotation(0); // With the camera bearing the heading, the forward arrow stays upright.
      ready=true;showLayer(true);gl.resize();
+     const status=$('hgLiveMapStatus');if(status){status.hidden=true;status.textContent='';}
     }catch(_){fail()}
    });
    gl.on('error',e=>{
@@ -117,6 +117,7 @@
   ready=false;
   const warning=$('hgLiveMapStatus');
   if(warning){warning.hidden=false;warning.textContent='Widok 2D — mapa perspektywiczna niedostępna na tym telefonie.'}
+  window.HealthGoNavigationMode?.fallback?.();
  }
  function begin(route){
   stop();active=true;glDisabled=false;coords=[];
@@ -143,7 +144,7 @@
   if(ready&&gl){
    try{
     marker?.setLngLat([p.lon,p.lat]);
-    if(Number.isFinite(heading))marker?.setRotation(heading);
+    if(Number.isFinite(heading))marker?.setRotation((heading-(Number(gl.getBearing?.())||0)+360)%360);
     if(Date.now()-lastView>1050){
      lastView=Date.now();
      const follows=$('hgProFollow')?.getAttribute?.('aria-pressed')!=='false';
