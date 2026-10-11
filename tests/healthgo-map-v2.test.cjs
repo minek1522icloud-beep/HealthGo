@@ -9,12 +9,12 @@ const css=fs.readFileSync('www/healthgo-map-v2.css','utf8');
 const workflow=fs.readFileSync('.github/workflows/mobile-pages.yml','utf8');
 
 test('Map 4.0 retains existing Leaflet map and adds new panels',()=>{
- for(const id of ['healthgoMap','mapV2RouteTo','mapV2RouteOutput','mapV2Favorites','mapV2Activities','mapV2TrackState','mapV2MeasureHud','mapV2MeasureDistance','mapV2MeasureHint','mapV2SpaciousButton','hgLocationWelcome','hgLocationWelcomeTitle','mapV2RouteFrom','mapV2GpsHelp','hg4WeatherCurrent','hg4WeatherHours','hg4SavedRoutes','hg4Theme','hg4DefaultMode'])
+ for(const id of ['healthgoMap','mapV2RouteTo','mapV2RouteOutput','mapV2Favorites','mapV2Activities','mapV2TrackState','mapV2MeasureHud','mapV2MeasureDistance','mapV2MeasureHint','mapV2SpaciousButton','hgLocationWelcome','hgLocationWelcomeTitle','hgGpsConsentAction','mapV2GpsHelp','hg4WeatherCurrent','hg4WeatherHours','hg4SavedRoutes','hg4Theme','hg4DefaultMode'])
   assert.match(html,new RegExp('id="'+id+'"'));
  for(const p of ['route','layers','favorites','activity','tools','weather','saved','settings'])
   assert.match(html,new RegExp('data-map-panel="'+p+'"'));
  assert.match(html,/window\.HealthGoMapV2\?\.mount\(\)/);
- assert.match(html,/healthgo-map-v2\.js\?v=4/);
+ assert.match(html,/healthgo-map-v2\.js\?v=5/);
  assert.match(html,/healthgo-map-v2\.css\?v=3/);
  assert.match(html,/healthgo-spacious-ui\.css\?v=2/);
  assert.match(css,/#map \.map-v2-panel\[hidden\]/);
@@ -44,7 +44,7 @@ test('Map search results expose real route and save-place actions without faking
  assert.match(html,/https:\/\/router\.project-osrm\.org/);
  assert.match(html,/https:\/\/server\.arcgisonline\.com/);
  assert.match(html,/Za Twoją zgodą systemową/);
- assert.match(source,/const startPromise=manualStart\?locateByName\(manualStart\):locateOptIn\(\)/);
+ assert.match(source,/const startPromise=locateOptIn\(\)/);
  assert.match(source,/if\(routeStartWasManual\)\{const nav=el\('hgNavStartButton'\)/);
 });
 
@@ -149,20 +149,16 @@ test('Navigation opens a dedicated view INSIDE the same HealthGo map without GPS
  assert.equal(app.node('tab-map').classList.contains('active'),true);
 });
 
-test('Quick navigation actions swap real addresses and select GPS only on request',()=>{
+test('GPS-only route origin cannot be replaced with a typed address',()=>{
  const app=harness(),api=app.window.HealthGoMapV2;
- app.node('mapV2RouteFrom').value='Warszawa';
  app.node('mapV2RouteTo').value='Kraków';
- assert.equal(api.swapRoute(),true);
- assert.equal(app.node('mapV2RouteFrom').value,'Kraków');
- assert.equal(app.node('mapV2RouteTo').value,'Warszawa');
- assert.equal(app.locationCalls.current,0);
+ assert.equal(api.swapRoute(),false);
  assert.equal(api.useGPSStart(),true);
- assert.equal(app.node('mapV2RouteFrom').value,'');
  assert.match(app.node('mapV2RouteOutput').textContent,/Punkt startowy: GPS/);
- assert.equal(app.locationCalls.current,0,'GPS selected without immediate location request');
+ assert.equal(app.locationCalls.current,0,'GPS choice alone does not request geolocation');
+ assert.doesNotMatch(html,/id="mapV2RouteFrom"/);
+ assert.match(html,/id="hgGpsConsentAction"/);
 });
-
 test('Opening saved destinations and settings exits planner cleanly',()=>{
  const app=harness(),api=app.window.HealthGoMapV2;
  api.toggle('route');
@@ -301,12 +297,11 @@ test('iPhone GPS denial cannot be mistaken for granted OS permission',()=>{
  assert.equal(app.window.HealthGoMapV2.getRecentPosition(),null);
  assert.equal(app.locationCalls.current,1);
 });
-test('Manual origin is recognized without triggering GPS tracking',()=>{
- assert.match(html,/id="mapV2RouteFrom"/);
- assert.match(source,/const startPromise=manualStart\?locateByName\(manualStart\):locateOptIn\(\)/);
- assert.match(source,/Podgląd trasy z wpisanego adresu startowego, bez śledzenia GPS/);
+test('Route planner has only destination and never an address field for origin',()=>{
+ assert.doesNotMatch(html,/id="mapV2RouteFrom"|id="hgRouteManualOrigin"/);
+ assert.match(source,/const startPromise=locateOptIn\(\)/);
  assert.match(source,/help\.hidden=msg!=='GPS_DENIED'/);
- assert.match(source,/START_NOT_FOUND/);
+ assert.doesNotMatch(source,/const startPromise=manualStart/);
  const app=harness();
  assert.equal(app.locationCalls.current,0);
 });
@@ -318,24 +313,25 @@ test('Denied system permission does not trigger an automatic GPS prompt',async()
  assert.equal(app.locationCalls.current,0,'no OS location prompt while denied');
  assert.equal(app.storage.get('healthgo.location.welcome.v1'),'denied');
 });
-test('Actual typed start and destination calculate a route without GPS',async()=>{
+test('Destination routing requests an authorized GPS origin, not manually typed coordinates',async()=>{
  const app=harness(),api=app.window.HealthGoMapV2;
- app.node('mapV2RouteFrom').value='Przykładowy punkt startowy';
  app.node('mapV2RouteTo').value='Przykładowy cel';
- app.node('hgNavStartButton').hidden=false;
- await api.planRoute();
- assert.equal(app.locationCalls.current,0,'no location permission required for typed start');
- assert.equal(app.fetchCalls.filter(url=>url.includes('/search?')).length,2);
- assert.equal(app.fetchCalls.filter(url=>url.includes('/route/v1/driving/')).length,1);
- assert.equal(app.node('hgNavStartButton').hidden,true,'live GPS guidance hidden for manual route');
- assert.match(app.node('mapV2RouteOutput').textContent,/Podgląd trasy z wpisanego adresu startowego/);
+ const pending=api.planRoute();
+ assert.equal(app.locationCalls.current,1,'only explicit navigation requests GPS');
+ app.locationCalls.lastError({code:1});
+ assert.equal(await pending,false);
+ assert.equal(app.fetchCalls.filter(url=>url.includes('/route/v1/driving/')).length,0);
+ assert.match(app.node('mapV2RouteOutput').textContent,/GPS|lokalizacj/i);
 });
 test('Public OSRM motorway preference fallback is explained without faking avoidance',async()=>{
- const app=harness();app.window.HealthGoMap4={getSettings(){return {avoidMotorways:true}}};
- app.node('mapV2RouteFrom').value='Start';
+ const app=harness();
+ app.window.HealthGoMap4={getSettings(){return {avoidMotorways:true}}};
+ app.window.HealthGoMapPro={clearRoute(){},setRoute(){return true}};
  app.node('mapV2RouteTo').value='Cel';
- await app.window.HealthGoMapV2.planRoute();
- assert.equal(app.locationCalls.current,0);
+ const request=app.window.HealthGoMapV2.planRoute({autoStart:false});
+ assert.equal(app.locationCalls.current,1);
+ app.locationCalls.lastSuccess({coords:{latitude:52.2,longitude:21,accuracy:9}});
+ await request;
  const req=app.fetchCalls.filter(url=>url.includes('/route/v1/driving/'));
  assert.equal(req.length,2,'retry without exclude after backend rejects this option');
  assert.match(req[0],/exclude=motorway/);

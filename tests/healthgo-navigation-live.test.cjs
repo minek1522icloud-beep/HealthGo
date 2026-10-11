@@ -83,6 +83,6 @@ test('Guidance connects live camera, voice prompts and real OSRM rerouting',()=>
  assert.match(pro,/speechSynthesis\.speak\(u\)/);
  assert.match(html,/id="hgNavigationPerspective"/);
  assert.match(html,/id="hgLiveWeather"/);
- assert.match(html,/healthgo-navigation-live\.js\?v=1/);
+ assert.match(html,/healthgo-navigation-live\.js\?v=2/);
  assert.match(html,/healthgo-navigation-live\.css\?v=1/);
 });
