@@ -46,3 +46,13 @@ body.hgab-open{overflow:hidden}
 #hgBadgeArtInspect .hgab-footer p{font-size:11px;color:#b1d7bf;margin:7px 0 0}
 @media(max-width:430px){#hgBadgeArtInspect .hgab-dialog{border-radius:15px}#hgBadgeArtInspect .hgab-scene{height:min(53vh,355px);min-height:245px}#hgBadgeArtInspect .hgab-object{width:min(73vw,275px);height:min(73vw,275px)}}
 @media(prefers-reduced-motion:reduce){#hgBadgeArtInspect .hgab-object{will-change:auto}}
+
+/* Canvas crop renderer replaces oversized Safari CSS background-size sprites. */
+#hgPackProRoot canvas.hgab-crop,#hgProfileProOverlay canvas.hgab-crop,
+#hgCollectorRoom canvas.hgab-crop,#hgBadgeArtInspect canvas.hgab-crop{
+ display:block!important;width:100%!important;height:100%!important;max-width:100%;
+ max-height:100%;aspect-ratio:1/1;object-fit:contain;border:0!important;
+ background:transparent!important;box-shadow:none!important;opacity:1!important;
+}
+#hgBadgeArtInspect .hgab-face-front .hgab-photo{display:grid;place-items:center;}
+#hgBadgeArtInspect .hgab-face-front canvas.hgab-crop{width:100%!important;height:100%!important;}

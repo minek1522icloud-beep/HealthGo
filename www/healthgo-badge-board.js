@@ -65,19 +65,91 @@ function artIndex(item){
  return mappedIndex(item);
 }
 // Coordinates measured on the poster artwork. All regions preserve the exact original artwork.
-function spriteStyle(idx){
- idx=((Number(idx)||0)%TOTAL+TOTAL)%TOTAL;
+/* Canvas draws a small crop from the original JPEG once. Unlike a huge CSS
+ * background-size this is safe for iPhone/WebKit texture limits. */
+var atlas=null,atlasPending=false,atlasError=false,watcher=null;
+function cropRect(index){
+ var idx=((Number(index)||0)%TOTAL+TOTAL)%TOTAL;
  var col=idx%COLS,row=Math.floor(idx/COLS);
- var x=(44+col*72.25)-SIZE/2,y=(160+row*72.75)-SIZE/2;
- // Crop spans a square SIZE x SIZE. CSS background-position uses available scroll extents.
- var pw=1055,ph=1491;
- return 'background-image:url("'+SOURCE+'");background-repeat:no-repeat;background-size:'+
-  (100*pw/SIZE).toFixed(3)+'% '+(100*ph/SIZE).toFixed(3)+'%;background-position:'+
-  (100*x/(pw-SIZE)).toFixed(4)+'% '+(100*y/(ph-SIZE)).toFixed(4)+'%';
+ return {x:(44+col*72.25)-SIZE/2,y:(160+row*72.75)-SIZE/2,w:SIZE,h:SIZE};
+}
+function spriteStyle(index){
+ // Public compatibility helper; no oversized CSS background rasterization.
+ return '--hgab-index:'+(((Number(index)||0)%TOTAL+TOTAL)%TOTAL);
+}
+function loadAtlas(){
+ if(atlas||atlasPending||atlasError||typeof host.Image!=='function')return;
+ atlasPending=true;
+ var image=new host.Image();
+ image.onload=function(){
+  atlasPending=false;
+  if(image.naturalWidth<100||image.naturalHeight<100){atlasError=true;}
+  else{atlas=image;atlasError=false;}
+  if(typeof document!=='undefined')hydrate(document,true);
+ };
+ image.onerror=function(){
+  atlasPending=false;atlasError=true;
+  if(typeof document!=='undefined')hydrate(document,true);
+  host.console?.warn?.('HealthGo: nie udało się pobrać planszy odznak:',SOURCE);
+ };
+ image.src=SOURCE+'?v=2';
+}
+function paint(canvas,force){
+ if(!canvas||!canvas.getContext)return;
+ if(!force&&canvas.dataset.hgabStatus==='art')return;
+ var ctx=canvas.getContext('2d');
+ if(!ctx)return;
+ var w=canvas.width||160,h=canvas.height||160;
+ ctx.clearRect(0,0,w,h);
+ ctx.fillStyle='#113225';ctx.fillRect(0,0,w,h);
+ var index=Number(canvas.getAttribute('data-hgab-index')||0);
+ if(atlas){
+  try{
+   var crop=cropRect(index);
+   ctx.imageSmoothingEnabled=true;
+   ctx.imageSmoothingQuality='high';
+   ctx.drawImage(atlas,crop.x,crop.y,crop.w,crop.h,0,0,w,h);
+   canvas.dataset.hgabStatus='art';return;
+  }catch(err){host.console?.warn?.('HealthGo: cannot draw badge crop',err);}
+ }
+ // Never silently leave a black rectangle when the JPEG cannot load.
+ ctx.strokeStyle='#4d9e7e';ctx.lineWidth=3;
+ ctx.strokeRect(8,8,w-16,h-16);
+ ctx.fillStyle='#c8f4dc';
+ ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.font='bold '+Math.max(13,Math.floor(w/12))+'px sans-serif';
+ ctx.fillText(atlasError?'Grafika offline':'Ładowanie...',w/2,h/2);
+ canvas.dataset.hgabStatus=atlasError?'offline':'loading';
+}
+function hydrate(root,force){
+ if(!root||typeof root.querySelectorAll!=='function')return;
+ var all=[];
+ if(root.matches&&root.matches('canvas.hgab-crop'))all.push(root);
+ for(var el of root.querySelectorAll('canvas.hgab-crop'))all.push(el);
+ if(!all.length)return;
+ if(!atlas&&!atlasError)loadAtlas();
+ for(var node of all)paint(node,force);
+}
+function watch(){
+ if(typeof document==='undefined')return;
+ if(document.body&&typeof host.MutationObserver==='function'&&!watcher){
+  watcher=new host.MutationObserver(function(records){
+   for(var record of records){
+    for(var node of record.addedNodes||[]){
+     if(node.nodeType!==1)continue;
+     if(node.matches?.('canvas.hgab-crop')||node.querySelector?.('canvas.hgab-crop'))hydrate(node,false);
+    }
+   }
+  });
+  watcher.observe(document.body,{childList:true,subtree:true});
+ }
+ hydrate(document,false);
 }
 function front(item,extra){
- var idx=artIndex(item);
- return '<span class="hgab-photo '+(extra||'')+'" data-hgab-index="'+idx+'" style="'+spriteStyle(idx)+'" role="img" aria-label="'+esc(item?.name||'Odznaka')+'"></span>';
+ var idx=artIndex(item),name=esc(item?.name||'Odznaka'),resolution=(extra&&extra.includes('inspect'))?384:160;
+ return '<span class="hgab-photo '+(extra||'')+'" data-hgab-index="'+idx+'">'+
+  '<canvas class="hgab-crop" data-hgab-index="'+idx+'" data-hgab-source="'+SOURCE+
+  '" width="'+resolution+'" height="'+resolution+'" role="img" aria-label="'+name+'">'+name+'</canvas></span>';
 }
 function thumbnail(item){
  item=item||{};
@@ -139,5 +211,6 @@ function open(item){
  dialog={root:root,previous:previous};show();root.querySelector('.hgab-close').focus({preventScroll:true});return true;
 }
 host.HealthGoBadge3D=Object.freeze(Object.assign({},old,{thumbnail:thumbnail,open:open,close:close}));
-host.HealthGoBadgeBoard=Object.freeze({thumbnail:thumbnail,open:open,close:close,artIndex:artIndex,spriteStyle:spriteStyle,count:TOTAL,source:SOURCE});
+host.HealthGoBadgeBoard=Object.freeze({thumbnail:thumbnail,open:open,close:close,artIndex:artIndex,spriteStyle:spriteStyle,cropRect:cropRect,hydrate:hydrate,count:TOTAL,source:SOURCE});
+if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch,{once:true});else watch();}
 })(window);
