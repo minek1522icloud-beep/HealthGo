@@ -109,7 +109,7 @@ function move(direction){
  ensure();if(!maze||maze.win||state.maze.completed)return false;
  const d={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[direction];if(!d)return false;
  const x=maze.x+d[0],y=maze.y+d[1];
- if(!maze.grid[y]||maze.grid[y][x]!==' .'.trim())return false;
+ if(!maze.grid[y]||maze.grid[y][x]!=='.')return false;
  maze.x=x;maze.y=y;maze.steps++;
  const key=keyOf(x,y);if(maze.stars.includes(key))maze.taken.add(key);
  if(x===maze.goal[0]&&y===maze.goal[1]&&maze.taken.size===maze.stars.length){
@@ -136,7 +136,8 @@ function tick(){
  const now=Date.now(),delta=Math.min(1,Math.max(0,(now-aimLastTick)/1000));aimLastTick=now;
  if(document.visibilityState==='hidden'){stopAim();aimPaused=true;return;}
  aim.elapsed+=delta;if(aim.elapsed>=aim.seconds){aim.elapsed=aim.seconds;aim.fail=true;stopAim();}
- drawAim(false);
+ if(aim.fail)drawAim();
+ else{const counter=aimHost.querySelector('.hga-timer b');if(counter)counter.textContent=Math.max(0,aim.seconds-aim.elapsed).toFixed(1)+' s';}
 }
 function startAim(){
  ensure();if(state.aim.completed)return;
@@ -223,10 +224,17 @@ contestHost.addEventListener('click',e=>{
  const target=game==='maze'?mazeHost:aimHost;
  target.scrollIntoView?.({block:'start',behavior:'smooth'});
 });
+document.addEventListener('keydown',e=>{
+ if(!gamesIsActive()||/^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName||''))return;
+ const direction={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];
+ if(direction){e.preventDefault();move(direction);}
+});
+function gamesIsActive(){return document.getElementById('games')?.classList?.contains('active');}
+function pause(){stopAim();aimPaused=!!(aim?.started&&!aim.fail&&!aim.win);}
 document.addEventListener('visibilitychange',()=>{
  if(document.visibilityState==='hidden'){if(aim?.started&&!aim.fail&&!aim.win){stopAim();aimPaused=true;}}
  else if(aimPaused&&aim?.started&&!aim.fail&&!aim.win){aimPaused=false;aimLastTick=Date.now();aimTimer=setInterval(tick,100);}
 });
-host.HealthGoArcade40=Object.freeze({refresh,mazeLevel,move,hit,startAim,score,getState:function(){ensure();return JSON.parse(JSON.stringify(state));}});
+host.HealthGoArcade40=Object.freeze({refresh,pause,mazeLevel,move,hit,startAim,score,getState:function(){ensure();return JSON.parse(JSON.stringify(state));}});
 refresh();
 })(window);
