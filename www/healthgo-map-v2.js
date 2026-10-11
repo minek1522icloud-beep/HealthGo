@@ -81,8 +81,8 @@
  }
  function localStorageGet(name){try{return localStorage.getItem(name)}catch(_){return null}}
  function localStorageSet(name,value){try{localStorage.setItem(name,value)}catch(_){}}
- function noteSystemLocationGranted(){localStorageSet('healthgo.location.welcome.v1','allowed')}
- function noteSystemLocationDenied(){localStorageSet('healthgo.location.welcome.v1','denied')}
+ function noteSystemLocationGranted(){localStorageSet('healthgo.location.welcome.v1','allowed');updateGpsConsent()}
+ function noteSystemLocationDenied(){localStorageSet('healthgo.location.welcome.v1','denied');updateGpsConsent()}
  function resizeViewport(){
   if(document.body?.classList?.contains?.('hg-navigation-active'))return;
   const panel=el('map'),nav=document.querySelector?.('.mobile-nav');
@@ -197,7 +197,12 @@
   if(name==='weather')window.HealthGoMap4?.refreshWeather?.();
   if(name==='saved'){window.HealthGoMap4?.drawRoutes?.();drawRecentDestinations();}
   if(name==='settings')window.HealthGoMap4?.renderSettings?.();
+  if(name==='route')updateGpsConsent();
   setTimeout(()=>getMap()?.invalidateSize({pan:false}),80);
+ }
+ function updateGpsConsent(){
+  const b=el('hgGpsConsentAction');
+  if(b)b.hidden=localStorageGet('healthgo.location.welcome.v1')==='allowed';
  }
  function close(){
   // Closing the planner while loading is an explicit cancellation. The
@@ -210,27 +215,14 @@
   setTimeout(()=>getMap()?.invalidateSize?.({pan:false}),65);
  }
  function swapRoute(){
-  const from=el('mapV2RouteFrom'),to=el('mapV2RouteTo');
-  if(!from||!to)return false;
-  if(!clean(from.value)||!clean(to.value)){
-   const result=el('mapV2RouteOutput');
-   if(result)result.textContent='Aby zamienić trasę, wpisz oba adresy. Punkt GPS nie ma nazwy do zamiany.';
-   return false;
-  }
-  const previousStart=from.value;from.value=to.value;to.value=previousStart;
-  destination=null;window.HealthGoMapPro?.clearRoute?.();
-  routeChoices=[];const choices=el('hg4RouteAlternatives');if(choices)choices.replaceChildren();
-  const result=el('mapV2RouteOutput');
-  if(result)result.textContent='Zamieniono adresy. Kliknij „Znajdź najlepszą trasę”, aby przeliczyć.';
-  return true;
+  // Routes begin at the phone's live GPS; no typed origin is supported.
+  return false;
  }
  function useGPSStart(){
-  const from=el('mapV2RouteFrom');if(!from)return false;
-  from.value='';
   window.HealthGoMapPro?.clearRoute?.();
   routeChoices=[];const choices=el('hg4RouteAlternatives');if(choices)choices.replaceChildren();
-  const result=el('mapV2RouteOutput');
-  if(result)result.textContent='Punkt startowy: GPS. Telefon zapyta o lokalizację dopiero po wyznaczeniu trasy.';
+  const output=el('mapV2RouteOutput');
+  if(output)output.textContent='Punkt startowy: GPS. Lokalizacja jest pobierana po Twoim kliknięciu.';
   return true;
  }
  function chooseLayer(kind){
@@ -294,7 +286,6 @@
    destinationMarker=L.marker([p.lat,p.lon]).addTo(map).bindPopup('📍 '+(typeof healthGoEscape==='function'?healthGoEscape(p.name):p.name));
   }
   // Choosing a destination is an explicit request to navigate from phone GPS.
-  const from=el('mapV2RouteFrom');if(from)from.value='';
   if(activePanel!=='route')toggle('route');
   say('Wybrano '+p.name+'. Ustalam aktualną pozycję i przygotowuję prowadzenie…');
   return planRoute({autoStart:true});
@@ -304,7 +295,6 @@
   if(!address){say('Wpisz adres lub miasto.');return false}
   destination=null;routeRequestTicket++;
   const field=el('mapV2RouteTo');if(field)field.value=address;
-  const from=el('mapV2RouteFrom');if(from)from.value='';
   if(activePanel!=='route')toggle('route');
   say('Ustalam pozycję GPS i szukam drogi do '+address+'…');
   return planRoute({autoStart:true});
@@ -478,7 +468,7 @@
   const help=el('mapV2GpsHelp');if(help)help.hidden=true;
   phase('locating','Ustalam aktualną pozycję GPS i szukam celu…');
   if(external)external.hidden=true;
-  const raw=clean(field?.value,180),manualStart=clean(el('mapV2RouteFrom')?.value,180);
+  const raw=clean(field?.value,180);
   if(!raw){
    if(pendingRouteRequest?.ticket===ticket)pendingRouteRequest=null;
    phase('error','Wpisz adres celu lub wybierz miejsce na mapie.');
@@ -487,13 +477,13 @@
   try{
    // Start GPS on the actual user gesture, before awaiting geocoding.
    // Manual origin remains preview-only and never pretends to track movement.
-   const startPromise=manualStart?locateByName(manualStart):locateOptIn();
+   const startPromise=locateOptIn();
    const targetPromise=destination&&raw===destination.name?Promise.resolve(destination):locateByName(raw);
    const [start,target]=await Promise.all([startPromise,targetPromise]);
    if(ticket!==routeRequestTicket)return false;
    if(!target||!validPoint(target))throw new Error('DESTINATION_NOT_FOUND');
    destination=target;
-   if(!start||!validPoint(start))throw new Error(manualStart?'START_NOT_FOUND':'GPS_UNAVAILABLE');
+   if(!start||!validPoint(start))throw new Error('GPS_UNAVAILABLE');
    if(routeMode!=='car'){
     const mode=routeMode==='foot'?'fossgis_osrm_foot':'fossgis_osrm_bike';
     const params=new URLSearchParams({engine:mode,route:start.lat+','+start.lon+';'+destination.lat+','+destination.lon});
@@ -519,11 +509,11 @@
    if(ticket!==routeRequestTicket)return false;
    const realRoutes=(Array.isArray(json?.routes)?json.routes:[]).filter(validRouteGeometry);
    if(!realRoutes.length)throw new Error('ROUTE_EMPTY');
-   routeStartWasManual=!!manualStart;
+   routeStartWasManual=false;
    // With phone GPS, require maneuver data before showing a route as ready.
    // The old code drew a line, ignored setRoute(false), then silently failed
    // to activate guidance.
-   routeChoices=(manualStart?realRoutes:realRoutes.filter(hasTurnInstructions)).slice(0,3);
+   routeChoices=realRoutes.filter(hasTurnInstructions).slice(0,3);
    if(!routeChoices.length)throw new Error('ROUTE_NO_MANEUVERS');
    const accepted=chooseRoute(0,{fitBounds:false});
    if(!accepted)throw new Error('ROUTE_NOT_READY');
@@ -536,7 +526,7 @@
    }
    // The user's explicit destination selection controls auto-start.
    // It must NOT depend on whether some map panel is currently selected.
-   if(!manualStart&&options.autoStart!==false){
+   if(options.autoStart!==false){
     pendingRouteRequest=null; // startNavigation invokes map.close().
     phase('starting','Trasa gotowa. Uruchamiam prowadzenie GPS…');
     let started=false;
@@ -552,15 +542,14 @@
     phase('active','Prowadzenie GPS uruchomione. Śledzę bieżącą pozycję telefonu.');
     return true;
    }
-   phase('preview',(manualStart
-    ?'Podgląd trasy z wpisanego adresu startowego, bez śledzenia GPS. Prowadzenie na żywo wymaga aktualnej lokalizacji.'
-    :'Trasa została przygotowana. Wybierz rozpoczęcie prowadzenia.')+
+   phase('preview','Trasa przygotowana. Wybierz rozpoczęcie prowadzenia GPS.'+
     (fellBack?' Serwer nie obsłużył omijania autostrad; pokazano standardową trasę.':''));
    return true;
   }catch(err){
    if(ticket!==routeRequestTicket)return false;
    const msg=String(err?.message||err);
    if(help)help.hidden=msg!=='GPS_DENIED';
+   if(msg==='GPS_DENIED'){const retry=el('hgGpsConsentAction');if(retry)retry.hidden=false;}
    const error=
     msg==='GPS_DENIED'?'Telefon zablokował GPS. Zezwól HealthGo na lokalizację w ustawieniach iPhone’a, a następnie spróbuj ponownie.':
     msg==='GPS_TIMEOUT'?'GPS nie odpowiedział na czas. Spróbuj ponownie w miejscu z lepszym sygnałem.':
