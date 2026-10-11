@@ -152,7 +152,7 @@ function startAim(){
 function drawAim(full=true){
  ensure();if(!aim)createAim();
  const s=state.aim,remain=Math.max(0,aim.seconds-aim.elapsed);
- const board=Array.from({length:9},(_,i)=>'<button type="button" class="hga-target'+(aim.hit===i&&aim.started&&!aim.fail?' live':'')+'" data-hga-hit="'+i+'" aria-label="Pole '+(i+1)+(aim.hit===i&&aim.started?' — cel':'')+'" '+(aim.hit===i&&aim.started&&!aim.fail?'':'disabled')+'>'+(aim.hit===i&&aim.started&&!aim.fail?'🎯':'')+'</button>').join('');
+ const board=Array.from({length:9},(_,i)=>'<button type="button" class="hga-target'+(aim.hit===i&&aim.started&&!aim.fail&&!aimPaused?' live':'')+'" data-hga-hit="'+i+'" aria-label="Pole '+(i+1)+(aim.hit===i&&aim.started&&!aimPaused?' — cel':'')+'" '+(aim.hit===i&&aim.started&&!aim.fail&&!aimPaused?'':'disabled')+'>'+(aim.hit===i&&aim.started&&!aim.fail&&!aimPaused?'🎯':'')+'</button>').join('');
  // Complete board refresh is small and avoids accumulating event handlers.
  aimHost.innerHTML='<div class="hga-heading"><div><h3>🎯 Celność 40</h3><span>Poziom '+s.level+' / 40 · trafienia: '+(requirements(aim.level)-aim.remaining)+'/'+requirements(aim.level)+'</span></div><span class="hga-coin">+2 punkty po 40</span></div>'+
  '<div class="hga-progress"><span style="width:'+(s.completed?100:(s.level-1)/MAX*100)+'%"></span></div>'+
@@ -160,12 +160,12 @@ function drawAim(full=true){
  '<div class="hga-timer" role="status">Pozostały czas: <b>'+remain.toFixed(1)+' s</b></div>'+
  '<div class="hga-target-board" role="group" aria-label="Plansza celności">'+board+'</div>'+
  '<div class="hga-aim-end" role="status" aria-live="polite">'+
- (s.completed?'🏆 Kampania ukończona! Zdobyto 2 punkty.':aim.win?'Brawo! Poziom zaliczony.':aim.fail?'Koniec czasu. Spróbuj ponownie.':aim.started?'Cel jest podświetlony — dotknij go.':'Przygotuj się i naciśnij Start.')+
+ (s.completed?'🏆 Kampania ukończona! Zdobyto 2 punkty.':aim.win?'Brawo! Poziom zaliczony.':aim.fail?'Koniec czasu. Spróbuj ponownie.':aimPaused?'Gra wstrzymana — naciśnij Wznów.':aim.started?'Cel jest podświetlony — dotknij go.':'Przygotuj się i naciśnij Start.')+
  '</div><button class="hga-primary" type="button" data-hga-aim-start '+(aimTimer!==null?'disabled':'')+'>'+((aim.fail||aim.win)?'Następna próba':aimTimer!==null?'Gra trwa':aimPaused?'Wznów':'Start')+'</button>';
 }
 function hit(index){
  ensure();
- if(!aim||!aim.started||aim.fail||aim.win||index!==aim.hit)return false;
+ if(!aim||!aim.started||aimPaused||aimTimer===null||aim.fail||aim.win||index!==aim.hit)return false;
  aim.remaining--;
  if(aim.remaining<=0){
   aim.win=done('aim',aim.level,Math.round(aim.elapsed*100)/100);
