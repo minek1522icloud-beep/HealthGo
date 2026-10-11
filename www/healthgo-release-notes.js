@@ -3,9 +3,10 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-3.0.1-iphone-canvas-photo-fix-20261011';
+var RELEASE='healthgo-3.0.2-photo-fallback-20261011';
 var TITLE='Naprawa czarnych odznak na iPhonie';
 var sections=[
+ {title:'🛠 Naprawiono czarne odznaki na iPhonie',items:['Grafiki z Twojej oryginalnej planszy pozostają widoczne także wtedy, gdy Safari nie uruchomi rysowania Canvas.','Każda odznaka ma własny wycinek z Twojej kolekcji i nadal można ją obracać palcem.','Dodatkowa kontrola sprawdza obecność obrazka nawet przed załadowaniem Canvas.']},
  {title:'✅ Naprawione obrazki odznak na iPhonie',items:[
   'Zastąpiliśmy ogromne tła CSS małymi obrazami Canvas. Każda odznaka jest wycinana bezpośrednio z Twojej oryginalnej planszy.',
   'Plansza pobierana jest tylko raz; podgląd może zostać obrócony palcem, a grafiki zachowują oryginalny wygląd.',
@@ -210,7 +211,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 3.0.1</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 3.0.2</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+

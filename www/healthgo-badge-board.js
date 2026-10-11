@@ -92,7 +92,7 @@ function loadAtlas(){
   if(typeof document!=='undefined')hydrate(document,true);
   host.console?.warn?.('HealthGo: nie udało się pobrać planszy odznak:',SOURCE);
  };
- image.src=SOURCE+'?v=2';
+ image.src=SOURCE+'?v=3';
 }
 function paint(canvas,force){
  if(!canvas||!canvas.getContext)return;
@@ -147,7 +147,12 @@ function watch(){
 }
 function front(item,extra){
  var idx=artIndex(item),name=esc(item?.name||'Odznaka'),resolution=(extra&&extra.includes('inspect'))?384:160;
+ var rect=cropRect(idx),left=(-rect.x/rect.w*100).toFixed(4),top=(-rect.y/rect.h*100).toFixed(4);
+ // Native <img> fallback renders independently of Canvas, MutationObserver and WebGL on Safari.
+ // The same local JPEG is shared by the browser's image cache between all badges.
  return '<span class="hgab-photo '+(extra||'')+'" data-hgab-index="'+idx+'">'+
+  '<img class="hgab-board-image" src="'+SOURCE+'?v=3" width="1055" height="1491" decoding="async" alt="" aria-hidden="true" '+
+  'style="left:'+left+'%;top:'+top+'%" />'+
   '<canvas class="hgab-crop" data-hgab-index="'+idx+'" data-hgab-source="'+SOURCE+
   '" width="'+resolution+'" height="'+resolution+'" role="img" aria-label="'+name+'">'+name+'</canvas></span>';
 }

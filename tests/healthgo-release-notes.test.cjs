@@ -40,7 +40,7 @@ test('patch notes display once per deployed build and can be reopened manually',
  assert.ok(x.timers.length);
  x.timers.shift()();
  assert.ok(x.modal);
- assert.match(x.modal.innerHTML,/AKTUALIZACJA 3.0.1/);
+ assert.match(x.modal.innerHTML,/AKTUALIZACJA 3.0.2/);
  assert.match(x.modal.innerHTML,/Skrzynia może zawierać naklejkę/);
  assert.match(x.modal.innerHTML,/HEALTHGO/);
  assert.ok(x.modal.listeners.click);

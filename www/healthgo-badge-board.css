@@ -56,3 +56,34 @@ body.hgab-open{overflow:hidden}
 }
 #hgBadgeArtInspect .hgab-face-front .hgab-photo{display:grid;place-items:center;}
 #hgBadgeArtInspect .hgab-face-front canvas.hgab-crop{width:100%!important;height:100%!important;}
+
+/* HealthGo 3.0.2: fail-safe native image crop.
+   The badge is visible even if Safari blocks a Canvas draw or mutation callback. */
+#hgPackProRoot .hgab-photo,#hgProfileProOverlay .hgab-photo,
+#hgCollectorRoom .hgab-photo,#hgBadgeArtInspect .hgab-photo{
+  display:block!important;position:relative!important;overflow:hidden!important;
+  aspect-ratio:1/1;contain:paint;isolation:isolate;
+}
+#hgPackProRoot img.hgab-board-image,#hgProfileProOverlay img.hgab-board-image,
+#hgCollectorRoom img.hgab-board-image,#hgBadgeArtInspect img.hgab-board-image{
+  display:block!important;position:absolute!important;z-index:1!important;
+  width:1551.470588%!important;height:auto!important;
+  min-width:0!important;max-width:none!important;max-height:none!important;
+  aspect-ratio:auto!important;object-fit:fill!important;object-position:left top!important;
+  transform:none!important;filter:none!important;opacity:1!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  pointer-events:none!important;
+}
+#hgPackProRoot .hgab-photo canvas.hgab-crop,
+#hgProfileProOverlay .hgab-photo canvas.hgab-crop,
+#hgCollectorRoom .hgab-photo canvas.hgab-crop,
+#hgBadgeArtInspect .hgab-photo canvas.hgab-crop{
+  position:absolute!important;inset:0!important;z-index:2!important;
+  visibility:hidden!important;
+}
+#hgPackProRoot .hgab-photo canvas.hgab-crop[data-hgab-status="art"],
+#hgProfileProOverlay .hgab-photo canvas.hgab-crop[data-hgab-status="art"],
+#hgCollectorRoom .hgab-photo canvas.hgab-crop[data-hgab-status="art"],
+#hgBadgeArtInspect .hgab-photo canvas.hgab-crop[data-hgab-status="art"]{
+  visibility:visible!important;
+}

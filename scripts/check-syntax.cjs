@@ -33,7 +33,7 @@ if(!html.includes('healthgo-badge-3d.js?v=3')||!html.includes('healthgo-badge-3d
 
 if(!html.includes('healthgo-collector-room.js?v=1')||!html.includes('healthgo-collector-room.css?v=1'))throw Error('Missing collector room assets');
 
-if(!html.includes('healthgo-badge-board.js?v=2')||!html.includes('healthgo-badge-board.css?v=2'))throw Error('Missing original photo badge bundle');
+if(!html.includes('healthgo-badge-board.js?v=3')||!html.includes('healthgo-badge-board.css?v=3'))throw Error('Missing original photo badge bundle');
 if(html.includes('healthgo-badge-vector.js?v=1')||html.includes('healthgo-badge-vector.css?v=1'))throw Error('Old vector badge UI must not load');
 if(!fs.existsSync('www/assets/healthgo-badge-board.jpg'))throw Error('Missing original badge image asset');
 if(html.includes('healthgo-badge-gallery.js')||html.includes('healthgo-badge-gallery.css'))throw Error('Legacy blurry photo badge gallery must not load');

@@ -5,8 +5,8 @@ test('original user badge image is now the artwork loaded in HealthGo',()=>{
  const html=read('www/index.html');
  const jpg=fs.readFileSync('www/assets/healthgo-badge-board.jpg');
  assert.ok(jpg.length>40000);
- assert.match(html,/healthgo-badge-board\.js\?v=2/);
- assert.match(html,/healthgo-badge-board\.css\?v=2/);
+ assert.match(html,/healthgo-badge-board\.js\?v=3/);
+ assert.match(html,/healthgo-badge-board\.css\?v=3/);
  assert.doesNotMatch(html,/src="\.\/healthgo-badge-vector\.js/);
  assert.doesNotMatch(html,/href="\.\/healthgo-badge-vector\.css/);
 });
@@ -69,4 +69,17 @@ test('the crop renderer actually paints badge pixels at bounded size',()=>{
  assert.equal(last.w,160);assert.equal(last.h,160);
  assert.ok(last.x>=0&&last.x<1055&&last.y>=0&&last.y<1491);
  assert.ok(calls.every(x=>x==='2d'));
+});
+
+test('a native img is always visible if iPhone Canvas never paints a badge',()=>{
+ const w={HealthGoBadge3D:{catalog:[]}};
+ vm.runInNewContext(read('www/healthgo-badge-board.js'),{window:w,Math,Number,String,Set,Map,Array,Object});
+ const thumb=w.HealthGoBadgeBoard.thumbnail({id:'first_chat',name:'Pierwsza rozmowa',earned:true});
+ assert.match(thumb,/<img class="hgab-board-image"/);
+ assert.match(thumb,/src="\.\/assets\/healthgo-badge-board\.jpg\?v=3"/);
+ assert.match(thumb,/style="left:-?\d+\.\d+%;top:-?\d+\.\d+%"/);
+ const css=read('www/healthgo-badge-board.css');
+ assert.match(css,/canvas\.hgab-crop\[data-hgab-status="art"\]/);
+ assert.match(css,/visibility:hidden!important/);
+ assert.match(css,/1551\.470588%/);
 });
