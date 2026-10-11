@@ -81,7 +81,7 @@ test('sandbox prevents imported games reading HealthGo session and never gives f
  assert.doesNotMatch(src,/allow-scripts allow-same-origin/);
  assert.match(src,/event\.source!==viewer\.contentWindow/);
  assert.match(src,/localStorage/);
- assert.match(src,/iframe\.srcdoc=patched/);
+ assert.match(src,/frame\.srcdoc=patched/);
  assert.doesNotMatch(src,/HealthGoServices\.call\(['"]recordProgressEvent/);
  assert.match(html,/frame-src 'self'/);
  assert.match(html,/id="hgGameLibrary"/);
