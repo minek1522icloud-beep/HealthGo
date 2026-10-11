@@ -1,73 +1,65 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const read=p=>fs.readFileSync(p,'utf8');
-function load(win,doc){
- win=win||{HealthGoBadge3D:{catalog:[],openChest(){return true;}}};
- vm.runInNewContext(read('www/healthgo-badge-board.js'),{window:win,document:doc,Math,Number,String,Set,Map,Array,Object});
- return win.HealthGoBadgeBoard;
+const source=read('www/healthgo-badge-simple.js');
+function load(){
+ const win={HealthGoBadge3D:{catalog:[{id:'hg-model-001',prototype:true}],openChest(){return true;}},HealthGoServices:{state:{}},HealthGoEngine:{}};
+ vm.runInNewContext(source,{window:win,Math,Number,String,Set,Map,Array,Object});
+ return win;
 }
-test('local original artwork is present and PWA uses isolated canvas badge renderer',()=>{
- const html=read('www/index.html'),jpg=fs.readFileSync('www/assets/healthgo-badge-board.jpg');
- assert.ok(jpg.length>40000);
- assert.equal(jpg.subarray(0,2).toString('hex'),'ffd8');
- assert.equal(jpg.subarray(-2).toString('hex'),'ffd9');
- assert.match(html,/healthgo-badge-board\.js\?v=6/);
- assert.match(html,/healthgo-badge-board\.css\?v=6/);
- assert.doesNotMatch(html,/src="\.\/healthgo-badge-vector\.js/);
+test('one neat consistent medal shape for all real achievements',()=>{
+ const api=load().HealthGoSimpleBadges;
+ const names=['Pierwsza rozmowa','Poziom 2','250 XP','Wyzwania II','Odkrywca','Pierwsze XP'];
+ const cards=names.map((name,i)=>api.svg({id:'achievement_'+i,name,earned:true,rarity:i%2?'legendary':'common'}));
+ const shape=s=>s.match(/<path d="M120 12 168 24 209 63 [^"]+"/)?.[0];
+ assert.ok(cards.every(card=>card.includes('hgsb-svg')));
+ assert.equal(new Set(cards.map(shape)).size,1);
+ assert.ok(cards.every(card=>card.includes('preserveAspectRatio="xMidYMid meet"')));
+ assert.ok(cards.every(card=>card.includes('viewBox="0 0 240 240"')));
+ assert.ok(cards.every(card=>card.includes('<linearGradient')));
+ assert.ok(cards.every(card=>card.includes('<radialGradient')));
+ assert.equal(new Set(cards.map(c=>(c.match(/data-color-hue="(\d+)"/)||[])[1])).size,names.length);
 });
-test('231 badges are distinct and use only one bounded 192px Canvas with no scaled poster',()=>{
- const api=load(),seen=new Set(),rects=[];
- assert.equal(api.count,231);
- for(let n=1;n<=api.count;n++){
-  const item={id:'hg-model-'+String(n).padStart(3,'0'),name:'Model '+n,prototype:true};
-  const i=api.artIndex(item),crop=api.cropRect(i),html=api.thumbnail(item);
-  seen.add(i);rects.push(crop);
-  assert.match(html,/<canvas class="hgab-crop" width="192" height="192"/);
-  assert.match(html,/data-hgab-index="\d+"/);
-  assert.doesNotMatch(html,/<svg|<image |<img |background-position|background-size:/);
-  assert.ok(crop.x>=0&&crop.y>=100&&crop.x+crop.w<=1055&&crop.y+crop.h<=1491);
-  assert.ok(crop.w>=60&&crop.w<=80);
-  assert.equal(crop.w,crop.h);
- }
- assert.equal(seen.size,231);
- assert.notDeepEqual(rects[0],rects[1]);assert.notDeepEqual(rects[0],rects[14]);
+test('different colors are attached deterministically to model identity not rarity',()=>{
+ const api=load().HealthGoSimpleBadges;
+ const item={id:'xp_250',name:'250 XP',earned:true,rarity:'rare'};
+ assert.equal(api.svg(item),api.svg(item));
+ assert.equal(api.hue(item),api.hue({...item,rarity:'legendary'}));
+ assert.notEqual(api.hue({id:'hg-model-001'}),api.hue({id:'hg-model-002'}));
+ assert.notEqual(api.svg({id:'xp_250',name:'250 XP'}),api.svg({id:'first_chat',name:'Pierwsza rozmowa'}));
+ assert.match(api.thumbnail({...item,earned:false}),/hgsb-locked/);
+ assert.doesNotMatch(api.thumbnail(item),/hgsb-locked/);
 });
-test('earned state and labels use actual account achievements, no fake XP',()=>{
- const api=load(),real={id:'level_2',name:'Poziom 2',earned:true};
- assert.match(api.thumbnail(real),/aria-label="Poziom 2"/);
- assert.doesNotMatch(api.thumbnail(real),/hgab-locked/);
- assert.match(api.thumbnail({...real,earned:false}),/hgab-locked/);
- assert.doesNotMatch(read('www/healthgo-badge-board.js'),/grantXP|addXP|setXP|awardXP/);
- assert.equal(typeof api.open,'function');
+test('simple touch viewer supports 360 degree rotation and pinch, without poster downloads',()=>{
+ assert.match(source,/pointerdown/);assert.match(source,/pointermove/);assert.match(source,/pointercancel/);
+ assert.match(source,/rotateX\(/);assert.match(source,/rotateY\(/);assert.match(source,/Math\.hypot/);
+ assert.match(source,/aria-modal="true"/);assert.match(source,/role="dialog"/);
+ assert.match(source,/hgsb-close/);
+ assert.doesNotMatch(source,/drawImage|canvas|healthgo-badge-board\.jpg|fetch\(/);
+ const css=read('www/healthgo-badge-simple.css');
+ assert.match(css,/touch-action:none/);
+ assert.match(css,/safe-area-inset-bottom/);
+ assert.match(css,/\.hgsb-object/);
+ assert.match(css,/\.hgsb-front/);
 });
-test('Safari canvas visibly paints one isolated source region and redraws after image load',()=>{
- const drawn=[],tile={width:192,height:192,dataset:{},getAttribute(k){return k==='data-hgab-index'?'109':null;},getContext(){return ctx;}};
- const badge={
-  nodeType:1,matches(sel){return sel==='.hgab-photo[data-hgab-index]';},
-  querySelectorAll(){return[];},querySelector(sel){return sel==='canvas.hgab-crop'?tile:null;}
- };
- const ctx={
-  clearRect(){},fillRect(){},strokeRect(){},fillText(){},
-  drawImage(...args){drawn.push(args);},imageSmoothingEnabled:false,imageSmoothingQuality:'',
-  fillStyle:'',font:'',textAlign:'',textBaseline:'',lineWidth:0,strokeStyle:''
- };
- const doc={
-  readyState:'loading',body:{},addEventListener(){},
-  querySelectorAll(sel){return sel==='.hgab-photo[data-hgab-index]'?[badge]:[];}
- };
- class MockImage{naturalWidth=1055;naturalHeight=1491;set src(v){this.loaded=v;this.onload?.();}}
- const win={HealthGoBadge3D:{catalog:[]},Image:MockImage,console};
- const api=load(win,doc);api.hydrate(doc);
- assert.ok(drawn.length>=1);
- const [img,x,y,w,h,dx,dy,tw,th]=drawn[drawn.length-1];
- assert.ok(img instanceof MockImage);
- assert.deepEqual([x,y,w,h,dx,dy,tw,th],Object.values(api.cropRect(109)).concat([0,0,192,192]));
- assert.equal(tile.dataset.hgabStatus,'art');
+test('PWA uses only the new clean SVG renderer and invalidates the old iPhone cache',()=>{
+ const html=read('www/index.html'),sw=read('www/service-worker.js');
+ assert.match(html,/healthgo-badge-simple\.js\?v=1/);
+ assert.match(html,/healthgo-badge-simple\.css\?v=1/);
+ assert.doesNotMatch(html,/src="\.\/healthgo-badge-board\.js/);
+ assert.doesNotMatch(html,/href="\.\/healthgo-badge-board\.css/);
+ assert.match(sw,/healthgo-pwa-v57-simple-color-badges-20261011/);
+ const before=html.indexOf('healthgo-badge-3d.js?v=3');
+ const simple=html.indexOf('healthgo-badge-simple.js?v=1');
+ const pack=html.indexOf('healthgo-pack-pro.js?v=9');
+ const profile=html.indexOf('healthgo-profile-pro.js?v=5');
+ assert.ok(before>=0&&simple>before&&pack>simple&&profile>simple);
 });
-test('no hidden/black badge placeholders are left behind while JPEG is loading',()=>{
- const css=read('www/healthgo-badge-board.css'),js=read('www/healthgo-badge-board.js');
- assert.match(css,/canvas\.hgab-crop[\s\S]*visibility:visible!important/);
- assert.match(js,/paint\(canvas,true\)/);
- assert.match(js,/hydrate\(root\)/);
- assert.doesNotMatch(js,/class="hgp-medal-svg hgab-single"/);
+test('all account trophies and XP remain sourced from the existing achievement engine',()=>{
+ const script=read('www/healthgo-pack-pro.js');
+ assert.match(script,/function achievements\(\)/);
+ assert.match(script,/HealthGoBadge3D\.thumbnail/);
+ assert.doesNotMatch(source,/grantXP|addXP|setXP|awardXP|updateEngine|updateAchievement/);
+ const w=load();assert.equal(typeof w.HealthGoBadge3D.openChest,'function');
+ assert.equal(w.HealthGoBadge3D.catalog.length,1);
 });
