@@ -238,9 +238,10 @@
   if(typeof L==='undefined'||!getMap()){say('Otwórz mapę, aby zmienić warstwę.');return}
   if(kind===tileKind)return;
   const map=getMap();
-  const url=kind==='satellite'?satellite:(typeof isHostedMobileHealthGo==='function'&&isHostedMobileHealthGo()?'https://tile.openstreetmap.org/{z}/{x}/{y}.png':'/map-tiles/{z}/{x}/{y}.png');
-  const attribution=kind==='satellite'?'Tiles © Esri — źródła: Esri, Maxar, Earthstar Geographics':'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+  const url=kind==='satellite'?satellite:(window.HealthGoMapRecovery?.tileUrl?.()||(typeof isHostedMobileHealthGo==='function'&&isHostedMobileHealthGo()?'https://tile.openstreetmap.org/{z}/{x}/{y}.png':'/map-tiles/{z}/{x}/{y}.png'));
+  const attribution=kind==='satellite'?'Tiles © Esri — źródła: Esri, Maxar, Earthstar Geographics':(window.HealthGoMapRecovery?.tileAttribution?.()||'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors');
   const fresh=L.tileLayer(url,{maxZoom:kind==='satellite'?18:19,attribution});
+  if(kind==='street')window.HealthGoMapRecovery?.attach?.(fresh,map);
   fresh.addTo(map);fresh.bringToBack();
   map.eachLayer(layer=>{
    if(layer!==fresh&&layer instanceof L.TileLayer)map.removeLayer(layer);
