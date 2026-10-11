@@ -66,7 +66,7 @@ jobs:
 
       - name: Sprawdz pobieranie i wznawianie AI na telefonie
         shell: bash
-        run: node --test tests/healthgo-navigation-live.test.cjs tests/healthgo-navigation-screen.test.cjs tests/healthgo-spacious-ui.test.cjs tests/healthgo-map4.test.cjs tests/healthgo-map-pro.test.cjs tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
+        run: node --test tests/healthgo-arcade40.test.cjs tests/healthgo-map-recovery.test.cjs tests/healthgo-navigation-live.test.cjs tests/healthgo-navigation-screen.test.cjs tests/healthgo-spacious-ui.test.cjs tests/healthgo-map4.test.cjs tests/healthgo-map-pro.test.cjs tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
 
       - name: Sprawdz grafike 240 modeli, proporcje, 3D i zachowanie Plecaka
         shell: bash
