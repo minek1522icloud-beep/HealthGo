@@ -18,7 +18,7 @@ function random(seed){var n=seed>>>0;return function(){n=(Math.imul(1664525,n)+1
 function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
 function escapeHtml(v){return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function definition(index){
- var i=Number(index)||1;if(i<1||i>240)return null;
+ var i=Number(index);if(!Number.isInteger(i)||i<1||i>240)return null;
  var family=Math.floor((i-1)/20),edition=(i-1)%20;
  return {id:'hg-model-'+String(i).padStart(3,'0'),index:i,name:THEMES[family]+' · '+(edition+1),
    family:THEMES[family],form:FORMS[(family+edition*7)%FORMS.length],
