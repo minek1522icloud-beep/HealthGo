@@ -82,9 +82,11 @@ function stickerArt(id,opts){
  '<path d="'+path+'" transform="translate(0 6)" fill="#07120f" opacity=".54"/>'+
  '<path d="'+path+'" fill="#f6fff9" stroke="#f6ffeb" stroke-width="2.5"/>'+
  '<path d="'+path+'" transform="translate(50 50) scale(.89) translate(-50 -50)" fill="url(#'+uid+'-foil)" stroke="#032821" stroke-width="1.9"/>'+
- '<path d="'+path+'" transform="translate(50 50) scale(.77) translate(-50 -50)" fill="url(#'+uid+'-enamel)" opacity=".96"/>'+
+ '<path d="'+path+'" transform="translate(50 50) scale(.77) translate(-50 -50)" fill="url(#'+uid+'-enamel)" opacity=".96"/>'+ 
+ '<path d="M12 18Q48 3 85 27L68 39Q35 24 12 52Z" fill="url(#'+uid+'-foil)" opacity=".48"/>'+
  '<g clip-path="url(#'+uid+'-clip)">'+texture+'<g transform="translate(14 15) scale(.71)">'+subject+'</g></g>'+
- '<path d="M23 15Q48 4 79 21" stroke="#fff" stroke-width="4" opacity=".45" fill="none"/>'+
+ '<path d="M23 15Q48 4 79 21" stroke="#fff" stroke-width="4" opacity=".45" fill="none"/>'+ 
+ '<path d="M20 72Q55 42 83 68" stroke="'+f.accent+'" stroke-width="2" opacity=".50" fill="none"/>'+
  '<rect x="31" y="90" width="38" height="10" rx="4" fill="#09221e" stroke="'+f.colors[0]+'" stroke-width="1.2"/>'+
  '<text x="50" y="98" text-anchor="middle" font-size="6.8" letter-spacing=".7" font-family="Arial,sans-serif" font-weight="bold" fill="'+f.accent+'">'+esc(n?'HG '+String(n).padStart(2,'0'):motifLabels[seed%12])+'</text></svg>';
 }

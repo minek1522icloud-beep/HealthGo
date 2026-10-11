@@ -32,7 +32,7 @@ function normal(v){
  d.wallpaper=wallpaperOk(o.wallpaper)?o.wallpaper:'default';
  d.frame=FRAMES.includes(o.frame)?o.frame:'mint';
  d.sticker=/^[a-z0-9-]{0,24}$/.test(o.sticker||'')?String(o.sticker||''):'';
- d.featured=Array.isArray(o.featured)?o.featured.filter(x=>typeof x==='string').slice(0,3):[];
+ d.featured=Array.isArray(o.featured)?o.featured.filter(x=>typeof x==='string').slice(0,6):[];
  d.looks=Array.isArray(o.looks)?o.looks.slice(0,3).map(x=>({
   name:String(x.name||'Mój zestaw').slice(0,28),avatar:legalAvatar(x.avatar)?x.avatar:'leaf',
   wallpaper:wallpaperOk(x.wallpaper)?x.wallpaper:'default',
@@ -98,7 +98,7 @@ function headerCard(p,isSelf){
  var about=isSelf?state.local.about:String(p.about||'');
  var art=avatarMarkup(legalAvatar(p.avatar)?p.avatar:'leaf',!isSelf);
  var tag=p.sticker||(!isSelf?'':rewardState().sticker);
- var list=isSelf?badges().filter(x=>(state.local.featured||[]).includes(x.id)).slice(0,3):(Array.isArray(p.featured)?p.featured.slice(0,3):[]);
+ var list=isSelf?badges().filter(x=>(state.local.featured||[]).includes(x.id)).slice(0,6):(Array.isArray(p.featured)?p.featured.slice(0,6):[]);
  return '<div class="hgp-profile-cover hgr-wallpaper-'+wall+'"><span class="hgp-cover-label">HEALTHGO COLLECTOR PROFILE</span><span class="hgp-cover-glow" aria-hidden="true"></span></div>'+
  '<div class="hgp-profile-identity"><div class="hgp-profile-avatar hgp-frame-'+frame+'">'+art+(tag?'<span class="hgp-profile-sticker">'+(window.HealthGoCollectibleArt?window.HealthGoCollectibleArt.sticker(tag):esc(stickerLabel(tag)))+'</span>':'')+'</div>'+
  '<div class="hgp-identity-label"><h2>'+esc(nick)+'</h2><p>Poziom '+lv+' · '+(isSelf?'Twój profil':'Profil użytkownika HealthGo')+'</p></div></div>'+
@@ -108,7 +108,7 @@ function headerCard(p,isSelf){
  '<span><strong>'+(isSelf?unlocked('sticker').length:'—')+'</strong><small>Naklejki</small></span></div>'+
  '<div class="hgp-profile-about"><strong>O mnie</strong><p>'+esc(about||'Witaj na moim profilu HealthGo!')+'</p></div>'+
  '<div class="hgp-profile-badges"><strong>Wyróżnione odznaki</strong><div class="hgp-featured-grid">'+
- (list.length?list.map(function(x){var medal=window.HealthGoMedalArt?.render({id:x.id||x.code,name:x.name,earned:true,category:x.category||'badges',rarity:x.rarity||'common'},false)||'★';return '<div class="hgp-feature"><div>'+medal+'</div><span>'+esc(x.name)+'</span></div>';}).join(''):
+ (list.length?list.map(function(x){var medal=window.HealthGoBadge3D?.thumbnail({id:x.id||x.code,name:x.name,earned:true,category:x.category||'badges',rarity:x.rarity||'common'})||window.HealthGoMedalArt?.render({id:x.id||x.code,name:x.name,earned:true,category:x.category||'badges',rarity:x.rarity||'common'},false)||'★';return '<div class="hgp-feature"><button type="button" class="hgp-featured-inspect" data-profile-inspect="'+esc(x.id||x.code)+'" aria-label="Obejrzyj 3D: '+esc(x.name)+'"><div>'+medal+'</div><span>'+esc(x.name)+'</span></button></div>';}).join(''):
  '<p class="hgp-muted">Brak wyróżnionych odznak.</p>')+'</div></div>';
 }
 function menu(){
@@ -150,7 +150,7 @@ function editor(kind){
    '<h4>Tapeta profilu</h4><p class="hgp-muted">Tapety zdobyte w Plecaku będą widoczne tutaj.</p><div class="hgp-wall-grid">'+wallBtns+'</div>'+
    '<h4>Ramka avatara</h4><div class="hgp-frame-grid">'+frames+'</div>'+
    '<h4>Naklejka na avatar</h4><div class="hgp-decals">'+stickerBtns+'</div>'+
-   '<h4>Gablota: wybierz maksymalnie 3 zdobyte odznaki</h4><div class="hgp-badge-choices">'+(featured||'<p class="hgp-muted">Zdobyte odznaki pojawią się tutaj.</p>')+'</div>'+
+   '<h4>Gablota: wybierz maksymalnie 6 zdobytych odznak</h4><div class="hgp-badge-choices">'+(featured||'<p class="hgp-muted">Zdobyte odznaki pojawią się tutaj.</p>')+'</div>'+
    '<button type="button" class="hgp-primary" data-profile-action="save">Zapisz profil</button></div>';
  }else if(kind==='privacy'){
   section='<div class="hgp-editor"><h3>Prywatność profilu</h3><p class="hgp-muted">To Ty decydujesz, kto widzi Twój profil. Dane zdrowotne, e-mail i lokalizacja pozostają prywatne.</p>'+
@@ -302,6 +302,11 @@ function onClick(e){
  }
  if(act==='clear-looks'){state.local.looks=[];store();render();return;}
  if(act==='remove-photo'){try{localStorage.removeItem(photoKey());}catch(_){}state.photo='';applyAvatar();render();return;}
+ var ins=btn.getAttribute('data-profile-inspect');
+ if(ins&&window.HealthGoBadge3D){
+  var item=state.visitor===null?badges().find(function(x){return x.id===ins;}):state.card?.featured?.find(function(x){return x.code===ins;});
+  if(item)window.HealthGoBadge3D.open(Object.assign({},item,{id:item.id||item.code,earned:true}));return;
+ }
  var visitor=btn.getAttribute('data-profile-visitor');if(visitor){open('visitor',visitor);return;}
  var frame=btn.getAttribute('data-profile-frame');if(frame){setLocal('frame',frame);return;}
  var avatar=btn.getAttribute('data-profile-avatar');if(avatar){setLocal('avatar',avatar);return;}
@@ -317,8 +322,8 @@ function onClick(e){
   var b=badges();if(!b.some(x=>x.id===badge))return;
   var list=state.local.featured;
   if(list.includes(badge))state.local.featured=list.filter(x=>x!==badge);
-  else if(list.length<3)state.local.featured=list.concat(badge);
-  else{state.message='Możesz wyróżnić maksymalnie 3 odznaki.';render();return;}
+  else if(list.length<6)state.local.featured=list.concat(badge);
+  else{state.message='Możesz wyróżnić maksymalnie 6 odznak.';render();return;}
   store();render();return;
  }
  var slot=btn.getAttribute('data-profile-load');if(slot!==null){

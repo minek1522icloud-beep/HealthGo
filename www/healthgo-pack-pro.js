@@ -9,7 +9,7 @@
   if(!page||!Engine||!Services)return;
   var root=document.createElement('div');
   root.id='hgPackProRoot';
-  var ui={tab:'gear',filter:'all',category:'all',search:'',sort:'recent',modal:null};
+  var ui={tab:'gear',filter:'all',category:'all',search:'',sort:'recent',modal:null,modelPage:0};
   var owner='',data=fresh();
   var CATEGORIES={badges:'Odznaki',cups:'Puchary',sports:'Sportowe',special:'Specjalne',limited:'Limitowane',secret:'Sekretne',family:'Rodzinne'};
   var RARITY={common:'Zwykły',rare:'Rzadki',epic:'Epicki',legendary:'Legendarny',mythic:'Mityczny'};
@@ -115,7 +115,7 @@
     var isStar=data.favorites.indexOf(item.id)>=0,isSpotlight=data.spotlight===item.id;
     return '<button type="button" class="hgp-card" data-action="badge" data-id="'+escapeHtml(item.id)+'" data-earned="'+(!!item.earned)+'" data-spotlight="'+isSpotlight+'">'+
       (isSpotlight?'<span class="hgp-status">Wyróżnione</span>':item.earned?'<span class="hgp-status">'+(isStar?'★ Ulubione':'Zdobyte')+'</span>':'')+
-      '<span class="hgp-art hgp-medal-stage">'+(window.HealthGoMedalArt?window.HealthGoMedalArt.render(item,false):svg(badgeIcon(item)))+'</span><b>'+escapeHtml(item.name)+'</b>'+
+      '<span class="hgp-art hgp-medal-stage">'+(window.HealthGoBadge3D?window.HealthGoBadge3D.thumbnail(item):window.HealthGoMedalArt?window.HealthGoMedalArt.render(item,false):svg(badgeIcon(item)))+'</span><b>'+escapeHtml(item.name)+'</b>'+
       '<span class="hgp-rarity '+escapeHtml(item.rarity||'common')+'">'+escapeHtml(RARITY[item.rarity]||'Zwykły')+'</span>'+
       '<small>'+(item.earned?'Zdobyto'+(item.earnedAt?' · '+escapeHtml(new Date(item.earnedAt).toLocaleDateString('pl-PL')):''):(item.target==null?'Warunek ukryty':'Postęp: '+Math.round(item.progress||0)+' / '+Math.round(item.target||0)))+'</small></button>';
   }
@@ -136,7 +136,8 @@
     var classes=Object.keys(CATEGORIES).map(function(key){return '<option value="'+key+'" '+(ui.category===key?'selected':'')+'>'+CATEGORIES[key]+'</option>';}).join('');
     var pillsHtml=pills.map(function(x){return '<button type="button" class="hgp-pill" data-action="filter" data-value="'+x[0]+'" aria-pressed="'+(x[0]===ui.filter)+'">'+x[1]+'</button>';}).join('');
     return '<div class="hgp-heading"><h3>'+svg('award')+' Twoja kolekcja</h3><button type="button" class="hgp-secondary" data-action="collections">'+svg('layers')+' Kolekcje</button></div>'+
-      '<div class="hgp-pills">'+pillsHtml+'</div><div class="hgp-toolrow">'+
+      '<div class="hgp-collection-catalog-intro"><div><b>240 autorskich modeli 3D</b><small>Odkrywaj różne bryły, reliefy i materiały. Modele katalogowe nie są zdobytymi odznakami.</small></div><button type="button" data-action="models">Katalog 3D ↗</button></div>'+ 
+ '<div class="hgp-pills">'+pillsHtml+'</div><div class="hgp-toolrow">'+
       '<input class="hgp-control hgp-search" id="hgpackSearch" type="search" maxlength="80" autocomplete="off" placeholder="Szukaj nagrody..." aria-label="Szukaj nagrody" value="'+escapeHtml(ui.search)+'">'+
       '<select class="hgp-control hgp-select" data-change="category" aria-label="Kategoria osiągnięć"><option value="all">Wszystkie kategorie</option>'+classes+'</select>'+
       '<select class="hgp-control hgp-select" data-change="sort" aria-label="Sortowanie"><option value="recent" '+(ui.sort==='recent'?'selected':'')+'>Najnowsze</option><option value="rarity" '+(ui.sort==='rarity'?'selected':'')+'>Rzadkość</option><option value="name" '+(ui.sort==='name'?'selected':'')+'>Nazwa A–Z</option></select></div>'+
@@ -178,9 +179,24 @@
   }
   function chests(){return '<div class="hgp-heading"><h3>'+svg('gift')+' Moje prezenty</h3><button type="button" class="hgp-secondary" data-action="back-gear">Wróć</button></div>'+
       (window.HealthGoRewards?window.HealthGoRewards.renderGifts():emptyPanel('Nagrody niedostępne','Otwórz aplikację ponownie.','gift'));}
+
+  function prototypes(){
+    var forge=window.HealthGoBadge3D,all=forge?forge.catalog:[],perPage=24,page=Math.max(0,Math.min(ui.modelPage,Math.ceil(all.length/perPage)-1)),slice=all.slice(page*perPage,(page+1)*perPage);
+    return '<div class="hgp-heading"><h3>'+svg('layers')+' Katalog 240 modeli 3D</h3><button type="button" class="hgp-secondary" data-action="back-gear">Wróć</button></div>'+
+     '<div class="hgp-info">Modele kolekcjonerskie do obejrzenia, a nie automatycznie przyznane odznaki. Każdy ma indywidualną geometrię bryły, grubość, relief, kształt, metal i wykończenie. Dotknij modelu, aby obracać go w Inspect 360°.</div>'+
+     '<div class="hgp-prototype-grid">'+slice.map(function(item){
+       return '<button type="button" class="hgp-prototype" data-preview="true" data-action="inspect-model" data-id="'+escapeHtml(item.id)+'">'+
+       '<span class="hgp-model-preview">'+(window.HealthGoBadge3D?window.HealthGoBadge3D.thumbnail(item):window.HealthGoMedalArt?window.HealthGoMedalArt.render(item,false):svg('award'))+'</span>'+
+       '<strong>'+escapeHtml(item.name)+'</strong><small>Model '+item.index+' · '+escapeHtml(item.form)+' · Obejrzyj w 3D</small></button>';
+     }).join('')+'</div>'+
+     '<div class="hgp-pages"><button type="button" data-action="model-prev" '+(page===0?'disabled':'')+'>← Poprzednie</button><span>Strona '+(page+1)+' / '+Math.ceil(all.length/perPage)+'</span><button type="button" data-action="model-next" '+(page>=Math.ceil(all.length/perPage)-1?'disabled':'')+'>Następne →</button></div>';
+  }
+  function stageCount(item){return achievements().filter(function(a){return a.earned&&a.category===item.category;}).length;}
+
   function viewHtml(){
     if(ui.tab==='daily')return daily();
     if(ui.tab==='collections')return collections();
+    if(ui.tab==='models')return prototypes();
     if(ui.tab==='chests')return chests();
     return gear();
   }
@@ -192,14 +208,15 @@
   }
   function badgeDetail(item){
     var favorited=data.favorites.indexOf(item.id)>=0,spotlight=data.spotlight===item.id;
-    var info='<div class="hgp-detail-icon hgp-detail-medal">'+(window.HealthGoMedalArt?window.HealthGoMedalArt.render(item,true):svg(badgeIcon(item)))+'</div>'+
+    var info='<div class="hgp-detail-icon hgp-detail-medal">'+(window.HealthGoBadge3D?window.HealthGoBadge3D.thumbnail(item):window.HealthGoMedalArt?window.HealthGoMedalArt.render(item,true):svg(badgeIcon(item)))+'</div>'+
       '<p class="hgp-detail-desc">'+escapeHtml(item.description||item.requirementText||'')+'</p>'+
       '<div class="hgp-detail-rows"><span>Rzadkość</span><b>'+escapeHtml(RARITY[item.rarity]||'Zwykły')+'</b></div>'+
       '<div class="hgp-detail-rows"><span>Status</span><b>'+(item.earned?'Zdobyte':'Nieodkryte')+'</b></div>'+
       '<div class="hgp-detail-rows"><span>Zdobyto</span><b>'+escapeHtml(item.earnedAt?new Date(item.earnedAt).toLocaleDateString('pl-PL'):'—')+'</b></div>'+
       '<div class="hgp-detail-rows"><span>Źródło</span><b>'+escapeHtml(item.source||'Wyzwania i osiągnięcia')+'</b></div>'+
-      '<div class="hgp-detail-rows"><span>Wymaganie</span><b>'+escapeHtml(item.requirementText||'—')+'</b></div>'+
-      '<div class="hgp-dialog-actions">'+(item.earned?
+      '<div class="hgp-detail-rows"><span>Wymaganie</span><b>'+escapeHtml(item.requirementText||'—')+'</b></div>'+ 
+ '<div class="hgp-inspect-evolution">Ewolucja modelu: Brąz po zdobyciu, Srebro za 3 odznaki kategorii, Złoto za 10. Tylko rzeczywiście zdobyte odznaki, bez sztucznego XP.</div>'+
+      '<div class="hgp-dialog-actions"><button type="button" class="hgp-primary" data-action="inspect-3d" data-id="'+escapeHtml(item.id)+'">Obejrzyj 3D · Obróć 360°</button>'+(item.earned?
         '<button type="button" class="hgp-secondary" data-action="favorite" data-id="'+escapeHtml(item.id)+'">'+svg('star')+' '+(favorited?'Usuń z ulubionych':'Dodaj do ulubionych')+'</button>'+
         '<button type="button" class="hgp-primary" data-action="spotlight" data-id="'+escapeHtml(item.id)+'">'+svg('award')+' '+(spotlight?'Usuń wyróżnienie':'Wyróżnij w plecaku')+'</button>':
         '<button type="button" class="hgp-secondary" data-action="challenges">Zobacz wyzwania '+svg('arrow')+'</button>')+'</div>';
@@ -273,6 +290,15 @@
     if(typeof window.mobileGo==='function')window.mobileGo(pageId);
     else if(typeof window.go==='function')window.go(pageId);
   }
+  root.addEventListener('pointermove',function(event){
+    var foil=event.target.closest('.hgr-sticker-hologram');if(!foil||!root.contains(foil))return;
+    var rect=foil.getBoundingClientRect(),x=rect.width?(event.clientX-rect.left)/rect.width:.5,y=rect.height?(event.clientY-rect.top)/rect.height:.5;
+    x=Math.max(0,Math.min(1,x));y=Math.max(0,Math.min(1,y));
+    foil.style.setProperty('--holo-y',((x-.5)*20).toFixed(2)+'deg');
+    foil.style.setProperty('--holo-x',((.5-y)*20).toFixed(2)+'deg');
+    foil.style.setProperty('--holo-shift',((x-.5)*68).toFixed(1)+'%');
+  });
+  root.addEventListener('pointerout',function(event){var foil=event.target.closest('.hgr-sticker-hologram');if(!foil||!root.contains(foil))return;foil.style.removeProperty('--holo-x');foil.style.removeProperty('--holo-y');foil.style.removeProperty('--holo-shift');});
   root.addEventListener('click',function(event){
     if(event.target.classList&&event.target.classList.contains('hgp-overlay')){closeModal();return;}
     var btn=event.target.closest('[data-action]');if(!btn||!root.contains(btn))return;
@@ -280,10 +306,18 @@
     if(action==='close'){closeModal();return;}
     if(action==='gift-starter-open'){ui.tab='chests';render();if(window.HealthGoRewards)window.HealthGoRewards.openStarter();return;}
     if(action==='gift-daily-open'){ui.tab='chests';render();if(window.HealthGoRewards)window.HealthGoRewards.claimDaily();return;}
+    if(action==='gift-chest-3d'){window.HealthGoBadge3D?.openChest('starter');return;}
     if(action.indexOf('gift-')===0){if(window.HealthGoRewards&&window.HealthGoRewards.handle(action,id)){render();window.HealthGoRewards.decorateProfile();}return;}
     if(action==='settings'||action==='new'){openModal(action==='new'?'new':'settings');return;}
     if(action==='ai'){navigate('ai');return;}
     if(action==='challenges'){navigate('challenges');return;}
+    if(action==='inspect-3d'||action==='inspect-model'){
+      var picked=action==='inspect-model'?window.HealthGoBadge3D?.catalog.find(function(x){return x.id===id;}):findBadge(id);
+      if(picked&&window.HealthGoBadge3D)window.HealthGoBadge3D.open(Object.assign({},picked,{categoryEarnedCount:picked.prototype?0:stageCount(picked)}));
+      return;
+    }
+    if(action==='models'){ui.tab='models';ui.modelPage=0;ui.modal=null;render();return;}
+    if(action==='model-prev'||action==='model-next'){ui.modelPage=Math.max(0,Math.min(9,ui.modelPage+(action==='model-next'?1:-1)));render();return;}
     if(action==='badge'||action==='list'){openModal(action,id);return;}
     if(action==='tab'){ui.tab=value==='daily'?'daily':value==='gifts'?'chests':'gear';ui.modal=null;ui.search='';render();return;}
     if(action==='filter'){ui.filter=value;render();return;}

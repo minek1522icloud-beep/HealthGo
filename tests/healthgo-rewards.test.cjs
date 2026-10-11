@@ -56,7 +56,7 @@ test('reward styles and shipping code contain actual profile rendering and third
  const html=fs.readFileSync('www/index.html','utf8');
  const pack=fs.readFileSync('www/healthgo-pack-pro.js','utf8');
  const css=fs.readFileSync('www/healthgo-rewards.css','utf8');
- assert.match(html,/healthgo-rewards\.js\?v=3/);
+ assert.match(html,/healthgo-rewards\.js\?v=4/);
  assert.match(html,/healthgo-rewards\.css\?v=3/);
  assert.match(pack,/data-value="gifts"/);
  assert.match(pack,/HealthGoRewards\.renderGifts/);

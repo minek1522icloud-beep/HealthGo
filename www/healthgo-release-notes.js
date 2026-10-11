@@ -3,9 +3,27 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-2.4-textured-daily-20261010';
-var TITLE='Nowe tekstury odznak, naklejek i nagrody dzienne';
+var RELEASE='healthgo-2.5-badge-forge-20261011';
+var TITLE='240 modeli 3D, obracanie 360° i gablota';
 var sections=[
+ {title:'🏅 240 autorskich modeli 3D',items:[
+  'W Plecak → Ekwipunek znajdziesz katalog 240 różnych brył odznak. Można je oglądać, ale katalog sam w sobie nie przyznaje osiągnięć ani XP.',
+  'Modele mają osobne kontury, reliefy, wystające części, zróżnicowaną grubość, metaliczne materiały i grawerunki.',
+  'Po kliknięciu odznaki wybierz „Obejrzyj 3D”, by obracać ją palcem, oglądać rewers, przybliżać i zmieniać światło.',
+  'Na urządzeniach obsługujących WebGL modele są prawdziwą geometrią przestrzenną; w pozostałych dostępny jest podgląd zastępczy.'
+ ]},
+ {title:'🏆 Ewolucja i gablota',items:[
+  'Modele ewoluują wizualnie po zdobyciu odznaki, potem przy trzech i dziesięciu naprawdę zdobytych odznakach z tej samej kategorii.',
+  'Gablota w profilu mieści teraz do sześciu zdobytych i zweryfikowanych odznak.',
+  'Znajomi mogą oglądać Twój pokaz odznak zgodnie z ustawieniami prywatności profilu.',
+  'Kliknij medal w gablocie, by otworzyć jego Inspect 360°.'
+ ]},
+ {title:'✨ Holograficzne naklejki i przestrzenne skrzynie',items:[
+  'Holograficzne naklejki odbijają światło przy ruchu palca i można obejrzeć ich indywidualną fakturę.',
+  'Ozdobną skrzynię możesz także oglądać jako model 3D, bez otwierania i zużywania darmowej nagrody.',
+  'Darmowa skrzynia nadal zawiera kosmetyczną nagrodę i można pominąć animację. Nie ma płatnego losowania ani nagród o wartości pieniężnej.',
+  'Nagroda dzienna i skrzynia powitalna pozostają darmowe, bez przymusu codziennego logowania.'
+ ]},
  {title:'🏅 Osobna faktura każdej odznaki',items:['Każda odznaka ma indywidualną grafikę reliefu, grawerunek i numer seryjny przypisany do modelu.','Odznaki tej samej rzadkości różnią się wzorem i strukturą powierzchni, a nie tylko kolorem.']},
  {title:'✨ Kolekcjonerskie naklejki',items:['80 naklejek otrzymało indywidualne wzory i faktury holograficzne, metaliczne lub foliowane.','Dodaliśmy powiększony podgląd tekstury i dokładniejsze ilustracje skrzyń.']},
  {title:'🎁 Otwieranie i codzienne prezenty',items:['Przewijana taśma pokazuje kolekcję przedmiotów, a następnie zatrzymuje się na przyznanej ozdobie.','Pomiń animację w dowolnym momencie, by natychmiast zobaczyć ten sam wynik.','Codziennie możesz odebrać jedną bezpłatną ozdobę na konto, bez serii i kar za pominięte dni.','Nie ma płatnych skrzyń, zakładów, wymiany ani nagród o wartości pieniężnej.']},
@@ -13,7 +31,7 @@ var sections=[
  {title:'👤 Profil PRO',items:[
   'Kliknij swój awatar w prawym górnym rogu, aby otworzyć pełną kartę profilu HealthGo.',
   'Wybierz jeden z ośmiu autorskich awatarów, zmień tapetę, ramkę, naklejkę i opis „O mnie”.',
-  'Wybierz maksymalnie trzy naprawdę zdobyte odznaki do gabloty profilu.',
+  'Wybierz maksymalnie sześć naprawdę zdobytych odznak do gabloty profilu.',
   'Zapisz do trzech zestawów wyglądu i zmieniaj kosmetyki jednym kliknięciem.',
   'Własne zdjęcie avatara jest przechowywane tylko na tym urządzeniu, bez udostępniania znajomym.'
  ]},
@@ -123,7 +141,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.4</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.5</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+

@@ -217,7 +217,7 @@ function owned(kind,id){
 function stickerHtml(id){
  var info=sticker(id);
  if(!info)return '';
- if(window.HealthGoCollectibleArt)return window.HealthGoCollectibleArt.sticker(id,{label:info.name});
+ if(window.HealthGoCollectibleArt)return '<span class="hgr-sticker-hologram" data-holo="'+escapeHtml(id)+'">'+window.HealthGoCollectibleArt.sticker(id,{label:info.name})+'</span>';
  return '<span class="hgr-sticker hgr-tone-'+info.tone+'" aria-label="'+escapeHtml(info.name)+'"><span>'+info.symbol+'</span></span>';
 }
 function wallpaperHtml(id){
@@ -249,7 +249,8 @@ function renderGifts(){
  var unlockedStickers=STICKERS.filter(function(x){return owned('sticker',x.id);});
  var unlockedWallpapers=WALLPAPERS.filter(function(x){return owned('wallpaper',x.id);});
  var output=dailyBanner()+'<div class="hgr-section-head"><div><span class="hgr-kicker">DARMOWE NAGRODY</span><h3>Prezenty i skrzynie</h3></div><span class="hgr-counter">'+ready.length+' do odebrania</span></div>'+
- '<div class="hgr-note">Wszystkie skrzynie są bezpłatne. Zawierają wyłącznie ozdoby profilu (75% naklejka, 25% tapeta). Nagrodę można odsłonić od razu przyciskiem „Pomiń animację”. Bez zakupów, wymiany na pieniądze ani wpływu na XP.</div>';
+ '<div class="hgr-actions"><button type="button" class="hgr-inspect" data-action="gift-chest-3d">Obejrzyj model skrzyni 3D ↗</button></div>'+ 
+ '<div class="hgr-note">Wszystkie skrzynie są bezpłat. Zawierają wyłącznie ozdoby profilu (75% naklejka, 25% tapeta). Nagrodę można odsłonić od razu przyciskiem „Pomiń animację”. Bez zakupów, wymiany na pieniądze ani wpływu na XP.</div>';
  if(starter&&starter.error)output+='<p class="hgr-note" role="status">'+escapeHtml(starter.error)+'</p>';
  if(animating)output+='<div class="hgr-animation" role="status" aria-label="Przewijanie nagród">'+
  (window.HealthGoCollectibleArt?'<div class="hgr-opening-chest">'+window.HealthGoCollectibleArt.chest('opening')+'</div>':'')+
@@ -276,6 +277,7 @@ function renderGifts(){
 }
 function handle(action,id){
  sync();if(!owner)return false;
+ if(action==='gift-chest-3d'){window.HealthGoBadge3D?.openChest('starter');return false;}
  if(action==='gift-inspect-close'){inspectReward=null;return true;}
  if(action==='gift-inspect'){
   var kind=sticker(id)?'sticker':wallpaper(id)?'wallpaper':null;

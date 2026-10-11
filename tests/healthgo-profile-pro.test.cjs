@@ -72,14 +72,14 @@ test('profile code includes custom local photo, editable appearance, privacy and
  assert.match(source,/data-profile-wall/);
  assert.match(source,/data-profile-sticker/);
  assert.match(source,/data-profile-badge/);
- assert.match(source,/maksymalnie 3/i);
+ assert.match(source,/maksymalnie 6 zdobytych odznak/i);
  assert.match(source,/healthgo_profile_get/);
  assert.match(source,/healthgo_profile_save/);
  assert.match(source,/window\.HealthGoProfile/);
  assert.match(source,/data-profile-visitor/);
  assert.match(css,/safe-area-inset-top/);
  assert.match(css,/prefers-reduced-motion/);
- assert.match(html,/healthgo-profile-pro\.js\?v=2/);
+ assert.match(html,/healthgo-profile-pro\.js\?v=3/);
  assert.match(html,/healthgo-profile-pro\.css\?v=2/);
  assert.match(migration,/healthgo_profile_cards/);
  assert.match(migration,/healthgo_friend_blocks/);

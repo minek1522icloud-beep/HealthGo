@@ -1,0 +1,66 @@
+/* HealthGo 2.5 — real WebGL inspect, premium 240-model catalog, dimensional collector cabinet */
+body.hgb3d-open{overflow:hidden}
+#hgBadge3DInspect{position:fixed;inset:0;z-index:500020;background:rgba(0,8,7,.91);display:flex;align-items:center;justify-content:center;padding:max(7px,env(safe-area-inset-top,0px)) 10px max(8px,env(safe-area-inset-bottom,0px))}
+#hgBadge3DInspect *{box-sizing:border-box}
+#hgBadge3DInspect .hgb3d-dialog{color:#ebfff5;width:min(100%,610px);max-height:calc(100dvh - max(14px,env(safe-area-inset-top,0px)) - max(14px,env(safe-area-inset-bottom,0px)));overflow-y:auto;overscroll-behavior:contain;border:1px solid #7edaaf;background:radial-gradient(ellipse at 55% 12%,#2d5c47,#0b231b 55%,#061610);border-radius:24px;box-shadow:0 25px 90px #000c,inset 0 1px 0 #ffffff35}
+#hgBadge3DInspect .hgb3d-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:15px 20px;border-bottom:1px solid #51745f}
+#hgBadge3DInspect .hgb3d-toolbar h2{font-size:clamp(16px,4vw,24px);margin:2px 0 0;color:#f0fff7;line-height:1.2}
+#hgBadge3DInspect .hgb3d-toolbar small{color:#89ffd0;letter-spacing:.12em;font-size:9px;font-weight:900}
+#hgBadge3DInspect button{font:inherit;border:1px solid #4b7b5e;background:#153a2b;border-radius:11px;color:#e9fff2;min-height:38px;padding:7px 10px;font-size:12px;touch-action:manipulation}
+#hgBadge3DInspect .hgb3d-toolbar button{font-size:26px;line-height:1;flex:0 0 42px;height:42px}
+#hgBadge3DInspect button:focus-visible{outline:2px solid #d8ffd8;outline-offset:3px}
+#hgBadge3DInspect .hgb3d-stage{position:relative;height:min(53vh,400px);min-height:220px;background:radial-gradient(ellipse at 50% 49%,#31584f7a,#091713 76%);overflow:hidden;display:grid;place-items:center;isolation:isolate}
+#hgBadge3DInspect .hgb3d-stage:before{content:"";position:absolute;inset:14px;border:1px solid #a7ffd41c;border-radius:100%;box-shadow:inset 0 0 45px #76ebb70d;pointer-events:none}
+#hgBadge3DInspect .hgb3d-light{position:absolute;top:10%;right:20%;width:24%;height:45%;border-radius:100%;background:#cbffdb55;filter:blur(55px);pointer-events:none}
+#hgBadge3DInspect .hgb3d-canvas{width:100%;height:100%;min-height:220px;touch-action:none;cursor:grab;display:block;position:relative;z-index:2}
+#hgBadge3DInspect .hgb3d-canvas:active{cursor:grabbing}
+#hgBadge3DInspect .hgb3d-canvas[hidden]{display:none}
+#hgBadge3DInspect .hgb3d-fallback{position:absolute;width:min(70%,290px);aspect-ratio:1;display:grid;place-items:center;transform-style:preserve-3d}
+#hgBadge3DInspect .hgb3d-fallback[hidden]{display:none}
+#hgBadge3DInspect .hgb3d-fallback svg{width:100%;height:100%}
+#hgBadge3DInspect .hgb3d-stage-label{position:absolute;left:12px;bottom:10px;font-size:9px;font-family:monospace;color:#b6dfc7;letter-spacing:.14em;z-index:3;pointer-events:none}
+#hgBadge3DInspect .hgb3d-details{display:flex;flex-wrap:wrap;gap:7px;padding:13px 20px}
+#hgBadge3DInspect .hgb3d-details span{color:#dbf7e8;font-size:10px;padding:6px 8px;background:#234836;border:1px solid #48795c;border-radius:8px}
+#hgBadge3DInspect .hgb3d-note{color:#b9dbca;margin:0;padding:2px 20px 12px;font-size:11px;line-height:1.55}
+#hgBadge3DInspect .hgb3d-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:3px 20px 19px}
+#hgBadge3DInspect .hgb3d-controls button{background:linear-gradient(135deg,#24533d,#103121);border-color:#61a77c;font-weight:750}
+#hgBadge3DInspect .hgb3d-controls button[aria-pressed="true"]{background:#68e6ac;color:#063021}
+#hgPackProRoot .hgp-collection-catalog-intro{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:13px 14px;background:linear-gradient(145deg,#194431,#0d271d);border:1px solid #4c8661;border-radius:15px;margin:15px 0}
+#hgPackProRoot .hgp-collection-catalog-intro b{display:block;color:#ddffe9;font-size:14px}
+#hgPackProRoot .hgp-collection-catalog-intro small{display:block;color:#a7dbb9;font-size:11px;line-height:1.45;margin-top:4px}
+#hgPackProRoot .hgp-collection-catalog-intro button{border:1px solid #7be6ae;border-radius:10px;background:#246344;color:#e2ffee;padding:10px 12px;font-size:11px;min-height:42px;font-weight:850;flex:0 0 auto}
+#hgPackProRoot .hgp-prototype-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;margin:12px 0}
+#hgPackProRoot .hgp-prototype{border:1px solid #47715c;background:radial-gradient(ellipse at 50% 38%,#2c5741,#12261e 75%);border-radius:15px;color:#f2fff6;padding:8px;min-width:0;display:grid;justify-items:center;gap:7px;min-height:145px;cursor:pointer}
+#hgPackProRoot .hgp-prototype .hgp-model-preview{width:90px;height:90px;display:grid;place-items:center;filter:drop-shadow(0 5px 8px #0008)}
+#hgPackProRoot .hgp-prototype .hgp-model-preview svg{width:86px;height:87px}
+#hgPackProRoot .hgp-prototype strong{font-size:11px;text-align:center}
+#hgPackProRoot .hgp-prototype small{font-size:10px;color:#c4ebd2;text-align:center}
+#hgPackProRoot .hgp-prototype[data-preview="true"]{opacity:.88}
+#hgPackProRoot .hgp-prototype[data-preview="true"] small{color:#ffdca0}
+#hgPackProRoot .hgp-pages{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px 0}
+#hgPackProRoot .hgp-pages button{border:1px solid #4d9472;background:#183d2b;border-radius:10px;min-height:40px;color:#e1ffe9;padding:10px;font-size:12px}
+#hgPackProRoot .hgp-pages button:disabled{opacity:.35}
+#hgPackProRoot .hgp-dialog-actions button[data-action="inspect-3d"]{color:#081e15;background:linear-gradient(115deg,#b1ffd9,#59cfa1);border:1px solid #a7f9d0;font-weight:850}
+#hgPackProRoot .hgp-inspect-evolution{background:#15392a;padding:10px;border:1px solid #396f51;border-radius:11px;margin:10px 0;color:#cce7d5;font-size:11px;line-height:1.5}
+#hgProfileProOverlay .hgp-featured-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#hgProfileProOverlay .hgp-featured-inspect{width:100%;height:100%;display:grid;justify-items:center;align-items:center;gap:7px;padding:6px;border:none;background:transparent;color:#dcffe6;cursor:pointer;font:inherit}
+#hgProfileProOverlay .hgp-featured-inspect span{font-size:11px;text-align:center;overflow-wrap:anywhere}
+#hgProfileProOverlay .hgp-featured-inspect svg.hgp-medal-svg{width:76px;height:80px;max-width:100%}
+#hgProfileProOverlay .hgp-featured-inspect:hover{filter:brightness(1.15)}
+#hgProfileProOverlay .hgp-profile-badges{border:1px solid #5e9875;box-shadow:inset 0 1px 0 #d6fff21e,0 8px 20px #0005}
+#hgProfileProOverlay .hgp-badge-choices button.active{border-color:#b8ffd4;box-shadow:0 0 0 1px #98f1b6}
+#hgPackProRoot .hgr-sticker-hologram{position:relative;display:grid;place-items:center;isolation:isolate}
+#hgPackProRoot .hgr-sticker-hologram svg{max-width:100%;height:auto;filter:drop-shadow(0 5px 7px #0008)}
+#hgPackProRoot .hgr-sticker-hologram:after{content:"";position:absolute;inset:12% 17%;border-radius:20%;background:linear-gradient(110deg,transparent 26%,#ffffff55 38%,#a8ffed3d 44%,transparent 61%);mix-blend-mode:screen;transform:translateX(-22%) rotate(-10deg);pointer-events:none;opacity:.7}
+@media(max-width:430px){#hgBadge3DInspect{padding:0}#hgBadge3DInspect .hgb3d-dialog{border-radius:16px;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 7px)}#hgBadge3DInspect .hgb3d-stage{height:min(43vh,345px)}#hgBadge3DInspect .hgb3d-toolbar{padding:13px 14px}#hgBadge3DInspect .hgb3d-controls{padding:4px 14px 16px}#hgBadge3DInspect .hgb3d-note{padding:2px 14px 11px}#hgPackProRoot .hgp-prototype-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){#hgBadge3DInspect .hgb3d-light{filter:none;opacity:.22}#hgPackProRoot .hgr-sticker-hologram:after{transition:none}}
+
+/* Per-item holographic sheen responds to pointer/touch; not a shared icon tint. */
+#hgPackProRoot .hgr-sticker-hologram{display:grid;place-items:center;position:relative;isolation:isolate;transform:perspective(320px) rotateX(var(--holo-x,0deg)) rotateY(var(--holo-y,0deg));transition:transform .15s ease;touch-action:pan-y;max-width:100%;max-height:100%}
+#hgPackProRoot .hgr-sticker-hologram::after{content:"";inset:7% 13%;position:absolute;z-index:3;border-radius:18%;background:linear-gradient(116deg,transparent 25%,#caffef55 41%,#eae3ff7c 49%,#ffedb644 57%,transparent 76%);background-position:var(--holo-shift,0%) center;mix-blend-mode:screen;pointer-events:none;opacity:.65;transform:translateX(var(--holo-shift,0%))}
+#hgPackProRoot .hgr-sticker-hologram svg{max-width:100%;max-height:100%}
+#hgPackProRoot .hgr-inspection-art .hgr-sticker-hologram svg{width:163px;height:170px}
+#hgPackProRoot .hgr-cosmetic-art .hgr-sticker-hologram svg{width:90px;height:90px}
+#hgPackProRoot .hgr-reel-cell .hgr-sticker-hologram svg{width:86px;height:88px}
+#hgPackProRoot .hgr-reveal-art .hgr-sticker-hologram svg{width:110px;height:110px}
+@media(prefers-reduced-motion:reduce){#hgPackProRoot .hgr-sticker-hologram{transition:none;transform:none}#hgPackProRoot .hgr-sticker-hologram::after{transform:none}}

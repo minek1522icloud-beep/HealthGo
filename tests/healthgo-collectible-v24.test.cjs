@@ -69,7 +69,7 @@ test('daily collectible is one account/date only; reveal skip never changes serv
 test('mobile bundle includes collectible visuals, daily RPC-backed migration and accessible skip control',()=>{
  const html=path('www/index.html'),css=path('www/healthgo-rewards.css');
  const sql=path('supabase/migrations/20261010_healthgo_daily_cosmetics.sql');
- assert.match(html,/healthgo-collectible-art\.js\?v=1/);
+ assert.match(html,/healthgo-collectible-art\.js\?v=2/);
  assert.ok(html.indexOf('healthgo-collectible-art.js')<html.indexOf('healthgo-medals.js'));
  assert.match(sql,/primary key\(user_id,gift_date\)/);
  assert.match(sql,/security definer set search_path=''/);
