@@ -211,6 +211,6 @@ function open(item){
  dialog={root:root,previous:previous};show();root.querySelector('.hgab-close').focus({preventScroll:true});return true;
 }
 host.HealthGoBadge3D=Object.freeze(Object.assign({},old,{thumbnail:thumbnail,open:open,close:close}));
-host.HealthGoBadgeBoard=Object.freeze({thumbnail:thumbnail,open:open,close:close,artIndex:artIndex,spriteStyle:spriteStyle,cropRect:cropRect,hydrate:hydrate,count:TOTAL,source:SOURCE});
+host.HealthGoBadgeBoard=Object.freeze({thumbnail:thumbnail,open:open,close:close,artIndex:artIndex,spriteStyle:spriteStyle,cropRect:cropRect,hydrate:hydrate,getAssetStatus:function(){return atlas?'ready':atlasError?'offline':atlasPending?'loading':'idle';},count:TOTAL,source:SOURCE});
 if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch,{once:true});else watch();}
 })(window);
