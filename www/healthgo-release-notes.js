@@ -3,9 +3,21 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-2.7-badge-art-audit-20261011';
-var TITLE='Odznaki 2.7: różne sylwetki i poprawiony Inspect';
+var RELEASE='healthgo-2.8-original-image-badges-20261011';
+var TITLE='Prawdziwe grafiki odznak i prosty podgląd 3D';
 var sections=[
+ {title:'🏅 Odznaki dokładnie z Twojej planszy',items:[
+ 'Przygotowaliśmy atlas 252 osobnych grafik odznak bezpośrednio z przesłanego obrazu.',
+ 'Odznaki w Plecaku, profilu i gablocie pokazują ilustracje z kolekcji zamiast podobnych medali tworzonych algorytmem.',
+ 'Każdy odblokowany przedmiot pozostaje powiązany z rzeczywiście zdobytym osiągnięciem. Grafika nie przyznaje dodatkowego XP.',
+ 'W katalogu do obejrzenia nadal dostępne są warianty wzorów, ale nie oznaczają one zdobytych osiągnięć.'
+ ]},
+ {title:'🔄 Obracanie odznaki palcem',items:[
+ 'Kliknij odznakę w Plecaku, aby natychmiast otworzyć prosty obracany podgląd z frontem z obrazka i ozdobnym tyłem.',
+ 'Przesuwaj palcem lub myszką, aby obracać, przybliżaj dwoma palcami i używaj przycisków obracania.',
+ 'Przycisk Szczegóły nadal pokazuje warunki zdobycia, ulubione i gablotę.',
+ 'Podgląd wykorzystuje grafiki 2D w przestrzennej oprawie — nie jest skanem fizycznych medali 3D.'
+ ]},
  {title:'🏅 Nowe modele i naprawa deformacji',items:[
  'Zastąpiliśmy niemal jednakowe, falowane koła 24 różnymi rodzinami sylwetek odznak: tarczami, koronami, kryształami, gwiazdami, skrzydłami i innymi.',
  'Wyraźniejsze emblematy środkowe odzwierciedlają temat zdobytego osiągnięcia.',
@@ -169,7 +181,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.7</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.8</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+

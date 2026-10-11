@@ -318,7 +318,13 @@
     }
     if(action==='models'){ui.tab='models';ui.modelPage=0;ui.modal=null;render();return;}
     if(action==='model-prev'||action==='model-next'){ui.modelPage=Math.max(0,Math.min(9,ui.modelPage+(action==='model-next'?1:-1)));render();return;}
-    if(action==='badge'||action==='list'){openModal(action,id);return;}
+    if(action==='badge'){
+      var selected=findBadge(id);
+      if(selected&&window.HealthGoBadge3D)window.HealthGoBadge3D.open(selected);
+      else if(selected)openModal('badge',id);
+      return;
+    }
+    if(action==='list'){openModal('list',id);return;}
     if(action==='tab'){ui.tab=value==='daily'?'daily':value==='gifts'?'chests':'gear';ui.modal=null;ui.search='';render();return;}
     if(action==='filter'){ui.filter=value;render();return;}
     if(action==='collections'){ui.tab='collections';render();return;}
@@ -409,6 +415,6 @@
   page.appendChild(root);
   Services.subscribe(function(){render();});
   window.addEventListener('pageshow',function(){render();});
-  window.HealthGoPackPro={render:render,open:function(tab){ui.tab=tab==='daily'?'daily':tab==='gifts'?'chests':'gear';navigate('backpack');render();}};
+  window.HealthGoPackPro={render:render,open:function(tab){ui.tab=tab==='daily'?'daily':tab==='gifts'?'chests':'gear';navigate('backpack');render();},openBadgeDetails:function(id){if(findBadge(id))openModal('badge',id);}};
   render();
 })();
