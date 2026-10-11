@@ -1,0 +1,53 @@
+/* HealthGo Arcade 40: genuine puzzle and action games; responsive touch controls. */
+#games .hga-arcade-intro{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:17px 19px;margin:0 0 16px;border-radius:19px;background:linear-gradient(135deg,#115036,#082b21);color:#e7fff0;border:1px solid #2b7655}
+#games .hga-arcade-intro h2{margin:0 0 5px;color:#effff6;font-size:22px}
+#games .hga-arcade-intro p{margin:0;font-size:13px;color:#b4e5c8}
+#games .hga-arcade-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin-bottom:18px}
+#games .hga-arcade-card{padding:18px;border-radius:22px;background:#0b281e;color:#e6fff2;border:1px solid #28644a;min-width:0}
+#games .hga-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:9px;flex-wrap:wrap}
+#games .hga-heading h3{margin:0 0 4px;font-size:19px;color:#e8fff3}
+#games .hga-heading span{color:#b5e3ca;font-size:12px}
+#games .hga-heading .hga-coin{background:#175b3f;padding:6px 10px;border-radius:999px;color:#ceffdf;font-weight:800}
+#games .hga-note,#contests .hga-note{font-size:12px!important;line-height:1.55;color:#a7d4bd!important;margin:10px 0}
+.hga-progress{height:9px;background:#183c2b;overflow:hidden;border-radius:99px;margin-top:13px}
+.hga-progress>span{display:block;height:100%;background:linear-gradient(90deg,#39b47d,#9be7ae);border-radius:99px;min-width:0}
+#games .hga-maze{display:grid;grid-template-columns:repeat(var(--hga-columns),minmax(0,1fr));gap:2px;width:min(100%,420px);aspect-ratio:1/1;background:#0d3524;border:2px solid #4b8963;border-radius:10px;margin:12px auto;overflow:hidden;touch-action:none;user-select:none}
+#games .hga-maze-cell{display:grid;place-items:center;font-size:clamp(10px,2.2vw,18px);min-width:0;min-height:0}
+#games .hga-maze-cell.wall{background:#21583a;box-shadow:inset 1px 1px #367a4b}
+#games .hga-maze-cell.floor{background:#d4ebd2;color:#16472c}
+#games .hga-maze-cell.star{color:#c4840a;font-weight:900}
+#games .hga-maze-cell.exit{color:#287146;font-weight:900}
+#games .hga-maze-cell.player{background:#58cb9b;color:#073c26;border-radius:8px;font-size:clamp(13px,3vw,23px);box-shadow:inset 0 0 0 2px #0c5333}
+#games .hga-playbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+#games .hga-dpad{display:flex;flex-direction:column;align-items:center;gap:6px}
+#games .hga-dpad>div{display:flex;gap:6px}
+#games .hga-dpad button{display:grid;place-items:center;min-width:48px;min-height:44px;border-radius:11px;background:#236a49;color:white;font-size:20px;font-weight:850;touch-action:manipulation}
+#games .hga-status{display:grid;gap:5px;flex:1;min-width:135px;color:#c8e9d3;font-size:12px}
+#games .hga-status strong{color:#f4fff8;font-size:14px}
+#games .hga-status button{margin-top:4px;min-height:40px;background:#173e2c;border:1px solid #327753;color:#d4ffe7;border-radius:10px;padding:8px}
+#games .hga-target-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:15px auto;width:min(100%,340px)}
+#games .hga-target{aspect-ratio:1/1;display:grid;place-items:center;min-height:65px;background:#1c4d35;border:2px solid #3c7856;border-radius:16px;font-size:clamp(27px,5vw,42px);touch-action:manipulation}
+#games .hga-target.live{background:radial-gradient(circle,#a6fbca,#23a36e);border-color:#b8ffdc;box-shadow:0 0 17px #69e5aa6e}
+#games .hga-timer{text-align:center;font-size:14px;color:#c9f4dc;margin:10px}
+#games .hga-aim-end{font-size:12px;min-height:32px;line-height:1.5;text-align:center;color:#c6e6d4}
+#games .hga-primary,#contests .hga-primary{min-height:44px;padding:11px 14px;border-radius:11px;border:0;background:#77e5b2;color:#062c1a;font-size:13px;font-weight:850;touch-action:manipulation}
+#games .hga-arcade-card>.hga-primary{display:block;margin:10px auto 0}
+#contests #hgArcadeContestRoot{margin-bottom:19px}
+#contests .hga-contest-head{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:17px 19px;border-radius:21px;background:linear-gradient(130deg,#164f35,#0b271d);border:1px solid #377a52;color:#ebfff4}
+#contests .hga-contest-head small{color:#88e6b8;letter-spacing:.1em;font-size:10px;font-weight:900}
+#contests .hga-contest-head h3{font-size:23px;margin:3px 0}
+#contests .hga-contest-head p{font-size:12px;line-height:1.5;color:#bde9cf;margin:4px 0}
+#contests .hga-total{min-width:87px;display:grid;text-align:center;background:#205a3f;padding:14px 9px;border-radius:13px}
+#contests .hga-total strong{font-size:29px;color:#c5fddc}#contests .hga-total span{font-size:11px;color:#c0eacb}
+#contests .hga-contest-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:15px 0}
+#contests .hga-contest-card,#contests .hga-contest-history{background:#0b291f;border:1px solid #296048;border-radius:17px;padding:17px;color:#e8fff0}
+#contests .hga-contest-card p,#contests .hga-contest-history p{font-size:12px;color:#b4d5c1;line-height:1.5}
+#contests .hga-contest-top,#contests .hga-contest-bottom{display:flex;justify-content:space-between;gap:8px;align-items:center}
+#contests .hga-contest-top span{font-size:11px;color:#b1f1cc}
+#contests .hga-contest-bottom{font-size:12px;margin:10px 0 15px;color:#cfffe3}
+#contests .hga-contest-history h3{font-size:16px;margin:0}
+#contests .hga-contest-history ul{font-size:13px;color:#d3f5df;padding-left:19px}
+#games .hga-arcade-card button:focus-visible,#contests #hgArcadeContestRoot button:focus-visible{outline:3px solid #d0ffe8;outline-offset:2px}
+@media(max-width:1000px){#games .hga-arcade-grid{grid-template-columns:1fr}}
+@media(max-width:680px){#contests .hga-contest-grid{grid-template-columns:1fr}#games .hga-arcade-card{padding:12px}#games .hga-maze{width:min(100%,340px)}}
+@media(max-width:380px){#games .hga-arcade-intro,#contests .hga-contest-head{flex-direction:column;align-items:flex-start}}
