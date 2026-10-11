@@ -3,10 +3,21 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-2.8-original-image-badges-20261011';
-var TITLE='Prawdziwe grafiki odznak i prosty podgląd 3D';
+var RELEASE='healthgo-2.9-original-vector-badges-20261011';
+var TITLE='Ostre odznaki wektorowe i prosty podgląd';
 var sections=[
- {title:'🏅 Odznaki dokładnie z Twojej planszy',items:[
+ {title:'🏅 Oryginalne odznaki w jakości SVG',items:[
+  'Odznaki nie są już wycinane z przesłanej planszy: zaprojektowano nowe autorskie grafiki wektorowe inspirowane kolekcjonerskim stylem.',
+  '24 różne oprawy, 28 symboli i wielowarstwowe metaliczne zdobienia wyświetlają się ostro nawet po przybliżeniu.',
+  'Naprawiono puste miniatury w Plecaku i rozmazane fragmenty wielkiej planszy.',
+  'Zdobyte odznaki nadal wynikają z prawdziwych osiągnięć. Katalog wizualny nie przyznaje XP.'
+ ]},
+ {title:'🔄 Prosty podgląd bez zbędnych przycisków',items:[
+  'Po kliknięciu odznaki otwiera się duża, czytelna grafika z możliwością obrotu palcem i przybliżenia dwoma palcami.',
+  'Usunięto siedem przycisków z dolnej części podglądu; został jedynie przycisk zamknięcia.',
+  'Na telefonie oraz komputerze zachowane są proporcje i płynność grafiki SVG.'
+ ]},
+ {title:'📜 Wcześniejsza wersja 2.8 — zastąpiona',items:[
  'Przygotowaliśmy atlas 252 osobnych grafik odznak bezpośrednio z przesłanego obrazu.',
  'Odznaki w Plecaku, profilu i gablocie pokazują ilustracje z kolekcji zamiast podobnych medali tworzonych algorytmem.',
  'Każdy odblokowany przedmiot pozostaje powiązany z rzeczywiście zdobytym osiągnięciem. Grafika nie przyznaje dodatkowego XP.',
@@ -181,7 +192,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.8</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.9</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+

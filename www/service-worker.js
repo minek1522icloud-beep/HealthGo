@@ -1,5 +1,5 @@
 'use strict';
-const CACHE_NAME='healthgo-pwa-v49-photo-badge-collection-offline-20261011';
+const CACHE_NAME='healthgo-pwa-v50-original-svg-badges-20261011';
 // The 850+ KB local AI worker and model weights must never be downloaded
 // while opening HealthGo. Install them only after user consent in AI.
 // Keep first-time install inexpensive on iOS WebKit; opened assets are cached

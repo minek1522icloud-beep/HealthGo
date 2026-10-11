@@ -14,7 +14,7 @@ if(!fs.existsSync('www/healthgo-navigation-follow-v1.css'))throw Error('Moving G
 if(!html.includes('healthgo-plan-emerald-v4.css?v=2'))throw Error('Missing HealthGo Planner 4 CSS');
 if(!fs.existsSync('www/healthgo-plan-emerald-v4.css'))throw Error('Missing HealthGo Planner CSS file');
 if(!html.includes('healthgo-plan-v4.js?v=2'))throw Error('Missing HealthGo Planner 4 JS');
-if(!html.includes('healthgo-pack-pro.js?v=7')||!html.includes('healthgo-pack-pro.css?v=3')||!html.includes('healthgo-rewards.js?v=4')||!html.includes('healthgo-release-notes.js?v=8')||!html.includes('healthgo-medals.js?v=2'))throw Error('Missing Plecak 2.0 assets in HTML');
+if(!html.includes('healthgo-pack-pro.js?v=7')||!html.includes('healthgo-pack-pro.css?v=3')||!html.includes('healthgo-rewards.js?v=4')||!html.includes('healthgo-release-notes.js?v=9')||!html.includes('healthgo-medals.js?v=2'))throw Error('Missing Plecak 2.0 assets in HTML');
 if(!fs.existsSync('www/healthgo-pack-pro.css'))throw Error('Missing Plecak 2.0 CSS');
 if(!html.includes('healthgo-more-list-v5.css?v=1'))throw Error('Missing premium More menu stylesheet link');
 if(!fs.existsSync('www/healthgo-more-list-v5.css'))throw Error('Missing premium More menu stylesheet');
@@ -33,5 +33,5 @@ if(!html.includes('healthgo-badge-3d.js?v=3')||!html.includes('healthgo-badge-3d
 
 if(!html.includes('healthgo-collector-room.js?v=1')||!html.includes('healthgo-collector-room.css?v=1'))throw Error('Missing collector room assets');
 
-if(!fs.existsSync('www/assets/healthgo-badges-collection.avif'))throw Error('Missing original badge image atlas');
-if(!html.includes('healthgo-badge-gallery.js?v=1')||!html.includes('healthgo-badge-gallery.css?v=1'))throw Error('Missing badge image gallery bundle');
+if(!html.includes('healthgo-badge-vector.js?v=1')||!html.includes('healthgo-badge-vector.css?v=1'))throw Error('Missing vector badge art bundle');
+if(html.includes('healthgo-badge-gallery.js')||html.includes('healthgo-badge-gallery.css'))throw Error('Legacy blurry photo badge gallery must not load');

@@ -1,0 +1,36 @@
+/* HealthGo 2.9 — crisp original SVG medals, no blurry photo sprites.
+ * Source illustrations are 240x240 viewBox vectors rendered at native device resolution. */
+#hgPackProRoot .hgp-art .hgv-vector-badge{display:block;width:100%;height:100%;max-width:100%;max-height:100%;aspect-ratio:1/1;object-fit:contain;overflow:visible;filter:drop-shadow(0 8px 8px #0009)}
+#hgPackProRoot .hgp-art .hgv-vector-badge.hgv-locked{filter:grayscale(.65) brightness(.75) drop-shadow(0 7px 6px #0009)}
+#hgPackProRoot .hgp-card .hgp-art.hgp-medal-stage{width:100%;height:auto;aspect-ratio:1/1;min-height:0;display:grid;place-items:center;padding:7px;border-radius:16px;background:radial-gradient(ellipse at 48% 42%,#315c45,#0d261d 71%,#051710);border:1px solid #52826a;overflow:hidden}
+#hgPackProRoot .hgp-detail-icon .hgv-vector-badge{width:100%;height:100%;max-width:215px;max-height:215px;object-fit:contain;aspect-ratio:1/1}
+#hgPackProRoot .hgp-prototype .hgp-model-preview{width:100%;height:auto;max-width:112px;aspect-ratio:1/1;display:grid;place-items:center;overflow:visible}
+#hgPackProRoot .hgp-prototype .hgp-model-preview .hgv-vector-badge{width:100%;height:100%;aspect-ratio:1/1;object-fit:contain}
+#hgProfileProOverlay .hgp-featured-inspect .hgv-vector-badge{width:100%;height:100%;aspect-ratio:1/1;max-width:96px;max-height:96px;object-fit:contain}
+#hgCollectorRoom .hgcr-podium-art .hgv-vector-badge{width:min(100%,106px);height:auto;aspect-ratio:1/1;max-width:106px;filter:drop-shadow(0 7px 9px #000a)}
+#hgPackProRoot .hgp-art svg.hgv-vector-badge,#hgProfileProOverlay svg.hgv-vector-badge,#hgCollectorRoom svg.hgv-vector-badge{stroke:none;fill:none}
+#hgPackProRoot .hgp-art .hgv-vector-badge path,#hgPackProRoot .hgp-art .hgv-vector-badge circle,#hgPackProRoot .hgp-art .hgv-vector-badge polygon{vector-effect:non-scaling-stroke}
+body.hgv-open{overflow:hidden}
+#hgBadgeVectorInspect.hgv-overlay{position:fixed;z-index:560000;inset:0;display:flex;align-items:center;justify-content:center;padding:max(8px,env(safe-area-inset-top,0px)) max(8px,env(safe-area-inset-right,0px)) max(8px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:#020c09dd;color:#eafff2}
+#hgBadgeVectorInspect *{box-sizing:border-box}
+#hgBadgeVectorInspect .hgv-dialog{width:min(100%,520px);max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 14px);overflow-y:auto;overscroll-behavior:contain;border-radius:22px;border:1px solid #72c799;background:radial-gradient(ellipse at 50% 4%,#1b4e38,#061d14 75%);box-shadow:0 22px 85px #000d,0 0 32px #44bd9040}
+#hgBadgeVectorInspect .hgv-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 17px;background:linear-gradient(110deg,#0d3728,#113728);border-bottom:1px solid #4e8b65}
+#hgBadgeVectorInspect .hgv-head small{color:#96efc5;font-weight:850;letter-spacing:.14em;font-size:9px}
+#hgBadgeVectorInspect .hgv-head h2{margin:5px 0 0;font-size:clamp(17px,4.5vw,24px);line-height:1.2;overflow-wrap:anywhere}
+#hgBadgeVectorInspect .hgv-head button{width:43px;height:43px;min-height:43px;flex:0 0 43px;color:#e8fff2;border:1px solid #569f7d;background:#173c2e;border-radius:12px;display:grid;place-items:center;font-size:27px;line-height:1;cursor:pointer}
+#hgBadgeVectorInspect button:focus-visible{outline:2px solid #bbffdf;outline-offset:2px}
+#hgBadgeVectorInspect .hgv-stage{height:clamp(280px,55vh,460px);position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 36%,#356d53,#143726 45%,#051811 82%);perspective:900px;isolation:isolate}
+#hgBadgeVectorInspect .hgv-stage:before{content:"";position:absolute;inset:12px;border:1px solid #b2ffce2e;border-radius:19px;pointer-events:none}
+#hgBadgeVectorInspect .hgv-aura{position:absolute;left:16%;top:7%;width:68%;height:70%;border-radius:50%;filter:blur(30px);background:radial-gradient(circle,#b8ffe177,#76dca244,transparent 75%);pointer-events:none}
+#hgBadgeVectorInspect .hgv-touch{position:absolute;inset:0;touch-action:none;user-select:none;cursor:grab;perspective:900px;transform-style:preserve-3d;z-index:2}
+#hgBadgeVectorInspect .hgv-touch:active{cursor:grabbing}
+#hgBadgeVectorInspect .hgv-object{position:absolute;left:50%;top:46%;width:min(74vw,300px);height:min(74vw,300px);max-width:300px;max-height:300px;min-width:175px;min-height:175px;transform:translate(-50%,-50%) rotateY(-12deg);transform-style:preserve-3d;will-change:transform;touch-action:none;filter:drop-shadow(0 17px 16px #0009)}
+#hgBadgeVectorInspect .hgv-face{position:absolute;inset:0;backface-visibility:hidden;display:grid;place-items:center}
+#hgBadgeVectorInspect .hgv-front{transform:translateZ(9px)}
+#hgBadgeVectorInspect .hgv-back{transform:rotateY(180deg) translateZ(9px)}
+#hgBadgeVectorInspect .hgv-front svg.hgv-vector-badge,#hgBadgeVectorInspect .hgv-back svg{display:block;width:100%;height:100%;aspect-ratio:1/1;object-fit:contain;overflow:visible}
+#hgBadgeVectorInspect .hgv-rim{position:absolute;inset:12%;border:17px ridge #b5d9ac;border-radius:50%;transform:translateZ(0);box-shadow:0 0 15px #f6ffc299;opacity:.7;pointer-events:none}
+#hgBadgeVectorInspect .hgv-pedestal{position:absolute;z-index:1;left:24%;bottom:6%;width:52%;height:9%;border-radius:50%;background:linear-gradient(180deg,#d7d49b,#778856 40%,#08160d 85%);border:2px solid #c4f9ac9e;box-shadow:0 0 24px #9fff9a4a,0 12px 18px #000c;pointer-events:none}
+#hgBadgeVectorInspect .hgv-hint{padding:16px 12px 18px;font-size:12px;color:#c6e5d1;text-align:center;line-height:1.5}
+@media(max-width:430px){#hgBadgeVectorInspect .hgv-dialog{border-radius:17px}#hgBadgeVectorInspect .hgv-stage{height:min(52vh,370px);min-height:250px}#hgBadgeVectorInspect .hgv-object{width:min(73vw,275px);height:min(73vw,275px);min-width:170px;min-height:170px}#hgBadgeVectorInspect .hgv-hint{padding:11px 10px 14px}}
+@media(prefers-reduced-motion:reduce){#hgBadgeVectorInspect .hgv-object{will-change:auto}#hgBadgeVectorInspect .hgv-aura{filter:none;opacity:.33}}

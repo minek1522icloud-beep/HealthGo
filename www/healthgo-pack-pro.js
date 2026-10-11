@@ -136,7 +136,7 @@
     var classes=Object.keys(CATEGORIES).map(function(key){return '<option value="'+key+'" '+(ui.category===key?'selected':'')+'>'+CATEGORIES[key]+'</option>';}).join('');
     var pillsHtml=pills.map(function(x){return '<button type="button" class="hgp-pill" data-action="filter" data-value="'+x[0]+'" aria-pressed="'+(x[0]===ui.filter)+'">'+x[1]+'</button>';}).join('');
     return '<div class="hgp-heading"><h3>'+svg('award')+' Twoja kolekcja</h3><button type="button" class="hgp-secondary" data-action="collections">'+svg('layers')+' Kolekcje</button></div>'+
-      '<div class="hgp-collection-catalog-intro"><div><b>240 grafik odznak</b><small>Oglądaj oryginalne ilustracje z kolekcji. Podgląd nie oznacza zdobycia odznaki.</small></div><button type="button" data-action="models">Kolekcja ↗</button></div>'+ 
+      '<div class="hgp-collection-catalog-intro"><div><b>240 wzorów SVG odznak</b><small>Oglądaj ostre autorskie ilustracje wektorowe. Podgląd nie oznacza zdobycia odznaki.</small></div><button type="button" data-action="models">Kolekcja ↗</button></div>'+ 
  '<div class="hgp-pills">'+pillsHtml+'</div><div class="hgp-toolrow">'+
       '<input class="hgp-control hgp-search" id="hgpackSearch" type="search" maxlength="80" autocomplete="off" placeholder="Szukaj nagrody..." aria-label="Szukaj nagrody" value="'+escapeHtml(ui.search)+'">'+
       '<select class="hgp-control hgp-select" data-change="category" aria-label="Kategoria osiągnięć"><option value="all">Wszystkie kategorie</option>'+classes+'</select>'+
@@ -182,7 +182,7 @@
 
   function prototypes(){
     var forge=window.HealthGoBadge3D,all=forge?forge.catalog:[],perPage=24,page=Math.max(0,Math.min(ui.modelPage,Math.ceil(all.length/perPage)-1)),slice=all.slice(page*perPage,(page+1)*perPage);
-    return '<div class="hgp-heading"><h3>'+svg('layers')+' Kolekcja 240 grafik</h3><button type="button" class="hgp-secondary" data-action="back-gear">Wróć</button></div>'+
+    return '<div class="hgp-heading"><h3>'+svg('layers')+' Kolekcja 240 wzorów SVG</h3><button type="button" class="hgp-secondary" data-action="back-gear">Wróć</button></div>'+
      '<div class="hgp-info">To grafiki odznak z przesłanego wzoru. Wybierz dowolną ilustrację, aby obracać ją w przestrzennej gablocie. Katalog nie przyznaje automatycznie osiągnięć.</div>'+
      '<div class="hgp-prototype-grid">'+slice.map(function(item){
        return '<button type="button" class="hgp-prototype" data-preview="true" data-action="inspect-model" data-id="'+escapeHtml(item.id)+'">'+
