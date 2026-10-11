@@ -1,0 +1,96 @@
+/* HealthGo Games — native-feeling mint/emerald catalog, safe on iPhone/Android PWA. */
+#games>.hggames-intro,#games>.hga-arcade-intro,#games>.hga-arcade-grid,#games>.hggames-grid,
+#contests>.hgcontests-intro,#contests>#hgArcadeContestRoot,#contests>[data-hg-contests]{display:none!important}
+#hgGameLibrary,#hgGameQuestsSummary{color:#e7fff1;padding-bottom:24px}
+#hgGameLibrary button,#hgGameQuestsSummary button,#hgGameDialog button,#hgGameViewer button{font-family:inherit;cursor:pointer}
+#hgGameLibrary .hgl-hero{border:1px solid #2a7456;background:linear-gradient(128deg,#0e4d35 0%,#06271d 75%);border-radius:26px;padding:23px;display:flex;gap:18px;justify-content:space-between;align-items:center;box-shadow:0 16px 35px #071c133d}
+#hgGameLibrary .hgl-hero h2{font-size:clamp(23px,4vw,36px);line-height:1.1;letter-spacing:-.03em;margin:8px 0 10px;color:#f0fff7}
+#hgGameLibrary .hgl-hero p{font-size:13px;line-height:1.6;color:#bfe3d0;max-width:560px;margin:0}
+#hgGameLibrary .hgl-eyebrow{font-weight:850;font-size:10px;letter-spacing:2px;color:#8df0ba}
+#hgGameLibrary .hgl-hero-number{border-radius:19px;background:#1f6a49;padding:16px 19px;min-width:120px;display:grid;text-align:center;gap:4px}
+#hgGameLibrary .hgl-hero-number b{font-size:35px;line-height:1;color:#c8ffdf}
+#hgGameLibrary .hgl-hero-number span{font-size:11px;white-space:nowrap;color:#d5f4e1}
+#hgGameLibrary .hgl-stats{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}
+#hgGameLibrary .hgl-stats>span{border:1px solid #266e50;background:#0c2b20;color:#aedcc3;border-radius:13px;padding:11px 14px;font-size:12px}
+#hgGameLibrary .hgl-stats b{color:#94ebba;font-size:16px}
+#hgGameLibrary .hgl-controls{margin:17px 0}
+#hgGameLibrary .hgl-search{display:flex;align-items:center;gap:10px;min-height:49px;background:#0c3023;border:1px solid #2d7656;border-radius:14px;padding:0 14px;color:#88e6b0}
+#hgGameLibrary .hgl-search>span{font-size:29px}
+#hgGameLibrary #hgGameSearch{border:0;box-shadow:none;outline:none;background:transparent;color:#effff5;flex:1;min-width:0;font-size:15px;min-height:47px}
+#hgGameLibrary #hgGameSearch::placeholder{color:#8bc4a8}
+#hgGameLibrary .hgl-filters{display:flex;gap:8px;overflow-x:auto;padding:14px 0 5px;scrollbar-width:none;touch-action:pan-x}
+#hgGameLibrary .hgl-filters::-webkit-scrollbar{display:none}
+#hgGameLibrary .hgl-filters button{flex:0 0 auto;border:1px solid #2b674d;background:#12382a;border-radius:999px;padding:10px 14px;font-size:12px;color:#d4f7e3;min-height:40px}
+#hgGameLibrary .hgl-filters button.selected{background:#8ff0be;color:#053520;font-weight:900;border-color:#8ff0be}
+#hgGameLibrary .hgl-list-title{display:flex;justify-content:space-between;align-items:center;margin:19px 0 13px}
+#hgGameLibrary .hgl-list-title h3{font-size:19px;color:#ecfff5;margin:0}
+#hgGameLibrary .hgl-list-title span{font-size:12px;color:#9dceb3}
+#hgGameLibrary .hgl-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+#hgGameLibrary .hgl-card{background:#0c2b21;border:1px solid #28664d;border-radius:20px;overflow:hidden;min-width:0;display:flex;flex-direction:column;box-shadow:0 4px 15px #0002}
+#hgGameLibrary .hgl-cover{height:130px;display:grid;place-items:center;position:relative;overflow:hidden;isolation:isolate}
+#hgGameLibrary .hgl-cover>span{font-size:65px;filter:drop-shadow(0 10px 12px #0006);transform:rotate(-8deg);line-height:1}
+#hgGameLibrary .hgl-cover small{position:absolute;bottom:10px;left:10px;background:#071e18d9;padding:6px 8px;color:#d6ffe7;border-radius:8px;font-size:9px;font-weight:850;letter-spacing:.04em}
+#hgGameLibrary .hgl-bg-0{background:radial-gradient(circle at 40% 30%,#ffcf5c,#eb6e69,#3b214f)}
+#hgGameLibrary .hgl-bg-1{background:linear-gradient(140deg,#46c4b1,#3585b4,#254063)}
+#hgGameLibrary .hgl-bg-2{background:linear-gradient(140deg,#e7bb55,#b680d6,#303d89)}
+#hgGameLibrary .hgl-bg-3{background:linear-gradient(140deg,#73d689,#2576a1,#25456c)}
+#hgGameLibrary .hgl-bg-4{background:linear-gradient(135deg,#c8ba77,#5d954a,#2d6950)}
+#hgGameLibrary .hgl-bg-5{background:linear-gradient(135deg,#997dcb,#4b6dd0,#252d66)}
+#hgGameLibrary .hgl-bg-6{background:linear-gradient(135deg,#ed9f69,#ac5b95,#422a60)}
+#hgGameLibrary .hgl-bg-7{background:linear-gradient(135deg,#80c8d6,#318d82,#20516b)}
+#hgGameLibrary .hgl-card-body{padding:12px;flex:1;display:flex;flex-direction:column;gap:5px}
+#hgGameLibrary .hgl-card-body>strong{font-size:15px;color:#f4fff8;line-height:1.3}
+#hgGameLibrary .hgl-card-body>small{font-size:11px;color:#96d2b6}
+#hgGameLibrary .hgl-task{color:#bddccb;margin:9px 0 10px;font-size:11px;line-height:1.5;flex:1;min-height:27px}
+.hgl-progress{height:6px;border-radius:99px;background:#204935;overflow:hidden;margin-top:8px}
+.hgl-progress>i{height:100%;background:linear-gradient(90deg,#49cc95,#b5ffc7);display:block;border-radius:99px}
+#hgGameLibrary .hgl-card-actions{display:flex;align-items:center;gap:7px}
+#hgGameLibrary .hgl-play{flex:1;min-height:40px;color:#032b19;background:#88e7b5;border:0;border-radius:10px;font-weight:850;font-size:12px}
+#hgGameLibrary .hgl-fav{width:40px;height:40px;border-radius:10px;border:1px solid #347958;background:#173e2d;color:#8fe4b5;font-size:24px}
+#hgGameLibrary .hgl-empty{padding:40px 10px;text-align:center;color:#a9d0b9}
+#hgGameLibrary .hgl-credit,#hgGameQuestsSummary .hgl-credit{font-size:11px;line-height:1.65;color:#9ecab1;margin:20px 0 0}
+#hgGameLibrary .hgl-credit a{color:#b1f2cb;text-decoration:underline}
+#hgGameQuestsSummary .hgl-contest-hero{padding:24px;background:linear-gradient(130deg,#124b33,#071f19);border-radius:23px;border:1px solid #2e7551}
+#hgGameQuestsSummary .hgl-contest-hero h3{color:#eafff3;font-size:23px;margin:0 0 7px}
+#hgGameQuestsSummary .hgl-contest-hero p{color:#b0d7c0;line-height:1.6;font-size:13px;margin:0}
+#hgGameQuestsSummary .hgl-mission-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:15px 0}
+#hgGameQuestsSummary .hgl-mission-card{border-radius:16px;border:1px solid #276648;background:#0b2b20;padding:17px;display:flex;flex-direction:column;gap:9px}
+#hgGameQuestsSummary .hgl-mission-card strong{color:#e8fff0;font-size:16px}
+#hgGameQuestsSummary .hgl-mission-card span,#hgGameQuestsSummary .hgl-mission-card small{font-size:12px;color:#bbddc9;line-height:1.5}
+#hgGameQuestsSummary .hgl-mission-card button{border:0;border-radius:11px;background:#83deb0;min-height:42px;padding:11px;color:#04321f;font-weight:850;margin-top:auto}
+#hgGameQuestsSummary .hgl-finished{color:#c4ffdc}
+#hgGameDialog[hidden],#hgGameViewer[hidden]{display:none!important}
+#hgGameDialog{position:fixed;inset:0;z-index:200100}
+#hgGameDialog .hgl-dialog-backdrop{position:absolute;inset:0;background:#03120bcf;backdrop-filter:blur(9px)}
+#hgGameDialog .hgl-dialog-panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(530px,calc(100vw - 24px));max-height:calc(100dvh - 25px);overflow-y:auto;overscroll-behavior:contain;padding:20px;background:#0b291e;border:1px solid #368b60;box-shadow:0 20px 55px #0008;border-radius:22px;color:#eaffef}
+#hgGameDialog header{display:flex;gap:14px;align-items:center}
+#hgGameDialog .hgl-dialog-icon{width:62px;height:62px;display:grid;place-items:center;font-size:36px;background:#174632;border-radius:15px}
+#hgGameDialog header>div:nth-child(2){flex:1}
+#hgGameDialog header small{color:#9cdbbb}
+#hgGameDialog header h2{font-size:23px;color:#f1fff6;margin:2px 0}
+#hgGameDialog .hgl-close{width:41px;height:41px;border-radius:10px;background:#174532;color:#e7fff3;border:1px solid #337c57;font-size:26px}
+#hgGameDialog .hgl-dialog-panel>p{font-size:13px;line-height:1.6;color:#b8ddc5}
+#hgGameDialog h3{font-size:15px;color:#eafff3;margin:16px 0 10px}
+#hgGameDialog .hgl-quest-list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+#hgGameDialog .hgl-quest-list li{border:1px solid #295f46;border-radius:14px;background:#133729;padding:12px}
+#hgGameDialog .hgl-quest-list li.done{border-color:#63d99d}
+#hgGameDialog .hgl-quest-list strong{display:block;font-size:13px;color:#effff5}
+#hgGameDialog .hgl-quest-list span{display:block;font-size:11px;color:#a5d0b9;margin:6px 0}
+#hgGameDialog .hgl-dialog-note{font-size:12px!important;color:#acd3bc!important}
+#hgGameDialog .hgl-mainbtn{width:100%;background:#8af0bd;color:#06311f;min-height:46px;font-size:13px;font-weight:900;border:0;border-radius:13px;margin-top:12px}
+#hgGameDialog .hgl-source{margin-top:16px;color:#91c4aa;font-size:11px}
+#hgGameDialog .hgl-source a{color:#b0edc7}
+#hgGameViewer{position:fixed;inset:0;width:100%;height:100dvh;z-index:205000;background:#061712;display:flex;flex-direction:column;color:#ecfff4;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#hgGameViewer .hgl-player-head{display:flex;align-items:center;gap:12px;justify-content:space-between;min-height:56px;padding:9px 12px;background:#102b20;border-bottom:1px solid #2c7151}
+#hgGameViewer .hgl-player-head button{color:#062a1c;background:#8de4b7;padding:12px 14px;border-radius:12px;border:0;font-size:12px;font-weight:850}
+#hgGameViewer .hgl-player-head strong{color:#eafff3;font-size:14px}
+#hgGameViewer .hgl-player-head span{font-size:10px;color:#b0d6c0}
+#hgGameViewer .hgl-player-status{font-size:11px;text-align:center;color:#abdac0;background:#0e261c;margin:0;padding:6px 10px}
+#hgGameViewer .hgl-frame-container{min-height:0;flex:1;width:100%;overflow:hidden}
+#hgGameViewer .hgl-game-frame{width:100%;height:100%;border:0;background:#fff;display:block}
+body.hgl-dialog-open,body.hgl-playing{overflow:hidden!important}
+#hgGameLibrary button:focus-visible,#hgGameDialog button:focus-visible,#hgGameViewer button:focus-visible{outline:3px solid #d0ffdd;outline-offset:2px}
+@media(max-width:1100px){#hgGameLibrary .hgl-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:720px){#hgGameLibrary .hgl-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#hgGameQuestsSummary .hgl-mission-grid{grid-template-columns:1fr}#hgGameLibrary .hgl-hero{padding:17px;align-items:flex-start}#hgGameLibrary .hgl-hero-number{padding:12px;min-width:90px}}
+@media(max-width:390px){#hgGameLibrary .hgl-hero{flex-direction:column}#hgGameLibrary .hgl-grid{gap:9px}#hgGameLibrary .hgl-cover{height:105px}#hgGameLibrary .hgl-cover>span{font-size:47px}#hgGameLibrary .hgl-card-body{padding:9px}#hgGameLibrary .hgl-card-body>strong{font-size:13px}#hgGameViewer .hgl-player-head span{display:none}}
+@media(prefers-reduced-motion:reduce){#hgGameLibrary *,#hgGameDialog *{animation:none!important;transition:none!important}}
