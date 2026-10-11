@@ -360,6 +360,7 @@ html.hg-session-known #authScreen{display:none!important}
   <link rel="stylesheet" href="./healthgo-badge-photo.css?v=1">
   <link rel="stylesheet" href="./healthgo-badge-shields.css?v=1">
   <link rel="stylesheet" href="./healthgo-games-contests.css?v=1">
+  <link rel="stylesheet" href="./healthgo-arcade40.css?v=1">
   <link rel="stylesheet" href="./healthgo-collector-room.css?v=1">
   <link rel="stylesheet" href="./healthgo-friends.css?v=1">
   <link rel="stylesheet" href="./healthgo-release-notes.css?v=1">
@@ -827,6 +828,8 @@ html.hg-session-known #authScreen{display:none!important}
 
 <section id="games" class="page">
   <div class="hggames-intro"><h2>🎮 Minigry</h2><p>Zagraj w Pamięć i Quiz dobrych nawyków. Twoje rekordy zapisują się lokalnie na urządzeniu.</p></div>
+  <div class="hga-arcade-intro"><div><h2>40 poziomów = 2 punkty</h2><p>Dwie gry z prawdziwymi poziomami, sterowaniem dotykowym i zapisem postępów.</p></div></div>
+  <div class="hga-arcade-grid"><section class="hga-arcade-card" id="hgArcadeMaze" aria-label="Labirynt 40"></section><section class="hga-arcade-card" id="hgArcadeAim" aria-label="Celność 40"></section></div>
   <div class="hggames-grid">
     <section class="hggame-card" data-hg-game="memory" aria-label="Gra w pamięć"></section>
     <section class="hggame-card" data-hg-game="quiz" aria-label="Quiz dobrych nawyków"></section>
@@ -835,6 +838,7 @@ html.hg-session-known #authScreen{display:none!important}
 
 <section id="contests" class="page">
   <div class="hgcontests-intro"><h2>🏆 Konkursy</h2><p>Sprawdź własne wyniki w lokalnych wyzwaniach HealthGo. Internetowe konkursy będą wymagały osobnej usługi rankingowej.</p></div>
+  <div id="hgArcadeContestRoot"></div>
   <div data-hg-contests></div>
 </section>
 
@@ -1489,6 +1493,7 @@ function go(page){
  if(page==='plan')setTimeout(renderPlanDay,20);
  if(page==='start')setTimeout(()=>{renderTodayPlanPreview();renderProgressUI()},20);
  if(page==='challenges')setTimeout(renderProgressUI,20);
+ if(page==='games'||page==='contests')window.HealthGoArcade40?.refresh?.();
  if(page==='activity')setTimeout(refreshDeviceHealth,20);
  if(page==='devices')setTimeout(function(){refreshDeviceHealth();updateNotificationStatus()},20);
  if(page==='settings')setTimeout(renderHealthGoProfile,20);
@@ -3256,5 +3261,6 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-release-notes.js?v=16"></script>
 <script src="./healthgo-profile-pro.js?v=5"></script>
 <script src="./healthgo-games-contests.js?v=1"></script>
+<script src="./healthgo-arcade40.js?v=1"></script>
 </body>
 </html>
