@@ -136,7 +136,7 @@
     var classes=Object.keys(CATEGORIES).map(function(key){return '<option value="'+key+'" '+(ui.category===key?'selected':'')+'>'+CATEGORIES[key]+'</option>';}).join('');
     var pillsHtml=pills.map(function(x){return '<button type="button" class="hgp-pill" data-action="filter" data-value="'+x[0]+'" aria-pressed="'+(x[0]===ui.filter)+'">'+x[1]+'</button>';}).join('');
     return '<div class="hgp-heading"><h3>'+svg('award')+' Twoja kolekcja</h3><button type="button" class="hgp-secondary" data-action="collections">'+svg('layers')+' Kolekcje</button></div>'+
-      '<div class="hgp-collection-catalog-intro"><div><b>240 autorskich modeli 3D</b><small>Odkrywaj różne bryły, reliefy i materiały. Modele katalogowe nie są zdobytymi odznakami.</small></div><button type="button" data-action="models">Katalog 3D ↗</button></div>'+ 
+      '<div class="hgp-collection-catalog-intro"><div><b>240 grafik odznak</b><small>Oglądaj oryginalne ilustracje z kolekcji. Podgląd nie oznacza zdobycia odznaki.</small></div><button type="button" data-action="models">Kolekcja ↗</button></div>'+ 
  '<div class="hgp-pills">'+pillsHtml+'</div><div class="hgp-toolrow">'+
       '<input class="hgp-control hgp-search" id="hgpackSearch" type="search" maxlength="80" autocomplete="off" placeholder="Szukaj nagrody..." aria-label="Szukaj nagrody" value="'+escapeHtml(ui.search)+'">'+
       '<select class="hgp-control hgp-select" data-change="category" aria-label="Kategoria osiągnięć"><option value="all">Wszystkie kategorie</option>'+classes+'</select>'+
@@ -182,12 +182,12 @@
 
   function prototypes(){
     var forge=window.HealthGoBadge3D,all=forge?forge.catalog:[],perPage=24,page=Math.max(0,Math.min(ui.modelPage,Math.ceil(all.length/perPage)-1)),slice=all.slice(page*perPage,(page+1)*perPage);
-    return '<div class="hgp-heading"><h3>'+svg('layers')+' Katalog 240 modeli 3D</h3><button type="button" class="hgp-secondary" data-action="back-gear">Wróć</button></div>'+
-     '<div class="hgp-info">Modele kolekcjonerskie do obejrzenia, a nie automatycznie przyznane odznaki. Każdy ma indywidualną geometrię bryły, grubość, relief, kształt, metal i wykończenie. Dotknij modelu, aby obracać go w Inspect 360°.</div>'+
+    return '<div class="hgp-heading"><h3>'+svg('layers')+' Kolekcja 240 grafik</h3><button type="button" class="hgp-secondary" data-action="back-gear">Wróć</button></div>'+
+     '<div class="hgp-info">To grafiki odznak z przesłanego wzoru. Wybierz dowolną ilustrację, aby obracać ją w przestrzennej gablocie. Katalog nie przyznaje automatycznie osiągnięć.</div>'+
      '<div class="hgp-prototype-grid">'+slice.map(function(item){
        return '<button type="button" class="hgp-prototype" data-preview="true" data-action="inspect-model" data-id="'+escapeHtml(item.id)+'">'+
        '<span class="hgp-model-preview">'+(window.HealthGoBadge3D?window.HealthGoBadge3D.thumbnail(item):window.HealthGoMedalArt?window.HealthGoMedalArt.render(item,false):svg('award'))+'</span>'+
-       '<strong>'+escapeHtml(item.name)+'</strong><small>Model '+item.index+' · '+escapeHtml(item.form)+' · Obejrzyj w 3D</small></button>';
+       '<strong>'+escapeHtml(item.name)+'</strong><small>Wzór '+item.index+' · Obróć w 3D</small></button>';
      }).join('')+'</div>'+
      '<div class="hgp-pages"><button type="button" data-action="model-prev" '+(page===0?'disabled':'')+'>← Poprzednie</button><span>Strona '+(page+1)+' / '+Math.ceil(all.length/perPage)+'</span><button type="button" data-action="model-next" '+(page>=Math.ceil(all.length/perPage)-1?'disabled':'')+'>Następne →</button></div>';
   }
@@ -216,7 +216,7 @@
       '<div class="hgp-detail-rows"><span>Źródło</span><b>'+escapeHtml(item.source||'Wyzwania i osiągnięcia')+'</b></div>'+
       '<div class="hgp-detail-rows"><span>Wymaganie</span><b>'+escapeHtml(item.requirementText||'—')+'</b></div>'+ 
  '<div class="hgp-inspect-evolution">Ewolucja modelu: Brąz po zdobyciu, Srebro za 3 odznaki kategorii, Złoto za 10. Tylko rzeczywiście zdobyte odznaki, bez sztucznego XP.</div>'+
-      '<div class="hgp-dialog-actions"><button type="button" class="hgp-primary" data-action="inspect-3d" data-id="'+escapeHtml(item.id)+'">Obejrzyj 3D · Obróć 360°</button>'+(item.earned?
+      '<div class="hgp-dialog-actions"><button type="button" class="hgp-primary" data-action="inspect-3d" data-id="'+escapeHtml(item.id)+'">Obróć odznakę 360°</button>'+(item.earned?
         '<button type="button" class="hgp-secondary" data-action="favorite" data-id="'+escapeHtml(item.id)+'">'+svg('star')+' '+(favorited?'Usuń z ulubionych':'Dodaj do ulubionych')+'</button>'+
         '<button type="button" class="hgp-primary" data-action="spotlight" data-id="'+escapeHtml(item.id)+'">'+svg('award')+' '+(spotlight?'Usuń wyróżnienie':'Wyróżnij w plecaku')+'</button>':
         '<button type="button" class="hgp-secondary" data-action="challenges">Zobacz wyzwania '+svg('arrow')+'</button>')+'</div>';
