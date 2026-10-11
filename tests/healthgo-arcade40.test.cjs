@@ -93,9 +93,13 @@ test('40 action stages need successful hits and award two points only on finishi
 });
 test('pausing a running game stops timing and offers Resume',()=>{
  const h=harness();h.api.startAim();
+ const current=Number((h.aim.innerHTML.match(/class="hga-target live" data-hga-hit="(\d+)"/)||[])[1]);
+ assert.ok(Number.isInteger(current));
  assert.equal(h.timers.size,1);h.api.pause();assert.equal(h.timers.size,0);
+ assert.equal(h.api.hit(current),false,'paused timer cannot unlock a level');
  assert.match(h.aim.innerHTML,/Wznów/);
  h.api.startAim();assert.equal(h.timers.size,1);
+ assert.equal(h.api.hit(current),true,'resumed timer allows legitimate hits');
 });
 test('contest shows levels and local nature of points; unrelated XP untouched',()=>{
  const h=harness();
