@@ -125,30 +125,60 @@ function paint(canvas,force){
  ctx.fillText(atlasError?'Grafika offline':'Ładowanie...',w/2,h/2);
  canvas.dataset.hgabStatus=atlasError?'offline':'loading';
 }
-function hydrate(root,force){
+/* Native isolated bitmap for Safari: crop the atlas once into standalone local PNGs.
+ * Only items currently mounted in the UI are converted. A bounded SVG crop stays
+ * as the visual fallback if Canvas export is unsupported. */
+var tileImages=new Map();
+function isolatedImage(index){
+ if(tileImages.has(index))return tileImages.get(index);
+ if(!atlas||typeof document==='undefined')return null;
+ var rect=cropRect(index),canvas=document.createElement('canvas');
+ canvas.width=192;canvas.height=192;
+ var ctx=canvas.getContext('2d');
+ if(!ctx)return null;
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.drawImage(atlas,rect.x,rect.y,rect.w,rect.h,0,0,192,192);
+ var src=canvas.toDataURL('image/png');
+ if(!src||src.length<80)return null;
+ if(tileImages.size>250)tileImages.clear();
+ tileImages.set(index,src);
+ return src;
+}
+function hydrate(root){
  if(!root||typeof root.querySelectorAll!=='function')return;
- var all=[];
- if(root.matches&&root.matches('canvas.hgab-crop'))all.push(root);
- for(var el of root.querySelectorAll('canvas.hgab-crop'))all.push(el);
- if(!all.length)return;
+ var nodes=[];
+ if(root.matches?.('.hgab-photo[data-hgab-index]'))nodes.push(root);
+ for(var node of root.querySelectorAll('.hgab-photo[data-hgab-index]'))nodes.push(node);
+ if(!nodes.length)return;
  if(!atlas&&!atlasError)loadAtlas();
- for(var node of all)paint(node,force);
+ if(!atlas)return;
+ for(var badge of nodes){
+  if(badge.dataset.hgabReady==='1')continue;
+  var idx=Number(badge.getAttribute('data-hgab-index')||0);
+  try{
+   var url=isolatedImage(idx);if(!url)continue;
+   var img=document.createElement('img');
+   img.className='hgab-isolated-image';img.alt='';
+   img.setAttribute('aria-hidden','true');img.decoding='async';img.src=url;
+   badge.replaceChildren(img);
+   badge.dataset.hgabReady='1';
+  }catch(err){host.console?.warn?.('Could not create a single badge image',err);}
+ }
 }
 function watch(){
  if(typeof document==='undefined')return;
  if(document.body&&typeof host.MutationObserver==='function'&&!watcher){
   watcher=new host.MutationObserver(function(records){
-   for(var record of records){
-    for(var node of record.addedNodes||[]){
-     if(node.nodeType!==1)continue;
-     if(node.matches?.('canvas.hgab-crop')||node.querySelector?.('canvas.hgab-crop'))hydrate(node,false);
-    }
+   for(var record of records)for(var node of record.addedNodes||[]){
+    if(node.nodeType!==1)continue;
+    if(node.matches?.('.hgab-photo[data-hgab-index]')||node.querySelector?.('.hgab-photo[data-hgab-index]'))hydrate(node);
    }
   });
   watcher.observe(document.body,{childList:true,subtree:true});
  }
- hydrate(document,false);
+ hydrate(document);
 }
+
 function front(item,extra){
  var idx=artIndex(item),name=esc(item?.name||'Odznaka'),r=cropRect(idx);
  // A fixed SVG viewport clips a SINGLE badge. No CSS translate, 1500%-wide <img>, Canvas or WebGL.
@@ -222,5 +252,5 @@ function open(item){
 }
 host.HealthGoBadge3D=Object.freeze(Object.assign({},old,{thumbnail:thumbnail,open:open,close:close}));
 host.HealthGoBadgeBoard=Object.freeze({thumbnail:thumbnail,open:open,close:close,artIndex:artIndex,spriteStyle:spriteStyle,cropRect:cropRect,hydrate:hydrate,getAssetStatus:function(){return atlas?'ready':atlasError?'offline':atlasPending?'loading':'idle';},count:TOTAL,source:SOURCE});
-// Native inline SVG <image> needs no Canvas hydration or MutationObserver.
+if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch,{once:true});else watch();}
 })(window);

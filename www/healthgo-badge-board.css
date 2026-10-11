@@ -108,3 +108,18 @@ body.hgab-open{overflow:hidden}
 }
 #hgBadgeArtInspect .hgab-object{width:min(64vw,230px)!important;height:min(64vw,230px)!important;min-width:165px!important;min-height:165px!important;max-width:230px!important;max-height:230px!important}
 @media(max-width:430px){#hgBadgeArtInspect .hgab-object{width:min(65vw,215px)!important;height:min(65vw,215px)!important;max-width:215px!important;max-height:215px!important}}
+
+/* HealthGo 3.0.4 — fully cropped native <img> on iOS.
+   Each displayed image is a standalone 192×192 bitmap, not a moved 1055×1491 poster. */
+#hgPackProRoot .hgab-photo img.hgab-isolated-image,
+#hgProfileProOverlay .hgab-photo img.hgab-isolated-image,
+#hgCollectorRoom .hgab-photo img.hgab-isolated-image,
+#hgBadgeArtInspect .hgab-photo img.hgab-isolated-image{
+ position:relative!important;left:auto!important;top:auto!important;
+ display:block!important;width:100%!important;height:100%!important;
+ min-width:0!important;max-width:100%!important;max-height:100%!important;
+ aspect-ratio:1/1!important;object-fit:contain!important;
+ transform:none!important;filter:none!important;opacity:1!important;
+ border:0!important;border-radius:0!important;margin:0!important;padding:0!important;
+ background:#081b14!important;
+}

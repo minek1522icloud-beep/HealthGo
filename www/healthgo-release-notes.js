@@ -3,9 +3,15 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-3.0.3-single-image-badges-20261011';
-var TITLE='Odznaki na iPhonie: jedna grafika zamiast fragmentów planszy';
+var RELEASE='healthgo-3.0.4-real-cropped-badges-20261011';
+var TITLE='Naprawa odznak Safari: osobne małe zdjęcia';
 var sections=[
+ {title:'🛠 Naprawa odznak na iPhonie',items:[
+  'Każda odznaka po wczytaniu planszy jest osobno wycinana jako mały obraz PNG — nie widzisz już sąsiednich medali.',
+  'Na wypadek ograniczeń Canvas zachowaliśmy dodatkowy przycięty podgląd SVG.',
+  'Poprawka obejmuje Plecak, gablotę oraz obracanie po kliknięciu.',
+  'Wszystkie odznaki i XP pozostają powiązane z prawdziwymi osiągnięciami.'
+ ]},
  {title:'🛠 Poprawa wyświetlania odznak na iPhonie',items:[
   'Każda odznaka jest wyświetlana w indywidualnym, przyciętym widoku SVG z prawdziwej planszy, bez przesuwania ogromnego obrazka.',
   'Skorygowaliśmy położenie odznak oraz liczbę rzędów i nieregularne odstępy w przesłanej planszy.',
@@ -218,7 +224,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 3.0.3</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 3.0.4</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+
