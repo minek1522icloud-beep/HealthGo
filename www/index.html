@@ -1486,6 +1486,7 @@ function go(page){
  const target=document.getElementById(page);if(!target)return;
  if(document.getElementById('mobileMoreSheet')?.classList.contains('show'))toggleMobileMore(false,false);
  if(page!=='map')window.HealthGoMapPro?.leaveMap();
+ if(page!=='games')window.HealthGoArcade40?.pause?.();
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  target.classList.add('active');
  document.getElementById('title').textContent=titles[page]||'HealthGo';
