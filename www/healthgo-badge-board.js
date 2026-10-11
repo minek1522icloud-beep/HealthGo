@@ -74,7 +74,7 @@ var atlas=null,atlasPending=false,atlasError=false,watcher=null;
 function cropRect(index){
  var idx=((Number(index)||0)%TOTAL+TOTAL)%TOTAL;
  var c=CENTERS[idx],size=c[2];
- return {x:Math.round(c[0]-size/2),y:Math.round(c[1]-size/2),w:size,h:size};
+ return {x:Math.max(0,Math.min(1055-size,Math.round(c[0]-size/2))),y:Math.max(0,Math.min(1491-size,Math.round(c[1]-size/2))),w:size,h:size};
 }
 
 function spriteStyle(index){

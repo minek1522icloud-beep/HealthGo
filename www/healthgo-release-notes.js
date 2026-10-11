@@ -218,7 +218,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 3.0.2</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 3.0.3</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+
