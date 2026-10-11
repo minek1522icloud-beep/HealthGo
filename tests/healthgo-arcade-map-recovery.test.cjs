@@ -87,7 +87,7 @@ test('both campaigns award 4 points at most, not account XP or cash',()=>{
  const html=read('www/index.html');
  assert.match(html,/id="hgArcadeMaze"/);assert.match(html,/id="hgArcadeAim"/);
  assert.match(html,/id="hgArcadeContestRoot"/);
- assert.match(html,/healthgo-arcade40\.js\?v=1/);
+ assert.match(html,/healthgo-arcade40\.js\?v=2/);
 });
 test('map recovery uses remote tiles for hosted sites and switches on tile errors',()=>{
  const source=read('www/healthgo-map-recovery.js'),listeners={},layers=[],status=[];
@@ -116,7 +116,7 @@ test('map recovery uses remote tiles for hosted sites and switches on tile error
 });
 test('mobile shell provides map recovery and alternate CDN CSP permissions',()=>{
  const html=read('www/index.html'),map=read('www/healthgo-map-v2.js');
- assert.match(html,/healthgo-map-recovery\.js\?v=1/);
+ assert.match(html,/healthgo-map-recovery\.js\?v=2/);
  assert.match(html,/id="hgMapRecoveryPanel"/);
  assert.match(html,/HealthGoMapRecovery\.retry\(\)/);
  assert.match(html,/https:\/\/cdn\.jsdelivr\.net/);
