@@ -3,7 +3,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com/recaptcha/ https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://cdn.jsdelivr.net https://*.jsdelivr.net https://server.arcgisonline.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com https://www.gstatic.com/recaptcha/; worker-src 'self' blob:; child-src blob:; connect-src 'self' https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://router.project-osrm.org https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co https://cdn.jsdelivr.net https://*.jsdelivr.net https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://api.open-meteo.com https://www.google.com https://www.recaptcha.net; frame-src 'self' https://accounts.google.com https://www.google.com https://recaptcha.google.com/recaptcha/ https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com/recaptcha/ https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://cdn.jsdelivr.net https://*.jsdelivr.net https://server.arcgisonline.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com https://upload.wikimedia.org https://www.gstatic.com/recaptcha/; worker-src 'self' blob:; child-src blob:; connect-src 'self' https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://router.project-osrm.org https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co https://cdn.jsdelivr.net https://*.jsdelivr.net https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://api.open-meteo.com https://www.google.com https://www.recaptcha.net; frame-src 'self' https://accounts.google.com https://www.google.com https://recaptcha.google.com/recaptcha/ https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="healthgo-build" content="development">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>HealthGo</title>
@@ -362,7 +362,8 @@ html.hg-session-known #authScreen{display:none!important}
   <link rel="stylesheet" href="./healthgo-badge-shields.css?v=1">
   <link rel="stylesheet" href="./healthgo-games-contests.css?v=1">
   <link rel="stylesheet" href="./healthgo-arcade40.css?v=1">
-  <link rel="stylesheet" href="./healthgo-game-library.css?v=1">
+  <link rel="stylesheet" href="./healthgo-point.css?v=1">
+<link rel="stylesheet" href="./healthgo-unified-polish.css?v=1">
   <link rel="stylesheet" href="./healthgo-collector-room.css?v=1">
   <link rel="stylesheet" href="./healthgo-friends.css?v=1">
   <link rel="stylesheet" href="./healthgo-release-notes.css?v=1">
@@ -419,8 +420,8 @@ html.hg-session-known #authScreen{display:none!important}
     <button class="active" data-page="start">🏠 <span>Start</span></button>
     <button data-page="ai">🤖 <span>HealthGo AI</span></button>
     <button data-page="map">🗺️ <span>Mapa</span></button>
-    <button data-page="games">🎮 <span>Gry</span></button>
-    <button data-page="contests">🏆 <span>Konkursy</span></button>
+    <button data-page="explore">🧭 <span>Odkrywaj</span></button>
+    <button data-page="points">✦ <span>HealthGo Point</span></button>
     <button data-page="plan">📅 <span>Plan Dnia</span></button>
     <button data-page="challenges">🎯 <span>Wyzwania</span></button>
     <button data-page="backpack">🎒 <span>Plecak</span></button>
@@ -536,6 +537,7 @@ html.hg-session-known #authScreen{display:none!important}
 </section>
 
 <section id="map" class="page">
+<div id="hgNavigationQuick" aria-label="Szybki start nawigacji"></div>
   <div class="map-workspace" id="mapWorkspace">
     <div class="map-toolbar">
       <div class="map-v2-banner">🗺️ HealthGo Mapa 4.0 <span class="map-v2-tag">OpenStreetMap</span></div>
@@ -829,24 +831,16 @@ html.hg-session-known #authScreen{display:none!important}
   </div>
 </section>
 
-<section id="games" class="page">
-  <div id="hgGameLibrary" aria-label="Katalog gier HealthGo"></div>
-  <div class="hggames-intro"><h2>🎮 Minigry</h2><p>Zagraj w Pamięć i Quiz dobrych nawyków. Twoje rekordy zapisują się lokalnie na urządzeniu.</p></div>
-  <div class="hga-arcade-intro"><div><h2>40 poziomów = 2 punkty</h2><p>Dwie gry z prawdziwymi poziomami, sterowaniem dotykowym i zapisem postępów.</p></div></div>
-  <div class="hga-arcade-grid"><section class="hga-arcade-card" id="hgArcadeMaze" aria-label="Labirynt 40"></section><section class="hga-arcade-card" id="hgArcadeAim" aria-label="Celność 40"></section></div>
-  <div class="hggames-grid">
-    <section class="hggame-card" data-hg-game="memory" aria-label="Gra w pamięć"></section>
-    <section class="hggame-card" data-hg-game="quiz" aria-label="Quiz dobrych nawyków"></section>
-  </div>
+<section id="explore" class="page">
+<div id="hgTreasureCenter" aria-label="Poszukiwacz Skarbów HealthGo"></div>
 </section>
-
+<section id="points" class="page">
+<div id="hgPointCenter" aria-label="HealthGo Point, nagrody i wymiana"></div>
+</section>
 <section id="contests" class="page">
-  <div id="hgGameQuestsSummary" aria-label="Misje odblokowania gier"></div>
-  <div class="hgcontests-intro"><h2>🏆 Konkursy</h2><p>Sprawdź własne wyniki w lokalnych wyzwaniach HealthGo. Internetowe konkursy będą wymagały osobnej usługi rankingowej.</p></div>
-  <div id="hgArcadeContestRoot"></div>
-  <div data-hg-contests></div>
+<div class="hero"><h2>🏆 Wyzwania HealthGo</h2><p>Misje, odznaki, XP i odkrycia w jednym miejscu.</p></div>
+<div class="grid2"><div class="card"><h3>🎯 Twoje wyzwania</h3><p class="muted">Zdobywaj potwierdzone odznaki i XP.</p><button class="btn" type="button" onclick="go('challenges')">Wyzwania</button></div><div class="card"><h3>🧭 Poszukiwacz skarbów</h3><p class="muted">Odkrywaj zatwierdzone, bezpieczne miejsca.</p><button class="btn" type="button" onclick="go('explore')">Odkrywaj</button></div></div>
 </section>
-
 <section id="plan" class="page">
   <div class="hero">
     <span class="hgp-heading-label">✦ HEALTHGO PLANNER 4.0</span>
@@ -1084,6 +1078,7 @@ html.hg-session-known #authScreen{display:none!important}
   <section class="challenge-panel"><div class="between"><div><h3 style="margin:0">Aktywne wyzwania</h3><p class="muted">Każde wyzwanie ma konkretny cel i nagrodę. Postęp jest zaliczany tylko na podstawie prawdziwego działania.</p></div><span class="tag">🎯 Cele</span></div><div id="realChallengeList" class="challenge-list"></div></section>
 </section>
 <section id="backpack" class="page">
+<div class="row" style="margin:0 0 14px"><button class="btn" type="button" onclick="go('points')">✦ HealthGo Point i nagrody</button><button class="btn secondary" type="button" onclick="go('explore')">🧭 Odkryte skarby</button></div>
   <div class="hero"><h2>🎒 Plecak</h2><p>Twoja kolekcja HealthGo: odznaki, puchary, sportowe osiągnięcia i przedmioty specjalne.</p></div>
   <div class="challenge-overview"><section class="level-panel"><div class="between"><div><div class="muted">Kolekcja</div><h2 style="margin:4px 0">HealthGo Plecak</h2><p class="muted">Wszystkie zdobyte nagrody są zebrane tutaj.</p></div><div class="pack-icon">🎒</div></div></section><section class="pack-summary"><div><b>Zdobyte odznaki</b><div style="font-size:28px;font-weight:850;margin-top:5px"><span id="earnedBadgeCount">0</span> / 100</div></div></section></div>
   <div class="row" style="margin-bottom:14px"><button class="btn backpack-tab" onclick="showBackpackTab('badges',this)">🎖️ Odznaki</button><button class="btn secondary backpack-tab" onclick="showBackpackTab('cups',this)">🏆 Puchary</button><button class="btn secondary backpack-tab" onclick="showBackpackTab('sports',this)">⚽ Sportowe</button><button class="btn secondary backpack-tab" onclick="showBackpackTab('special',this)">✨ Specjalne</button></div>
@@ -1196,8 +1191,8 @@ html.hg-session-known #authScreen{display:none!important}
       <button type="button" class="hg-more-action" onclick="mobileGo('activity')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/><path d="M5 12h4l2-3 2 6 2-3h4"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Aktywność</span><span class="hg-more-action-note">Twoje zapisane pomiary</span></span><span class="hg-more-action-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"/></svg></span></button>
       <button type="button" class="hg-more-action" onclick="mobileGo('devices')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="7" y="7" width="10" height="10" rx="3"/><path d="M9 7 10 2h4l1 5m-6 10 1 5h4l1-5"/><path d="M12 10v2l2 1"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Urządzenia</span><span class="hg-more-action-note">Połączone urządzenia</span></span><span class="hg-more-action-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"/></svg></span></button>
       <button type="button" class="hg-more-action" onclick="mobileGo('family')" data-hg2-family="1"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3"/><path d="M17 14a4 4 0 0 1 4 4v2M16 4.2a3 3 0 0 1 0 5.6"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Rodzina</span><span class="hg-more-action-note">Członkowie i uprawnienia</span></span><span class="hg-more-action-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"/></svg></span></button>
-      <button type="button" class="hg-more-action" onclick="mobileGo('games')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 8h11a4 4 0 0 1 3.8 3l1 6.1a2.8 2.8 0 0 1-4.4 2.7L15 17H9l-2.9 2.8a2.8 2.8 0 0 1-4.4-2.7l1-6.1a4 4 0 0 1 3.8-3Z"/><path d="M7 11v5m-2.5-2.5h5M16.5 12h.01M19 14h.01"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Minigry</span><span class="hg-more-action-note">Pamięć i quiz</span></span><span class="hg-more-action-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"/></svg></span></button>
-      <button type="button" class="hg-more-action" onclick="mobileGo('contests')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h10v5a5 5 0 0 1-10 0V3zM8 21h8M12 13v8M7 5H4v2a4 4 0 0 0 4 4m9-6h3v2a4 4 0 0 1-4 4"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Konkursy</span><span class="hg-more-action-note">Twoje rekordy i wyzwania</span></span><span class="hg-more-action-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"/></svg></span></button>
+      <button type="button" class="hg-more-action" onclick="mobileGo('explore')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 8h11a4 4 0 0 1 3.8 3l1 6.1a2.8 2.8 0 0 1-4.4 2.7L15 17H9l-2.9 2.8a2.8 2.8 0 0 1-4.4-2.7l1-6.1a4 4 0 0 1 3.8-3Z"/><path d="M7 11v5m-2.5-2.5h5M16.5 12h.01M19 14h.01"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Poszukiwacz skarbów</span><span class="hg-more-action-note">Miejsca, zdjęcia i odkrycia</span></span><span class="hg-more-action-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"/></svg></span></button>
+      <button type="button" class="hg-more-action" onclick="mobileGo('points')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h10v5a5 5 0 0 1-10 0V3zM8 21h8M12 13v8M7 5H4v2a4 4 0 0 0 4 4m9-6h3v2a4 4 0 0 1-4 4"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">HealthGo Point</span><span class="hg-more-action-note">Portfel, nagrody i wymiana</span></span><span class="hg-more-action-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"/></svg></span></button>
       <div class="hg-more-group-label hg-more-account-label" aria-hidden="true">KONTO I USTAWIENIA</div>
       <button type="button" class="hg-more-action" onclick="mobileGo('settings')"><span class="hg-more-icon"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2v3m0 14v3M4.9 4.9 7 7m10 10 2.1 2.1M2 12h3m14 0h3M4.9 19.1 7 17M17 7l2.1-2.1"/><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2.8"/></svg></span><span class="hg-more-action-copy"><span class="hg-more-action-name">Ustawienia</span><span class="hg-more-action-note">Konto, wygląd i prywatność</span></span><span class="hg-more-action-chevron" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m9 18 6-6-6-6"/></svg></span></button>
     </div>
@@ -1481,7 +1476,7 @@ async function enableHealthGoNotifications(){
 }
 function updateNotificationStatus(){var e=document.getElementById('notificationStatus');if(!e)return;e.textContent=!('Notification' in window)?'Powiadomienia systemowe niedostępne.':Notification.permission==='granted'?'Powiadomienia są włączone.':Notification.permission==='denied'?'Powiadomienia są zablokowane w systemie.':'Powiadomienia czekają na zgodę.'}
 setTimeout(updateNotificationStatus,1200);
-const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Gry',contests:'Konkursy',plan:'Plan Dnia',challenges:'Wyzwania',backpack:'Plecak',activity:'Aktywność',devices:'Urządzenia',settings:'Ustawienia'};
+const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',explore:'Poszukiwacz Skarbów',points:'HealthGo Point',contests:'Wyzwania',plan:'Plan Dnia',challenges:'Wyzwania',backpack:'Plecak',activity:'Aktywność',devices:'Urządzenia',settings:'Ustawienia'};
 let timerSec=0, timerInt=null;
 
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
@@ -1489,7 +1484,7 @@ function go(page){
  const target=document.getElementById(page);if(!target)return;
  if(document.getElementById('mobileMoreSheet')?.classList.contains('show'))toggleMobileMore(false,false);
  if(page!=='map')window.HealthGoMapPro?.leaveMap();
- if(page!=='games')window.HealthGoArcade40?.pause?.();
+
  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
  target.classList.add('active');
  document.getElementById('title').textContent=titles[page]||'HealthGo';
@@ -1499,8 +1494,9 @@ function go(page){
  if(page==='plan')setTimeout(renderPlanDay,20);
  if(page==='start')setTimeout(()=>{renderTodayPlanPreview();renderProgressUI()},20);
  if(page==='challenges')setTimeout(renderProgressUI,20);
- if(page==='games'||page==='contests')window.HealthGoArcade40?.refresh?.();
- if(page==='games'||page==='contests')window.HealthGoGameLibrary?.refresh?.();
+
+ if(page==='points')window.HealthGoPoints?.refresh?.();
+ if(page==='explore')window.HealthGoTreasure?.refresh?.();
  if(page==='activity')setTimeout(refreshDeviceHealth,20);
  if(page==='devices')setTimeout(function(){refreshDeviceHealth();updateNotificationStatus()},20);
  if(page==='settings')setTimeout(renderHealthGoProfile,20);
@@ -3277,10 +3273,10 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-friends.js?v=1"></script>
 <script src="./healthgo-release-notes.js?v=16"></script>
 <script src="./healthgo-profile-pro.js?v=5"></script>
-<script src="./healthgo-games-contests.js?v=1"></script>
-<script src="./healthgo-arcade40.js?v=2"></script>
-<script src="./healthgo-game-library.js?v=1"></script>
-<div id="hgGameDialog" hidden></div>
-<div id="hgGameViewer" hidden></div>
+
+
+<script src="./healthgo-point.js?v=1"></script>
+<script src="./healthgo-treasure.js?v=1"></script>
+<script src="./healthgo-navigation-ux.js?v=1"></script>
 </body>
 </html>
