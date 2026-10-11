@@ -68,6 +68,6 @@ test('recovery UI and CSP rules are wired into the real application',()=>{
  assert.match(html,/HealthGoMapRecovery\.retry\(\)/);
  assert.match(html,/window\.HealthGoMapRecovery\?\.loadLeaflet/);
  assert.match(html,/https:\/\/cdn\.jsdelivr\.net/);
- assert.ok(html.indexOf('healthgo-map-recovery.js?v=1')<html.indexOf('healthgo-map-v2.js?v=4'));
+ assert.ok(html.indexOf('healthgo-map-recovery.js?v=2')<html.indexOf('healthgo-map-v2.js?v=5'));
  assert.match(fs.readFileSync('www/healthgo-map-v2.js','utf8'),/HealthGoMapRecovery\?\.tileUrl/);
 });
