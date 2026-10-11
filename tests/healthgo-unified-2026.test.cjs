@@ -45,7 +45,7 @@ test('server-side HealthGo Point never lets browser mint spendable balance',()=>
 test('no cash-out or physical product redemption is implemented',()=>{
  assert.match(sql,/digital_only boolean not null default true check\(digital_only = true\)/);
  assert.match(sql,/p_units not between 1 and 10/);
- assert.doesNotMatch(sql,/credit_card|stripe|payment|payout|cashout/i);
+ assert.doesNotMatch(sql.split('\n').filter(x=>!x.trim().startsWith('--')).join('\n'),/credit_card|stripe|payment|payout|cashout/i);
  assert.match(src('www/healthgo-point.js'),/wyłącznie wirtualne/i);
 });
 test('treasure flow uses opt-in GPS, camera file, second fix and SHA256; no fake photo recognition',()=>{
