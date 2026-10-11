@@ -16,7 +16,7 @@ var INNER='M120 31 184 53 181 135 Q180 180 120 221 Q60 180 59 135 L56 53Z';
 function info(item){
  item=item||{};var id=String(item.id||item.code||item.name||'healthgo');
  var n=/^hg-model-(\d+)$/.exec(id),seed=n?Number(n[1])-1:hash(id);
- return {id:id,seed:seed,color:COLORS[seed%COLORS.length],shape:seed%5,locked:item.earned===false&&!item.prototype};
+ return {id:id,seed:seed,color:COLORS[seed%COLORS.length],shape:seed%5,detail:Math.floor(seed/40)%6,locked:item.earned===false&&!item.prototype};
 }
 function badgeSvg(item,back){
  var v=info(item),c=v.color,label=escapeHtml(item&&item.name||'Odznaka HealthGo');
@@ -28,12 +28,20 @@ function badgeSvg(item,back){
   '<path d="M70 88L172 180 M172 88L70 180" stroke="'+c[2]+'" stroke-width="7" opacity=".53"/>',
   '<path d="M73 95H167 M76 120H164 M80 145H160" stroke="'+c[2]+'" stroke-width="6" stroke-linecap="round" opacity=".57"/>'
  ];
+ var details=[
+  '<circle cx="82" cy="66" r="4" fill="'+c[2]+'"/><circle cx="158" cy="66" r="4" fill="'+c[2]+'"/>',
+  '<path d="M76 62L86 72 M164 62L154 72" stroke="'+c[2]+'" stroke-width="4" opacity=".7"/>',
+  '<path d="M83 63H105 M135 63H157" stroke="'+c[2]+'" stroke-width="4" opacity=".7"/>',
+  '<path d="M75 70L82 60 89 70 M151 70L158 60 165 70" fill="none" stroke="'+c[2]+'" stroke-width="3" opacity=".7"/>',
+  '<path d="M83 58L92 75 M157 58L148 75" stroke="'+c[2]+'" stroke-width="5" opacity=".75"/>',
+  '<circle cx="82" cy="66" r="6" fill="none" stroke="'+c[2]+'" stroke-width="2"/><circle cx="158" cy="66" r="6" fill="none" stroke="'+c[2]+'" stroke-width="2"/>'
+ ];
  return '<svg class="hgp-medal-svg hgsh-svg'+(v.locked?' hgsh-locked':'')+'" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+label+'" data-shield-id="'+escapeHtml(v.id)+'" data-shield-variant="'+v.shape+'">'+
  '<defs><linearGradient id="'+id+'" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="'+c[0]+'"/><stop offset="1" stop-color="'+c[1]+'"/></linearGradient></defs>'+
  '<path d="'+OUTER+'" fill="#071e17" opacity=".6" transform="translate(0 6)"/>'+
  '<path d="'+OUTER+'" fill="url(#'+id+')" stroke="'+c[2]+'" stroke-width="5" stroke-linejoin="round"/>'+
  '<path d="'+INNER+'" fill="none" stroke="'+c[2]+'" stroke-width="3" opacity=".75" stroke-linejoin="round"/>'+
- (back?'<text x="120" y="137" text-anchor="middle" font-size="42" font-weight="800" font-family="sans-serif" fill="'+c[2]+'">HG</text>':panels[v.shape])+
+ (back?'<text x="120" y="137" text-anchor="middle" font-size="42" font-weight="800" font-family="sans-serif" fill="'+c[2]+'">HG</text>':panels[v.shape]+details[v.detail])+
  '<path d="M64 53L120 35 176 53" stroke="#fff" stroke-opacity=".22" stroke-width="4" fill="none"/>'+
  '</svg>';
 }
