@@ -54,7 +54,7 @@ self.addEventListener('fetch',event=>{
  if(url.pathname.startsWith('/auth/')||url.searchParams.has('code')||url.searchParams.has('error'))return;
  // Cache only the static shell. Never persist API responses or another account's data.
  if(url.pathname.startsWith('/api/')||url.pathname.endsWith('/version.json'))return;
- const isShell=req.mode==='navigate'||/\.(?:html|js|css|png|avif|webp|ico|webmanifest)$/.test(url.pathname);
+ const isShell=req.mode==='navigate'||/\.(?:html|js|css|png|jpe?g|avif|webp|ico|webmanifest)$/.test(url.pathname);
  if(!isShell)return;
  event.respondWith((async()=>{
   const enabled=await offlineEnabled();
