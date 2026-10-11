@@ -35,6 +35,8 @@ for(const [width,height] of [[360,740],[390,844],[430,932],[1024,768]]){
    window.go('map');
   });
   await page.waitForTimeout(100);
+  // First-visit consent overlay must be answered before clicking controls underneath.
+  await page.evaluate(()=>window.HealthGoMapV2?.chooseWelcomeLocation(false));
   const style=await page.locator('#map .map-toolbar').evaluate(node=>getComputedStyle(node).backgroundColor);
   assert.notEqual(style,'rgb(255, 255, 255)','White map toolbar');
   assert.ok(await page.locator('#map .map-v2-tab').count()>=3);
