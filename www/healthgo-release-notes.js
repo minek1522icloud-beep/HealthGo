@@ -3,9 +3,16 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-3.0.2-photo-fallback-20261011';
-var TITLE='Naprawa czarnych odznak na iPhonie';
+var RELEASE='healthgo-3.0.3-single-image-badges-20261011';
+var TITLE='Odznaki na iPhonie: jedna grafika zamiast fragmentów planszy';
 var sections=[
+ {title:'🛠 Poprawa wyświetlania odznak na iPhonie',items:[
+  'Każda odznaka jest wyświetlana w indywidualnym, przyciętym widoku SVG z prawdziwej planszy, bez przesuwania ogromnego obrazka.',
+  'Skorygowaliśmy położenie odznak oraz liczbę rzędów i nieregularne odstępy w przesłanej planszy.',
+  'Naprawa obejmuje Plecak, profil, gablotę znajomych oraz obracany podgląd po kliknięciu.',
+  'Grafiki nie zmieniają Twojego XP ani rzeczywistych osiągnięć. Obracanie jest przestrzenną prezentacją grafiki, a nie pełnym fizycznym modelem medalu.',
+  'Ostrość przy znacznym powiększeniu zależy od rozdzielczości oryginalnej planszy.'
+ ]},
  {title:'🛠 Naprawiono czarne odznaki na iPhonie',items:['Grafiki z Twojej oryginalnej planszy pozostają widoczne także wtedy, gdy Safari nie uruchomi rysowania Canvas.','Każda odznaka ma własny wycinek z Twojej kolekcji i nadal można ją obracać palcem.','Dodatkowa kontrola sprawdza obecność obrazka nawet przed załadowaniem Canvas.']},
  {title:'✅ Naprawione obrazki odznak na iPhonie',items:[
   'Zastąpiliśmy ogromne tła CSS małymi obrazami Canvas. Każda odznaka jest wycinana bezpośrednio z Twojej oryginalnej planszy.',

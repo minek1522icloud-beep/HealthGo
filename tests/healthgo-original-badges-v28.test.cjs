@@ -1,85 +1,57 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const read=p=>fs.readFileSync(p,'utf8');
-test('original user badge image is now the artwork loaded in HealthGo',()=>{
- const html=read('www/index.html');
- const jpg=fs.readFileSync('www/assets/healthgo-badge-board.jpg');
- assert.ok(jpg.length>40000);
- assert.match(html,/healthgo-badge-board\.js\?v=3/);
- assert.match(html,/healthgo-badge-board\.css\?v=3/);
- assert.doesNotMatch(html,/src="\.\/healthgo-badge-vector\.js/);
- assert.doesNotMatch(html,/href="\.\/healthgo-badge-vector\.css/);
-});
-test('all 240 catalog tiles display the supplied board instead of generated emblems',()=>{
+function api(){
  const window={HealthGoBadge3D:{catalog:[],openChest(){return true;}}};
  vm.runInNewContext(read('www/healthgo-badge-board.js'),{window,Math,Number,String,Set,Map,Array,Object});
- const art=window.HealthGoBadgeBoard;
- assert.equal(art.count,249);
- const indexes=new Set();
- for(let n=1;n<=240;n++){
-  const item={id:'hg-model-'+String(n).padStart(3,'0'),name:'Model',prototype:true};
-  indexes.add(art.artIndex(item));
-  assert.match(art.thumbnail(item),/healthgo-badge-board\.jpg/);
+ return window.HealthGoBadgeBoard;
+}
+test('user-provided original photo is shipped locally and single-image SVG is enabled',()=>{
+ const html=read('www/index.html'),jpg=fs.readFileSync('www/assets/healthgo-badge-board.jpg');
+ assert.ok(jpg.length>40000);
+ assert.equal(jpg.subarray(0,2).toString('hex'),'ffd8');
+ assert.equal(jpg.subarray(-2).toString('hex'),'ffd9');
+ assert.match(html,/healthgo-badge-board\.js\?v=4/);
+ assert.match(html,/healthgo-badge-board\.css\?v=4/);
+ assert.doesNotMatch(html,/src="\.\/healthgo-badge-vector\.js/);
+});
+test('231 original badges have independent bounded viewBoxes, never a huge translated source img',()=>{
+ const b=api(),seen=new Set(),rects=[];
+ assert.equal(b.count,231);
+ for(let n=1;n<=b.count;n++){
+  const it={id:'hg-model-'+String(n).padStart(3,'0'),name:'Model '+n,prototype:true};
+  const i=b.artIndex(it),crop=b.cropRect(i),html=b.thumbnail(it);
+  seen.add(i);rects.push(crop);
+  assert.match(html,/class="hgp-medal-svg hgab-single"/);
+  assert.match(html,/viewBox="\d+ \d+ \d+ \d+"/);
+  assert.match(html,/preserveAspectRatio="xMidYMid meet"/);
+  assert.match(html,/<image href="\.\/assets\/healthgo-badge-board\.jpg\?v=4"/);
+  assert.doesNotMatch(html,/<img class="hgab-board-image"|<canvas class="hgab-crop"/);
+  assert.ok(crop.x>=0&&crop.y>=100&&crop.x+crop.w<=1055&&crop.y+crop.h<=1491);
+  assert.ok(crop.w>=60&&crop.w<=80);
+  assert.ok(crop.h===crop.w);
  }
- assert.equal(indexes.size,240);
- assert.match(art.thumbnail({id:'locked',earned:false}),/hgab-locked/);
+ assert.equal(seen.size,231);
+ assert.notDeepEqual(rects[0],rects[1]);
+ assert.notDeepEqual(rects[0],rects[14]);
 });
-
-test('iOS-friendly canvas crops the original 68px badges instead of creating oversized CSS textures',()=>{
- const js=read('www/healthgo-badge-board.js');
- const css=read('www/healthgo-badge-board.css');
- assert.match(js,/<canvas class="hgab-crop"/);
- assert.match(js,/ctx\.drawImage\(atlas,crop\.x,crop\.y,crop\.w,crop\.h,0,0,w,h\)/);
- assert.match(js,/MutationObserver/);
- assert.match(js,/canvas\.dataset\.hgabStatus='art'/);
- assert.doesNotMatch(js,/background-size:[^;]+%/);
- assert.match(css,/#hgPackProRoot canvas\.hgab-crop/);
- assert.match(css,/#hgBadgeArtInspect canvas\.hgab-crop/);
- const jpg=fs.readFileSync('www/assets/healthgo-badge-board.jpg');
- assert.equal(jpg.subarray(0,2).toString('hex'),'ffd8','asset must be JPEG');
- assert.equal(jpg.subarray(-2).toString('hex'),'ffd9','asset must not be truncated');
+test('real earned/locked status and name match artwork, no phantom achievement or XP',()=>{
+ const b=api(),real={id:'level_2',name:'Poziom 2',earned:true};
+ const thumb=b.thumbnail(real),locked=b.thumbnail({...real,earned:false});
+ assert.match(thumb,/aria-label="Poziom 2"/);
+ assert.doesNotMatch(thumb,/hgab-locked/);
+ assert.match(locked,/hgab-locked/);
+ assert.doesNotMatch(read('www/healthgo-badge-board.js'),/grantXP|addXP|setXP|awardXP/);
+ assert.equal(typeof b.open,'function');
 });
-test('the crop renderer actually paints badge pixels at bounded size',()=>{
- const draws=[],calls=[],ctx={
-  clearRect(){},fillRect(){},strokeRect(){},fillText(){},
-  drawImage(_image,x,y,width,height,dx,dy,w,h){draws.push({x,y,width,height,dx,dy,w,h});}
- };
- const badge={nodeType:1,width:160,height:160,dataset:{},
-  matches(sel){return sel==='canvas.hgab-crop';},
-  getAttribute(key){return key==='data-hgab-index'?'98':null;},
-  getContext(t){calls.push(t);return ctx;},
-  querySelectorAll(){return[];}
- };
- const doc={readyState:'loading',body:{},querySelectorAll(){return[badge];},addEventListener(){}};
- class MockImage{
-  set src(url){
-   this.naturalWidth=1055;this.naturalHeight=1491;
-   if(this.onload)this.onload();
-  }
- }
- const win={HealthGoBadge3D:{catalog:[],openChest(){}},Image:MockImage,console};
- vm.runInNewContext(read('www/healthgo-badge-board.js'),{
-  window:win,document:doc,Math,Number,String,Set,Map,Array,Object
- });
- win.HealthGoBadgeBoard.hydrate(doc);
- assert.equal(badge.dataset.hgabStatus,'art');
- assert.ok(draws.length>=1);
- const last=draws[draws.length-1];
- assert.equal(last.width,68);assert.equal(last.height,68);
- assert.equal(last.w,160);assert.equal(last.h,160);
- assert.ok(last.x>=0&&last.x<1055&&last.y>=0&&last.y<1491);
- assert.ok(calls.every(x=>x==='2d'));
-});
-
-test('a native img is always visible if iPhone Canvas never paints a badge',()=>{
- const w={HealthGoBadge3D:{catalog:[]}};
- vm.runInNewContext(read('www/healthgo-badge-board.js'),{window:w,Math,Number,String,Set,Map,Array,Object});
- const thumb=w.HealthGoBadgeBoard.thumbnail({id:'first_chat',name:'Pierwsza rozmowa',earned:true});
- assert.match(thumb,/<img class="hgab-board-image"/);
- assert.match(thumb,/src="\.\/assets\/healthgo-badge-board\.jpg\?v=3"/);
- assert.match(thumb,/style="left:-?\d+\.\d+%;top:-?\d+\.\d+%"/);
- const css=read('www/healthgo-badge-board.css');
- assert.match(css,/canvas\.hgab-crop\[data-hgab-status="art"\]/);
- assert.match(css,/visibility:hidden!important/);
- assert.match(css,/1551\.470588%/);
+test('single SVG region visible on iOS, old oversized CSS fallback disabled',()=>{
+ const js=read('www/healthgo-badge-board.js'),css=read('www/healthgo-badge-board.css');
+ assert.match(js,/A fixed SVG viewport clips a SINGLE badge/);
+ assert.match(css,/\.hgab-photo svg\.hgab-single/);
+ assert.match(css,/svg\.hgab-single image/);
+ assert.match(css,/overflow:hidden!important/);
+ assert.match(css,/max-width:215px!important/);
+ const thumb=api().thumbnail({id:'first_chat',name:'Pierwsza rozmowa',earned:true});
+ assert.doesNotMatch(thumb,/style="left:/);
+ assert.doesNotMatch(thumb,/1551\.470588%/);
 });

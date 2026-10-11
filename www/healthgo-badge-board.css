@@ -87,3 +87,24 @@ body.hgab-open{overflow:hidden}
 #hgBadgeArtInspect .hgab-photo canvas.hgab-crop[data-hgab-status="art"]{
   visibility:visible!important;
 }
+
+/* HealthGo 3.0.3: native SVG viewBox isolates one true poster badge.
+   Unlike the removed gigantic <img>, a 1055x1491 source cannot spill into adjacent slots. */
+#hgPackProRoot .hgab-photo svg.hgab-single,
+#hgProfileProOverlay .hgab-photo svg.hgab-single,
+#hgCollectorRoom .hgab-photo svg.hgab-single,
+#hgBadgeArtInspect .hgab-photo svg.hgab-single{
+ position:relative!important;inset:auto!important;display:block!important;
+ width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
+ aspect-ratio:1 / 1!important;overflow:hidden!important;object-fit:contain!important;
+ opacity:1!important;visibility:visible!important;filter:none!important;stroke:none!important;
+ background:#081b14!important;
+}
+#hgPackProRoot .hgab-photo svg.hgab-single image,
+#hgProfileProOverlay .hgab-photo svg.hgab-single image,
+#hgCollectorRoom .hgab-photo svg.hgab-single image,
+#hgBadgeArtInspect .hgab-photo svg.hgab-single image{
+ visibility:visible!important;opacity:1!important;filter:none!important;pointer-events:none;
+}
+#hgBadgeArtInspect .hgab-object{width:min(64vw,230px)!important;height:min(64vw,230px)!important;min-width:165px!important;min-height:165px!important;max-width:230px!important;max-height:230px!important}
+@media(max-width:430px){#hgBadgeArtInspect .hgab-object{width:min(65vw,215px)!important;height:min(65vw,215px)!important;max-width:215px!important;max-height:215px!important}}

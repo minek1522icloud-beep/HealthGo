@@ -5,8 +5,10 @@
 (function(host){
 'use strict';
 var old=host.HealthGoBadge3D||{},prevClose=old.close,dialog=null,cache=new Map();
-var COLS=14,ROWS=18,TOTAL=249,SIZE=68;
-var SOURCE='./assets/healthgo-badge-board.jpg';
+var COLS=14, TOTAL=231;
+var CENTERS=[[47,160,66],[117,160,66],[188,160,66],[260,160,66],[330,160,66],[403,160,66],[479,160,66],[551,160,66],[634,160,66],[706,160,66],[788,160,66],[861,160,66],[933,160,66],[1007,160,66],[41,235,66],[119,235,66],[203,235,66],[264,235,66],[327,235,66],[406,235,66],[477,235,66],[553,235,66],[623,235,66],[708,235,66],[786,235,66],[861,235,66],[933,235,66],[1003,235,66],[40,307,66],[120,307,66],[185,307,66],[249,307,66],[331,307,66],[401,307,66],[475,307,66],[548,307,66],[615,307,66],[690,307,66],[777,307,66],[858,307,66],[929,307,66],[987,307,66],[43,383,66],[121,383,66],[196,383,66],[270,383,66],[344,383,66],[420,383,66],[499,383,66],[564,383,66],[640,383,66],[712,383,66],[791,383,66],[862,383,66],[941,383,66],[1008,383,66],[41,460,66],[116,460,66],[189,460,66],[265,460,66],[342,460,66],[417,460,66],[495,460,66],[568,460,66],[645,460,66],[720,460,66],[793,460,66],[869,460,66],[942,460,66],[1011,460,66],[43,535,66],[117,535,66],[189,535,66],[270,535,66],[343,535,66],[417,535,66],[493,535,66],[570,535,66],[644,535,66],[723,535,66],[797,535,66],[871,535,66],[945,535,66],[1011,535,66],[44,610,66],[115,610,66],[189,610,66],[268,610,66],[340,610,66],[413,610,66],[485,610,66],[559,610,66],[636,610,66],[705,610,66],[788,610,66],[855,610,66],[936,610,66],[1006,610,66],[42,690,66],[108,690,66],[196,690,66],[253,690,66],[325,690,66],[405,690,66],[479,690,66],[546,690,66],[614,690,66],[694,690,66],[773,690,66],[845,690,66],[921,690,66],[996,690,66],[40,762,66],[114,762,66],[187,762,66],[253,762,66],[324,762,66],[402,762,66],[476,762,66],[552,762,66],[631,762,66],[707,762,66],[782,762,66],[848,762,66],[919,762,66],[1004,762,66],[46,836,66],[112,836,66],[179,836,66],[264,836,66],[329,836,66],[407,836,66],[485,836,66],[560,836,66],[632,836,66],[697,836,66],[783,836,66],[859,836,66],[929,836,66],[1002,836,66],[43,911,66],[115,911,66],[187,911,66],[258,911,66],[327,911,66],[400,911,66],[476,911,66],[555,911,66],[628,911,66],[708,911,66],[786,911,66],[856,911,66],[935,911,66],[1002,911,66],[33,988,66],[120,988,66],[202,988,66],[276,988,66],[353,988,66],[425,988,66],[496,988,66],[559,988,66],[631,988,66],[708,988,66],[780,988,66],[857,988,66],[923,988,66],[1002,988,66],[33,1063,68],[104,1063,68],[193,1063,68],[271,1063,68],[349,1063,68],[429,1063,68],[504,1063,68],[576,1063,68],[658,1063,68],[740,1063,68],[828,1063,68],[912,1063,68],[1002,1063,68],[42,1144,68],[120,1144,68],[200,1144,68],[269,1144,68],[352,1144,68],[438,1144,68],[521,1144,68],[593,1144,68],[676,1144,68],[757,1144,68],[838,1144,68],[917,1144,68],[1000,1144,68],[44,1224,68],[107,1224,68],[200,1224,68],[281,1224,68],[352,1224,68],[441,1224,68],[522,1224,68],[611,1224,68],[700,1224,68],[789,1224,68],[872,1224,68],[941,1224,68],[1006,1224,68],[45,1304,68],[121,1304,68],[201,1304,68],[282,1304,68],[354,1304,68],[441,1304,68],[524,1304,68],[602,1304,68],[696,1304,68],[773,1304,68],[854,1304,68],[932,1304,68],[1003,1304,68],[58,1390,76],[149,1390,76],[246,1390,76],[331,1390,76],[435,1390,76],[530,1390,76],[626,1390,76],[717,1390,76],[810,1390,76],[891,1390,76],[988,1390,76]];
+var SOURCE='./assets/healthgo-badge-board.jpg?v=4';
+
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function hash(s){var h=2166136261;for(var c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
 var rules=[
@@ -61,18 +63,20 @@ function mappedIndex(item){
 function artIndex(item){
  var id=String(item?.id||item?.code||'');
  var m=/^hg-model-(\d{3})$/.exec(id);
- if(m){var n=Number(m[1]);return (n-1>=0&&n-1<TOTAL)?n-1:0;}
+ if(m){var n=Number(m[1]);return n>0?(n-1)%TOTAL:0;}
  return mappedIndex(item);
 }
+
 // Coordinates measured on the poster artwork. All regions preserve the exact original artwork.
 /* Canvas draws a small crop from the original JPEG once. Unlike a huge CSS
  * background-size this is safe for iPhone/WebKit texture limits. */
 var atlas=null,atlasPending=false,atlasError=false,watcher=null;
 function cropRect(index){
  var idx=((Number(index)||0)%TOTAL+TOTAL)%TOTAL;
- var col=idx%COLS,row=Math.floor(idx/COLS);
- return {x:(44+col*72.25)-SIZE/2,y:(160+row*72.75)-SIZE/2,w:SIZE,h:SIZE};
+ var c=CENTERS[idx],size=c[2];
+ return {x:Math.round(c[0]-size/2),y:Math.round(c[1]-size/2),w:size,h:size};
 }
+
 function spriteStyle(index){
  // Public compatibility helper; no oversized CSS background rasterization.
  return '--hgab-index:'+(((Number(index)||0)%TOTAL+TOTAL)%TOTAL);
@@ -92,7 +96,7 @@ function loadAtlas(){
   if(typeof document!=='undefined')hydrate(document,true);
   host.console?.warn?.('HealthGo: nie udało się pobrać planszy odznak:',SOURCE);
  };
- image.src=SOURCE+'?v=3';
+ image.src=SOURCE;
 }
 function paint(canvas,force){
  if(!canvas||!canvas.getContext)return;
@@ -146,16 +150,17 @@ function watch(){
  hydrate(document,false);
 }
 function front(item,extra){
- var idx=artIndex(item),name=esc(item?.name||'Odznaka'),resolution=(extra&&extra.includes('inspect'))?384:160;
- var rect=cropRect(idx),left=(-rect.x/rect.w*100).toFixed(4),top=(-rect.y/rect.h*100).toFixed(4);
- // Native <img> fallback renders independently of Canvas, MutationObserver and WebGL on Safari.
- // The same local JPEG is shared by the browser's image cache between all badges.
+ var idx=artIndex(item),name=esc(item?.name||'Odznaka'),r=cropRect(idx);
+ // A fixed SVG viewport clips a SINGLE badge. No CSS translate, 1500%-wide <img>, Canvas or WebGL.
+ // This avoids Safari's image offset/scale bug that previously showed adjacent medals.
  return '<span class="hgab-photo '+(extra||'')+'" data-hgab-index="'+idx+'">'+
-  '<img class="hgab-board-image" src="'+SOURCE+'?v=3" width="1055" height="1491" decoding="async" alt="" aria-hidden="true" '+
-  'style="left:'+left+'%;top:'+top+'%" />'+
-  '<canvas class="hgab-crop" data-hgab-index="'+idx+'" data-hgab-source="'+SOURCE+
-  '" width="'+resolution+'" height="'+resolution+'" role="img" aria-label="'+name+'">'+name+'</canvas></span>';
+ '<svg xmlns="http://www.w3.org/2000/svg" class="hgp-medal-svg hgab-single" viewBox="'+
+ r.x+' '+r.y+' '+r.w+' '+r.h+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+name+'">'+
+ '<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" fill="#071b16"/>'+
+ '<image href="'+SOURCE+'" x="0" y="0" width="1055" height="1491" preserveAspectRatio="none"/>'+
+ '</svg></span>';
 }
+
 function thumbnail(item){
  item=item||{};
  var locked=!item.earned&&!item.prototype;
@@ -217,5 +222,5 @@ function open(item){
 }
 host.HealthGoBadge3D=Object.freeze(Object.assign({},old,{thumbnail:thumbnail,open:open,close:close}));
 host.HealthGoBadgeBoard=Object.freeze({thumbnail:thumbnail,open:open,close:close,artIndex:artIndex,spriteStyle:spriteStyle,cropRect:cropRect,hydrate:hydrate,getAssetStatus:function(){return atlas?'ready':atlasError?'offline':atlasPending?'loading':'idle';},count:TOTAL,source:SOURCE});
-if(typeof document!=='undefined'){if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch,{once:true});else watch();}
+// Native inline SVG <image> needs no Canvas hydration or MutationObserver.
 })(window);
