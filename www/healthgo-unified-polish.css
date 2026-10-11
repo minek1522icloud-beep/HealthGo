@@ -14,7 +14,8 @@
 #map #mapV2RouteTo:focus-visible,#map #mapV2RouteFrom:focus-visible{outline:3px solid #79e4b1;outline-offset:2px}
 body.hg-navigation-active #hgProNavigation{z-index:99990}
 body.hg-navigation-active .mobile-nav{display:none!important}
-.hgp-profile-cover{height:144px!important;border-radius:20px!important;background-image:radial-gradient(circle at 83% 18%,#b5ffdf3b,transparent 31%),linear-gradient(135deg,#0b4836,#134b4d)!important}
+.hgp-profile-cover{height:144px!important;border-radius:20px!important}
+.hgp-profile-cover.hgr-wallpaper-default{background-image:radial-gradient(circle at 83% 18%,#b5ffdf3b,transparent 31%),linear-gradient(135deg,#0b4836,#134b4d)!important}
 .hgp-profile-cover:after{content:"";position:absolute;width:130px;height:130px;right:17px;top:25px;border:1px solid #b5ffdf24;border-radius:50%;box-shadow:0 0 0 15px #b5ffdf0b,0 0 0 30px #b5ffdf06;pointer-events:none}
 .hgp-profile-identity{gap:14px!important}
 .hgp-profile-avatar{width:96px!important;height:96px!important;flex-basis:96px!important;border-width:3px!important;box-shadow:0 8px 25px #0008,0 0 0 4px #8dffd020!important}
