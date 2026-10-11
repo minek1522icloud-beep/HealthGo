@@ -3,7 +3,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com/recaptcha/ https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://cdn.jsdelivr.net https://*.jsdelivr.net https://server.arcgisonline.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com https://www.gstatic.com/recaptcha/; worker-src 'self' blob:; child-src blob:; connect-src 'self' https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://router.project-osrm.org https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co https://cdn.jsdelivr.net https://*.jsdelivr.net https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://api.open-meteo.com https://www.google.com https://www.recaptcha.net; frame-src https://accounts.google.com https://www.google.com https://recaptcha.google.com/recaptcha/ https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://www.google.com https://www.gstatic.com/recaptcha/ https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https://cdn.jsdelivr.net https://*.jsdelivr.net https://server.arcgisonline.com https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://unpkg.com https://*.googleusercontent.com https://www.gstatic.com/recaptcha/; worker-src 'self' blob:; child-src blob:; connect-src 'self' https://tile.openstreetmap.org https://*.tile.openstreetmap.org https://router.project-osrm.org https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co https://cdn.jsdelivr.net https://*.jsdelivr.net https://oqrfapmdcofguwdvhbeo.supabase.co wss://oqrfapmdcofguwdvhbeo.supabase.co https://*.googleapis.com https://nominatim.openstreetmap.org https://overpass-api.de https://api.open-meteo.com https://www.google.com https://www.recaptcha.net; frame-src 'self' https://accounts.google.com https://www.google.com https://recaptcha.google.com/recaptcha/ https://www.recaptcha.net; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="healthgo-build" content="development">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>HealthGo</title>
@@ -362,6 +362,7 @@ html.hg-session-known #authScreen{display:none!important}
   <link rel="stylesheet" href="./healthgo-badge-shields.css?v=1">
   <link rel="stylesheet" href="./healthgo-games-contests.css?v=1">
   <link rel="stylesheet" href="./healthgo-arcade40.css?v=1">
+  <link rel="stylesheet" href="./healthgo-game-library.css?v=1">
   <link rel="stylesheet" href="./healthgo-collector-room.css?v=1">
   <link rel="stylesheet" href="./healthgo-friends.css?v=1">
   <link rel="stylesheet" href="./healthgo-release-notes.css?v=1">
@@ -418,7 +419,7 @@ html.hg-session-known #authScreen{display:none!important}
     <button class="active" data-page="start">🏠 <span>Start</span></button>
     <button data-page="ai">🤖 <span>HealthGo AI</span></button>
     <button data-page="map">🗺️ <span>Mapa</span></button>
-    <button data-page="games">🎮 <span>Minigry</span></button>
+    <button data-page="games">🎮 <span>Gry</span></button>
     <button data-page="contests">🏆 <span>Konkursy</span></button>
     <button data-page="plan">📅 <span>Plan Dnia</span></button>
     <button data-page="challenges">🎯 <span>Wyzwania</span></button>
@@ -829,6 +830,7 @@ html.hg-session-known #authScreen{display:none!important}
 </section>
 
 <section id="games" class="page">
+  <div id="hgGameLibrary" aria-label="Katalog gier HealthGo"></div>
   <div class="hggames-intro"><h2>🎮 Minigry</h2><p>Zagraj w Pamięć i Quiz dobrych nawyków. Twoje rekordy zapisują się lokalnie na urządzeniu.</p></div>
   <div class="hga-arcade-intro"><div><h2>40 poziomów = 2 punkty</h2><p>Dwie gry z prawdziwymi poziomami, sterowaniem dotykowym i zapisem postępów.</p></div></div>
   <div class="hga-arcade-grid"><section class="hga-arcade-card" id="hgArcadeMaze" aria-label="Labirynt 40"></section><section class="hga-arcade-card" id="hgArcadeAim" aria-label="Celność 40"></section></div>
@@ -839,6 +841,7 @@ html.hg-session-known #authScreen{display:none!important}
 </section>
 
 <section id="contests" class="page">
+  <div id="hgGameQuestsSummary" aria-label="Misje odblokowania gier"></div>
   <div class="hgcontests-intro"><h2>🏆 Konkursy</h2><p>Sprawdź własne wyniki w lokalnych wyzwaniach HealthGo. Internetowe konkursy będą wymagały osobnej usługi rankingowej.</p></div>
   <div id="hgArcadeContestRoot"></div>
   <div data-hg-contests></div>
@@ -1478,7 +1481,7 @@ async function enableHealthGoNotifications(){
 }
 function updateNotificationStatus(){var e=document.getElementById('notificationStatus');if(!e)return;e.textContent=!('Notification' in window)?'Powiadomienia systemowe niedostępne.':Notification.permission==='granted'?'Powiadomienia są włączone.':Notification.permission==='denied'?'Powiadomienia są zablokowane w systemie.':'Powiadomienia czekają na zgodę.'}
 setTimeout(updateNotificationStatus,1200);
-const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Minigry',contests:'Konkursy',plan:'Plan Dnia',challenges:'Wyzwania',backpack:'Plecak',activity:'Aktywność',devices:'Urządzenia',settings:'Ustawienia'};
+const titles={start:'Start',ai:'HealthGo AI',map:'Mapa',games:'Gry',contests:'Konkursy',plan:'Plan Dnia',challenges:'Wyzwania',backpack:'Plecak',activity:'Aktywność',devices:'Urządzenia',settings:'Ustawienia'};
 let timerSec=0, timerInt=null;
 
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
@@ -1497,6 +1500,7 @@ function go(page){
  if(page==='start')setTimeout(()=>{renderTodayPlanPreview();renderProgressUI()},20);
  if(page==='challenges')setTimeout(renderProgressUI,20);
  if(page==='games'||page==='contests')window.HealthGoArcade40?.refresh?.();
+ if(page==='games'||page==='contests')window.HealthGoGameLibrary?.refresh?.();
  if(page==='activity')setTimeout(refreshDeviceHealth,20);
  if(page==='devices')setTimeout(function(){refreshDeviceHealth();updateNotificationStatus()},20);
  if(page==='settings')setTimeout(renderHealthGoProfile,20);
@@ -3275,5 +3279,8 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-profile-pro.js?v=5"></script>
 <script src="./healthgo-games-contests.js?v=1"></script>
 <script src="./healthgo-arcade40.js?v=2"></script>
+<script src="./healthgo-game-library.js?v=1"></script>
+<div id="hgGameDialog" hidden></div>
+<div id="hgGameViewer" hidden></div>
 </body>
 </html>
