@@ -79,7 +79,7 @@ test('profile code includes custom local photo, editable appearance, privacy and
  assert.match(source,/data-profile-visitor/);
  assert.match(css,/safe-area-inset-top/);
  assert.match(css,/prefers-reduced-motion/);
- assert.match(html,/healthgo-profile-pro\.js\?v=4/);
+ assert.match(html,/healthgo-profile-pro\.js\?v=5/);
  assert.match(html,/healthgo-profile-pro\.css\?v=4/);
  assert.match(migration,/healthgo_profile_cards/);
  assert.match(migration,/healthgo_friend_blocks/);

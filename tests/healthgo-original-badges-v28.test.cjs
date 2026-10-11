@@ -11,9 +11,9 @@ test('local original artwork is present and PWA uses isolated canvas badge rende
  assert.ok(jpg.length>40000);
  assert.equal(jpg.subarray(0,2).toString('hex'),'ffd8');
  assert.equal(jpg.subarray(-2).toString('hex'),'ffd9');
- assert.match(html,/healthgo-badge-board\\.js\\?v=6/);
- assert.match(html,/healthgo-badge-board\\.css\\?v=6/);
- assert.doesNotMatch(html,/src="\\.\\/healthgo-badge-vector\\.js/);
+ assert.match(html,/healthgo-badge-board\.js\?v=6/);
+ assert.match(html,/healthgo-badge-board\.css\?v=6/);
+ assert.doesNotMatch(html,/src="\.\/healthgo-badge-vector\.js/);
 });
 test('231 badges are distinct and use only one bounded 192px Canvas with no scaled poster',()=>{
  const api=load(),seen=new Set(),rects=[];
@@ -23,7 +23,7 @@ test('231 badges are distinct and use only one bounded 192px Canvas with no scal
   const i=api.artIndex(item),crop=api.cropRect(i),html=api.thumbnail(item);
   seen.add(i);rects.push(crop);
   assert.match(html,/<canvas class="hgab-crop" width="192" height="192"/);
-  assert.match(html,/data-hgab-index="\\d+"/);
+  assert.match(html,/data-hgab-index="\d+"/);
   assert.doesNotMatch(html,/<svg|<image |<img |background-position|background-size:/);
   assert.ok(crop.x>=0&&crop.y>=100&&crop.x+crop.w<=1055&&crop.y+crop.h<=1491);
   assert.ok(crop.w>=60&&crop.w<=80);
@@ -66,8 +66,8 @@ test('Safari canvas visibly paints one isolated source region and redraws after 
 });
 test('no hidden/black badge placeholders are left behind while JPEG is loading',()=>{
  const css=read('www/healthgo-badge-board.css'),js=read('www/healthgo-badge-board.js');
- assert.match(css,/canvas\\.hgab-crop[\\s\\S]*visibility:visible!important/);
- assert.match(js,/paint\\(canvas,true\\)/);
- assert.match(js,/hydrate\\(root\\)/);
+ assert.match(css,/canvas\.hgab-crop[\s\S]*visibility:visible!important/);
+ assert.match(js,/paint\(canvas,true\)/);
+ assert.match(js,/hydrate\(root\)/);
  assert.doesNotMatch(js,/class="hgp-medal-svg hgab-single"/);
 });
