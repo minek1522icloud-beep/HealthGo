@@ -84,9 +84,19 @@ test('real mobile UI offers accessible buttons and does not allow manual origin'
  assert.match(html,/data-hg-view="2d"/);
  assert.match(html,/data-hg-view="3d"/);
  assert.match(html,/healthgo-navigation-mode\.js\?v=1/);
- assert.match(html,/healthgo-navigation-mode\.css\?v=1/);
+ assert.match(html,/healthgo-navigation-mode\.css\?v=2/);
  assert.match(html,/id="hgGpsConsentAction"/);
  assert.doesNotMatch(html,/id="mapV2RouteFrom"|id="hgRouteManualOrigin"/);
  assert.match(fs.readFileSync('www/healthgo-map-pro.js','utf8'),/HealthGoNavigationMode\?\.begin/);
  assert.match(fs.readFileSync('www/healthgo-navigation-live.js','utf8'),/pitch:52/);
+});
+
+test('iPhone map fills the screen during GPS, without leaving blank bottom space',()=>{
+ const css=fs.readFileSync('www/healthgo-navigation-mode.css','utf8');
+ assert.match(css,/body\.hg-navigation-active #map\.page\.active/);
+ assert.match(css,/height:100dvh!important/);
+ assert.match(css,/overflow:visible!important/);
+ assert.match(css,/map-workspace\.map-pro-navigating/);
+ assert.match(css,/map-canvas-wrap/);
+ assert.match(css,/hg-live-perspective/);
 });
