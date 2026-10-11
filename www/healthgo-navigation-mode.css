@@ -30,3 +30,31 @@ body.hg-navigation-active #map .hg-live-status:not([hidden]){top:calc(238px + en
 @media(prefers-reduced-motion:reduce){
  #map .hg-follow-arrow-shape,#map .hg-live-car{transition:none!important;animation:none!important}
 }
+
+/* Full-viewport guidance: the ordinary mobile discovery map has a deliberately
+ * shorter panel above the bottom nav. Do not inherit that height while driving.
+ * These rules apply ONLY during an actively started GPS navigation session. */
+body.hg-navigation-active{overflow:hidden!important}
+body.hg-navigation-active #map.page.active{
+ display:block!important;position:fixed!important;inset:0!important;
+ width:100vw!important;height:100dvh!important;min-height:0!important;
+ margin:0!important;padding:0!important;overflow:visible!important;
+ border:0!important;border-radius:0!important;transform:none!important;
+ animation:none!important;z-index:12000!important;background:#dcecdf!important;
+}
+body.hg-navigation-active #map .map-workspace.map-pro-navigating{
+ display:flex!important;flex-direction:column!important;position:absolute!important;
+ inset:0!important;width:100%!important;height:100%!important;min-height:0!important;
+ overflow:hidden!important;border-radius:0!important;margin:0!important;padding:0!important;
+}
+body.hg-navigation-active #map .map-workspace.map-pro-navigating>.map-canvas-wrap{
+ display:block!important;position:relative!important;flex:1 1 auto!important;
+ width:100%!important;height:100%!important;min-height:0!important;overflow:hidden!important;
+}
+body.hg-navigation-active #map #healthgoMap,
+body.hg-navigation-active #map #hgNavigationPerspective:not([hidden]){
+ position:absolute!important;inset:0!important;width:100%!important;
+ height:100%!important;min-height:0!important;
+}
+body.hg-navigation-active .top,
+body.hg-navigation-active .sidebar{display:none!important}
