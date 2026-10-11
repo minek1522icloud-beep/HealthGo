@@ -142,7 +142,11 @@ function tick(){
 function startAim(){
  ensure();if(state.aim.completed)return;
  if(!aim||aim.fail||aim.win)createAim();
- aim.started=true;aimPaused=false;aimLastTick=Date.now();nextTarget();stopAim();aimTimer=setInterval(tick,100);
+ if(aimTimer!==null)return;
+ const resuming=aimPaused&&aim.started;
+ aim.started=true;aimPaused=false;aimLastTick=Date.now();
+ if(!resuming||aim.hit===null)nextTarget();
+ stopAim();aimTimer=setInterval(tick,100);
  drawAim();
 }
 function drawAim(full=true){
@@ -157,7 +161,7 @@ function drawAim(full=true){
  '<div class="hga-target-board" role="group" aria-label="Plansza celności">'+board+'</div>'+
  '<div class="hga-aim-end" role="status" aria-live="polite">'+
  (s.completed?'🏆 Kampania ukończona! Zdobyto 2 punkty.':aim.win?'Brawo! Poziom zaliczony.':aim.fail?'Koniec czasu. Spróbuj ponownie.':aim.started?'Cel jest podświetlony — dotknij go.':'Przygotuj się i naciśnij Start.')+
- '</div><button class="hga-primary" type="button" data-hga-aim-start>'+((aim.fail||aim.win)?'Następna próba':'Start / wznów')+'</button>';
+ '</div><button class="hga-primary" type="button" data-hga-aim-start '+(aimTimer!==null?'disabled':'')+'>'+((aim.fail||aim.win)?'Następna próba':aimTimer!==null?'Gra trwa':aimPaused?'Wznów':'Start')+'</button>';
 }
 function hit(index){
  ensure();
@@ -201,10 +205,10 @@ mazeHost.addEventListener('click',e=>{
 });
 mazeHost.addEventListener('keydown',e=>{
  const d={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];
- if(d){e.preventDefault();move(d);}
+ if(d){e.preventDefault();e.stopPropagation();move(d);}
 });
 let touchStart=null;
-mazeHost.addEventListener('touchstart',e=>{if(e.touches.length===1)touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
+mazeHost.addEventListener('touchstart',e=>{touchStart=null;if(e.touches.length===1&&e.target.closest?.('.hga-maze'))touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
 mazeHost.addEventListener('touchend',e=>{
  if(!touchStart||!e.changedTouches.length)return;
  const dx=e.changedTouches[0].clientX-touchStart.x,dy=e.changedTouches[0].clientY-touchStart.y;touchStart=null;
@@ -230,10 +234,10 @@ document.addEventListener('keydown',e=>{
  if(direction){e.preventDefault();move(direction);}
 });
 function gamesIsActive(){return document.getElementById('games')?.classList?.contains('active');}
-function pause(){stopAim();aimPaused=!!(aim?.started&&!aim.fail&&!aim.win);}
+function pause(){if(aim?.started&&!aim.fail&&!aim.win){stopAim();aimPaused=true;drawAim();}}
 document.addEventListener('visibilitychange',()=>{
  if(document.visibilityState==='hidden'){if(aim?.started&&!aim.fail&&!aim.win){stopAim();aimPaused=true;}}
- else if(aimPaused&&aim?.started&&!aim.fail&&!aim.win){aimPaused=false;aimLastTick=Date.now();aimTimer=setInterval(tick,100);}
+ else if(aimPaused&&aim?.started&&!aim.fail&&!aim.win&&gamesIsActive()){aimPaused=false;aimLastTick=Date.now();aimTimer=setInterval(tick,100);drawAim();}
 });
 host.HealthGoArcade40=Object.freeze({refresh,pause,mazeLevel,move,hit,startAim,score,getState:function(){ensure();return JSON.parse(JSON.stringify(state));}});
 refresh();
