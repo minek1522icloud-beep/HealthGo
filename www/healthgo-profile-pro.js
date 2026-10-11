@@ -218,6 +218,7 @@ function render(){
  '<button type="button" class="hgp-x" data-profile-action="close" aria-label="Zamknij">×</button></header>'+
  '<div class="hgp-profile-scroll">'+(state.message?'<p class="hgp-notice" role="status">'+esc(state.message)+'</p>':'')+content+'</div>'+
  '</div>';
+ window.HealthGoBadgeBoard?.hydrate(shell);
 }
 function open(mode,userId){
  refreshAccount();if(!uid())return;

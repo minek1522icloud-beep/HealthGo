@@ -1,4 +1,4 @@
-/* HealthGo 3.0.4 — original user badge board, reliably converted to native individual PNG previews on iOS.
+/* HealthGo 3.0.5 — original user artwork cropped directly to one canvas per badge.
  * Each image is an actual region of the board, not a generated replacement emblem.
  * Portrait image ratio: 1055 x 1491; 14 columns x 18 rows of badges.
  * Viewer is honest 2.5D: front is the supplied picture, back is a decorative card. */
@@ -125,44 +125,20 @@ function paint(canvas,force){
  ctx.fillText(atlasError?'Grafika offline':'Ładowanie...',w/2,h/2);
  canvas.dataset.hgabStatus=atlasError?'offline':'loading';
 }
-/* Native isolated bitmap for Safari: crop the atlas once into standalone local PNGs.
- * Only items currently mounted in the UI are converted. A bounded SVG crop stays
- * as the visual fallback if Canvas export is unsupported. */
-var tileImages=new Map();
-function isolatedImage(index){
- if(tileImages.has(index))return tileImages.get(index);
- if(!atlas||typeof document==='undefined')return null;
- var rect=cropRect(index),canvas=document.createElement('canvas');
- canvas.width=192;canvas.height=192;
- var ctx=canvas.getContext('2d');
- if(!ctx)return null;
- ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
- ctx.drawImage(atlas,rect.x,rect.y,rect.w,rect.h,0,0,192,192);
- var src=canvas.toDataURL('image/png');
- if(!src||src.length<80)return null;
- if(tileImages.size>250)tileImages.clear();
- tileImages.set(index,src);
- return src;
-}
+/* Each thumbnail is a real 192px canvas crop, NOT a scaled photo or nested SVG.
+ * This prevents adjacent medals appearing on iOS WebKit. */
 function hydrate(root){
  if(!root||typeof root.querySelectorAll!=='function')return;
  var nodes=[];
  if(root.matches?.('.hgab-photo[data-hgab-index]'))nodes.push(root);
  for(var node of root.querySelectorAll('.hgab-photo[data-hgab-index]'))nodes.push(node);
  if(!nodes.length)return;
- if(!atlas&&!atlasError)loadAtlas();
- if(!atlas)return;
+ if(!atlas&&!atlasPending&&!atlasError)loadAtlas();
  for(var badge of nodes){
-  if(badge.dataset.hgabReady==='1')continue;
-  var idx=Number(badge.getAttribute('data-hgab-index')||0);
-  try{
-   var url=isolatedImage(idx);if(!url)continue;
-   var img=document.createElement('img');
-   img.className='hgab-isolated-image';img.alt='';
-   img.setAttribute('aria-hidden','true');img.decoding='async';img.src=url;
-   badge.replaceChildren(img);
-   badge.dataset.hgabReady='1';
-  }catch(err){host.console?.warn?.('Could not create a single badge image',err);}
+  var canvas=badge.querySelector('canvas.hgab-crop');
+  if(!canvas)continue;
+  if(canvas.dataset.hgabStatus==='art'&&atlas)continue;
+  paint(canvas,true);
  }
 }
 function watch(){
@@ -180,17 +156,10 @@ function watch(){
 }
 
 function front(item,extra){
- var idx=artIndex(item),name=esc(item?.name||'Odznaka'),r=cropRect(idx);
- // A fixed SVG viewport clips a SINGLE badge. No CSS translate, 1500%-wide <img>, Canvas or WebGL.
- // This avoids Safari's image offset/scale bug that previously showed adjacent medals.
- return '<span class="hgab-photo '+(extra||'')+'" data-hgab-index="'+idx+'">'+
- '<svg xmlns="http://www.w3.org/2000/svg" class="hgp-medal-svg hgab-single" viewBox="'+
- r.x+' '+r.y+' '+r.w+' '+r.h+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+name+'">'+
- '<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" fill="#071b16"/>'+
- '<image href="'+SOURCE+'" x="0" y="0" width="1055" height="1491" preserveAspectRatio="none"/>'+
- '</svg></span>';
+ var idx=artIndex(item),name=esc(item?.name||'Odznaka');
+ return '<span class="hgab-photo '+(extra||'')+'" data-hgab-index="'+idx+'" role="img" aria-label="'+name+'">'+
+   '<canvas class="hgab-crop" width="192" height="192" data-hgab-index="'+idx+'" aria-hidden="true"></canvas></span>';
 }
-
 function thumbnail(item){
  item=item||{};
  var locked=!item.earned&&!item.prototype;

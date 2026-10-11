@@ -204,6 +204,7 @@
     syncAccount();
     root.innerHTML=hero()+tabs()+(window.HealthGoRewards?window.HealthGoRewards.starterBanner()+window.HealthGoRewards.dailyBanner():'')+'<div id="hgpackPanel">'+(owner?viewHtml():emptyPanel('Zaloguj się do HealthGo','Plecak pokazuje nagrody i zapisuje listy dopiero po rozpoznaniu Twojego konta.','lock'))+'</div>';
     page.classList.add('hgpack-ready');
+    window.HealthGoBadgeBoard?.hydrate(root);
     if(ui.modal&&owner)displayModal();
   }
   function badgeDetail(item){

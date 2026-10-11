@@ -123,3 +123,16 @@ body.hgab-open{overflow:hidden}
  border:0!important;border-radius:0!important;margin:0!important;padding:0!important;
  background:#081b14!important;
 }
+
+/* 3.0.5 reliable Safari canvas mode: ONE crop per badge. Previous SVG and poster-image
+ * overrides are intentionally superseded; an unloaded frame shows a status instead of black. */
+#hgPackProRoot .hgab-photo canvas.hgab-crop,
+#hgProfileProOverlay .hgab-photo canvas.hgab-crop,
+#hgCollectorRoom .hgab-photo canvas.hgab-crop,
+#hgBadgeArtInspect .hgab-photo canvas.hgab-crop{
+ position:relative!important;inset:auto!important;z-index:3!important;
+ display:block!important;visibility:visible!important;opacity:1!important;
+ width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
+ aspect-ratio:1/1!important;object-fit:contain!important;
+ background:#0f2d22!important;filter:none!important;transform:none!important;
+}
