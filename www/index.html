@@ -353,8 +353,9 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-more-list-v5.css?v=1">
   <link rel="stylesheet" href="./healthgo-pack-pro.css?v=2">
   <link rel="stylesheet" href="./healthgo-rewards.css?v=3">
-  <link rel="stylesheet" href="./healthgo-profile-pro.css?v=2">
-  <link rel="stylesheet" href="./healthgo-badge-3d.css?v=1">
+  <link rel="stylesheet" href="./healthgo-profile-pro.css?v=3">
+  <link rel="stylesheet" href="./healthgo-badge-3d.css?v=2">
+  <link rel="stylesheet" href="./healthgo-collector-room.css?v=1">
   <link rel="stylesheet" href="./healthgo-friends.css?v=1">
   <link rel="stylesheet" href="./healthgo-release-notes.css?v=1">
 </head>
@@ -418,7 +419,7 @@ html.hg-session-known #authScreen{display:none!important}
     <button data-page="devices">⌚ <span>Urządzenia</span></button>
   </div>
   <div class="sidebar-footer">
-    <button class="sidebar-account" type="button" onclick="go('settings')">
+    <button class="sidebar-account" type="button" onclick="window.HealthGoProfile?window.HealthGoProfile.open('me'):go('settings')" aria-label="Mój profil HealthGo">
       <span id="sidebarAvatar" class="user-avatar">H</span>
       <span class="sidebar-user-copy"><b id="sidebarNick">Konto HealthGo</b><small id="sidebarAccountType">Ustaw konto</small></span>
       <span>⚙️</span>
@@ -430,7 +431,7 @@ html.hg-session-known #authScreen{display:none!important}
 <header class="top">
   <h1 id="title">Start</h1>
   <div class="top-account">
-    <button class="account-pill" type="button" onclick="go('settings')">
+    <button class="account-pill" type="button" onclick="window.HealthGoProfile?window.HealthGoProfile.open('me'):go('settings')" aria-label="Mój profil HealthGo">
       <span id="topAvatar" class="user-avatar">H</span>
       <span id="topNick" class="account-name">Konto HealthGo</span>
     </button>
@@ -3233,11 +3234,12 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-plan-v4.js?v=2"></script>
 <script src="./healthgo-collectible-art.js?v=2"></script>
 <script src="./healthgo-medals.js?v=2"></script>
-<script src="./healthgo-badge-3d.js?v=1"></script>
+<script src="./healthgo-badge-3d.js?v=2"></script>
+<script src="./healthgo-collector-room.js?v=1"></script>
 <script src="./healthgo-rewards.js?v=4"></script>
 <script src="./healthgo-pack-pro.js?v=6"></script>
 <script src="./healthgo-friends.js?v=1"></script>
-<script src="./healthgo-release-notes.js?v=5"></script>
-<script src="./healthgo-profile-pro.js?v=3"></script>
+<script src="./healthgo-release-notes.js?v=6"></script>
+<script src="./healthgo-profile-pro.js?v=4"></script>
 </body>
 </html>

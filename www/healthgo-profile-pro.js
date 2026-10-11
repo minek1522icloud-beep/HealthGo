@@ -111,16 +111,46 @@ function headerCard(p,isSelf){
  (list.length?list.map(function(x){var medal=window.HealthGoBadge3D?.thumbnail({id:x.id||x.code,name:x.name,earned:true,category:x.category||'badges',rarity:x.rarity||'common'})||window.HealthGoMedalArt?.render({id:x.id||x.code,name:x.name,earned:true,category:x.category||'badges',rarity:x.rarity||'common'},false)||'★';return '<div class="hgp-feature"><button type="button" class="hgp-featured-inspect" data-profile-inspect="'+esc(x.id||x.code)+'" aria-label="Obejrzyj 3D: '+esc(x.name)+'"><div>'+medal+'</div><span>'+esc(x.name)+'</span></button></div>';}).join(''):
  '<p class="hgp-muted">Brak wyróżnionych odznak.</p>')+'</div></div>';
 }
+
+function selectedShowcase(visitor){
+ if(visitor){
+  return (Array.isArray(state.card?.featured)?state.card.featured:[]).map(function(b){
+   return {id:String(b.code||''),name:String(b.name||'Odznaka'),rarity:b.rarity||'common',earned:true,category:b.category||'badges'};
+  });
+ }
+ var selected=(state.local?.featured||[]);
+ return badges().filter(function(b){return selected.includes(b.id);}).slice(0,6);
+}
+function roomLaunch(visitor){
+ var total=selectedShowcase(visitor).length;
+ return '<div class="hgp-room-launch"><div><span class="hgp-room-stats">HEALTHGO COLLECTOR EDITION</span>'+
+ '<b>Pokój Kolekcjonera 3D</b><small>'+total+' z 6 medali · szklane gabloty, światła i podgląd 360°</small></div>'+
+ '<button type="button" data-profile-action="room">Wejdź do pokoju ↗</button></div>';
+}
+function openRoom(){
+ if(!window.HealthGoCollectorRoom)return;
+ var visitor=state.visitor!==null;
+ // The server already checked visibility of a visitor's profile. No other fields are sent.
+ if(visitor&&(!state.card||!state.card.available))return;
+ window.HealthGoCollectorRoom.open({
+  owner:visitor?String(state.card.nickname||'Kolekcja HealthGo'):nickname(),
+  items:selectedShowcase(visitor),
+  self:!visitor
+ });
+}
+
 function menu(){
  var p=state.local||defaults();
- return headerCard(p,true)+
+ return headerCard(p,true)+roomLaunch(false)+
  '<div class="hgp-menu">'+
  menuButton('edit','Edytuj profil','Awatar, tapeta, ramka i opis','settings')+
  menuButton('friends','Znajomi','Znajomi i zaproszenia','users')+
+ menuButton('room','Pokój trofeów','Interaktywna gablota sześciu zdobytych odznak','layers')+
  menuButton('cosmetics','Moja kolekcja','Naklejki, skrzynie, tekstury i tapety','gift')+
  menuButton('looks','Zapisane zestawy','Szybka zmiana wyglądu','layers')+
  menuButton('privacy','Prywatność profilu','Kto może oglądać mój profil','lock')+
  menuButton('updates','Co nowego?','Dziennik zmian HealthGo','sparkles')+
+ menuButton('settings','Ustawienia','Preferencje i zarządzanie kontem','settings')+
  '</div>';
 }
 function menuButton(action,name,sub,icon){
@@ -179,7 +209,7 @@ function render(){
  var shell=document.getElementById('hgProfileProOverlay');if(!shell)return;
  var child=state.visitor!==null;
  var content=child?(state.loading?'<p class="hgp-loading">Wczytuję profil…</p>':state.card?.available?headerCard(state.card,false)+
- '<div class="hgp-editor"><p class="hgp-muted">Zobacz udostępnione ozdoby i odznaki tego użytkownika. Dane zdrowotne nie są publiczne.</p>'+
+ roomLaunch(true)+'<div class="hgp-editor"><p class="hgp-muted">Zobacz udostępnione ozdoby i odznaki tego użytkownika. Dane zdrowotne nie są publiczne.</p>'+
  (state.card.is_friend?'<span class="hgp-friend-approved">✓ Jesteście znajomymi</span>':'<span class="hgp-muted">Aby dodać tę osobę, użyj jej kodu zaproszeń.</span>')+'</div>':'<p class="hgp-loading">Ten profil jest prywatny lub niedostępny.</p>'):
  (state.tab==='menu'?menu():editor(state.tab));
  shell.innerHTML='<div class="hgp-profile-panel" role="dialog" aria-modal="true" aria-label="Profil HealthGo">'+
@@ -292,6 +322,8 @@ function onClick(e){
  if(act==='close'){close();return;}
  if(act==='back'){if(state.visitor){state.visitor=null;state.card=null;state.tab='friends';render();}else if(state.tab!=='menu'){state.tab='menu';state.message='';render();}else close();return;}
  if(act==='edit'||act==='privacy'||act==='friends'||act==='looks'){state.tab=act;state.message='';render();return;}
+ if(act==='room'){openRoom();return;}
+ if(act==='settings'){close();if(typeof window.mobileGo==='function')window.mobileGo('settings');else if(typeof window.go==='function')window.go('settings');return;}
  if(act==='cosmetics'){close();window.HealthGoPackPro?.open('gifts');return;}
  if(act==='updates'){close();window.HealthGoWhatsNew?.show();return;}
  if(act==='friend-settings'){close();if(typeof window.mobileGo==='function')window.mobileGo('settings');var node=document.getElementById('hgFriendsPanel');if(node)node.scrollIntoView({behavior:'smooth',block:'start'});return;}
@@ -340,6 +372,20 @@ function onKey(e){
  if(e.shiftKey&&document.activeElement===items[0]){e.preventDefault();items[items.length-1].focus();}
  else if(!e.shiftKey&&document.activeElement===items[items.length-1]){e.preventDefault();items[0].focus();}
 }
+function pinMedal(id){
+ refreshAccount();
+ if(!state.uid)return false;
+ var found=badges().find(function(item){return item.id===id&&item.earned;});
+ if(!found)return false;
+ var chosen=(state.local&&state.local.featured)||[];
+ if(chosen.includes(id))return true;
+ if(chosen.length>=6)return false;
+ state.local.featured=chosen.concat(id);
+ if(!store())return false;
+ // Server validates ownership of all chosen achievement IDs before publishing.
+ save();
+ return true;
+}
 function syncCosmetics(){
  refreshAccount();if(!state.uid)return;
  var p=state.local||defaults(),rewards=rewardState();
@@ -362,6 +408,6 @@ function attach(){
  applyAvatar();
 }
 Services.subscribe(function(s){refreshAccount();if(s.uid)applyAvatar();});
-window.HealthGoProfile={open:open,close:close,render:render,attach:attach,syncCosmetics:syncCosmetics};
+window.HealthGoProfile={open:open,close:close,render:render,attach:attach,syncCosmetics:syncCosmetics,pinMedal:pinMedal,openRoom:openRoom};
 attach();
 })();

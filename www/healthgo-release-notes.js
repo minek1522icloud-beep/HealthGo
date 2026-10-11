@@ -3,9 +3,26 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-2.5-badge-forge-20261011';
-var TITLE='240 modeli 3D, obracanie 360° i gablota';
+var RELEASE='healthgo-2.6-collector-world-20261011';
+var TITLE='Pokój Kolekcjonera i gablota 3D';
 var sections=[
+ {title:'🏛️ Twój Pokój Kolekcjonera',items:[
+  'Po kliknięciu swojego awatara na ekranie Start otworzysz Mój profil, a nie ustawienia.',
+  'W profilu dostępny jest Pokój Kolekcjonera z sześcioma podświetlanymi gablotami dla naprawdę zdobytych odznak.',
+  'Wybierz szmaragdowy, arktyczny lub królewski wystrój pokoju. Własny wybór jest zapisywany na telefonie.',
+  'Kliknij odznakę w pokoju, aby otworzyć jej obracany podgląd 360°.',
+  'Możesz zapisać lokalnie kolekcjonerską kartę SVG. Nie zawiera prywatnych danych zdrowotnych.'
+ ]},
+ {title:'✨ Profesjonalne Inspect 3D',items:[
+  'W gablocie odznaka unosi się nad podświetlanym cokołem w szklanej ekspozycji.',
+  'Możesz obracać palcem, powiększać, włączyć autoobrót i przełączać oświetlenie szmaragdowe, arktyczne lub złote.',
+  'Można też zapisać PNG przy włączonym WebGL lub przypiąć własną zdobytą odznakę do gabloty.',
+  'Modele dostały 24 wzory środkowych emblematów dopasowywanych do kategorii osiągnięć.'
+ ]},
+ {title:'🎁 Darmowe kolekcje',items:[
+  'Naklejki holograficzne, darmowe kosmetyczne skrzynie i codzienny upominek pozostają dostępne bez kupowania losowań.',
+  'Osiągnięcia, XP i informacje zdrowotne nadal pochodzą z prawdziwych danych, nie z pokazowych wartości.'
+ ]},
  {title:'🏅 240 autorskich modeli 3D',items:[
   'W Plecak → Ekwipunek znajdziesz katalog 240 różnych brył odznak. Można je oglądać, ale katalog sam w sobie nie przyznaje osiągnięć ani XP.',
   'Modele mają osobne kontury, reliefy, wystające części, zróżnicowaną grubość, metaliczne materiały i grawerunki.',
@@ -141,7 +158,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.5</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.6</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+

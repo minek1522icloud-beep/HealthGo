@@ -1,0 +1,51 @@
+/* HealthGo Collector Room 2.6 — independently styled showcase without exposing health data */
+body.hgcr-open{overflow:hidden}
+#hgCollectorRoom.hgcr-overlay{position:fixed;inset:0;z-index:490000;padding:max(9px,env(safe-area-inset-top,0px)) max(9px,env(safe-area-inset-right,0px)) max(9px,env(safe-area-inset-bottom,0px)) max(9px,env(safe-area-inset-left,0px));background:rgba(0,8,6,.93);display:flex;justify-content:center;align-items:center;color:#eafff2}
+#hgCollectorRoom *{box-sizing:border-box}
+#hgCollectorRoom .hgcr-dialog{width:min(100%,670px);max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 16px);display:flex;flex-direction:column;overflow:hidden;border-radius:22px;border:1px solid #538e72;background:radial-gradient(ellipse at 50% 0%,#214b3a,#0a1b15 60%);box-shadow:0 30px 100px #000e,inset 0 2px 0 #d7ffed22}
+#hgCollectorRoom .hgcr-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 17px;background:#102c22;border-bottom:1px solid #407357}
+#hgCollectorRoom .hgcr-toolbar small{font-size:9px;letter-spacing:.16em;font-weight:850;color:#91f4c2}
+#hgCollectorRoom .hgcr-toolbar h2{margin:4px 0 0;font-size:19px;line-height:1.1}
+#hgCollectorRoom button{font:inherit;cursor:pointer}
+#hgCollectorRoom .hgcr-toolbar button{width:40px;height:40px;flex:0 0 40px;background:#174233;color:#edfff3;border:1px solid #508b70;border-radius:12px;font-size:27px;line-height:1}
+#hgCollectorRoom button:focus-visible{outline:2px solid #a4ffde;outline-offset:2px}
+#hgCollectorRoom .hgcr-scroll{overflow-y:auto;overscroll-behavior:contain;padding:14px;min-height:0}
+#hgCollectorRoom .hgcr-lead{text-align:center;padding:8px 0 14px}
+#hgCollectorRoom .hgcr-lead>span{color:#7befbb;font-size:10px;letter-spacing:.14em;font-weight:800}
+#hgCollectorRoom .hgcr-lead h3{font-size:20px;margin:6px 0;overflow-wrap:anywhere}
+#hgCollectorRoom .hgcr-lead p{font-size:11px;color:#bedcc9;margin:0}
+#hgCollectorRoom .hgcr-theme-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 14px}
+#hgCollectorRoom .hgcr-theme-picker button{min-width:0;padding:9px 4px;border:1px solid #3e7056;border-radius:10px;background:#17372a;color:#c6edda;font-size:11px;font-weight:650}
+#hgCollectorRoom .hgcr-theme-picker button.active{border-color:#8cf7b9;background:#266a4a;color:#f6fff9;box-shadow:0 0 0 1px #5fca9677}
+#hgCollectorRoom .hgcr-room{position:relative;isolation:isolate;overflow:hidden;min-height:335px;padding:24px 14px 27px;border:1px solid var(--hgcr-border,#4a9f77);border-radius:20px;background:radial-gradient(ellipse at 50% 3%,var(--hgcr-glow,#266b55),transparent 48%),linear-gradient(150deg,var(--hgcr-bg,#091b17),#05100d);box-shadow:inset 0 0 58px #0007,0 17px 34px #0008}
+#hgCollectorRoom .hgcr-room.hgcr-theme-emerald{--hgcr-border:#65ce9b;--hgcr-glow:#2c9476;--hgcr-bg:#10352c;--hgcr-lamp:#c6ffdc;--hgcr-metal:#b8deb0}
+#hgCollectorRoom .hgcr-room.hgcr-theme-aurora{--hgcr-border:#8abfff;--hgcr-glow:#3078c1;--hgcr-bg:#162d4e;--hgcr-lamp:#c8f6ff;--hgcr-metal:#b8d9ff}
+#hgCollectorRoom .hgcr-room.hgcr-theme-royal{--hgcr-border:#e1b978;--hgcr-glow:#966a2d;--hgcr-bg:#372c21;--hgcr-lamp:#ffe4ac;--hgcr-metal:#eaca8c}
+#hgCollectorRoom .hgcr-roof{position:absolute;top:0;left:0;right:0;height:34px;background:linear-gradient(180deg,#effff011,#ffffff02);border-bottom:1px solid var(--hgcr-border);pointer-events:none}
+#hgCollectorRoom .hgcr-roof:before{content:"";position:absolute;inset:8px 10px auto;height:5px;border-radius:10px;background:linear-gradient(90deg,transparent,var(--hgcr-lamp),transparent);filter:blur(5px);opacity:.5}
+#hgCollectorRoom .hgcr-room-horizon{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 16%,#ffffff08 16.2% 16.35%,transparent 17%),linear-gradient(transparent 69%,#ffffff07 70%,transparent 72%);pointer-events:none}
+#hgCollectorRoom .hgcr-room-tiles{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;max-width:570px;margin:auto}
+#hgCollectorRoom .hgcr-podium{position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;min-width:0;min-height:156px;overflow:hidden;padding:10px 4px 9px;border:1px solid #ffffff3d;border-radius:14px;background:linear-gradient(115deg,#ddffe916,#ffffff04 33%,#bedec014 59%,#ffffff06);box-shadow:inset 0 0 18px #fff1,0 7px 15px #0007;color:#f0fff6;text-align:center}
+#hgCollectorRoom button.hgcr-podium{width:100%;cursor:pointer}
+#hgCollectorRoom .hgcr-podium:before{content:"";position:absolute;z-index:-1;top:0;left:0;right:0;height:72%;background:linear-gradient(90deg,#ffffff10,transparent 32%,#ffffff18 34%,transparent 35%,transparent 65%,#ffffff12 66%,transparent 70%);pointer-events:none}
+#hgCollectorRoom .hgcr-spotlight{position:absolute;z-index:-1;top:-18px;width:90%;height:112px;background:conic-gradient(from 105deg at 50% 0%,transparent 20deg,var(--hgcr-lamp) 80deg,transparent 140deg);filter:blur(18px);opacity:.2;pointer-events:none}
+#hgCollectorRoom .hgcr-podium-art{position:relative;z-index:2;display:grid;place-items:center;min-height:96px;height:96px;filter:drop-shadow(0 8px 8px #0009)}
+#hgCollectorRoom .hgcr-podium-art svg.hgp-medal-svg{width:96px;height:96px;max-width:100%;object-fit:contain}
+#hgCollectorRoom .hgcr-podium-dais{height:13px;width:76%;max-width:98px;border-radius:50%;background:radial-gradient(ellipse at 50% 20%,var(--hgcr-lamp),#52725b 45%,#0a1a13 80%);border:1px solid var(--hgcr-metal);box-shadow:0 0 10px var(--hgcr-border),0 6px 8px #0009;flex-shrink:0}
+#hgCollectorRoom .hgcr-medal-label{font-size:10px;font-weight:800;line-height:1.25;color:#e8fff2;min-height:13px;overflow-wrap:anywhere}
+#hgCollectorRoom .hgcr-podium small{font-size:8px;letter-spacing:.08em;color:#a5cbb5}
+#hgCollectorRoom .hgcr-empty-medal{font-size:63px;color:#eaffef55;flex:1;display:grid;place-items:center}
+#hgCollectorRoom .hgcr-empty{opacity:.56}
+#hgCollectorRoom .hgcr-floor{position:absolute;inset:auto 0 0;height:15px;background:linear-gradient(180deg,var(--hgcr-border),#04110e);opacity:.56;pointer-events:none}
+#hgCollectorRoom .hgcr-hint,#hgCollectorRoom .hgcr-privacy{font-size:11px;color:#afd3bb;line-height:1.6;text-align:center;margin:13px 6px}
+#hgCollectorRoom .hgcr-privacy{font-size:10px;color:#8fae99}
+#hgCollectorRoom .hgcr-edit,#hgCollectorRoom .hgcr-snapshot{display:block;width:100%;margin-top:9px;padding:12px;border-radius:11px;font-size:12px;font-weight:850;min-height:45px}
+#hgCollectorRoom .hgcr-edit{border:1px solid #9bfbd3;background:linear-gradient(125deg,#75e8b3,#4cbb90);color:#0a271a}
+#hgCollectorRoom .hgcr-snapshot{border:1px solid #648870;background:linear-gradient(130deg,#1c4835,#102c23);color:#e0f9e9}
+#hgProfileProOverlay .hgp-room-launch{display:flex;gap:13px;align-items:center;justify-content:space-between;margin:12px 0;padding:14px;background:radial-gradient(ellipse at 95% 0%,#297b5a,#153729 60%);border:1px solid #82c99d;border-radius:16px}
+#hgProfileProOverlay .hgp-room-launch b{display:block;font-size:15px;color:#f0fff8}
+#hgProfileProOverlay .hgp-room-launch small{display:block;font-size:11px;color:#b9e8cd;line-height:1.5;margin-top:4px}
+#hgProfileProOverlay .hgp-room-launch button{flex:0 0 auto;border:1px solid #9cfbd2;border-radius:11px;background:#69dbab;color:#092619;padding:11px 12px;font-size:12px;font-weight:800}
+#hgProfileProOverlay .hgp-room-stats{font-size:10px;font-weight:800;color:#85e9b2;letter-spacing:.11em}
+@media(max-width:480px){#hgCollectorRoom .hgcr-scroll{padding:10px}#hgCollectorRoom .hgcr-room{padding:23px 6px 20px}#hgCollectorRoom .hgcr-room-tiles{gap:6px}#hgCollectorRoom .hgcr-podium{min-height:142px;padding:5px 3px 7px}#hgCollectorRoom .hgcr-podium-art{height:79px;min-height:79px}#hgCollectorRoom .hgcr-podium-art svg.hgp-medal-svg{width:78px;height:79px}#hgCollectorRoom .hgcr-medal-label{font-size:9px}#hgCollectorRoom .hgcr-theme-picker button{font-size:10px}#hgProfileProOverlay .hgp-room-launch{flex-wrap:wrap}#hgProfileProOverlay .hgp-room-launch button{width:100%}}
+@media(prefers-reduced-motion:reduce){#hgCollectorRoom .hgcr-spotlight{filter:none}}

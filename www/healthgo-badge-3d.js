@@ -173,6 +173,62 @@ function chestModel(type){
 }
 
 
+
+/* Iconographic centrepieces: silhouettes follow the subject of each badge, not just its rarity. */
+var CRESTS=[
+ 'M0-47 C-50-77 -75-19 0 43 C75-19 50-77 0-47Z',
+ 'M-9-51 L10-51 3-17 28-5 49 36 27 45 1 10 -19 32 -44 13 -28-1Z',
+ 'M-20 45 L-37 14 -10-11 8-56 28-16 44 13 20 45Z',
+ 'M-43 10 L-20-42 0-12 23-42 44 10 36 41 -36 41Z',
+ 'M-47 28 L-19-40 0-19 21-49 47 28 24 45 0 14 -23 45Z',
+ 'M0-53 L33-30 40 13 0 50 -40 13 -33-30Z',
+ 'M-3 48 C-42 22 -40-14 -12-43 C10-61 43-15 24 18 L6 38Z',
+ 'M0-53 L13-13 47-10 20 9 28 47 0 23 -28 47 -20 9 -47-10 -13-13Z',
+ 'M-43 7 L-18-6 -11-40 0-23 11-40 18-6 43 7 29 40 -29 40Z',
+ 'M-14-50 L14-50 14-5 43-5 43 18 14 18 14 49 -14 49 -14 18 -43 18 -43-5 -14-5Z',
+ 'M-41 39 L-41-39 2-29 2 40Z M5-29 L41-39 41 39 5 40Z',
+ 'M0-52 C31-27 36-6 5 15 L0 48 -9 8 C-40-16 -21-27 0-52Z',
+ 'M-32 39 C-44 6 -5-49 6-46 C30-35 43-12 32 39 L0 51Z',
+ 'M-46 30 L-14-34 12-5 26-41 47 30Z',
+ 'M0-54 L14-16 51 0 14 15 0 54 -15 15 -51 0 -15-16Z',
+ 'M-42 25 C-36-33 -2-39 9-18 C40-37 47 6 32 30Z',
+ 'M-45 0 L0-46 45 0 0 46Z',
+ 'M-24-46 L24-46 38-26 30 9 0 48 -30 9 -38-26Z',
+ 'M-45-28 L45-28 34 22 0 50 -34 22Z',
+ 'M0-51 C42-48 50-5 18 10 C11 34-3 49-15 49 C-42 40-49-6-25-32Z',
+ 'M-42-30 L-12-42 12-30 42-42 30-12 42 12 30 42 0 30 -30 42 -42 12 -30-12Z',
+ 'M-46 10 C-26-32 20-48 46 5 L21 42 -20 42Z',
+ 'M-37 37 L-37-24 0-43 37-24 37 37Z',
+ 'M-36 31 L-36-22 0-44 36-22 36 31 L0 49Z'
+];
+function crestIndex(item,seed){
+ var phrase=String((item?.name||'')+' '+(item?.category||'')+' '+(item?.id||'')).toLowerCase();
+ var keywords=[
+ /serc|heart|zdrow|health|tęt|pulse/,/bieg|run|krok|step|sport/,
+ /kryszt|crystal|gem|diament/,/koron|król|crown|elite/,
+ /gór|mountain|explor|odkryw|map/,/tarc|shield|straż/,
+ /liś|leaf|natur|las|forest/,/gwiazd|star|kosmo/,
+ /zwyci|trophy|puchar|wyzwan|challenge/,/medy|doctor|szpital/,
+ /książ|book|learn|plan|nauka/,/ogień|flame|streak|seria/,
+ /wod|water|kropl|drink|hydr/,/wędrow|trail|hike/,
+ /słoń|sun|dzień|pogod/,/spok|relax|odpoczy|meditat/,
+ /kompas|cel|target|aim/,/diament|obsyd|metal/,
+ /dom|home|family|rodzin/,/mózg|brain|myśl/,
+ /przyj|friend|social|community/,/burz|lightning|energy|xp/,
+ /kalendarz|calendar|daily/,/level|poziom|ranga/
+ ];
+ for(var i=0;i<keywords.length;i++){if(keywords[i].test(phrase))return i;}
+ return seed%CRESTS.length;
+}
+function crestGlyph(item,seed,fill,stroke){
+ var id=crestIndex(item,seed),outline=CRESTS[id];
+ var symbol='<path d="'+outline+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
+ if(id===0)symbol+='<path d="M-30 0H-13L-2 -20 9 20 21 0H34" stroke="'+stroke+'" stroke-width="5" fill="none"/>';
+ if(id===2||id===17)symbol+='<path d="M-15 9 0-18 17 9 0 33Z" fill="'+stroke+'" opacity=".6"/>';
+ if(id===14||id===7)symbol+='<circle cx="0" cy="0" r="15" fill="'+stroke+'"/>';
+ return '<g>'+symbol+'</g>';
+}
+
 var thumbCache=new Map();
 function thumbnail(item){
  item=item||{};var id=String(item.id||'preview'),isLocked=!item.earned&&!item.prototype,rarity=item.rarity||'common';
@@ -200,7 +256,8 @@ function thumbnail(item){
  '<polygon points="'+band+'" fill="'+inner+'" stroke="'+shine+'" stroke-width="4"/>'+
  '<circle r="53" fill="none" stroke="'+border+'" stroke-width="3"/>'+
  texture+'<polygon points="'+motif.join(' ')+'" fill="'+border+'" stroke="'+shine+'" stroke-width="3"/>'+
- '<circle r="'+(13+(seed%6))+'" fill="'+inner+'" stroke="'+shine+'" stroke-width="3"/>'+
+ '<circle r="'+(13+(seed%6))+'" fill="'+inner+'" stroke="'+shine+'" stroke-width="3"/>'+ 
+ '<g transform="scale(.52)">'+crestGlyph(item,seed,shine,inner)+'</g>'+
  '<text x="0" y="-72" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="bold" letter-spacing="2" fill="'+shine+'">HEALTHGO</text>'+
  '<text x="0" y="91" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="'+shine+'">'+escapeHtml(('000'+(seed%1000)).slice(-3))+'</text></svg>';
  if(thumbCache.size>380)thumbCache.clear();
@@ -208,11 +265,11 @@ function thumbnail(item){
 }
 
 var VSHADER='attribute vec3 p;attribute vec3 n;attribute vec3 col;uniform vec3 rot;uniform float zoom;varying vec3 shade;varying vec3 norm;varying vec3 pos;void main(){float cx=cos(rot.x),sx=sin(rot.x),cy=cos(rot.y),sy=sin(rot.y);vec3 u=vec3(p.x,p.y*cx-p.z*sx,p.y*sx+p.z*cx);vec3 v=vec3(u.x*cy+u.z*sy,u.y,-u.x*sy+u.z*cy);vec3 un=vec3(n.x,n.y*cx-n.z*sx,n.y*sx+n.z*cx);norm=vec3(un.x*cy+un.z*sy,un.y,-un.x*sy+un.z*cy);shade=col;pos=v;float z=3.3-v.z;gl_Position=vec4(v.xy*zoom/z*1.8,v.z/4.,1.); }';
-var FSHADER='precision mediump float;varying vec3 shade;varying vec3 norm;varying vec3 pos;uniform float lit;void main(){vec3 N=normalize(norm);vec3 L=normalize(vec3(.5,.8,1.1));float diff=.29+.72*abs(dot(N,L));vec3 V=normalize(vec3(-pos.x*.1,-pos.y*.1,1.));float spec=pow(max(dot(reflect(-L,N),V),0.),26.)*.64;vec3 col=shade*diff+vec3(spec, spec*.96, spec*.82)+shade*.09*lit;gl_FragColor=vec4(clamp(pow(col,vec3(.88)),0.,1.),1.);}';
+var FSHADER='precision mediump float;varying vec3 shade;varying vec3 norm;varying vec3 pos;uniform float lit;uniform vec3 lightSource;void main(){vec3 N=normalize(norm);vec3 L=normalize(lightSource);float diff=.29+.72*abs(dot(N,L));vec3 V=normalize(vec3(-pos.x*.1,-pos.y*.1,1.));float spec=pow(max(dot(reflect(-L,N),V),0.),26.)*.64;vec3 col=shade*diff+vec3(spec, spec*.96, spec*.82)+shade*.09*lit;gl_FragColor=vec4(clamp(pow(col,vec3(.88)),0.,1.),1.);}';
 function shader(gl,type,src){var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
 function program(gl){var p=gl.createProgram();gl.attachShader(p,shader(gl,gl.VERTEX_SHADER,VSHADER));gl.attachShader(p,shader(gl,gl.FRAGMENT_SHADER,FSHADER));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));return p;}
 function context(canvas,mesh){
- var gl=canvas.getContext('webgl',{alpha:true,antialias:true,preserveDrawingBuffer:false});
+ var gl=canvas.getContext('webgl',{alpha:true,antialias:true,preserveDrawingBuffer:true});
  if(!gl)return null;
  var prog=program(gl);gl.useProgram(prog);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
  var buffers=[];
@@ -220,12 +277,13 @@ function context(canvas,mesh){
   var buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,data[1],gl.STATIC_DRAW);
   var loc=gl.getAttribLocation(prog,data[0]);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);buffers.push(buf);
  }
- var rot=gl.getUniformLocation(prog,'rot'),zoomLoc=gl.getUniformLocation(prog,'zoom'),litLoc=gl.getUniformLocation(prog,'lit');
- function draw(rx,ry,zoom){
+ var rot=gl.getUniformLocation(prog,'rot'),zoomLoc=gl.getUniformLocation(prog,'zoom'),litLoc=gl.getUniformLocation(prog,'lit'),lightLoc=gl.getUniformLocation(prog,'lightSource');
+ function draw(rx,ry,zoom,light){
   var w=canvas.clientWidth||300,h=canvas.clientHeight||300,dpr=Math.min(host.devicePixelRatio||1,2);
   var pw=Math.round(w*dpr),ph=Math.round(h*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
   gl.viewport(0,0,pw,ph);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   gl.uniform3f(rot,rx,ry,0);gl.uniform1f(zoomLoc,zoom);gl.uniform1f(litLoc,Math.sin(ry)*.3+.8);
+  var lights=[[.5,.8,1.1],[-.9,.4,1.3],[.3,-.9,1.5]],direction=lights[(light||0)%lights.length];gl.uniform3f(lightLoc,direction[0],direction[1],direction[2]);
   gl.drawArrays(gl.TRIANGLES,0,mesh.vertices.length/3);
  }
  return {draw:draw,release:function(){buffers.forEach(b=>gl.deleteBuffer(b));gl.deleteProgram(prog);}};
@@ -249,22 +307,30 @@ function open(item){
  close();item=item||{id:'preview',name:'Odznaka',earned:false};
  var stage=achievedStage(item),visualStage=Math.max(1,stage),mesh=item.previewChest?chestModel(item.chestType||'daily'):model(item,visualStage);
  var root=document.createElement('div');root.id='hgBadge3DInspect';root.className='hgb3d-overlay';root.setAttribute('role','presentation');
- var previous=document.activeElement,auto=false,raf=0,zoom=1.6,rx=-.24,ry=.35,drag=null,touches=new Map(),renderer=null,disposed=false;
+ var previous=document.activeElement,auto=false,raf=0,zoom=1.6,rx=-.24,ry=.35,drag=null,touches=new Map(),renderer=null,disposed=false,light=0;
  root.innerHTML='<div class="hgb3d-dialog" role="dialog" aria-modal="true" aria-labelledby="hgb3dTitle">'+
  '<div class="hgb3d-toolbar"><div><small>HEALTHGO · BADGE INSPECT 3D</small><h2 id="hgb3dTitle">'+escapeHtml(item.name||'Model odznaki')+'</h2></div>'+
  '<button type="button" data-hgb3d="close" aria-label="Zamknij podgląd 3D">×</button></div>'+
- '<div class="hgb3d-stage"><div class="hgb3d-light"></div><canvas class="hgb3d-canvas" aria-label="Interaktywny model 3D, przeciągnij palcem, aby go obrócić"></canvas>'+
+ '<div class="hgb3d-stage" data-hgb3d-light="0"><div class="hgb3d-light"></div>'+ 
+ '<div class="hgb3d-glass-case" aria-hidden="true"><span class="hgb3d-glass-top"></span><span class="hgb3d-glass-column"></span><span class="hgb3d-glass-base"></span></div>'+ 
+ '<canvas class="hgb3d-canvas" aria-label="Interaktywny model 3D, przeciągnij palcem, aby go obrócić"></canvas>'+ 
+ '<div class="hgb3d-pedestal" aria-hidden="true"><span>HEALTHGO · COLLECTOR</span></div>'+
  '<div class="hgb3d-fallback" hidden></div><div class="hgb3d-stage-label">MODEL '+escapeHtml(mesh.signature.toUpperCase())+'</div></div>'+
  '<div class="hgb3d-details"><span>'+escapeHtml(item.prototype?'Katalog modeli · projekt':item.earned?'Zdobyta odznaka':'Nieodkryta odznaka')+'</span>'+
  '<span>Ewolucja: '+stageLabel(stage)+'</span><span>Forma: '+escapeHtml(mesh.modelName)+'</span></div>'+
  '<p class="hgb3d-note">'+(item.previewChest?'Dotknij, aby obrócić prawdziwy model przestrzenny skrzyni, obejrzeć wieko, boki i zapięcie. Nie trzeba otwierać ani odbierać nagrody.':'Przesuń palcem, aby obracać o 360°. Rozsuń dwa palce, aby powiększyć. Każdy model ma własną bryłę, relief i grubość. Etapy ewolucji zależą wyłącznie od zdobytych odznak w tej kategorii.')+'</p>'+
  '<div class="hgb3d-controls"><button type="button" data-hgb3d="left">↶ Obróć</button><button type="button" data-hgb3d="right">Obróć ↷</button>'+
  '<button type="button" data-hgb3d="zoomout" aria-label="Oddal model">−</button><button type="button" data-hgb3d="zoomin" aria-label="Przybliż model">+</button>'+
- '<button type="button" data-hgb3d="auto" aria-pressed="false">Autoobrót</button><button type="button" data-hgb3d="reset">Reset</button></div>'+
+ '<button type="button" data-hgb3d="auto" aria-pressed="false">Autoobrót</button>'+ 
+ '<button type="button" data-hgb3d="light" aria-label="Zmień oświetlenie gabloty">Światło ✦</button>'+ 
+ '<button type="button" data-hgb3d="photo" aria-label="Zapisz zdjęcie modelu 3D">Zapisz PNG</button>'+ 
+ '<button type="button" data-hgb3d="reset">Reset</button>'+ 
+ ((!item.prototype&&!item.previewChest&&item.earned)?'<button type="button" data-hgb3d="showcase">Do gabloty</button>':'')+ 
+ '</div><p class="hgb3d-feedback" role="status" aria-live="polite"></p>'+
  (item.prototype?'<p class="hgb3d-note">To prototyp modelu do obejrzenia. Nie jest zdobytą odznaką i nie przyznaje XP.</p>':'')+'</div>';
  document.body.appendChild(root);document.body.classList.add('hgb3d-open');
  var canvas=root.querySelector('canvas'),fallback=root.querySelector('.hgb3d-fallback');
- function render(){if(disposed)return;if(renderer){renderer.draw(rx,ry,zoom);}else if(fallback){fallback.style.transform='perspective(700px) rotateX('+(-rx*180/Math.PI)+'deg) rotateY('+(ry*180/Math.PI)+'deg) scale('+clamp(zoom/1.6,.75,1.55)+')';}}
+ function render(){if(disposed)return;if(renderer){renderer.draw(rx,ry,zoom,light);}else if(fallback){fallback.style.transform='perspective(700px) rotateX('+(-rx*180/Math.PI)+'deg) rotateY('+(ry*180/Math.PI)+'deg) scale('+clamp(zoom/1.6,.75,1.55)+')';}}
  try{renderer=context(canvas,mesh);}catch(err){renderer=null;host.console?.warn?.('HealthGo 3D fallback',err);}
  if(!renderer){
   canvas.hidden=true;fallback.hidden=false;
@@ -281,7 +347,16 @@ function open(item){
   if(action==='close'){close();return;}if(action==='left')ry-=.35;
   if(action==='right')ry+=.35;if(action==='zoomin')zoom=clamp(zoom+.24,.85,3.4);
   if(action==='zoomout')zoom=clamp(zoom-.24,.85,3.4);
-  if(action==='reset'){rx=-.24;ry=.35;zoom=1.6;turnOff();}
+  if(action==='reset'){rx=-.24;ry=.35;zoom=1.6;light=0;root.querySelector('.hgb3d-stage').dataset.hgb3dLight='0';turnOff();}
+  if(action==='light'){light=(light+1)%3;root.querySelector('.hgb3d-stage').dataset.hgb3dLight=String(light);}
+  if(action==='showcase'){
+   var ok=host.HealthGoProfile?.pinMedal?.(item.id);
+   root.querySelector('.hgb3d-feedback').textContent=ok?'Dodano odznakę do Twojej gabloty.':'Możesz przypiąć tylko własne zdobyte odznaki; maksymalnie sześć.';
+  }
+  if(action==='photo'){
+   if(!renderer){root.querySelector('.hgb3d-feedback').textContent='Zapis PNG wymaga WebGL na tym urządzeniu.';return;}
+   try{render();var file=canvas.toDataURL('image/png');var link=document.createElement('a');link.href=file;link.download='healthgo-odznaka.png';document.body.appendChild(link);link.click();link.remove();root.querySelector('.hgb3d-feedback').textContent='Zapisano obraz odznaki.';}catch(e){root.querySelector('.hgb3d-feedback').textContent='Nie udało się zapisać obrazu na tym urządzeniu.';}return;
+  }
   if(action==='auto'){auto?turnOff():turnOn();return;}render();
  }
  function pointerDown(ev){turnOff();try{canvas.setPointerCapture(ev.pointerId);}catch(_){}touches.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});}
