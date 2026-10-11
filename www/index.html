@@ -362,7 +362,7 @@ html.hg-session-known #authScreen{display:none!important}
   <link rel="stylesheet" href="./healthgo-badge-shields.css?v=1">
   <link rel="stylesheet" href="./healthgo-games-contests.css?v=1">
   <link rel="stylesheet" href="./healthgo-arcade40.css?v=1">
-  <link rel="stylesheet" href="./healthgo-point.css?v=1">
+  <link rel="stylesheet" href="./healthgo-point.css?v=2">
 <link rel="stylesheet" href="./healthgo-unified-polish.css?v=1">
   <link rel="stylesheet" href="./healthgo-collector-room.css?v=1">
   <link rel="stylesheet" href="./healthgo-friends.css?v=1">
@@ -463,6 +463,11 @@ html.hg-session-known #authScreen{display:none!important}
     <div class="stat motion-stat"><div class="stat-icon">📍</div><div class="stat-value" id="distanceValue">Brak danych</div><div class="stat-label">Dystans · brak połączonego źródła</div></div>
     <div class="stat motion-stat"><div class="stat-icon">⏱️</div><div class="stat-value" id="activeValue">Brak danych</div><div class="stat-label">Aktywność · brak połączonego źródła</div></div>
     <div class="stat"><div class="stat-icon">😴</div><div class="stat-value" id="sleepValue">—</div><div class="stat-label">Sen · brak danych z urządzenia</div></div>
+  </div>
+
+  <div class="hpt-start-links" aria-label="HealthGo Point i przygody">
+    <button type="button" onclick="go('explore')"><span aria-hidden="true">🧭</span><span><strong>Poszukiwacz Skarbów</strong><small>Odkrywaj zatwierdzone, publiczne miejsca</small></span><b>→</b></button>
+    <button type="button" onclick="go('points')"><span aria-hidden="true">✦</span><span><strong>HealthGo Point</strong><small>Portfel <span id="hgPointHomeMini">0,0 HG</span> · Nagrody i znajomi</small></span><b>→</b></button>
   </div>
 
   <div class="start-layout">

@@ -60,3 +60,14 @@
 @media(max-width:850px){.hpt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hpt-sites{grid-template-columns:1fr}}
 @media(max-width:440px){.hpt-hero,.hpt-explore-hero{padding:18px;align-items:flex-start;flex-direction:column}.hpt-balance{width:100%;min-width:0}.hpt-grid{gap:10px}.hpt-item{padding:11px}.hpt-item .hpt-emoji{height:94px;font-size:48px}.hpt-item>div:last-child{flex-wrap:wrap}.hpt-site-photo{flex-basis:103px}.hpt-explore-hero>span{display:none}}
 @media(prefers-reduced-motion:reduce){.hpt-treasure-dialog *,#hgPointCenter *{animation:none!important;transition:none!important}}
+
+/* Integrated home links: remain touch friendly in narrow iPhone safe areas. */
+.hpt-start-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0 18px}
+.hpt-start-links>button{display:flex;align-items:center;gap:12px;min-width:0;text-align:left;border:1px solid #2c6d50;border-radius:17px;background:linear-gradient(140deg,#0f3b2d,#0a261e);color:#e6fff0;padding:15px;cursor:pointer;min-height:86px}
+.hpt-start-links>button>span:first-child{width:43px;height:43px;flex:0 0 43px;border-radius:13px;background:#1d5c42;color:#94f3b9;display:grid;place-items:center;font-size:25px}
+.hpt-start-links>button>span:nth-child(2){flex:1;min-width:0}
+.hpt-start-links strong{display:block;font-size:14px;line-height:1.3;color:#effff5}
+.hpt-start-links small{display:block;font-size:11px;line-height:1.45;margin-top:4px;color:#a1d7b8}
+.hpt-start-links button>b{color:#b1f7cd;font-size:18px}
+.hpt-start-links button:focus-visible{outline:3px solid #b4ffda;outline-offset:2px}
+@media(max-width:630px){.hpt-start-links{grid-template-columns:1fr;gap:9px}.hpt-start-links>button{min-height:75px;padding:12px}}

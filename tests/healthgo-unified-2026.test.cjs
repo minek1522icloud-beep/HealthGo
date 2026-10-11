@@ -23,7 +23,8 @@ test('new scripts compile and are wired to the main HTML',()=>{
   new vm.Script(src('www/'+name+'.js'),{filename:name});
   assert.ok(html.includes(name+'.js?v=1'));
  }
- assert.match(html,/healthgo-point.css\?v=1/);
+ assert.match(html,/healthgo-point.css\?v=2/);
+ assert.match(html,/id="hgPointHomeMini"/);
  assert.match(html,/healthgo-unified-polish.css\?v=1/);
 });
 test('server-side HealthGo Point never lets browser mint spendable balance',()=>{
