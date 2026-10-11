@@ -29,11 +29,62 @@ function material(item){
  var rarity=item.rarity||'rare',lookup={common:5,rare:3,epic:1,legendary:2,mythic:0};
  return PALETTES[lookup[rarity]===undefined?0:lookup[rarity]];
 }
+/* Collector 2.7: authored silhouette families rather than nearly identical noisy discs.
+ * Each outline is star-shaped (safe triangle-fan extrusion), with controlled 2% material variation. */
+var OUTLINES=[
+ // shield, faceted crystal, winged crest, sun, star, crown, leaf, flame
+ [.93,.93,.94,.94,.88,.78,.69,.76,.85,.9,.94,.93,.95,.95,.95,.95],
+ [.77,.86,.95,.82,.66,.82,.95,.87,.78,.86,.95,.82,.66,.82,.95,.87],
+ [1,.91,.75,.69,.88,.96,1,.83,.96,.84,1,.96,.88,.69,.75,.91],
+ [.83,1,.8,1,.82,1,.8,1,.83,1,.8,1,.82,1,.8,1],
+ [.9,.65,1,.65,.9,.65,1,.65,.9,.65,1,.65,.9,.65,1,.65],
+ [.76,.69,.91,1,.77,.88,.8,.95,.95,.8,.88,.77,1,.91,.69,.76],
+ [.76,.84,1,.95,.86,.78,.64,.59,.64,.78,.86,.95,1,.84,.76,.7],
+ [.79,.82,.9,.98,.8,.63,.71,.9,.99,.81,.68,.77,.91,1,.92,.8],
+ // hexagon, gear, flower, lightning, target, book, mountain, trophy
+ [.83,.94,1,.94,.83,.94,1,.94,.83,.94,1,.94,.83,.94,1,.94],
+ [.91,.98,.91,.72,.91,.98,.91,.72,.91,.98,.91,.72,.91,.98,.91,.72],
+ [.9,1,.86,.73,.9,1,.86,.73,.9,1,.86,.73,.9,1,.86,.73],
+ [.75,.82,.72,.99,.86,.76,1,.87,.82,.96,.7,.84,.99,.7,.78,.97],
+ [.83,.84,.89,.95,1,.95,.89,.84,.83,.84,.89,.95,1,.95,.89,.84],
+ [.9,.9,.98,.92,.78,.9,.96,.72,.9,.9,.98,.92,.78,.9,.96,.72],
+ [.73,.85,.9,1,.9,.79,.7,.93,.73,.85,.9,1,.9,.79,.7,.93],
+ [.9,.93,.98,.98,.86,.75,.63,.81,.88,.81,.63,.75,.86,.98,.98,.93],
+ // compass, moon, heart, butterfly, ivy, snowflake, runes, orbital
+ [.67,.94,.73,.98,.67,.94,.73,.98,.67,.94,.73,.98,.67,.94,.73,.98],
+ [.81,.72,.74,.83,.92,.96,1,.97,.81,.73,.65,.68,.77,.9,.98,.93],
+ [.72,.84,.97,.95,.8,.67,.65,.78,.88,.78,.65,.67,.8,.95,.97,.84],
+ [.72,.82,.92,.9,.73,.65,.97,1,.72,.82,.92,.9,.73,.65,.97,1],
+ [.91,.8,.69,.87,.97,1,.81,.7,.91,.8,.69,.87,.97,1,.81,.7],
+ [.73,.91,.98,.7,.73,.91,.98,.7,.73,.91,.98,.7,.73,.91,.98,.7],
+ [.86,.76,.94,.75,.86,.76,.94,.75,.86,.76,.94,.75,.86,.76,.94,.75],
+ [.9,.91,1,.91,.77,.91,1,.91,.9,.91,1,.91,.77,.91,1,.91]
+];
+function silhouetteIndex(item,seed){
+ if(item.prototype&&FORMS.includes(item.form)){
+   var map=[0,15,4,5,1,16,2,10,3,22,7,23];
+   return map[FORMS.indexOf(item.form)];
+ }
+ var cue=crestIndex(item,seed);
+ return [18,2,1,5,6,0,6,4,15,8,13,7,17,14,3,10,16,1,0,19,20,11,12,8][cue%24];
+}
+function contourAt(item,seed,angle){
+ var family=silhouetteIndex(item,seed),outline=OUTLINES[family];
+ var normalized=((angle%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+ var phase=normalized/(Math.PI*2)*outline.length;
+ var a=Math.floor(phase),b=(a+1)%outline.length,blend=phase-a;
+ // cubic easing smooths hard shoulders but preserves each characteristic silhouette.
+ blend=blend*blend*(3-2*blend);
+ var radius=outline[a]*(1-blend)+outline[b]*blend;
+ var minor=(Math.sin(normalized*(5+(seed%4))+(seed%21)))*.012;
+ var width=1+((seed>>>12)%7-3)*.011,height=1+((seed>>>18)%7-3)*.011;
+ return [Math.cos(normalized)*radius*(.91+minor)*width,Math.sin(normalized)*radius*(.91+minor)*height];
+}
+
 function model(item,evolution){
  item=item||{};
  var id=String(item.id||'medal'),seed=hash(id),rng=random(seed),variant=evolution||1;
- var n=72,form=seed%12,profile=[],lobes=3+(seed%11),teeth=4+((seed>>>4)%12),
-  base=.85+(seed%9)*.007;
+ var n=72,form=silhouetteIndex(item,seed),profile=[];
  var thickness=.09+(seed%7)*.017+variant*.021,front=.06+thickness/2,back=-thickness/2;
  var mat=material(item),colors=mat;
  var positions=[],normals=[],rgba=[],triangles=0;
@@ -45,26 +96,7 @@ function model(item,evolution){
   triangles++;
  }
  function quad(a,b,c,d,col){pushTriangle(a,b,c,col);pushTriangle(a,c,d,col);}
- function contour(t){
-  var x=Math.cos(t),y=Math.sin(t);
-  var baseR=base*(1+.055*Math.cos(lobes*t+form*.28)+.034*Math.cos(teeth*t));
-  switch(form){
-   case 0:baseR*=.93+.09*Math.pow(Math.abs(Math.cos(3*t)),6);break;
-   case 1:baseR*=.89+.15*Math.pow(Math.abs(Math.cos(5*t)),8);break;
-   case 2:baseR*=.96+.08*Math.abs(Math.sin(2*t));break;
-   case 3:baseR*=.88+.15*Math.pow(Math.cos(6*t),2);break;
-   case 4:baseR*=.93+.12*Math.pow(Math.abs(Math.cos(4*t)),9);break;
-   case 5:baseR*=.99+.08*Math.cos(7*t);break;
-   case 6:baseR*=.97+.1*Math.pow(Math.abs(Math.cos(t*3)),3);break;
-   case 7:baseR*=.91+.16*Math.pow(Math.abs(Math.cos(8*t)),11);break;
-   case 8:baseR*=.97+.1*Math.cos(12*t);break;
-   case 9:baseR*=.97+.08*Math.cos(9*t);break;
-   case 10:baseR*=.92+.11*Math.abs(Math.sin(5*t));break;
-   case 11:baseR*=.93+.12*Math.pow(Math.abs(Math.cos(12*t)),6);break;
-  }
-  var sx=1+((seed>>>12)%13-6)*.012,sy=1+((seed>>>18)%15-7)*.011;
-  return [x*baseR*sx,y*baseR*sy];
- }
+ function contour(t){return contourAt(item,seed,t);}
  for(var k=0;k<n;k++)profile.push(contour(k*Math.PI*2/n));
  function point(index,s,z){
   var p=profile[(index+n)%n];return [p[0]*s,p[1]*s,z];
@@ -234,14 +266,15 @@ function thumbnail(item){
  item=item||{};var id=String(item.id||'preview'),isLocked=!item.earned&&!item.prototype,rarity=item.rarity||'common';
  var key=id+'|'+rarity+'|'+(isLocked?'locked':'earned');
  if(thumbCache.has(key))return thumbCache.get(key);
- var geom=model(item,1),seed=hash(id),rng=random(seed^0xf16a),mat=material(item);
+ var seed=hash(id),rng=random(seed^0xf16a),mat=material(item),outline=Array.from({length:72},function(_,i){return contourAt(item,seed,i*Math.PI*2/72);}),signature=seed.toString(36)+'-'+silhouetteIndex(item,seed)+'-'+(3+seed%10)+'-1';
  function hex(c){return '#'+c.map(function(v){return Math.round(clamp(v,0,1)*255).toString(16).padStart(2,'0');}).join('');}
  var border=hex(mat[0]),inner=hex(mat[1]),shine=hex(mat[2]),uid='thumb-'+seed.toString(36),
-     path=geom.outline.map(function(p){return (p[0]*91).toFixed(1)+','+(p[1]*91).toFixed(1);}).join(' ');
- var band=geom.outline.map(function(p){return (p[0]*76).toFixed(1)+','+(p[1]*76).toFixed(1);}).join(' ');
- var spokes=3+(seed%10),motif=[];
+     path=outline.map(function(p){return (p[0]*91).toFixed(1)+','+(p[1]*91).toFixed(1);}).join(' ');
+ var band=outline.map(function(p){return (p[0]*76).toFixed(1)+','+(p[1]*76).toFixed(1);}).join(' ');
+ // Material engraving differs by model, while the main centerpiece comes from its subject.
+ var spokes=3+(seed%8),motif=[];
  for(var i=0;i<spokes*2;i++){
-  var theta=i*Math.PI/spokes,rad=i%2===0?46+(seed%5):21+(seed%9);
+  var theta=i*Math.PI/spokes,rad=i%2===0?52:43;
   motif.push((Math.cos(theta)*rad).toFixed(1)+','+(Math.sin(theta)*rad).toFixed(1));
  }
  var texture='';
@@ -249,22 +282,23 @@ function thumbnail(item){
   var angle=i*Math.PI*2/13,cx=64*Math.cos(angle),cy=64*Math.sin(angle);
   texture+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+(1.4+rng()*2.5).toFixed(1)+'" fill="'+shine+'" opacity=".75"/>';
  }
- var out='<svg class="hgp-medal-svg hgb3d-thumbnail '+(isLocked?'is-locked':'is-earned')+'" viewBox="-104 -104 208 220" role="img" aria-label="'+escapeHtml(item.name||'Odznaka')+'" data-medal-category="'+escapeHtml(item.category||'badges')+'" data-model-geometry="'+escapeHtml(geom.signature)+'">'+
+ var out='<svg class="hgp-medal-svg hgb3d-thumbnail '+(isLocked?'is-locked':'is-earned')+'" viewBox="-110 -110 220 220" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+escapeHtml(item.name||'Odznaka')+'" data-medal-category="'+escapeHtml(item.category||'badges')+'" data-model-geometry="'+escapeHtml(signature)+'">'+
  '<defs><linearGradient id="'+uid+'-m" x1="0" y1="0" x2="1" y2="1"><stop stop-color="'+shine+'"/><stop offset=".35" stop-color="'+border+'"/><stop offset=".65" stop-color="'+inner+'"/><stop offset="1" stop-color="'+border+'"/></linearGradient></defs>'+
  '<polygon points="'+path+'" transform="translate(0 5)" fill="#000" opacity=".6"/>'+
  '<polygon points="'+path+'" fill="url(#'+uid+'-m)" stroke="'+shine+'" stroke-width="2"/>'+
- '<polygon points="'+band+'" fill="'+inner+'" stroke="'+shine+'" stroke-width="4"/>'+
- '<circle r="53" fill="none" stroke="'+border+'" stroke-width="3"/>'+
- texture+'<polygon points="'+motif.join(' ')+'" fill="'+border+'" stroke="'+shine+'" stroke-width="3"/>'+
- '<circle r="'+(13+(seed%6))+'" fill="'+inner+'" stroke="'+shine+'" stroke-width="3"/>'+ 
- '<g transform="scale(.52)">'+crestGlyph(item,seed,shine,inner)+'</g>'+
+ '<polygon points="'+band+'" fill="'+inner+'" stroke="'+shine+'" stroke-width="3.5"/>'+
+ '<circle r="57" fill="none" stroke="'+border+'" stroke-width="2.5" opacity=".82"/>'+
+ texture+
+ '<polygon points="'+motif.join(' ')+'" fill="'+border+'" fill-opacity=".4" stroke="'+shine+'" stroke-width="1.6" opacity=".72"/>'+
+ '<circle r="40" fill="'+inner+'" stroke="'+shine+'" stroke-width="3.5"/>'+
+ '<g transform="scale(.67)">'+crestGlyph(item,seed,shine,inner)+'</g>'+
  '<text x="0" y="-72" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="bold" letter-spacing="2" fill="'+shine+'">HEALTHGO</text>'+
  '<text x="0" y="91" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="'+shine+'">'+escapeHtml(('000'+(seed%1000)).slice(-3))+'</text></svg>';
  if(thumbCache.size>380)thumbCache.clear();
  thumbCache.set(key,out);return out;
 }
 
-var VSHADER='attribute vec3 p;attribute vec3 n;attribute vec3 col;uniform vec3 rot;uniform float zoom;varying vec3 shade;varying vec3 norm;varying vec3 pos;void main(){float cx=cos(rot.x),sx=sin(rot.x),cy=cos(rot.y),sy=sin(rot.y);vec3 u=vec3(p.x,p.y*cx-p.z*sx,p.y*sx+p.z*cx);vec3 v=vec3(u.x*cy+u.z*sy,u.y,-u.x*sy+u.z*cy);vec3 un=vec3(n.x,n.y*cx-n.z*sx,n.y*sx+n.z*cx);norm=vec3(un.x*cy+un.z*sy,un.y,-un.x*sy+un.z*cy);shade=col;pos=v;float z=3.3-v.z;gl_Position=vec4(v.xy*zoom/z*1.8,v.z/4.,1.); }';
+var VSHADER='attribute vec3 p;attribute vec3 n;attribute vec3 col;uniform vec3 rot;uniform float zoom;uniform float aspect;varying vec3 shade;varying vec3 norm;varying vec3 pos;void main(){float cx=cos(rot.x),sx=sin(rot.x),cy=cos(rot.y),sy=sin(rot.y);vec3 u=vec3(p.x,p.y*cx-p.z*sx,p.y*sx+p.z*cx);vec3 v=vec3(u.x*cy+u.z*sy,u.y,-u.x*sy+u.z*cy);vec3 un=vec3(n.x,n.y*cx-n.z*sx,n.y*sx+n.z*cx);norm=vec3(un.x*cy+un.z*sy,un.y,-un.x*sy+un.z*cy);shade=col;pos=v;float z=3.3-v.z;gl_Position=vec4(v.x*zoom/z*1.8/aspect,v.y*zoom/z*1.8,v.z/4.,1.); }';
 var FSHADER='precision mediump float;varying vec3 shade;varying vec3 norm;varying vec3 pos;uniform float lit;uniform vec3 lightSource;void main(){vec3 N=normalize(norm);vec3 L=normalize(lightSource);float diff=.29+.72*abs(dot(N,L));vec3 V=normalize(vec3(-pos.x*.1,-pos.y*.1,1.));float spec=pow(max(dot(reflect(-L,N),V),0.),26.)*.64;vec3 col=shade*diff+vec3(spec, spec*.96, spec*.82)+shade*.09*lit;gl_FragColor=vec4(clamp(pow(col,vec3(.88)),0.,1.),1.);}';
 function shader(gl,type,src){var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
 function program(gl){var p=gl.createProgram();gl.attachShader(p,shader(gl,gl.VERTEX_SHADER,VSHADER));gl.attachShader(p,shader(gl,gl.FRAGMENT_SHADER,FSHADER));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));return p;}
@@ -277,12 +311,12 @@ function context(canvas,mesh){
   var buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,data[1],gl.STATIC_DRAW);
   var loc=gl.getAttribLocation(prog,data[0]);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);buffers.push(buf);
  }
- var rot=gl.getUniformLocation(prog,'rot'),zoomLoc=gl.getUniformLocation(prog,'zoom'),litLoc=gl.getUniformLocation(prog,'lit'),lightLoc=gl.getUniformLocation(prog,'lightSource');
+ var rot=gl.getUniformLocation(prog,'rot'),zoomLoc=gl.getUniformLocation(prog,'zoom'),aspectLoc=gl.getUniformLocation(prog,'aspect'),litLoc=gl.getUniformLocation(prog,'lit'),lightLoc=gl.getUniformLocation(prog,'lightSource');
  function draw(rx,ry,zoom,light){
   var w=canvas.clientWidth||300,h=canvas.clientHeight||300,dpr=Math.min(host.devicePixelRatio||1,2);
   var pw=Math.round(w*dpr),ph=Math.round(h*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
   gl.viewport(0,0,pw,ph);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-  gl.uniform3f(rot,rx,ry,0);gl.uniform1f(zoomLoc,zoom);gl.uniform1f(litLoc,Math.sin(ry)*.3+.8);
+  gl.uniform3f(rot,rx,ry,0);gl.uniform1f(zoomLoc,zoom);gl.uniform1f(aspectLoc,pw/Math.max(1,ph));gl.uniform1f(litLoc,Math.sin(ry)*.3+.8);
   var lights=[[.5,.8,1.1],[-.9,.4,1.3],[.3,-.9,1.5]],direction=lights[(light||0)%lights.length];gl.uniform3f(lightLoc,direction[0],direction[1],direction[2]);
   gl.drawArrays(gl.TRIANGLES,0,mesh.vertices.length/3);
  }

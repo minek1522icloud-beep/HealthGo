@@ -15,7 +15,7 @@
 #hgPackProRoot .hgp-sub{font-size:12px;color:var(--hgpack-muted);line-height:1.5;margin-top:3px}
 #hgPackProRoot .hgp-actions{display:flex;align-items:center;gap:8px}
 #hgPackProRoot .hgp-iconbtn{width:40px;height:40px;border:1px solid var(--hgpack-border);border-radius:13px;background:var(--hgpack-card);color:#eafff4;display:inline-grid;place-items:center;flex:0 0 auto}
-#hgPackProRoot svg{width:19px;height:19px;flex:0 0 auto;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
+#hgPackProRoot svg:not(.hgp-medal-svg):not(.hgr-collectible-art){width:19px;height:19px;flex:0 0 auto;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
 #hgPackProRoot .hgp-hero{background:radial-gradient(ellipse at 90% -10%,#24664e 0%,transparent 54%),linear-gradient(145deg,#182c24,#101b17);border:1px solid #3b624e;border-radius:22px;padding:18px;box-shadow:0 12px 30px #0002}
 #hgPackProRoot .hgp-herohead{display:flex;justify-content:space-between;align-items:center;gap:16px}
 #hgPackProRoot .hgp-level{font-size:22px;font-weight:850;letter-spacing:-.025em}
@@ -116,3 +116,15 @@
 
 #hgPackProRoot .hgp-tabs button{min-width:0;white-space:nowrap;font-size:12px;padding:12px 5px}
 @media(max-width:360px){#hgPackProRoot .hgp-tabs button{font-size:11px;gap:4px}#hgPackProRoot .hgp-tabs button svg{width:16px;height:16px}}
+
+/* Badge Forge 2.7 audit: non-distorted square artwork, no icon styles on ornamental SVG. */
+#hgPackProRoot .hgp-card .hgp-art.hgp-medal-stage{height:auto;min-height:0;aspect-ratio:1 / 1;width:100%;padding:8px;overflow:hidden;display:grid;place-items:center;border:1px solid #53886a;border-radius:16px;background:radial-gradient(circle at 50% 41%,#3f695145 0%,#162e2355 48%,#081b15b5 100%)}
+#hgPackProRoot .hgp-art svg.hgp-medal-svg{display:block;max-width:100%;max-height:100%;width:100%;height:100%;aspect-ratio:1/1;object-fit:contain;overflow:visible;flex:0 1 auto;stroke:none;filter:drop-shadow(0 7px 7px #0007)}
+#hgPackProRoot .hgp-art svg.hgp-medal-svg *{stroke-linecap:round;stroke-linejoin:round}
+#hgPackProRoot .hgp-detail-icon.hgp-detail-medal{min-width:0;aspect-ratio:1 / 1;display:grid;place-items:center;overflow:visible}
+#hgPackProRoot .hgp-detail-icon.hgp-detail-medal svg.hgp-medal-svg{width:min(100%,216px);height:auto;aspect-ratio:1/1;max-width:100%;max-height:100%;object-fit:contain}
+#hgPackProRoot .hgp-card{min-width:0}
+#hgPackProRoot .hgp-card b{overflow-wrap:anywhere}
+#hgPackProRoot .hgp-card[data-earned="false"] .hgp-medal-stage{opacity:1}
+#hgPackProRoot .hgp-card[data-earned="false"] svg.hgp-medal-svg{filter:grayscale(.75) brightness(.82) drop-shadow(0 6px 7px #0008)}
+@media(max-width:430px){#hgPackProRoot .hgp-art svg.hgp-medal-svg{width:100%;height:100%}#hgPackProRoot .hgp-card .hgp-art.hgp-medal-stage{padding:5px;min-height:0;height:auto}}

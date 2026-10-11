@@ -58,8 +58,8 @@ test('iPhone and desktop inspect allow touch orbit, pinch, wheel zoom and keyboa
  const css=fs.readFileSync('www/healthgo-badge-3d.css','utf8');
  const pack=fs.readFileSync('www/healthgo-pack-pro.js','utf8');
  const profile=fs.readFileSync('www/healthgo-profile-pro.js','utf8');
- assert.match(html,/healthgo-badge-3d\.js\?v=2/);
- assert.match(html,/healthgo-badge-3d\.css\?v=2/);
+ assert.match(html,/healthgo-badge-3d\.js\?v=3/);
+ assert.match(html,/healthgo-badge-3d\.css\?v=3/);
  assert.match(source,/pointerdown/);
  assert.match(source,/pointermove/);
  assert.match(source,/pointercancel/);

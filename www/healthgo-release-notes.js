@@ -3,9 +3,20 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-2.6-collector-world-20261011';
-var TITLE='Pokój Kolekcjonera i gablota 3D';
+var RELEASE='healthgo-2.7-badge-art-audit-20261011';
+var TITLE='Odznaki 2.7: różne sylwetki i poprawiony Inspect';
 var sections=[
+ {title:'🏅 Nowe modele i naprawa deformacji',items:[
+ 'Zastąpiliśmy niemal jednakowe, falowane koła 24 różnymi rodzinami sylwetek odznak: tarczami, koronami, kryształami, gwiazdami, skrzydłami i innymi.',
+ 'Wyraźniejsze emblematy środkowe odzwierciedlają temat zdobytego osiągnięcia.',
+ 'Naprawiliśmy style SVG, które mogły usuwać wypełnienia i szczegóły odznak.',
+ 'Medale w Plecaku, profilu i katalogu zachowują właściwe proporcje 1:1, bez rozciągania.'
+ ]},
+ {title:'🔍 Poprawiony podgląd 3D',items:[
+ 'Widok WebGL zachowuje proporcje geometryczne także na szerokim ekranie iPhona.',
+ 'Miniatury powstają teraz bez obliczania pełnej siatki 3D, dzięki czemu przewijanie Plecaka wymaga mniej zasobów.',
+ 'Nadal można obracać odznakę o 360°, przybliżać i wybierać ustawienie światła.'
+ ]},
  {title:'🏛️ Twój Pokój Kolekcjonera',items:[
   'Po kliknięciu swojego awatara na ekranie Start otworzysz Mój profil, a nie ustawienia.',
   'W profilu dostępny jest Pokój Kolekcjonera z sześcioma podświetlanymi gablotami dla naprawdę zdobytych odznak.',
@@ -158,7 +169,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.6</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 2.7</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+
