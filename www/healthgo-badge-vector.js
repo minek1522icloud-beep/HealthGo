@@ -112,7 +112,7 @@ function variant(item){
  item=item||{};var id=String(item.id||item.name||'badge'),seed=hash(id),number=/^hg-model-(\d{1,3})$/.exec(id);
  var index=number?clamp(Number(number[1])-1,0,239):seed%240;
  var frame=number?(index%FRAMES.length):((seed>>>2)%FRAMES.length);
- var key=classify(item)||(number?iconKeys[Math.floor(index/FRAMES.length)%iconKeys.length]:iconKeys[(seed>>>8)%iconKeys.length]);
+ var key=classify(item)||(number?iconKeys[Math.floor(index/8)%iconKeys.length]:iconKeys[(seed>>>8)%iconKeys.length]);
  var mode=String(item.rarity||'common');
  var paletteIndex={common:7,rare:2,epic:3,legendary:1,mythic:6}[mode];
  if(number)paletteIndex=(Math.floor(index/20)+Math.floor(index/48))%PALETTES.length;

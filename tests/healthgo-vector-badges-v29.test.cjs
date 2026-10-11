@@ -25,7 +25,7 @@ test('240 crisp SVG badges exist with differentiated frames, motifs and material
   shapes.add(v.frame);emblems.add(v.icon);artworks.add(art);
  }
  assert.equal(signatures.size,240);assert.equal(artworks.size,240);
- assert.equal(shapes.size,24);assert.ok(emblems.size>=10);
+ assert.equal(shapes.size,24);assert.ok(emblems.size>=28);
 });
 test('real accomplishments use distinct thematic artwork, with lock state unchanged',()=>{
  const api=harness().HealthGoBadgeVector;
