@@ -80,7 +80,7 @@ function retry(){
   loadLeaflet().then(ok=>{if(ok&&typeof host.initHealthGoMap==='function')host.initHealthGoMap();});
  }else if(typeof host.initHealthGoMap==='function'){
   // The original map object may exist with an unavailable base layer.
-  const map=typeof host.healthGoMap!=='undefined'?host.healthGoMap:null;
+  const map=typeof host.healthGoMapInstance==='function'?host.healthGoMapInstance():null;
   if(map&&host.L.tileLayer){
    try{
     const original=host.L.tileLayer(tileUrl(),{maxZoom:19,attribution:tileAttribution()});
