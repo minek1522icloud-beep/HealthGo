@@ -1,4 +1,4 @@
-/* HealthGo 3.0 — original user-supplied badge board used directly as an image atlas.
+/* HealthGo 3.0.4 — original user badge board, reliably converted to native individual PNG previews on iOS.
  * Each image is an actual region of the board, not a generated replacement emblem.
  * Portrait image ratio: 1055 x 1491; 14 columns x 18 rows of badges.
  * Viewer is honest 2.5D: front is the supplied picture, back is a decorative card. */
