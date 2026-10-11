@@ -1,0 +1,32 @@
+/* 2D/3D selector and camera privacy for live navigation on iPhone. */
+#map #hgViewModeSwitch{position:absolute;z-index:22020;right:16px;top:calc(174px + env(safe-area-inset-top));display:flex;align-items:center;gap:4px;padding:5px;border-radius:17px;background:rgba(7,43,33,.96);border:1px solid rgba(136,255,203,.65);box-shadow:0 8px 26px rgba(0,22,17,.32);pointer-events:auto}
+#map #hgViewModeSwitch button{min-width:53px;min-height:43px;padding:10px 13px;border:0;border-radius:12px;background:transparent;color:#b6dbc7;font-size:13px;font-weight:850;touch-action:manipulation;cursor:pointer}
+#map #hgViewModeSwitch button.active{background:#a0f4c5;color:#063421;box-shadow:0 2px 7px rgba(0,0,0,.17)}
+#map #hgViewModeSwitch button:focus-visible{outline:3px solid #eeffb6;outline-offset:2px}
+body.hg-navigation-active #map .healthgo-profile-marker,
+body.hg-navigation-active #map .healthgo-family-name-tooltip,
+body.hg-navigation-active #map .healthgo-profile-marker.me{visibility:hidden!important}
+body.hg-navigation-active.hg-live-perspective #map #healthgoMap{visibility:hidden!important}
+body.hg-navigation-active.hg-live-perspective #map #hgNavigationPerspective:not([hidden]){visibility:visible!important}
+body.hg-navigation-active #map #hgNavigationPerspective .hg-live-car{width:52px;height:62px;filter:drop-shadow(0 5px 8px rgba(0,49,36,.45))}
+body.hg-navigation-active #map #hgNavigationPerspective .hg-live-car svg{display:block;width:52px;height:62px;overflow:visible}
+body.hg-navigation-active #map .hg-follow-arrow-shape svg{filter:drop-shadow(0 3px 8px rgba(0,111,82,.52))}
+body.hg-navigation-active #map .hg-follow-marker-halo{border-color:rgba(63,245,198,.55)}
+#map .hg-route-location-info{margin-bottom:13px}
+#map .hg-route-location-info strong{color:inherit}
+#map #hgGpsConsentAction{display:inline-flex;gap:8px;align-items:center;margin:8px 0 12px;padding:11px 15px;min-height:46px;border-radius:12px;border:1px solid #70d8a8;background:#0f6244;color:#f4fff8;font-size:13px;font-weight:820}
+#map #hgGpsConsentAction[hidden]{display:none!important}
+#map .hg-gps-inline-note{font-size:11px;line-height:1.5;color:#99cdae;margin:0 0 10px}
+body.hg-navigation-active #map .hg-live-status:not([hidden]){top:calc(238px + env(safe-area-inset-top))!important;max-width:min(72vw,340px)!important}
+@media(max-width:900px){
+ #map #hgViewModeSwitch{top:calc(140px + env(safe-area-inset-top));right:11px}
+ #map #hgViewModeSwitch button{min-width:51px;min-height:43px}
+ body.hg-navigation-active #map .hg-live-status:not([hidden]){top:calc(204px + env(safe-area-inset-top))!important;left:10px!important}
+}
+@media(max-width:390px){
+ #map #hgViewModeSwitch{top:calc(138px + env(safe-area-inset-top));right:8px}
+ #map #hgViewModeSwitch button{min-width:47px;padding:9px 10px}
+}
+@media(prefers-reduced-motion:reduce){
+ #map .hg-follow-arrow-shape,#map .hg-live-car{transition:none!important;animation:none!important}
+}
