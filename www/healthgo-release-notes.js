@@ -3,9 +3,16 @@
 'use strict';
 var Services=window.HealthGoServices;
 if(!Services)return;
-var RELEASE='healthgo-3.1.0-simple-color-badges-20261011';
-var TITLE='Schludne odznaki: jeden wzór, różne kolory';
+var RELEASE='healthgo-3.2-original-photo-crop-20261011';
+var TITLE='Odznaki z Twojej planszy — poprawione';
 var sections=[
+ {title:'🏅 Twoje oryginalne grafiki odznak',items:[
+  'Każda odznaka jest precyzyjnie wyświetlana z osobnego fragmentu przesłanej przez Ciebie planszy — bez sąsiednich odznak.',
+  'Usunęliśmy wielki rozmazany podgląd. Odznakę możesz teraz obracać palcem na mniejszej podświetlanej karcie z własnym rewersem.',
+  'Jeśli grafika nie może się załadować, widać zastępczą odznakę, a nie czarny kwadrat.',
+  'Oryginalna plansza ma ograniczoną rozdzielczość; duże powiększenie nie doda brakujących szczegółów.',
+  'Zmiana nie przyznaje osiągnięć, nie zmienia XP ani Twoich nagród.'
+ ]},
  {title:'🏅 Proste odznaki — jedna forma, inne kolory',items:[
   'Przywróciliśmy jeden czysty medal z metalową obwódką i gwiazdą na środku.',
   'Każde osiągnięcie ma przypisany stały kolor. Nie korzystamy już z rozmazanych fragmentów planszy.',
@@ -231,7 +238,7 @@ function show(manual){
  focusBefore=document.activeElement;
  var url=knownBuild()?'https://github.com/minek1522icloud-beep/HealthGo/commit/'+build():'https://github.com/minek1522icloud-beep/HealthGo/commits/main';
  root.innerHTML='<div class="hgu-modal" role="dialog" aria-modal="true" aria-labelledby="hguReleaseHeading" aria-describedby="hguReleaseCaption">'+
- '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 3.1.0</div>'+
+ '<header class="hgu-hero"><span class="hgu-overline">HEALTHGO • DZIENNIK AKTUALIZACJI</span><div class="hgu-version">AKTUALIZACJA 3.2</div>'+
  '<h2 id="hguReleaseHeading">'+escapeHtml(TITLE)+'</h2>'+
  '<p id="hguReleaseCaption">Witaj w nowej wersji! Poniżej znajdziesz pełną listę zmian i nowych możliwości.</p>'+
  '<div class="hgu-tags"><span>PREZENTY</span><span>NAKLEJKI</span><span>TAPETY</span><span>PLECAK 2.0</span></div></header>'+

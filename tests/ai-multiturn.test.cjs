@@ -160,7 +160,7 @@ test('Mobile keeps modes, navigation and offline rules intact',()=>{
  assert.match(html,/data-mobile-page="plan"/);
  assert.match(html,/data-mobile-page="more"/);
  const sw=fs.readFileSync('www/service-worker.js','utf8');
- assert.match(sw,/healthgo-pwa-v57-simple-color-badges-20261011/);
+ assert.match(sw,/healthgo-pwa-v58-original-photo-crop-20261011/);
 });
 
 test('Gemini request has a real deadline even if provider promise never settles',async()=>{

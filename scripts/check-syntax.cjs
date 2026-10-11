@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const files=['main.cjs','desktop-security.cjs','healthgo-ai-server.mjs','www/supabase-client.js','www/healthgo-services.js','www/healthgo-v2-ui.js','www/healthgo-pro.js','www/healthgo-emerald-dashboard.js','www/healthgo-ai-emerald-v3.js','www/healthgo-navigation-follow-v1.js','www/healthgo-plan-v4.js','www/healthgo-collectible-art.js','www/healthgo-medals.js','www/healthgo-badge-3d.js','www/healthgo-badge-simple.js','www/healthgo-badge-vector.js','www/healthgo-collector-room.js','www/healthgo-rewards.js','www/healthgo-friends.js','www/healthgo-profile-pro.js','www/healthgo-pack-pro.js','www/healthgo-release-notes.js','www/service-worker.js','www/core/achievement-engine.js','www/core/health-data.js'];
+const files=['main.cjs','desktop-security.cjs','healthgo-ai-server.mjs','www/supabase-client.js','www/healthgo-services.js','www/healthgo-v2-ui.js','www/healthgo-pro.js','www/healthgo-emerald-dashboard.js','www/healthgo-ai-emerald-v3.js','www/healthgo-navigation-follow-v1.js','www/healthgo-plan-v4.js','www/healthgo-collectible-art.js','www/healthgo-medals.js','www/healthgo-badge-3d.js','www/healthgo-badge-simple.js','www/healthgo-badge-photo.js','www/healthgo-badge-vector.js','www/healthgo-collector-room.js','www/healthgo-rewards.js','www/healthgo-friends.js','www/healthgo-profile-pro.js','www/healthgo-pack-pro.js','www/healthgo-release-notes.js','www/service-worker.js','www/core/achievement-engine.js','www/core/health-data.js'];
 for(const file of files){if(file.endsWith('.mjs')){require('node:child_process').execFileSync(process.execPath,['--check',file]);}else new vm.Script(fs.readFileSync(file,'utf8'),{filename:file});}
 const html=fs.readFileSync('www/index.html','utf8');let count=0;
 for(const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)){if(match[1].trim()){new vm.Script(match[1],{filename:'www/index.html:inline-'+(++count)});}}
@@ -38,3 +38,5 @@ if(html.includes('src="./healthgo-badge-board.js')||html.includes('href="./healt
 if(html.includes('healthgo-badge-vector.js?v=1')||html.includes('healthgo-badge-vector.css?v=1'))throw Error('Old vector badge UI must not load');
 if(!fs.existsSync('www/healthgo-badge-simple.js'))throw Error('Simple badge JS missing');
 if(html.includes('healthgo-badge-gallery.js')||html.includes('healthgo-badge-gallery.css'))throw Error('Legacy blurry photo badge gallery must not load');
+
+if(!html.includes('healthgo-badge-photo.js?v=1')||!html.includes('healthgo-badge-photo.css?v=1'))throw Error('Original badge images must be loaded after simple fallback');

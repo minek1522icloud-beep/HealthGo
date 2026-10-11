@@ -17,6 +17,7 @@ on:
       - "tests/healthgo-navigation-live.test.cjs"
       - "www/healthgo-drive-ui.css"
       - "tests/healthgo-chat-modern.test.cjs"
+      - "tests/healthgo-photo-badges-v32.test.cjs"
       - "tests/healthgo-original-badges-v28.test.cjs"
       - "tests/healthgo-vector-badges-v29.test.cjs"
       - "tests/healthgo-badge-art-audit-v27.test.cjs"
@@ -71,7 +72,7 @@ jobs:
         shell: bash
         run: |
           node scripts/check-syntax.cjs
-          node --test tests/healthgo-original-badges-v28.test.cjs tests/healthgo-vector-badges-v29.test.cjs tests/healthgo-badge-art-audit-v27.test.cjs tests/healthgo-badge-forge-v25.test.cjs tests/healthgo-collector-v26.test.cjs tests/healthgo-pack-pro.test.cjs tests/healthgo-profile-pro.test.cjs tests/healthgo-rewards.test.cjs
+          node --test tests/healthgo-photo-badges-v32.test.cjs tests/healthgo-original-badges-v28.test.cjs tests/healthgo-vector-badges-v29.test.cjs tests/healthgo-badge-art-audit-v27.test.cjs tests/healthgo-badge-forge-v25.test.cjs tests/healthgo-collector-v26.test.cjs tests/healthgo-pack-pro.test.cjs tests/healthgo-profile-pro.test.cjs tests/healthgo-rewards.test.cjs
 
       - name: Przygotuj wersje mobilna
         shell: bash

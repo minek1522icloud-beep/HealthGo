@@ -55,7 +55,7 @@ test('patch notes display once per deployed build and can be reopened manually',
 test('mobile changelog is shipped with safe-area and scroll support',()=>{
  const css=fs.readFileSync('www/healthgo-release-notes.css','utf8');
  const html=fs.readFileSync('www/index.html','utf8');
- assert.match(html,/healthgo-release-notes\.js\?v=15/);
+ assert.match(html,/healthgo-release-notes\.js\?v=16/);
  assert.match(html,/healthgo-release-notes\.css\?v=1/);
  assert.match(source,/healthgo-build/);
  assert.match(source,/localStorage\.setItem\(KEY,build\(\)\)/);
