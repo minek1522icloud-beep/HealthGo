@@ -1,0 +1,9 @@
+#map #hgMapRecoveryPanel[hidden]{display:none!important}
+#map #hgMapRecoveryPanel{position:absolute;z-index:1200;left:12px;right:12px;top:73px;max-width:540px;margin:auto;
+ padding:12px 14px;background:#0b3025;color:#eafff0;border-radius:14px;border:1px solid #5da986;
+ box-shadow:0 7px 22px #0006;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#map #hgMapRecoveryPanel p{margin:0;line-height:1.35;font-size:12px;flex:1 1 200px;color:#eafff0}
+#map #hgMapRecoveryPanel button,#map #hgMapRecoveryPanel a{padding:9px 12px;min-height:42px;border-radius:10px;
+ background:#7be1b2;color:#062f1c;font-size:12px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center}
+#map #hgMapRecoveryPanel a{background:#174936;color:#eafff0;border:1px solid #489575}
+@media(max-width:430px){#map #hgMapRecoveryPanel{top:58px;padding:10px;left:8px;right:8px}}
