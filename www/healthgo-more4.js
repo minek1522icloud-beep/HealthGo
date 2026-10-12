@@ -193,11 +193,34 @@ function devices(){
  const devices=Array.isArray(S.state?.devices)?S.state.devices:[],api=w.HealthGoDevices;
  stat(root,[['Zapisane',String(devices.length),'Na Twoim koncie'],['Połączenie',api?.connected?'Aktywne':'Nieaktywne','Ta sesja'],
   ['Bateria',api?.activeDevice&&Number.isFinite(api?.batteryLevel)?String(api.batteryLevel)+'%':'—','Tylko z BLE']]);
- actions(root,[['Połącz urządzenie',()=>api?.connect?.(),false],
+ const saved=node('div','hg4-device-list');saved.appendChild(node('h4','','Zapisane urządzenia'));
+ if(!devices.length)empty(saved,'Nie masz jeszcze zapisanych urządzeń. Możesz dodać zgodne urządzenie poniżej.');
+ for(const device of devices.slice(0,20)){
+  const row=node('div','hg4-device-row'),copy=node('div','hg4-device-copy');
+  copy.append(node('strong','',String(device.name||'Urządzenie').slice(0,75)),
+   node('small','','System: '+String(device.platform||'nieznany').slice(0,36)+
+    ' · Synchronizacja: '+date(device.lastSyncAt)));
+  const isCurrent=!!(api?.connected&&api?.activeDevice&&device.externalId&&api.activeDevice.id===device.externalId);
+  row.append(copy,node('span','hg4-device-status',isCurrent?'Połączono teraz':'Zapisane'));
+  saved.appendChild(row);
+ }
+ root.appendChild(saved);
+ actions(root,[['Połącz urządzenie',()=>{
+  if(typeof api?.connect==='function')api.connect();
+  else{const msg=$('hg4DeviceStatus');if(msg)msg.textContent='Moduł połączenia jest niedostępny.';}
+ },false],
   ['Odśwież urządzenia',async()=>{const label=$('hg4DeviceStatus');if(label)label.textContent='Sprawdzam urządzenia…';
    try{if(typeof S.refreshDevices!=='function')throw Error('UNAVAILABLE');await S.refreshDevices();if(label)label.textContent='Odświeżono listę.';}
    catch(_){if(label)label.textContent='Nie udało się odświeżyć listy.';}},true]]);
- const status=node('p','hg4-footnote','Na iPhonie Safari nie udostępnia zwykłej witrynie bezpośredniego dostępu do Apple Health i Web Bluetooth.');status.id='hg4DeviceStatus';root.appendChild(status);
+ const status=node('p','hg4-footnote',
+  'Safari na iPhonie nie udostępnia stronie Web Bluetooth ani Apple Health. '+
+  'Odczyty tętna, snu i baterii wymagają rzeczywiście obsługiwanego połączenia i zgody.');
+ status.id='hg4DeviceStatus';status.setAttribute('role','status');root.appendChild(status);
+ const details=node('details','hg4-lesson'),heading=node('summary','','Pomoc z połączeniem');
+ details.append(heading,node('p','','1. Sprawdź Bluetooth i zgodność zegarka. '+
+ '2. Jeśli nie ma przycisku łączenia w przeglądarce, użyj aplikacji producenta. '+
+ '3. Odśwież listę po synchronizacji; brak danych oznacza brak dostępu, nie zero pomiaru.'));
+ root.appendChild(details);
 }
 function family(){
  const root=section($('family'),'hg4FamilyExtras','👥 Rodzina i znajomi',
@@ -266,6 +289,14 @@ function academy(root){
  const list=node('div','hg4-academy-grid');
  for(const [title,copy] of lessons){const card=node('details','hg4-lesson'),sum=node('summary','',title);
   card.append(sum,node('p','',copy));list.appendChild(card);}panel.appendChild(list);
+ const quiz=node('div','hg4-settings-card');
+ quiz.appendChild(node('h4','','Mini quiz: odpoczynek'));
+ quiz.appendChild(node('p','hg4-description','Kiedy warto zrobić przerwę od ekranu?'));
+ const feedback=node('p','hg4-footnote','Wybierz odpowiedź. Quiz nie przyznaje XP.');
+ feedback.setAttribute('role','status');
+ actions(quiz,[['Gdy czuję zmęczenie',()=>{feedback.textContent='Dobrze. Przerwy warto robić, gdy ich potrzebujesz.';},false],
+  ['Dopiero gdy skończy się bateria',()=>{feedback.textContent='Nie trzeba czekać na wyłączenie urządzenia. Odpoczynek jest ważny wcześniej.';},true]]);
+ quiz.appendChild(feedback);panel.appendChild(quiz);
 }
 function settings(){
  const parent=d.querySelector?.('#settings .settings-content')||$('settings');
@@ -285,12 +316,23 @@ function settings(){
  const quiet=node('label','hg4-toggle'),input=node('input');input.type='checkbox';input.checked=p.quiet===true;
  input.addEventListener('change',()=>{savePrefs({quiet:input.checked});applyPrefs();});
  quiet.append(node('span','','Ogranicz animacje nowych paneli'),input);appearance.appendChild(quiet);
+ const contrast=node('label','hg4-toggle'),contrastInput=node('input');
+ contrastInput.type='checkbox';contrastInput.checked=p.contrast===true;
+ contrastInput.addEventListener('change',()=>{savePrefs({contrast:contrastInput.checked});applyPrefs();});
+ contrast.append(node('span','','Zwiększony kontrast kart „Więcej”'),contrastInput);appearance.appendChild(contrast);
+ const density=node('label','hg4-toggle'),denseInput=node('input');
+ denseInput.type='checkbox';denseInput.checked=p.density==='compact';
+ denseInput.addEventListener('change',()=>{savePrefs({density:denseInput.checked?'compact':'comfortable'});applyPrefs();});
+ density.append(node('span','','Kompaktowe odstępy w kartach'),denseInput);appearance.appendChild(density);
  panel.appendChild(appearance);
  const shortcuts=node('div','hg4-settings-card');shortcuts.appendChild(node('h4','','Szybkie zarządzanie'));
  actions(shortcuts,[['Konto',()=>jump('settings','settingsAccount'),true],
   ['Prywatność',()=>jump('settings','settingsPrivacy'),true],
   ['Wygląd',()=>jump('settings','settingsAppearance'),true],
-  ['Urządzenia',()=>go('devices'),true]]);
+  ['Urządzenia',()=>go('devices'),true],
+  ['Powiadomienia',()=>jump('settings','hg4Notifications'),true],
+  ['SOS i bezpieczeństwo',()=>jump('settings','hg4Security'),true],
+  ['Akademia',()=>jump('settings','hg4Academy'),true]]);
  panel.appendChild(shortcuts);
  notifications(parent);security(parent);academy(parent);
  const info=section(parent,'hg4Info','🔬 HealthGo Labs i pomoc',
@@ -304,7 +346,7 @@ function settings(){
   const msg=node('p','hg4-footnote','Bez nowego trybu offline; ustawienia istniejącej aplikacji pozostają bez zmian.');msg.id='hg4UpdateState';info.appendChild(msg);}
 }
 let oldOwner=null,scheduled=false;
-function render(){const owner=String(S.state?.uid||'');if(owner!==oldOwner){oldOwner=owner;period='all';}
+function render(){const owner=String(S.state?.uid||'');if(owner!==oldOwner){oldOwner=owner;period='all';missionStatus='all';missionSearch='';statsRange=7;statsMetric='steps';}
  applyPrefs();xpDashboard();missions();stats();devices();family();settings();}
 function schedule(){if(scheduled)return;scheduled=true;
  const invoke=()=>{scheduled=false;render();};
