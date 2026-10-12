@@ -1466,6 +1466,10 @@ async function healthGoActivateNewVersion(remote,force){
   healthGoUpdateStatus('Aktualizacja poczeka na zakończenie pobierania AI lub rozmowy.');
   return false;
  }
+ if(window.HealthGoMapPro?.isNavigating?.()||document.hidden){
+  healthGoUpdateStatus('Nowa wersja poczeka na zakończenie nawigacji GPS.');
+  return false;
+ }
  // Block refresh loops if the server or network is still returning an old HTML shell.
  const key='healthgo_last_update_attempt';
  let last={};
@@ -1518,7 +1522,12 @@ async function checkHealthGoMobileUpdate(force=false){
   }
   // A deployed page always contains its build SHA. Local/dev HTML is never
   // accepted as proof that the latest version is actually running.
-  await healthGoActivateNewVersion(remote,force);
+  // Background polling must NEVER unload an open map, an AI chat or a session.
+  if(!force){
+   healthGoUpdateStatus('Nowa wersja '+remote.slice(0,8)+' jest dostępna. Przejdź do Ustawień → Aktualizacje, aby ją pobrać.');
+   return;
+  }
+  await healthGoActivateNewVersion(remote,true);
  }catch(error){
   console.warn('HealthGo update check:',error);
   healthGoUpdateStatus('Nie udało się sprawdzić aktualizacji. Sprawdź internet.');
@@ -3046,7 +3055,7 @@ window.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <script src="./healthgo-ai-diagnostics.js"></script>
-<script src="./supabase-client.js"></script>
+<script src="./supabase-client.js?v=2"></script>
 <script src="./healthgo-services.js"></script>
 <script src="./healthgo-devices.js"></script>
 <script>
@@ -3199,21 +3208,51 @@ let handlingUid=null;
 async function handleSession(session){
  if(!session||!session.user){handlingUid=null;HealthGoServices.stop();showAuth();return;}
  const uid=session.user.id;
- if(handlingUid===uid&&HealthGoServices.state.uid===uid)return;
+ if(handlingUid===uid&&HealthGoServices.state.uid===uid){showApp();return;}
  if(!(await finishMfaStep(uid)))return;
  const user=HealthGoSupabase.toHealthGoUser(session.user);
  handlingUid=uid;
- status('Sprawdzanie konta…');
- await HealthGoServices.start(user);
- if(!HealthGoSupabase.auth.currentUser||HealthGoSupabase.auth.currentUser.id!==uid)return;
- await loadHealthGoCloudState();HealthGoServices.refreshLegacy();
- if(!HealthGoSupabase.auth.currentUser||HealthGoSupabase.auth.currentUser.id!==uid)return;
- renderHealthGoProfile();showApp();maybeShowAccountSetup();
+ // Keep the locally authenticated shell on screen while Supabase reconnects.
+ // Server operations remain protected by the real access token.
+ showApp();
+ status('Łączę z Twoim kontem…');
+ try{
+  await HealthGoServices.start(user);
+  if(!HealthGoSupabase.auth.currentUser||HealthGoSupabase.auth.currentUser.id!==uid)return;
+  await loadHealthGoCloudState();HealthGoServices.refreshLegacy();
+  if(!HealthGoSupabase.auth.currentUser||HealthGoSupabase.auth.currentUser.id!==uid)return;
+  renderHealthGoProfile();showApp();maybeShowAccountSetup();
+ }catch(e){
+  if(HealthGoSupabase.auth.currentUser?.id===uid){
+   showApp();status('Chmura jest chwilowo niedostępna. Logowanie pozostaje zachowane.',false);
+  }else{handlingUid=null;showAuth();throw e;}
+ }
 }
 if(!auth){showAuth();status('Nie udało się uruchomić logowania Supabase.',true);}
 else{
- auth.onAuthStateChange(function(_event,session){handleSession(session).catch(function(e){showAuth();status(clean(e),true);});});
- auth.restore().catch(function(e){showAuth();status(clean(e),true);});
+ auth.onAuthStateChange(function(event,session){
+  if(event==='TOKEN_REFRESHED'&&session?.user?.id===HealthGoServices.state.uid)return;
+  handleSession(session).catch(function(e){
+   if(auth.currentUser){showApp();status('Chmura chwilowo niedostępna. Spróbuj później.',false);}
+   else{showAuth();status(clean(e),true);}
+  });
+ });
+ auth.restore().catch(function(e){
+  if(auth.currentUser){showApp();status('Przywracanie sesji chwilowo niedostępne. Sprawdź internet.',false);}
+  else{showAuth();status(clean(e),true);}
+ });
+ let lastSessionResumption=0;
+ async function resumeAuthIfNeeded(){
+  if(!navigator.onLine||!auth.currentUser||Date.now()-lastSessionResumption<15000)return;
+  const current=(await auth.getSession()).data?.session;
+  if(!current?.expires_at||current.expires_at*1000-Date.now()>120000)return;
+  lastSessionResumption=Date.now();
+  try{await auth.refreshSession();}catch(_){
+   if(!auth.currentUser){showAuth();status('Sesja naprawdę wygasła. Zaloguj się ponownie.',true);}
+  }
+ }
+ window.addEventListener('online',resumeAuthIfNeeded);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)resumeAuthIfNeeded();});
 }
 window.loginGoogle=()=>busy(document.getElementById('googleLoginBtn'),async()=>{
  if(!auth)throw new Error('sdk-unavailable');
