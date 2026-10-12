@@ -80,3 +80,14 @@ test('accessibility preferences are scoped to one account and never invent data'
  assert.match(src,/Tylko z synchronizacji/);
  assert.match(src,/Bez sztucznych danych/);
 });
+
+test('daily habits persist only in account-scoped local settings without awarding XP',()=>{
+ const h=boot();
+ const panel=h.find('hg4Habits');assert.ok(panel);
+ const rows=panel.children.find(x=>x.className==='hg4-toggle-list').children;
+ assert.equal(rows.length,3);
+ rows[0].children[1].checked=true;rows[0].children[1].events.change();
+ assert.match(panel.children.find(x=>x.className==='hg4-habit-summary').textContent,/1 \/ 3/);
+ assert.ok([...h.store.keys()].some(k=>k.includes('more4.habits.tester.')));
+ assert.doesNotMatch(src,/grantXP\(|awardXP\(/);
+});
