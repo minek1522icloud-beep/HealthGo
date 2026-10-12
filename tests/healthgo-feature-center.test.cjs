@@ -21,7 +21,7 @@ test('all seven feature panels are installed in existing HealthGo sections witho
  for(let i=0;i<ids.length;i++)assert.match(script,new RegExp("mount\\('"+pages[i]+"','"+ids[i]+"'"));
  assert.match(html,/healthgo-feature-center\.js\?v=3/);
  assert.match(html,/healthgo-feature-center\.css\?v=2/);
- assert.match(html,/healthgo-point\.js\?v=2/);
+ assert.match(html,/healthgo-point\.js\?v=3/);
  assert.match(html,/healthgo-v2-ui\.js/);
 });
 test('subsystems for XP, family, devices and point redemption remain server authoritative',()=>{
@@ -74,7 +74,8 @@ test('treasure map navigation uses GPS route engine only after tapping a specifi
  assert.match(script,/marker\.bindPopup\(card\)/);
  assert.match(script,/w\.HealthGoMapV2\.selectDestination\(site\.name,Number\(site\.lat\),Number\(site\.lon\)\)/);
  assert.match(script,/if\(site\.claimed\)return/);
- assert.match(script,/if\(!allowedSites\(\)\.length\)return/);
+ assert.match(script,/else huntMap\.setView\(\[22,0\],2\)/,'world map opens even before administrators approve a site');
+ assert.doesNotMatch(script,/if\(!allowedSites\(\)\.length\)return/);
 });
 test('iPhone device information distinguishes web Bluetooth from native Apple Health access',()=>{
  assert.match(script,/Safari na iPhonie nie udostępnia Web Bluetooth/);
