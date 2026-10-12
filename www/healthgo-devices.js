@@ -400,6 +400,7 @@ window.HealthGoDevices={
   get activeDevice(){return activeDevice;},
   get connected(){return !!(activeServer&&activeServer.connected);},
   get capabilities(){return activeCapabilities.slice();},
+  get batteryLevel(){return batteryLevel;},
   get heartRate(){return heartRate;}
 };
 render();
