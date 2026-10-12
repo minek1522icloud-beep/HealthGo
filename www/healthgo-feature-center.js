@@ -257,6 +257,7 @@ function pointSummary(){
 }
 let huntMap=null,huntMarkers=null,huntVisible=false;
 function allowedSites(){
+ if(!S.state.uid)return [];
  return (w.HealthGoPoints?.getState?.()?.sites||[]).filter(x=>
   typeof x?.id==='string'&&Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lon))&&
   Math.abs(Number(x.lat))<=90&&Math.abs(Number(x.lon))<=180).slice(0,150);
@@ -347,8 +348,8 @@ function settings(){
   const row=action('',()=>jump(target));
   row.classList.add('hfc-setting-link');
   row.replaceChildren(el('span','hfc-settings-icon',icon));
-  const copy=el('span','hfc-setting-copy');copy.append(el('strong','',title),el('small','',arguments.length?'':''));
-  copy.lastChild.textContent=target==='family'?'Zarządzanie uprawnieniami':links.find(x=>x[0]===icon)?.[1]||'';
+  const copy=el('span','hfc-setting-copy');copy.append(
+   el('strong','',title),el('small','',target==='family'?'Zarządzanie uprawnieniami':links.find(x=>x[0]===icon)?.[1]||''));
   row.append(copy,el('span','hfc-chevron','›'));nav.appendChild(row);
  }
  root.appendChild(nav);
