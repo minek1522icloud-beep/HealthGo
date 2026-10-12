@@ -1,0 +1,95 @@
+/* HealthGo Map 6 — three real map functions, no fourth tab.
+ * Overrides legacy planner without altering GPS tracking or map geometry. */
+#map #hgNavigationQuick{display:none!important}
+#map .map-v2-bottom{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important;padding:6px!important}
+#map .map-v2-bottom .map-v2-tab{min-width:0;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;gap:3px!important;min-height:54px!important;color:#a5c9b4!important}
+#map .map-v2-bottom .map-v2-tab.active{background:#184b34!important;color:#b0ffd0!important;border-radius:12px}
+#map .map-v2-bottom .map-v2-tab svg{width:23px;height:23px;stroke:currentColor}
+#map #hgMapExtrasToggle{background:#0d5038;color:#dcffeb;border:1px solid #68ba8d}
+#map #hgMapExtrasPanel[hidden]{display:none!important}
+#map #hgMapExtrasPanel{
+ position:absolute;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));
+ width:min(500px,calc(100% - 20px));max-height:min(70dvh,590px);
+ overflow-y:auto;overscroll-behavior:contain;z-index:950;
+ border:1px solid #3d8967;border-radius:21px;
+ background:linear-gradient(165deg,#102d23,#071f19);
+ box-shadow:0 18px 50px #05120caa;color:#eaffef;padding:14px;
+}
+#map .hg-map-extras-head{display:flex;justify-content:space-between;align-items:center;gap:15px}
+#map .hg-map-extras-head h3{font-size:18px;color:#e9fff1;margin:0}
+#map .hg-map-extras-head button{border:0;border-radius:10px;background:#1b553c;color:#fff;width:40px;min-height:40px;font-size:23px}
+#map .hg-map-extras-intro{font-size:12px;color:#badfc9;line-height:1.65;margin:9px 0 12px}
+#map .hg-map-extras-group{border:1px solid #2c6047;border-radius:14px;padding:12px;margin:10px 0;background:#113628}
+#map .hg-map-extras-group h4{color:#dcffe9;font-size:13px;margin:0 0 10px}
+#map .hg-map-extras-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#map .hg-map-extras-controls button{
+ min-width:0;min-height:45px;padding:10px 8px;line-height:1.3;font-size:12px;
+ text-align:center;background:#194d38;color:#dcffeb;border:1px solid #397858;
+ border-radius:11px;font-weight:750;touch-action:manipulation
+}
+#map .hg-map-extras-controls button[aria-pressed="true"]{background:#8bf0b8;border-color:#8bf0b8;color:#07321e}
+#map .hg-map-extras-group p,#map .hg-map-extras-note,#map #hgMapExtrasStatus,#map #hgMapBuildingsStatus{
+ font-size:11px;color:#afd9c2;line-height:1.65;margin:9px 0 0
+}
+#map #hgMapExtrasStatus{border-radius:11px;padding:10px 12px;color:#d0ffde;border:1px solid #347755;background:#0c3424}
+#map #hgMapElevationResults:empty{display:none}
+#map #hgMapElevationResults{margin-top:10px}
+#map #hgMapElevationResults svg{width:100%;height:113px;display:block;border-radius:11px;background:#08291e;border:1px solid #2d614a}
+#map .hg-map-elevation-values{display:flex;gap:12px;justify-content:space-between;color:#a1f0c4;font-size:11px}
+#map #hgMapElevationResults small{color:#bddac9;font-size:10px;line-height:1.5;display:block;margin-top:7px}
+#map .hg-map-treasure-marker{width:38px;height:38px;background:#1f7650;border:2px solid white;border-radius:50% 50% 50% 8px;display:grid;place-items:center;box-shadow:0 6px 16px #032c2177}
+#map .hg-map-treasure-marker span{font-size:21px}
+#map .hg-map-treasure-popup strong{color:#123e2b;font-size:14px}
+#map .hg-map-treasure-popup p{color:#315847;font-size:12px;line-height:1.5}
+#map .hg-map-treasure-popup button{background:#07825b;color:white;border-radius:9px;border:0;padding:9px 10px;font-weight:800;min-height:38px}
+body.hg-navigation-active #map #hgMapExtrasPanel,
+body.hg-navigation-active #map #hgMapExtrasToggle{display:none!important}
+/* The old oversized full-screen planner is replaced with an unobtrusive
+ * card near the upper part of the map. Navigation itself remains fullscreen. */
+body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"]:not([hidden]){
+ justify-content:flex-start!important;gap:0!important;align-items:stretch!important;
+ padding:calc(8px + env(safe-area-inset-top)) 8px 80px!important;
+}
+body.hg-route-planner-open #map .hg-nav-planner-head{
+ width:min(430px,100%)!important;margin:0 auto!important;
+ padding:9px 13px!important;border-radius:17px 17px 0 0!important;
+ background:linear-gradient(120deg,#0f4934,#073826)!important;
+ box-shadow:0 5px 13px #03261939!important
+}
+body.hg-route-planner-open #map .hg-nav-planner-title small,
+body.hg-route-planner-open #map .hg-nav-planner-title span{display:none!important}
+body.hg-route-planner-open #map .hg-nav-planner-title h3{font-size:16px!important}
+body.hg-route-planner-open #map .hg-nav-planner-x{width:38px!important;height:38px!important;min-height:38px!important;flex-basis:38px!important}
+body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"] .map-v2-panel-content{
+ width:min(430px,100%)!important;max-width:430px!important;
+ max-height:min(65dvh,570px)!important;margin:0 auto!important;
+ border-radius:0 0 17px 17px!important;padding:12px 15px 14px!important;
+ box-shadow:0 12px 24px #01251855!important;border-color:#2c7957!important;
+ background:rgba(250,255,252,.987)!important
+}
+body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"] .hg-nav-planner-intro,
+body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"] .hg-gps-inline-note{display:none!important}
+body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"] .hg-route-location-info{padding:8px 10px 8px 32px!important;margin:0 0 7px!important}
+body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"] .map-v2-field{margin-top:8px!important}
+body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"] .map-v2-primary{background:#06805c!important;border-color:#06805c!important;color:#fff!important}
+body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"] .hg-nav-planner-shortcuts{margin:7px 0!important}
+/* Retain the ONLY three map sub-tabs even with planner open. */
+body.hg-route-planner-open #map .map-v2-bottom{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ position:fixed!important;left:10px!important;right:10px!important;bottom:calc(6px + env(safe-area-inset-bottom))!important;
+ width:auto!important;max-width:430px!important;margin:auto!important;z-index:2100!important;
+ border:1px solid #457d60!important;border-radius:17px!important;
+ background:rgba(8,42,29,.96)!important;pointer-events:auto!important
+}
+body.hg-route-planner-open #map .map-v2-bottom button{pointer-events:auto!important}
+#map .map-v2-panel[data-map-panel="route"] .hg-nav-start-button{
+ font-size:15px!important;font-weight:900!important;letter-spacing:-.01em
+}
+@media(max-width:640px){
+ #map #hgMapExtrasPanel{bottom:calc(76px + env(safe-area-inset-bottom));max-height:61dvh}
+ #map .hg-map-extras-controls button{font-size:11px}
+ body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"] .map-v2-panel-content{max-height:min(68dvh,630px)!important}
+}
+@media(max-height:590px){
+ body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"] .map-v2-panel-content{max-height:46dvh!important}
+}
