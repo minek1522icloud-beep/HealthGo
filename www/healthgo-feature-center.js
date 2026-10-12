@@ -283,6 +283,18 @@ function family(){
  privacy.append(el('strong','','Twoja prywatność ma pierwszeństwo'),
   el('p','','Tylko osoby z zatwierdzonymi uprawnieniami mogą otrzymywać wybrane informacje. Lokalizacja jest udostępniana osobno, po Twojej decyzji.'));
  root.appendChild(privacy);
+ if(linked&&Array.isArray(f.members)&&f.members.length){
+  const roster=el('div','hfc-family-roster');
+  roster.appendChild(el('h4','','Członkowie HealthGo Family'));
+  for(const member of f.members.slice(0,12)){
+   const row=el('div','hfc-family-person');
+   const nick=String(member.nickname||member.displayName||member.display_name||'Członek rodziny').slice(0,48);
+   const role=member.role==='guardian'?'Opiekun':member.role==='child'?'Dziecko':'Członek';
+   row.append(el('span','','👤'),el('strong','',nick),el('small','',role));
+   roster.appendChild(row);
+  }
+  root.appendChild(roster);
+ }
  const stateText=el('p','hfc-sync-state',linked?
   'Połączono z HealthGo Family. Uprawnienia członków zmieniaj w panelu poniżej.':
   'Nie połączono jeszcze z rodziną. Możesz utworzyć ją jako opiekun lub dołączyć kodem.');
