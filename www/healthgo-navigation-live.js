@@ -6,7 +6,7 @@
  const $=id=>document.getElementById(id);
  const GL_URL='https://unpkg.com/maplibre-gl@6.11.2/dist/maplibre-gl.mjs';
  const STYLE_URL='https://unpkg.com/maplibre-gl@6.11.2/dist/maplibre-gl.css';
- let gl=null,libPromise=null,marker=null,active=false,ready=false,generation=0;
+ let gl=null,libPromise=null,marker=null,markerVisual=null,active=false,ready=false,generation=0;
  let coords=[],lastView=0,lastWeather=0,weatherController=null,lastHeading=null,lastPoint=null;
  let inFlight=false,glDisabled=false,approachDistance=null;
  const good=p=>p&&Number.isFinite(p.lat)&&Number.isFinite(p.lon)&&Math.abs(p.lat)<=90&&Math.abs(p.lon)<=180;
@@ -46,6 +46,7 @@
   if(weatherController){weatherController.abort();weatherController=null}
   inFlight=false;lastView=0;lastWeather=0;
   showLayer(false);
+  markerVisual?.stop?.();markerVisual=null;
   if(marker){try{marker.remove()}catch(_){}marker=null}
   if(gl){try{gl.remove()}catch(_){}gl=null}
   const hint=$('hgLiveWeather');if(hint){hint.hidden=true;hint.textContent=''}
@@ -99,6 +100,10 @@
       paint:{'line-color':'#11dfb2','line-width':8,'line-opacity':1}});
      marker=new lib.Marker({element:makeCar(),rotationAlignment:'viewport',pitchAlignment:'viewport'})
       .setLngLat([point.lon,point.lat]).addTo(gl);
+     markerVisual=window.HealthGoGpsVisual?.create?.(shown=>{
+      if(marker&&gl)marker.setLngLat([shown.lon,shown.lat]);
+     },{maxGap:85})||null;
+     markerVisual?.fix?.(point,15);
      if(Number.isFinite(heading))marker.setRotation(0); // With the camera bearing the heading, the forward arrow stays upright.
      ready=true;showLayer(true);gl.resize();
      window.HealthGoRoute3DOverlay?.attach?.(gl,coords);
@@ -118,6 +123,7 @@
  function fail(){
   glDisabled=true;
   showLayer(false);
+  markerVisual?.stop?.();markerVisual=null;
   if(marker){try{marker.remove()}catch(_){}marker=null}
   if(gl){try{gl.remove()}catch(_){}gl=null}
   ready=false;window.HealthGoRoute3DOverlay?.detach?.();
@@ -149,10 +155,10 @@
   }
   if(ready&&gl){
    try{
-    marker?.setLngLat([p.lon,p.lat]);
+    if(!markerVisual?.fix?.(p,accuracy))marker?.setLngLat([p.lon,p.lat]);
     window.HealthGoMapExtras?.gps3D?.(p);
     if(Number.isFinite(heading))marker?.setRotation((heading-(Number(gl.getBearing?.())||0)+360)%360);
-    if(Date.now()-lastView>1050){
+    if(Date.now()-lastView>580){
      lastView=Date.now();
      const follows=$('hgProFollow')?.getAttribute?.('aria-pressed')!=='false';
      if(follows)gl.easeTo({center:[p.lon,p.lat],
@@ -160,7 +166,7 @@
       pitch:52,zoom:Number.isFinite(approachDistance)?
        (approachDistance<100?17.6:approachDistance<300?17.0:16.2):
        Math.max(16,Math.min(17.6,gl.getZoom())),
-      duration:800,essential:true});
+      duration:680,essential:true});
     }
    }catch(_){fail()}
   }
