@@ -107,6 +107,7 @@ jobs:
           test -s www/healthgo-navigation-live.css
           test -s www/healthgo-route-3d-overlay.js
           test -s www/healthgo-route-3d-overlay.css
+          test -s www/healthgo-map-photos.js
           test -s www/healthgo-map-extras.js
           test -s www/healthgo-map-extras.css
           test -s www/safe.html

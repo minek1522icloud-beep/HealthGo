@@ -93,3 +93,15 @@ body.hg-route-planner-open #map .map-v2-bottom button{pointer-events:auto!import
 @media(max-height:590px){
  body.hg-route-planner-open #map .map-v2-panel[data-map-panel="route"] .map-v2-panel-content{max-height:46dvh!important}
 }
+
+/* Real photo cards: contain full image and show author/license; never use stock placeholders. */
+#map .map-place .hg-map-place-photo{margin:12px 0 5px;padding:9px;border:1px solid #28664a;border-radius:13px;background:#0c2b20;overflow:hidden}
+#map .map-place .hg-map-place-photo img{display:block;width:100%;max-height:260px;object-fit:contain;background:#092017;border-radius:9px}
+#map .map-place .hg-map-place-photo figcaption{color:#d0f2dc;font-size:11px;line-height:1.5;overflow-wrap:anywhere;margin-top:7px}
+#map .map-place .hg-map-place-photo figcaption a{color:#88edb9;text-decoration:underline}
+#map .map-place .hg-map-place-photo-button{min-height:40px;touch-action:manipulation}
+#map .hg-map-route-waypoint{border:1px solid #cfe2d6;border-radius:12px;background:#f3faf6;padding:9px 11px;margin:9px 0}
+#map .hg-map-route-waypoint summary{font-size:12px;color:#19583d;font-weight:800;cursor:pointer;min-height:30px}
+#map .hg-map-route-waypoint[open] summary{margin-bottom:7px}
+#map .hg-map-route-waypoint .map-v2-input{min-height:44px}
+#map .hg-map-route-waypoint .map-v2-muted{margin:7px 0 0}

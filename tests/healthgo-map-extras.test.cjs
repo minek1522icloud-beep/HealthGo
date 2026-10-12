@@ -90,4 +90,19 @@ test('offline tile bulk downloads are explicitly disabled; existing cached shell
  assert.doesNotMatch(extrasSource,/caches\.open|cache\.addAll/);
  assert.match(html,/healthgo-route-3d-overlay\.js\?v=1/);
  assert.match(html,/healthgo-map-extras\.js\?v=2/);
+ assert.match(html,/healthgo-map-photos\.js\?v=1/);
+});
+
+test('place images are only loaded for explicit OSM Commons File tags with proper attribution',()=>{
+ const js=read('www/healthgo-map-photos.js');
+ new vm.Script(js,{filename:'healthgo-map-photos.js'});
+ const w={};
+ vm.runInNewContext(js,{window:w,document:{},AbortController,URLSearchParams,fetch:()=>{throw Error('Must not fetch at load')}});
+ assert.equal(w.HealthGoMapPhotos.legalFile('File:Park_w_Warszawie.jpg'),true);
+ assert.equal(w.HealthGoMapPhotos.legalFile('Category:Other images'),false);
+ assert.equal(w.HealthGoMapPhotos.legalFile('https://example.com/random-photo.jpg'),false);
+ assert.match(js,/extmetadata/);
+ assert.match(js,/LicenseShortName/);
+ assert.match(js,/commons.wikimedia.org/);
+ assert.match(html,/HealthGoMapPhotos\?\.attach\?\.\(card,t,name\)/);
 });
