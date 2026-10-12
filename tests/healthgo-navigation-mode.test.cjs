@@ -116,3 +116,8 @@ test('compact blue location arrow is consistent between 2D and 3D, without chang
  assert.match(pitched,/marker\?\.setLngLat\(\[p.lon,p.lat\]\)/);
  assert.match(follow,/arrow\.setLatLng\(\[point.lat,point.lon\]\)/);
 });
+
+test('syntax checker uses the updated compact GPS arrow stylesheet',()=>{
+ const checker=fs.readFileSync('scripts/check-syntax.cjs','utf8');
+ assert.match(checker,/healthgo-navigation-follow-v1\.css\?v=2/);
+});
