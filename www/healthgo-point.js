@@ -15,7 +15,10 @@ async function refresh(){
  const uid=String(services.state.uid||'');
  if(uid!==owner){owner=uid;state=null;friends=[]}
  if(!uid){notice='Zaloguj się, aby używać HealthGo Point.';render();return}
- try{const value=await api.rpc('hg_point_snapshot',{});if(uid!==owner)return;state=value;notice='';}
+ try{const value=await api.rpc('hg_point_snapshot',{});if(uid!==owner)return;state=value;notice='';
+  // Refresh the cross-feature progress card after an authenticated wallet response.
+  if(typeof w.CustomEvent==='function')w.dispatchEvent?.(new w.CustomEvent('healthgo:points-updated',{detail:{uid}}));
+ }
  catch(e){if(uid===owner)notice='Nie udało się pobrać portfela: '+String(e.message||e);}
  render();
 }
