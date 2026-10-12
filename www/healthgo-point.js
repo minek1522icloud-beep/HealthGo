@@ -7,6 +7,8 @@ const node=document.getElementById('hgPointCenter'),api=w.HealthGoSupabase?.db,s
 if(!node||!api||!services)return;
 const html=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const format=n=>(Number(n||0)/2).toLocaleString('pl-PL',{minimumFractionDigits:1,maximumFractionDigits:1});
+// Original sample products do not represent verified HealthGo rewards.
+const DEMO_IDS=new Set(['explorer-sticker','forest-sticker','mint-banner','cosmic-badge','golden-compass']);
 let owner='',state=null,tab='catalog',pending=false,notice='',friends=[];
 function data(){return state||{units:0,catalog:[],inventory:[],events:[],sites:[]}}
 function has(id){return data().inventory.some(x=>x.id===id&&x.quantity>0)}
@@ -24,15 +26,18 @@ async function refresh(){
 }
 function status(t){notice=t;render()}
 function render(){
- const v=data(),reward=v.catalog||[],inventory=v.inventory||[],events=v.events||[];
+ const v=data(),reward=(Array.isArray(v.catalog)?v.catalog:[]).filter(i=>i&&typeof i.id==='string'&&!DEMO_IDS.has(i.id)),
+ inventory=Array.isArray(v.inventory)?v.inventory:[],events=Array.isArray(v.events)?v.events:[];
  const owned=inventory.length;
  node.innerHTML='<div class="hpt-hero"><div><small>NOWY SYSTEM HEALTHGO</small><h2>HealthGo Point</h2><p>Odkrywaj miejsca, rozwijaj kolekcję i zdobywaj wirtualne nagrody.</p></div>'+
  '<div class="hpt-balance"><b>'+format(v.units)+' HG</b><span>Twoje punkty</span></div></div>'+
  '<div class="hpt-mini"><span>🧭 '+(v.sites||[]).filter(x=>x.claimed).length+' odkryć</span><span>🎁 '+owned+' przedmiotów</span><span>⭐ 0,5 HG za skarb</span></div>'+
  (notice?'<p class="hpt-notice" role="status">'+html(notice)+'</p>':'')+
  '<div class="hpt-tabs">'+[['catalog','Nagrody'],['inventory','Kolekcja'],['friends','Wymiana'],['history','Historia']].map(a=>'<button data-hpt-tab="'+a[0]+'" aria-pressed="'+(tab===a[0])+'" class="'+(tab===a[0]?'active':'')+'">'+a[1]+'</button>').join('')+'</div>'+
- (tab==='catalog'?'<h3>Nagrody cyfrowe</h3><div class="hpt-grid">'+reward.map(i=>'<article class="hpt-item"><span class="hpt-emoji">'+html(i.emoji)+'</span><b>'+html(i.title)+'</b><p>'+html(i.description)+'</p><div><strong>'+format(i.priceUnits)+' HG</strong><button data-hpt-buy="'+html(i.id)+'" '+(pending||has(i.id)||!owner?'disabled':'')+'>'+(has(i.id)?'Posiadasz':'Odbierz')+'</button></div></article>').join('')+'</div>'+
- '<div class="hpt-wait"><b>🍦 Lód Kaktus · 🥗 Sałatka · inne produkty</b><p>To propozycje przyszłych nagród. Obecnie nie można ich odbierać: wymaga to prawdziwych partnerów i zasad wydawania.</p></div>':
+ (tab==='catalog'?'<h3>Zweryfikowane nagrody cyfrowe</h3>'+
+ (reward.length?'<div class="hpt-grid">'+reward.map(i=>'<article class="hpt-item"><span class="hpt-emoji">'+html(i.emoji)+'</span><b>'+html(i.title)+'</b><p>'+html(i.description)+'</p><div><strong>'+format(i.priceUnits)+' HG</strong><button data-hpt-buy="'+html(i.id)+'" '+(pending||has(i.id)||!owner?'disabled':'')+'>'+(has(i.id)?'Posiadasz':'Odbierz')+'</button></div></article>').join('')+'</div>':
+ '<div class="hpt-empty"><b>Brak zatwierdzonych nagród w sklepie</b><p>Przykładowe naklejki, banery i żetony zostały wycofane. Nowe nagrody pojawią się po zatwierdzeniu w HealthGo.</p></div>')+
+ '<div class="hpt-wait"><b>Wyłącznie wirtualne nagrody</b><p>Nie obiecujemy wymiany na rzeczywiste produkty ani nagrody bez potwierdzonej dostępności.</p></div>':
  tab==='inventory'?'<h3>Twój Plecak</h3>'+(inventory.length?'<div class="hpt-grid">'+inventory.map(x=>{const item=reward.find(y=>y.id===x.id);return '<article class="hpt-item"><span class="hpt-emoji">'+html(item?.emoji||'✦')+'</span><b>'+html(item?.title||x.id)+'</b><p>Przedmiot cyfrowy · w kolekcji</p></article>'}).join('')+'</div>':'<p class="hpt-empty">Nie masz jeszcze przedmiotów. Zbieraj punkty w Poszukiwaczu Skarbów.</p>'):
  tab==='friends'?'<h3>Wymiana ze znajomymi</h3><div class="hpt-gift"><p>Punkty można przekazać tylko zaakceptowanemu znajomemu. Nie są to pieniądze ani nagrody rzeczowe. Limity chronią przed przypadkowymi transferami.</p>'+
  '<label>Wybierz znajomego<select id="hptFriend"><option value="">Wybierz…</option>'+friends.map(f=>'<option value="'+html(f.id)+'">'+html(f.name)+'</option>').join('')+'</select></label>'+
@@ -44,7 +49,7 @@ function render(){
  if(small)small.textContent=format(v.units)+' HG';
 }
 async function buy(id){
- const item=data().catalog?.find(x=>x.id===id);
+ const item=data().catalog?.find(x=>x.id===id&&!DEMO_IDS.has(x.id));
  if(!item||has(id)||pending||!owner)return;
  if(!w.confirm('Odbierasz '+item.title+' za '+format(item.priceUnits)+' HG. Kontynuować?'))return;
  pending=true;
