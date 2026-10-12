@@ -108,3 +108,10 @@
 @media(prefers-reduced-motion:reduce){
  #hgTreasureCenter *,#hgPointCenter *{animation:none!important;transition:none!important}
 }
+
+/* Keep the final store and treasure cards clear of the fixed iPhone bottom tab bar. */
+@media(max-width:760px){
+ #points #hgPointCenter,#explore #hgTreasureCenter{
+  padding-bottom:calc(112px + env(safe-area-inset-bottom))!important
+ }
+}
