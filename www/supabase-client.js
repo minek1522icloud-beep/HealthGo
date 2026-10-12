@@ -234,7 +234,10 @@ const auth={
   // send a fake signed-out event on a temporary iPhone/Wi-Fi/network failure.
   let redirected=null;
   try{redirected=await sessionFromUrl();}catch(e){
-   if(!session){notify('INITIAL_SESSION');throw e;}
+   if(!session||/google_expired|google_cancelled|invalid_google_session/.test(String(e?.message||''))){
+    if(!session)notify('INITIAL_SESSION');
+    throw e;
+   }
   }
   if(redirected)return redirected;
   if(!session){notify('INITIAL_SESSION');return null;}
