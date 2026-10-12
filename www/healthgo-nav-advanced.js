@@ -108,7 +108,12 @@
    :'Włącz dobrowolne sprawdzanie limitów OSM w opcjach';
   // Never show a red speed-limit sign with a guessed or unknown number.
   const badge=$('hgNavLimitBadge');
-  if(badge)badge.hidden=!(active&&limitsEnabled&&limitDisplay);
+  if(badge)badge.hidden=true; // Legacy box retired; use compact gauge sign.
+  const sign=$('hgNavGaugeLimit');
+  if(sign){
+   sign.hidden=!(active&&limitsEnabled&&limitDisplay);
+   sign.textContent=active&&limitsEnabled&&limitDisplay?String(limitDisplay.kmh):'';
+  }
   const button=$('hgNavLimitEnable');
   if(button){button.textContent=limitsEnabled?'Limity OSM: włączone':'Sprawdzaj limity OSM';button.setAttribute('aria-pressed',String(limitsEnabled));}
  }
@@ -172,7 +177,7 @@
   lastPos={lat:pos.lat,lon:pos.lon};
   if(Number.isFinite(detail.heading)&&detail.heading>=0&&detail.heading<360)heading=detail.heading;
   safeText('hgNavCompassBearing',Number.isFinite(heading)?Math.round((360-heading)%360)+'° N':'N');
-  const speed=Number.isFinite(detail.speed)&&detail.speed>=0?detail.speed*3.6:null;
+  const speed=Number.isFinite(detail.speed)&&detail.speed>=0&&detail.speed<=85?detail.speed*3.6:null;
   if(speed!==null)sessionStats.maxSpeed=Math.max(sessionStats.maxSpeed??0,speed);
   const prev=sessionStats.last;
   // Conservative GPS distance: ignore jumps/noisy fixes and reject unrealistic speed.
@@ -188,6 +193,8 @@
   renderLanes(!minimal&&Number.isFinite(detail.distanceTo)&&detail.distanceTo<=650?laneInfo(steps[nextStep]):null);
   writeLimit();
   const showSpeed=$('hgNavCurrentSpeed');if(showSpeed)showSpeed.textContent=speed===null?'—':String(Math.round(speed));
+  const dial=$('hgNavSpeedGauge');
+  if(dial)dial.style?.setProperty?.('--hg-speed-ratio',speed===null?'0':String(Math.min(1,speed/130)));
   const rel=$('hgNavUpcomingRoad');if(rel)rel.textContent=nextStreet||'Nawigacja GPS';
   if(limitsEnabled)void fetchLimit(lastPos,currentStreet);
   w.HealthGoNavigationLive?.setApproach?.(lastDistance);
