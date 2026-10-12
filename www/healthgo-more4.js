@@ -205,18 +205,19 @@ function notifications(root){
   try{const permission=await w.Notification.requestPermission();if(result)result.textContent='Zgoda systemowa: '+permission+'. Działanie w tle wymaga osobnej obsługi push.';}
   catch(_){if(result)result.textContent='Nie udało się uzyskać zgody.';}},true]]);
  const toggleRoot=node('div','hg4-toggle-list');
- for(const [key,label] of [['xp','XP i poziomy'],['missions','Wyzwania i nagrody'],['reminders','Przypomnienia planu']]){
+ for(const [key,label] of [['xp','XP i poziomy'],['missions','Wyzwania i nagrody']]){
   const labelNode=node('label','hg4-toggle'),control=node('input');control.type='checkbox';control.checked=p[key]!==false;
   control.addEventListener('change',()=>{savePrefs({[key]:control.checked});notifications(root);});
   labelNode.append(node('span','',label),control);toggleRoot.appendChild(labelNode);}
  n.appendChild(toggleRoot);
+ actions(n,[['Przypomnienia planu dnia',()=>go('plan'),true]]);
  const feed=node('div','hg4-events');feed.appendChild(node('h4','','Ostatnie zdarzenia'));
  const list=notices();if(!list.length)empty(feed,'Brak zapisanych zdarzeń dla wybranych kategorii.');
  for(const ev of list.slice(0,12)){const row=node('div','hg4-event');
   const text=ev.type==='XP_GAINED'?'Zdobyto '+number(ev.payload?.xp)+' XP':allowedEvents[ev.type][1];
   row.append(node('strong','',text),node('span','',date(ev.occurredAt)));feed.appendChild(row);}
  n.appendChild(feed);
- n.appendChild(node('p','hg4-footnote','Te filtry dotyczą Centrum powiadomień. Nie aktywują same z siebie powiadomień push ani pracy w tle.'));
+ n.appendChild(node('p','hg4-footnote','Te filtry dotyczą Centrum powiadomień. Przypomnienia planu konfiguruje się osobno w Planie Dnia. Nie aktywują same z siebie powiadomień push ani pracy w tle.'));
 }
 function security(root){
  const panel=section(root,'hg4Security','🛡️ Bezpieczeństwo i SOS',
