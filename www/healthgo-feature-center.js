@@ -355,9 +355,9 @@ function treasure(){
  const mapEl=el('div','hfc-map-canvas');mapEl.id='hfcTreasureMap';mapEl.hidden=!huntVisible;
  const cover=el('div','hfc-map-empty');
  cover.append(el('span','','🗺️'),el('strong','',sites.length?'Gotowe do wyświetlenia zatwierdzonych skarbów':'Mapa czeka na pierwsze zatwierdzone miejsca'),
-  el('p','',sites.length?'Otwórz mapę, aby zobaczyć punkty. Twój GPS nie będzie pobierany automatycznie.':'Nie tworzymy fikcyjnych lokalizacji. Nowe skarby pojawią się dopiero po ich sprawdzeniu.'));
+  el('p','',sites.length?'Otwórz mapę, aby zobaczyć zweryfikowane punkty. GPS jest dobrowolny.':'Możesz otworzyć mapę świata bez GPS. Skarby pojawią się tylko w zatwierdzonych lokalizacjach.'));
  box.append(mapEl,cover);root.appendChild(box);
- const status=el('p','hfc-sync-state',sites.length?'Mapa dostępna na żądanie.':'Na razie brak zatwierdzonych miejsc na koncie.');
+ const status=el('p','hfc-sync-state',sites.length?'Mapa dostępna na żądanie.':'Mapa świata jest dostępna; na razie brak zatwierdzonych skarbów.');
  root.appendChild(status);
  buttons(root,[['🗺️ '+(huntVisible?'Ukryj mapę':'Pokaż mapę skarbów'),()=>toggleTreasureMap(),''],
   ['✦ Portfel HG',()=>go('points'),'subtle']]);
@@ -374,7 +374,7 @@ function treasure(){
 function drawTreasureMap(){
  const container=$('hfcTreasureMap');
  const sites=allowedSites();
- if(!huntVisible||!container||!sites.length||!w.L?.map)return false;
+ if(!huntVisible||!container||!w.L?.map)return false;
  if(huntMap){try{huntMap.remove()}catch(_){}}
  try{
   huntMap=w.L.map(container,{zoomControl:true,scrollWheelZoom:false,attributionControl:true});
@@ -394,8 +394,9 @@ function drawTreasureMap(){
    });btn.disabled=!!site.claimed;card.appendChild(btn);
    marker.bindPopup(card);
   }
-  group.addTo(huntMap);huntMarkers=group;
-  huntMap.fitBounds(group.getBounds(),{padding:[28,28],maxZoom:14});
+  if(sites.length){group.addTo(huntMap);huntMarkers=group;
+   huntMap.fitBounds(group.getBounds(),{padding:[28,28],maxZoom:14});}
+  else huntMap.setView([22,0],2);
   w.setTimeout(()=>huntMap?.invalidateSize?.(),90);return true;
  }catch(_){
   removeMap();
@@ -404,7 +405,6 @@ function drawTreasureMap(){
  }
 }
 function toggleTreasureMap(){
- if(!allowedSites().length)return;
  huntVisible=!huntVisible;
  if(!huntVisible)removeMap();
  treasure();
