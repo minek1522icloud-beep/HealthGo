@@ -11,6 +11,12 @@ const format=n=>(Number(n||0)/2).toLocaleString('pl-PL',{minimumFractionDigits:1
 const DEMO_IDS=new Set(['explorer-sticker','forest-sticker','mint-banner','cosmic-badge','golden-compass']);
 let owner='',state=null,tab='catalog',pending=false,notice='',friends=[];
 function data(){return state||{units:0,catalog:[],inventory:[],events:[],sites:[]}}
+function publicState(){
+ const v=data();
+ return {...v,
+  catalog:(Array.isArray(v.catalog)?v.catalog:[]).filter(x=>x&&!DEMO_IDS.has(x.id)),
+  inventory:(Array.isArray(v.inventory)?v.inventory:[]).filter(x=>x&&!DEMO_IDS.has(x.id))};
+}
 function has(id){return data().inventory.some(x=>x.id===id&&x.quantity>0)}
 function navigate(page){if(typeof w.mobileGo==='function')w.mobileGo(page);else if(typeof w.go==='function')w.go(page);}
 async function refresh(){
@@ -26,8 +32,7 @@ async function refresh(){
 }
 function status(t){notice=t;render()}
 function render(){
- const v=data(),reward=(Array.isArray(v.catalog)?v.catalog:[]).filter(i=>i&&typeof i.id==='string'&&!DEMO_IDS.has(i.id)),
- inventory=Array.isArray(v.inventory)?v.inventory:[],events=Array.isArray(v.events)?v.events:[];
+ const v=publicState(),reward=v.catalog||[],inventory=v.inventory||[],events=Array.isArray(v.events)?v.events:[];
  const owned=inventory.length;
  node.innerHTML='<div class="hpt-hero"><div><small>NOWY SYSTEM HEALTHGO</small><h2>HealthGo Point</h2><p>Odkrywaj miejsca, rozwijaj kolekcję i zdobywaj wirtualne nagrody.</p></div>'+
  '<div class="hpt-balance"><b>'+format(v.units)+' HG</b><span>Twoje punkty</span></div></div>'+
@@ -84,6 +89,6 @@ node.addEventListener('click',e=>{
  if(b.hasAttribute('data-hpt-send'))send();
 });
 services.subscribe(s=>{const id=String(s.uid||'');if(id!==owner){owner=id;state=null;friends=[];refresh();}});
-w.HealthGoPoints=Object.freeze({refresh,getState:()=>data(),format});
+w.HealthGoPoints=Object.freeze({refresh,getState:publicState,format});
 refresh();
 })(window);
