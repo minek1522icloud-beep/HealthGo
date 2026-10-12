@@ -245,6 +245,11 @@ function schedule(){if(scheduled)return;scheduled=true;
  const invoke=()=>{scheduled=false;render();};
  if(typeof w.requestAnimationFrame==='function')w.requestAnimationFrame(invoke);else w.setTimeout(invoke,0);}
 S.subscribe(schedule);
+d.addEventListener?.('click',event=>{
+ const target=event.target?.closest?.('[data-hg4-open]');if(!target)return;
+ const id=target.getAttribute('data-hg4-open');
+ if(id==='hg4Notifications'||id==='hg4Security')jump('settings',id);
+});
 w.addEventListener?.('pageshow',schedule);
 w.HealthGoMore4=Object.freeze({render,schedule,preferences,notices,downloadCsv,history});
 schedule();
