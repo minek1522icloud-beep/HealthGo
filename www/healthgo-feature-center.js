@@ -327,7 +327,7 @@ function pointSummary(){
  grid(root,[['💚','Saldo',owner&&loaded?(have/2).toLocaleString('pl-PL',{minimumFractionDigits:1,maximumFractionDigits:1})+' HG':'—','Zweryfikowany portfel'],
   ['🧭','Odkryte miejsca',owner&&loaded?String(sites.filter(x=>x.claimed).length):'—','Zatwierdzone odkrycia'],
   ['🎁','Przedmioty cyfrowe',owner&&loaded?String((state.inventory||[]).length):'—','Twoja kolekcja']]);
- buttons(root,[['🧭 Odkrywaj skarby',()=>go('explore'),''],['👥 Wymiana',()=>{
+ buttons(root,[['🧭 Odkrywaj skarby',()=>go('explore'),''],['↻ Odśwież portfel',()=>w.HealthGoPoints?.refresh?.(),'subtle'],['👥 Wymiana',()=>{
   const selector=$('hptFriend');if(selector)selector.focus();
   const tab=d.querySelector('#hgPointCenter [data-hpt-tab="friends"]');tab?.click?.();
  },'subtle']]);
@@ -430,6 +430,21 @@ function settings(){
   row.append(copy,el('span','hfc-chevron','›'));nav.appendChild(row);
  }
  root.appendChild(nav);
+ const update=el('section','hfc-update-card');
+ update.appendChild(el('strong','','Przygotowanie do prezentacji'));
+ const status=el('p','','Możesz sprawdzić, czy jest dostępna nowsza wersja HealthGo. Twoje konto i dane nie zostaną zmienione.');
+ update.appendChild(status);
+ update.appendChild(action('↻ Sprawdź aktualizację',async()=>{
+  if(typeof w.healthGoCheckMobileUpdate!=='function'){
+   status.textContent='Sprawdzanie wersji nie jest dostępne na tym urządzeniu.';return;
+  }
+  status.textContent='Sprawdzam nową wersję…';
+  try{
+   await w.healthGoCheckMobileUpdate(true);
+   status.textContent='Sprawdzanie zakończone. Jeżeli jest aktualizacja, pojawi się komunikat aplikacji.';
+  }catch(_){status.textContent='Nie udało się sprawdzić aktualizacji. Sprawdź internet.';}
+ },'subtle'));
+ root.appendChild(update);
  const data=S.state;
  message(root,'Konto: '+(data.profile?.nickname||'—')+' · '+(data.online?'Online':'Offline')+
   '. Uprawnienia lokalizacji i zdrowia są kontrolowane również przez iPhone’a / Androida.');
