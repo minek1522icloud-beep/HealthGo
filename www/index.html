@@ -372,6 +372,7 @@ html.hg-session-known #authScreen{display:none!important}
   <link rel="stylesheet" href="./healthgo-map-extras.css?v=3">
   <link rel="stylesheet" href="./healthgo-nav-advanced.css?v=3">
   <link rel="stylesheet" href="./healthgo-feature-center.css?v=1">
+  <link rel="stylesheet" href="./healthgo-gps-smooth.css?v=1">
 </head>
 <body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -683,8 +684,11 @@ html.hg-session-known #authScreen{display:none!important}
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/><path d="M12 1v4m0 14v4M1 12h4m14 0h4"/></svg>
           Śledź moją strzałkę
         </button>
-        <div class="hg-pro-speed hg-drive-speed" aria-label="Prędkość z GPS">
-          <strong id="hgProNavSpeed">—</strong><small>km/h</small>
+        <div class="hg-pro-speed hg-drive-speed" aria-label="Prędkość zmierzona przez GPS">
+          <div id="hgNavSpeedGauge" aria-hidden="true">
+            <strong id="hgProNavSpeed">—</strong><small>km/h</small>
+          </div>
+          <span id="hgNavGaugeLimit" aria-label="Potwierdzony limit prędkości OpenStreetMap" hidden></span>
         </div>
         <footer class="hg-pro-nav-footer hg-drive-footer">
           <div class="hg-drive-metrics">
@@ -3399,11 +3403,12 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-map-recovery.js?v=2"></script>
 <script src="./healthgo-map-v2.js?v=6"></script>
 <script src="./healthgo-route-3d-overlay.js?v=1"></script>
-<script src="./healthgo-navigation-live.js?v=5"></script>
+<script src="./healthgo-gps-visual.js?v=1"></script>
+<script src="./healthgo-navigation-live.js?v=6"></script>
 <script src="./healthgo-navigation-mode.js?v=2"></script>
-<script src="./healthgo-navigation-follow-v1.js?v=3"></script>
-<script src="./healthgo-nav-advanced.js?v=4"></script>
-<script src="./healthgo-map-pro.js?v=12"></script>
+<script src="./healthgo-navigation-follow-v1.js?v=4"></script>
+<script src="./healthgo-nav-advanced.js?v=5"></script>
+<script src="./healthgo-map-pro.js?v=13"></script>
 <script src="./healthgo-map4.js?v=3"></script>
 <script src="./healthgo-map-extras.js?v=2"></script>
 <script src="./healthgo-map-photos.js?v=1"></script>
