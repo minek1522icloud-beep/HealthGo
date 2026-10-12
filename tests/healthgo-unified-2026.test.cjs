@@ -23,7 +23,7 @@ test('new scripts compile and are wired to the main HTML',()=>{
   new vm.Script(src('www/'+name+'.js'),{filename:name});
   assert.match(html,new RegExp(name+'\\.js\\?v=\\d+'),'Missing versioned '+name+' script');
  }
- assert.match(html,/healthgo-point.css\?v=2/);
+ assert.match(html,/healthgo-point.css\?v=3/);
  assert.match(html,/id="hgPointHomeMini"/);
  assert.match(html,/healthgo-unified-polish.css\?v=1/);
 });
@@ -57,7 +57,7 @@ test('treasure flow uses opt-in GPS, camera file, second fix and SHA256; no fake
  assert.match(s,/photo\.arrayBuffer\(\)/);
  assert.match(s,/SHA-256/);
  assert.match(s,/api\.rpc\('hg_point_claim'/);
- assert.match(s,/photo.*rozpoznaje|rozpoznaje jeszcze/i);
+ assert.match(s,/nie jego zawartość|nie rozpoznaje|nie jego treści/i);
  assert.doesNotMatch(s,/watchPosition/);
 });
 test('navigation uses existing MapV2 actual route plan instead of static fake map',()=>{
