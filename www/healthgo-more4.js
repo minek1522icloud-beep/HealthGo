@@ -26,15 +26,21 @@ function engine(){return S.state?.uid&&S.state?.engine?S.state.engine:null;}
 function history(){const h=engine()?.history;return Array.isArray(h)?h.filter(x=>x&&typeof x==='object'&&typeof x.type==='string'):[];}
 function prefsKey(){const id=String(S.state?.uid||'');return id?'healthgo.more4.prefs.'+encodeURIComponent(id):null;}
 function preferences(){
- const key=prefsKey();if(!key)return {xp:true,missions:true,reminders:true,accent:'mint',quiet:false};
+ const key=prefsKey();if(!key)return {xp:true,missions:true,reminders:true,accent:'mint',quiet:false,contrast:false,density:'comfortable'};
  try{const value=JSON.parse(w.localStorage?.getItem(key)||'{}');
   return {xp:value.xp!==false,missions:value.missions!==false,reminders:value.reminders!==false,
-   accent:['mint','blue','violet'].includes(value.accent)?value.accent:'mint',quiet:value.quiet===true};
- }catch(_){return {xp:true,missions:true,reminders:true,accent:'mint',quiet:false};}
+   accent:['mint','blue','violet'].includes(value.accent)?value.accent:'mint',quiet:value.quiet===true,
+   contrast:value.contrast===true,density:value.density==='compact'?'compact':'comfortable'};
+ }catch(_){return {xp:true,missions:true,reminders:true,accent:'mint',quiet:false,contrast:false,density:'comfortable'};}
 }
 function savePrefs(changes){const key=prefsKey();if(!key)return false;const next={...preferences(),...changes};
  try{w.localStorage?.setItem(key,JSON.stringify(next));return true;}catch(_){return false;}}
-function applyPrefs(){const p=preferences();d.body?.setAttribute?.('data-hg4-accent',p.accent);d.body?.classList?.toggle?.('hg4-quiet',p.quiet);}
+function applyPrefs(){
+ const p=preferences();d.body?.setAttribute?.('data-hg4-accent',p.accent);
+ d.body?.classList?.toggle?.('hg4-quiet',p.quiet);
+ d.body?.classList?.toggle?.('hg4-contrast',p.contrast);
+ d.body?.classList?.toggle?.('hg4-compact',p.density==='compact');
+}
 function eventsOf(type){return history().filter(e=>e.type===type);}
 function xpRows(){return eventsOf('XP_GAINED').filter(e=>safeNumber(e.payload?.xp)>0).slice(-200);}
 function downloadCsv(name,rows){
@@ -53,7 +59,11 @@ function xpDashboard(){
  stat(root,[['Poziom',l?String(l.level):'—','Z zapisanych XP'],['Łącznie XP',e?number(e.totalXp):'—','Potwierdzone punkty'],
   ['Do awansu',l?number(l.remaining)+' XP':'—','W tym poziomie']]);
  const track=node('div','hg4-track');const fill=node('div','hg4-fill');fill.style.width=l?Math.min(100,l.percent)+'%':'0%';
- track.appendChild(fill);root.appendChild(track);
+ track.appendChild(fill);track.setAttribute('role','progressbar');track.setAttribute('aria-label','Postęp poziomu XP');
+ track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');
+ track.setAttribute('aria-valuenow',String(l?Math.round(l.percent):0));
+ root.appendChild(track);
+ if(l)root.appendChild(node('p','hg4-footnote',number(l.xp)+' / '+number(l.needed)+' XP na tym poziomie. Nagrody przyznaje wyłącznie silnik potwierdzonych zdarzeń.'));
  const timeline=node('div','hg4-events');timeline.appendChild(node('h4','','Historia XP'));
  const data=xpRows().slice(-8).reverse();
  if(!e)empty(timeline,'Zaloguj się, aby zobaczyć swoje XP.');
@@ -66,30 +76,60 @@ function xpDashboard(){
  },true],['Sklep nagród HG',()=>go('points'),false],['Odznaki',()=>go('backpack'),true]]);
  root.appendChild(node('p','hg4-footnote','HealthGo Point (HG) jest istniejącą walutą cyfrowych nagród. Nie tworzymy drugiego, niespójnego salda „HealthCoins”.'));
 }
-let period='all';
+let period='all',missionStatus='all',missionSearch='';
+function missionDestination(item){
+ if(item?.confirmationRequired)return 'plan';
+ const metric=String(item?.requirement?.type||'');
+ if(/plan|focus|rest|relax|learn|habit/i.test(metric))return 'plan';
+ if(/step|heart|distance|sleep|health|device/i.test(metric))return 'devices';
+ if(/map|explore|treasure|route/i.test(metric))return 'map';
+ return 'activity';
+}
 function missions(){
  const root=section($('challenges'),'hg4MissionPeriods','🎯 Centrum misji',
   'Misje dzienne, tygodniowe, miesięczne i specjalne — wyłącznie z katalogu HealthGo.');
  if(!root)return;
  const e=engine();if(!e){empty(root,'Zaloguj się, aby zobaczyć swoje misje.');return;}
  let defs=[];try{defs=Engine.viewChallenges(e,new Date().toISOString())||[];}catch(_){}
- const tabs=node('div','hg4-tabs');const list=node('div','hg4-mission-list');
+ const completed=defs.filter(x=>x.status==='completed').length;
+ stat(root,[['Misje',number(defs.length),'Z katalogu'],['Ukończone',number(completed),'Potwierdzone'],['W toku',number(defs.filter(x=>x.status==='active').length),'Bez presji']]);
+ const tools=node('div','hg4-mission-tools');
+ const search=node('input','hg4-search');search.type='search';search.value=missionSearch;
+ search.placeholder='Szukaj wyzwania';search.setAttribute('aria-label','Szukaj wyzwania po nazwie');
+ const status=node('select','hg4-select');status.setAttribute('aria-label','Stan misji');
+ for(const [key,label] of [['all','Każdy stan'],['active','W toku'],['completed','Ukończone']]){
+  const opt=node('option','',label);opt.value=key;status.appendChild(opt);
+ }
+ status.value=missionStatus;tools.append(search,status);
+ const tabs=node('div','hg4-tabs');const list=node('div','hg4-mission-list'),count=node('p','hg4-footnote');
  const groups=[['all','Wszystkie'],['daily','Dzienne'],['weekly','Tygodniowe'],['monthly','Miesięczne'],['special','Specjalne']];
  const draw=()=>{
   tabs.replaceChildren();list.replaceChildren();
   for(const [value,label] of groups){const b=button(label,()=>{period=value;draw()},period!==value);b.setAttribute('aria-pressed',String(period===value));tabs.appendChild(b);}
-  const filtered=defs.filter(x=>period==='all'||(period==='special'?['event','seasonal','special'].includes(x.period):x.period===period));
+  const filtered=defs.filter(x=>
+   (period==='all'||(period==='special'?['event','seasonal','special'].includes(x.period):x.period===period))&&
+   (missionStatus==='all'||x.status===missionStatus)&&
+   (String(x.name||'')+' '+String(x.description||'')).toLocaleLowerCase('pl').includes(missionSearch.toLocaleLowerCase('pl')));
+  count.textContent='Znaleziono '+number(filtered.length)+' misji';
   if(!filtered.length){empty(list,'Brak misji w tej kategorii. Możesz przełączyć filtr.');return;}
-  for(const x of filtered.slice(0,20)){
-   const card=node('div','hg4-mission');
+  for(const x of filtered.slice(0,30)){
+   const card=node('article','hg4-mission');
    const title=node('div','hg4-mission-top');
    title.append(node('strong','',(x.icon||'🎯')+' '+String(x.name||'Wyzwanie').slice(0,100)),node('small','',x.status==='completed'?'Ukończone':x.status==='active'?'Aktywne':'Niedostępne'));
    card.append(title,node('p','',String(x.description||'').slice(0,240)));
-   const track=node('div','hg4-track'),fill=node('span','hg4-fill');fill.style.width=Math.min(100,Math.max(0,safeNumber(x.percent)))+'%';track.appendChild(fill);
-   card.append(track,node('small','',Math.round(safeNumber(x.percent))+'% · '+number(x.xpReward||0)+' XP po rzeczywistym wykonaniu'));list.appendChild(card);
+   const track=node('div','hg4-track'),fill=node('span','hg4-fill');fill.style.width=Math.min(100,Math.max(0,safeNumber(x.percent)))+'%';
+   track.setAttribute('role','progressbar');track.setAttribute('aria-label','Postęp misji: '+String(x.name||''));
+   track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');
+   track.setAttribute('aria-valuenow',String(Math.min(100,Math.round(safeNumber(x.percent)))));track.appendChild(fill);
+   card.append(track,node('small','',Math.round(safeNumber(x.percent))+'% · '+number(x.xpReward||0)+' XP po rzeczywistym wykonaniu'));
+   card.appendChild(node('p','hg4-footnote','Źródło: '+String(x.source||'Historia HealthGo').slice(0,140)));
+   if(x.status==='active')card.appendChild(button('Przejdź do zadania →',()=>go(missionDestination(x)),true));
+   list.appendChild(card);
   }
  };
- root.append(tabs,list);draw();
+ search.addEventListener('input',()=>{missionSearch=String(search.value).slice(0,100);draw();});
+ status.addEventListener('change',()=>{missionStatus=status.value;draw();});
+ root.append(tools,tabs,count,list);draw();
 }
 function healthDays(){
  const arr=S.state?.healthDays;return Array.isArray(arr)?arr.filter(x=>x&&typeof x.id==='string'):[];}
