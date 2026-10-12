@@ -8,7 +8,7 @@
  const $=id=>document.getElementById(id);
  const clean=x=>String(x??'').trim().replace(/\s+/g,' ').slice(0,85);
  let active=false,route=null,steps=[],startedAt=0,lastPos=null,arrived=false,summary=null,sessionStats={maxSpeed:null,gpsDistance:0,readings:0,last:null};
- let minimal=false,limitsEnabled=false,limitLastAt=0,limitLastPos=null,limitRequest=null,limitDisplay=null,limitStatus='',limitNonce=0,lastLane='',lastStep=-1,weatherInfo=null,mode='3d';
+ let minimal=false,limitsEnabled=false,limitLastAt=0,limitLastPos=null,limitRequest=null,limitDisplay=null,limitStatus='',limitNonce=0,lastStep=-1,weatherInfo=null,mode='3d',tripWeatherRequest=null;
  let currentStreet='',nextStreet='',lastDistance=null,heading=null;
  const key=(name)=>{const user=String(w.HealthGoServices?.state?.uid||'').trim();return user?'healthgo.nav.advanced.'+name+'.'+user:null;};
  const getPref=(name)=>{const k=key(name);try{return k?localStorage.getItem(k)==='1':false}catch(_){return false}};
@@ -183,10 +183,10 @@
   sessionStats.last={...lastPos,accuracy:detail.accuracy,at:Date.now()};
   sessionStats.readings++;
   const nextStep=Math.max(0,Math.min(steps.length-1,Number(detail.stepIndex)||0));
-  if(nextStep!==lastStep){lastStep=nextStep;updateRoads(nextStep);renderLanes(laneInfo(steps[nextStep]));limitDisplay=null;limitLastAt=0;}
+  if(nextStep!==lastStep){lastStep=nextStep;updateRoads(nextStep);limitDisplay=null;limitLastAt=0;}
   lastDistance=Number.isFinite(detail.distanceTo)&&detail.distanceTo>=0?detail.distanceTo:null;
   const sign=$('hgNavCurrentRoad');if(sign)sign.hidden=minimal;
-  const lane=$('hgNavLaneAssistant');if(lane&&minimal)lane.hidden=true;
+  renderLanes(!minimal&&Number.isFinite(detail.distanceTo)&&detail.distanceTo<=650?laneInfo(steps[nextStep]):null);
   writeLimit();
   const showSpeed=$('hgNavCurrentSpeed');if(showSpeed)showSpeed.textContent=speed===null?'—':String(Math.round(speed));
   const rel=$('hgNavUpcomingRoad');if(rel)rel.textContent=nextStreet||'Nawigacja GPS';
@@ -207,6 +207,48 @@
    n.hidden=!risks.length||minimal;
   }
  }
+ async function routeWeather(){
+  const node=$('hgNavTripWeatherStatus');
+  if(!active||!route?.geometry?.length||typeof w.fetch!=='function'){
+   if(node)node.textContent='Nie ma jeszcze aktywnej trasy GPS.';return false;
+  }
+  if(tripWeatherRequest){if(node)node.textContent='Sprawdzanie już trwa…';return false;}
+  // Three real route points: start, midpoint, destination. No invented forecast.
+  const c=route.geometry,indices=[0,Math.floor((c.length-1)/2),c.length-1];
+  const pts=indices.map(i=>c[i]).filter(p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1]));
+  if(pts.length!==3)return false;
+  const url='https://api.open-meteo.com/v1/forecast?'+new URLSearchParams({
+   latitude:pts.map(p=>p[1].toFixed(4)).join(','),
+   longitude:pts.map(p=>p[0].toFixed(4)).join(','),
+   current:'temperature_2m,precipitation,wind_speed_10m',timezone:'auto'
+  });
+  const ctl=new AbortController();tripWeatherRequest=ctl;
+  if(node)node.textContent='Pobieram pogodę z trzech punktów trasy…';
+  const timer=setTimeout(()=>ctl.abort(),12000);
+  try{
+   const res=await w.fetch(url,{signal:ctl.signal});
+   if(!res.ok)throw Error('WEATHER_HTTP');
+   const data=await res.json();
+   if(!active||tripWeatherRequest!==ctl)return false;
+   const rows=Array.isArray(data)?data:[data];
+   if(rows.length!==pts.length)throw Error('WEATHER_MISSING');
+   const observations=rows.map(row=>({
+    rain:Number(row?.current?.precipitation),wind:Number(row?.current?.wind_speed_10m),
+    temp:Number(row?.current?.temperature_2m)
+   }));
+   if(observations.some(x=>!Number.isFinite(x.temp)||!Number.isFinite(x.rain)||!Number.isFinite(x.wind)))throw Error('WEATHER_MISSING');
+   const maxRain=Math.max(...observations.map(x=>x.rain));
+   const maxWind=Math.max(...observations.map(x=>x.wind));
+   const attention=maxRain>=2||maxWind>=45;
+   if(node)node.textContent='Warunki wg Open-Meteo (teraz): opady do '+maxRain.toFixed(1)+
+    ' mm, wiatr do '+Math.round(maxWind)+' km/h. To nie jest ostrzeżenie urzędowe ani prognoza na godzinę przejazdu.';
+   const risk=$('hgNavWeatherRisk');
+   if(risk&&attention){risk.hidden=minimal;risk.textContent='Uwaga na warunki pogodowe wzdłuż trasy: opady do '+
+     maxRain.toFixed(1)+' mm, wiatr do '+Math.round(maxWind)+' km/h (Open-Meteo, obecnie).';}
+   return true;
+  }catch(_){if(node&&active&&tripWeatherRequest===ctl)node.textContent='Nie można pobrać pogody na trasie. Spróbuj później.';return false}
+  finally{clearTimeout(timer);if(tripWeatherRequest===ctl)tripWeatherRequest=null}
+ }
  function updateControls(){
   const button=$('hgNavMinimal');
   if(button){button.setAttribute('aria-pressed',String(minimal));button.textContent=minimal?'Pokaż dodatki':'Tryb minimalistyczny';}
@@ -225,6 +267,8 @@
   if(!active||!route)return false;
   const ok=w.HealthGoNavigationLive?.overview?.()||w.HealthGoNavigationFollow?.showEntireRoute?.()||false;
   if(!ok){
+   const followButton=$('hgProFollow');
+   if(followButton?.getAttribute?.('aria-pressed')!=='false')w.HealthGoMapPro?.toggleFollow?.();
    const map=w.healthGoMapInstance?.();
    const coords=route?.geometry;
    if(typeof L!=='undefined'&&map&&Array.isArray(coords)&&coords.length>1){
@@ -262,6 +306,7 @@
  function stop(){
   active=false;
   if(limitRequest){limitRequest.abort();limitRequest=null}limitNonce++;
+  if(tripWeatherRequest){tripWeatherRequest.abort();tripWeatherRequest=null;}
   lastPos=null;lastStep=-1;lastDistance=null;limitDisplay=null;heading=null;
   route=null;steps=[];limitLastAt=0;limitLastPos=null;weatherInfo=null;sessionStats.last=null;
   document.body?.classList?.remove('hg-nav-minimal');
@@ -279,6 +324,7 @@
   else if(action==='follow')follow();
   else if(action==='north')north();
   else if(action==='repeat')repeat();
+  else if(action==='tripWeather')void routeWeather();
   else if(action==='arrival-close')visible('hgNavArrivalSummary',false);
  });
  // The arrival overlay persists after the HUD hides; close it independently.
@@ -287,7 +333,7 @@
  });
  const api=Object.freeze({
   start:onStart,route:onRoute,gps:onGPS,weather:setWeather,arrived:summarize,stop,
-  lanes:laneInfo,speedLimitValue,matchMaxspeed,setLimits,setMinimal,showOverview,
+  lanes:laneInfo,speedLimitValue,matchMaxspeed,setLimits,setMinimal,showOverview,routeWeather,
   follow,north,repeat,getState:()=>({active,minimal,limitsEnabled,currentStreet,nextStreet,limitDisplay,arrived})
  });
  w.HealthGoNavAdvanced=api;
