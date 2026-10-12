@@ -79,7 +79,8 @@ test('Guidance connects live camera, voice prompts and real OSRM rerouting',()=>
  assert.match(pro,/router\.project-osrm\.org\/route\/v1\/driving/);
  assert.match(pro,/offRouteTicks>=3/);
  assert.match(pro,/Date\.now\(\)-lastReroute>90000/);
- assert.match(pro,/Number\(c\.accuracy\)<35/);
+ assert.match(pro,/Number\(c\.accuracy\)<=35/);
+ assert.match(pro,/gpsMoving=/,'reroute uses GPS movement when iPhone has no speed fix');
  assert.match(pro,/speechSynthesis\.speak\(u\)/);
  assert.match(html,/id="hgNavigationPerspective"/);
  assert.match(html,/id="hgLiveWeather"/);
