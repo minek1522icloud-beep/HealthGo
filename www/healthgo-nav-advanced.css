@@ -215,3 +215,83 @@ body.hg-navigation-active.hg-nav-minimal #map .hg-drive-speed{display:none!impor
 
 /* Keep limit and weather readouts absent until verified source data exists. */
 #map #hgNavLimitBadge[hidden],#map #hgNavCompactWeather[hidden]{display:none!important}
+
+/* Navigation 7: screenshot-inspired compact circular GPS speed overlay.
+   No fake speed or speed limits; speed is read only from geolocation. */
+body.hg-emerald.hg-navigation-active #map #hgProNavigation .hg-drive-speed{
+ display:flex!important;position:absolute!important;z-index:26001!important;
+ left:12px!important;right:auto!important;top:auto!important;
+ bottom:calc(151px + env(safe-area-inset-bottom))!important;
+ width:113px!important;height:113px!important;min-width:0!important;
+ padding:4px!important;gap:0!important;align-items:center!important;
+ justify-content:center!important;flex-direction:column!important;
+ border:0!important;border-radius:50%!important;background:#0d1a17eb!important;
+ color:#edfff5!important;box-shadow:0 7px 26px #00170d77!important;
+ pointer-events:none!important
+}
+body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge{
+ --hg-speed-ratio:0;
+ position:relative!important;isolation:isolate!important;
+ width:105px!important;height:105px!important;border-radius:50%!important;
+ background:#0d1b18!important;display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;gap:0!important;
+ font-variant-numeric:tabular-nums;overflow:visible!important
+}
+body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge::before{
+ content:"";position:absolute;inset:3px;border-radius:50%;z-index:0;
+ background:conic-gradient(from 225deg,
+  #46e9aa 0deg,
+  #46e9aa calc(var(--hg-speed-ratio,0) * 270deg),
+  #385449 calc(var(--hg-speed-ratio,0) * 270deg),#385449 270deg,
+  transparent 270deg,transparent 360deg);
+ -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+ mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+}
+body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge strong{
+ position:relative;z-index:1;font-size:35px!important;line-height:1!important;
+ letter-spacing:-1px!important;font-weight:850!important;color:#fff!important
+}
+body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge small{
+ position:relative;z-index:1;margin:3px 0 0!important;padding:0!important;
+ font-size:9px!important;line-height:1.1!important;letter-spacing:1px!important;
+ font-weight:800!important;color:#b5d2c2!important;background:transparent!important
+}
+body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavGaugeLimit{
+ position:absolute!important;top:0!important;right:-10px!important;
+ width:43px!important;height:43px!important;min-width:43px!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ background:#fdfefe!important;border:5px solid #e6483d!important;border-radius:50%!important;
+ color:#172c23!important;font-size:17px!important;font-weight:900!important;
+ line-height:1!important;box-sizing:border-box!important;z-index:2!important;
+ box-shadow:0 4px 13px #00170b99!important
+}
+#map #hgNavGaugeLimit[hidden]{display:none!important}
+body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge.hg-gauge-over-limit::before{
+ background:conic-gradient(from 225deg,
+  #ff7568 0deg,#ff7568 calc(var(--hg-speed-ratio,0) * 270deg),
+  #385449 calc(var(--hg-speed-ratio,0) * 270deg),#385449 270deg,
+  transparent 270deg,transparent 360deg)
+}
+body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge.hg-gauge-over-limit strong{
+ color:#ffaca6!important
+}
+body.hg-emerald.hg-navigation-active.hg-nav-minimal #map #hgProNavigation .hg-drive-speed{
+ display:none!important
+}
+@media(max-width:380px){
+ body.hg-emerald.hg-navigation-active #map #hgProNavigation .hg-drive-speed{
+  left:8px!important;bottom:calc(144px + env(safe-area-inset-bottom))!important;
+  width:104px!important;height:104px!important
+ }
+ body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge{
+  width:96px!important;height:96px!important
+ }
+}
+@media(max-height:650px){
+ body.hg-emerald.hg-navigation-active #map #hgProNavigation .hg-drive-speed{
+  bottom:calc(133px + env(safe-area-inset-bottom))!important
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge::before{transition:none!important}
+}
