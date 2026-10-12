@@ -7,7 +7,8 @@ const PKCE='healthgo_google_pkce_v1';
 function randomToken(){return base64url(crypto.getRandomValues(new Uint8Array(32)));}
 function base64url(bytes){return btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 const listeners=new Set();
-let session=readSession(),refreshing=null,mfaFactorCount=0;
+let session=readSession(),refreshing=null,mfaFactorCount=0,sessionRevision=0;
+let refreshFailures=0,retryRefreshAfter=0;
 
 function readSession(){
  try{
@@ -16,6 +17,7 @@ function readSession(){
  }catch(_){return null;}
 }
 function persist(value){
+ sessionRevision++;
  session=value&&value.access_token?normalizeSession(value):null;
  try{if(session)localStorage.setItem(STORAGE,JSON.stringify(session));else localStorage.removeItem(STORAGE);}catch(_){}
  return session;
@@ -38,27 +40,74 @@ async function decode(response){
 function headers(token,extra){
  return Object.assign({'apikey':KEY,'Authorization':'Bearer '+(token||KEY),'Content-Type':'application/json','Accept':'application/json'},extra||{});
 }
+function confirmedRefreshRevocation(e){
+ // A brief 400, 401, HTTP timeout or network error is NOT enough to log out.
+ // Only Supabase's explicit invalid/revoked refresh-token codes prove invalidity.
+ const code=String(e?.code||'').toLowerCase();
+ const message=String(e?.message||'').toLowerCase();
+ return ['refresh_token_not_found','invalid_refresh_token','refresh_token_already_used',
+  'invalid_grant','session_not_found','session_expired'].includes(code)||
+  /invalid refresh token|refresh token not found|refresh token has been revoked/i.test(message);
+}
+function temporarilyUnavailable(e){
+ if(e&&e.code==='SESSION_RECOVERY_PENDING')return e;
+ const out=new Error('Połączenie z kontem jest chwilowo niedostępne. HealthGo zachowuje Twoje logowanie.');
+ out.code='SESSION_RECOVERY_PENDING';out.temporary=true;out.cause=e;
+ return out;
+}
 async function refreshSession(){
  if(refreshing)return refreshing;
- if(!session||!session.refresh_token)return null;
+ if(!session||!session.refresh_token)throw temporarilyUnavailable(new Error('MISSING_REFRESH_TOKEN'));
+ if(Date.now()<retryRefreshAfter)throw temporarilyUnavailable(new Error('REFRESH_BACKOFF'));
+ const original=session,originalRevision=sessionRevision,originalToken=original.refresh_token;
  refreshing=(async()=>{
   try{
-   const response=await fetch(URL+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:headers(null),body:JSON.stringify({refresh_token:session.refresh_token})});
-   const data=await decode(response),next=persist(data);notify('TOKEN_REFRESHED');return next;
-  }catch(e){persist(null);notify('SIGNED_OUT');throw e;}
-  finally{refreshing=null;}
+   const response=await fetch(URL+'/auth/v1/token?grant_type=refresh_token',{
+    method:'POST',headers:headers(null),body:JSON.stringify({refresh_token:originalToken})
+   });
+   const data=await decode(response);
+   if(!data?.access_token||!data?.refresh_token)throw temporarilyUnavailable(new Error('INCOMPLETE_SESSION_RESPONSE'));
+   if(sessionRevision!==originalRevision||session?.refresh_token!==originalToken)
+    return session; // A newer login / sign-out must never be overwritten by an old refresh.
+   refreshFailures=0;retryRefreshAfter=0;
+   const next=persist({...data,user:data.user||original.user});
+   notify('TOKEN_REFRESHED');return next;
+  }catch(e){
+   if(sessionRevision!==originalRevision||session?.refresh_token!==originalToken)
+    return session;
+   if(confirmedRefreshRevocation(e)){
+    // A different browser tab may already have rotated the token.
+    const fromStorage=readSession();
+    if(fromStorage?.user?.id===original.user?.id&&fromStorage.refresh_token!==originalToken){
+     const next=persist(fromStorage);refreshFailures=0;retryRefreshAfter=0;
+     notify('TOKEN_REFRESHED');return next;
+    }
+    persist(null);notify('SIGNED_OUT');throw e;
+   }
+   refreshFailures=Math.min(6,refreshFailures+1);
+   retryRefreshAfter=Date.now()+Math.min(60000,3000*Math.pow(2,refreshFailures-1));
+   throw temporarilyUnavailable(e);
+  }finally{refreshing=null;}
  })();
  return refreshing;
 }
 async function token(){
- if(session&&session.expires_at&&session.expires_at<=Math.floor(Date.now()/1000)+45)await refreshSession();
+ if(!session)return null;
+ if(!session.expires_at||session.expires_at<=Math.floor(Date.now()/1000)+45)
+  await refreshSession();
  return session&&session.access_token||null;
 }
 async function request(path,options){
- options=options||{};const useAuth=options.auth!==false,access=useAuth?await token():null;
- const response=await fetch(URL+path,{method:options.method||'GET',headers:headers(access,options.headers),body:options.body===undefined?undefined:JSON.stringify(options.body)});
+ options=options||{};
+ const useAuth=options.auth!==false,access=useAuth?await token():null;
+ if(useAuth&&!access)throw temporarilyUnavailable(new Error('NO_ACTIVE_ACCESS_TOKEN'));
+ const response=await fetch(URL+path,{
+  method:options.method||'GET',headers:headers(access,options.headers),
+  body:options.body===undefined?undefined:JSON.stringify(options.body)
+ });
  return decode(response);
 }
+
 function authPayload(data){
  if(!data)return null;
  if(data.session)return normalizeSession(data.session);
@@ -158,7 +207,7 @@ async function sessionFromUrl(){
   persist(next);
   try{if(root.history&&root.location)root.history.replaceState(null,'',root.location.pathname+root.location.search);}catch(_){}
   notify('SIGNED_IN');return next;
- }catch(e){persist(null);throw e;}
+ }catch(e){throw e;}
 }
 const auth={
  async signInWithGoogle(){
@@ -181,15 +230,32 @@ const auth={
  },
  get currentUser(){return session&&session.user||null;},
  async restore(){
-  const redirected=await sessionFromUrl();if(redirected)return redirected;
+  // Only emit one initial auth event, after token validation/recovery. Never
+  // send a fake signed-out event on a temporary iPhone/Wi-Fi/network failure.
+  let redirected=null;
+  try{redirected=await sessionFromUrl();}catch(e){
+   if(!session){notify('INITIAL_SESSION');throw e;}
+  }
+  if(redirected)return redirected;
   if(!session){notify('INITIAL_SESSION');return null;}
   try{
-   if(session.expires_at<=Math.floor(Date.now()/1000)+45)await refreshSession();
-   const user=await request('/auth/v1/user');
-   session.user=user;persist(session);notify('INITIAL_SESSION');return session;
-  }catch(_){persist(null);notify('SIGNED_OUT');return null;}
+   if(!session.expires_at||session.expires_at<=Math.floor(Date.now()/1000)+45)
+    await refreshSession();
+   if(!session){notify('INITIAL_SESSION');return null;}
+   try{
+    const user=await request('/auth/v1/user');
+    if(user?.id&&user.id===session.user?.id){session.user=user;persist(session);}
+   }catch(e){
+    // A 401 with an expired access token can be transient around rotation;
+    // the protected API continues to enforce real server-side JWT validity.
+    if(e?.status===401&&session?.refresh_token){
+     try{await refreshSession();}catch(_){}
+    }
+   }
+  }catch(_){/* Keep cached account identity offline; protected API remains authenticated. */}
+  notify('INITIAL_SESSION');return session;
  },
- onAuthStateChange(fn){listeners.add(fn);queueMicrotask(()=>{try{fn('INITIAL_SESSION',session);}catch(_){}});return{data:{subscription:{unsubscribe(){listeners.delete(fn);}}}};},
+ onAuthStateChange(fn){listeners.add(fn);return{data:{subscription:{unsubscribe(){listeners.delete(fn);}}}};},
  async signInWithPassword(credentials){
   const response=await fetch(URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:headers(null),body:JSON.stringify({email:String(credentials.email||'').trim(),password:String(credentials.password||'')})});
   const data=await decode(response),next=authPayload(data);persist(next);notify('SIGNED_IN');return{data:{session:next,user:next&&next.user},error:null};
@@ -205,10 +271,11 @@ const auth={
  },
  async signOut(){
   try{if(session&&session.access_token)await request('/auth/v1/logout',{method:'POST'});}catch(_){}
-  persist(null);notify('SIGNED_OUT');return{error:null};
+  persist(null);refreshFailures=0;retryRefreshAfter=0;notify('SIGNED_OUT');return{error:null};
  },
  async getSession(){return{data:{session},error:null};},
- mfa
+ mfa,
+ async refreshSession(){return refreshSession();}
 };
 function queryString(params){
  if(typeof params==='string')return params.replace(/^\?/,'');
