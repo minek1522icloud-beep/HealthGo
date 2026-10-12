@@ -273,8 +273,14 @@ const auth={
   return{data:{session:next,user:returnedUser},error:null};
  },
  async signOut(){
-  try{if(session&&session.access_token)await request('/auth/v1/logout',{method:'POST'});}catch(_){}
-  persist(null);refreshFailures=0;retryRefreshAfter=0;notify('SIGNED_OUT');return{error:null};
+  // Revoke locally BEFORE network work. A pending refresh must not re-login
+  // the user after tapping Sign out, even when offline.
+  const previous=session;
+  persist(null);refreshFailures=0;retryRefreshAfter=0;notify('SIGNED_OUT');
+  if(previous?.access_token)try{
+   await fetch(URL+'/auth/v1/logout',{method:'POST',headers:headers(previous.access_token)});
+  }catch(_){}
+  return{error:null};
  },
  async getSession(){return{data:{session},error:null};},
  mfa,
