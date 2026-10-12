@@ -181,6 +181,7 @@
  }
  function toggle(name){
   if(measuring)stopMeasure();
+  window.HealthGoMapExtras?.close?.();
   mount();
   const valid=['route','layers','favorites','activity','tools','weather','saved','settings'];
   if(name==='map'){close();return}
@@ -415,7 +416,7 @@
   const pts=geometry.filter(pt=>Array.isArray(pt)&&Number.isFinite(pt[0])&&Number.isFinite(pt[1])).map(pt=>[pt[1],pt[0]]);
   if(pts.length<2)return false;
   if(routeLayer)try{getMap().removeLayer(routeLayer)}catch(_){}
-  routeLayer=L.polyline(pts,{color:'#216be8',weight:7,opacity:.95,className:'map-v2-route-line'}).addTo(getMap());
+  routeLayer=L.polyline(pts,{color:'#07c99e',weight:8,opacity:.97,className:'map-v2-route-line'}).addTo(getMap());
   // Preserve GPS-centred live guidance; never fitBounds in the middle of driving.
   return true;
  }
@@ -439,7 +440,7 @@
   if(routeLayer&&getMap())getMap().removeLayer(routeLayer);
   if(getMap()&&typeof L!=='undefined'){
    routeLayer=L.polyline(geometry.filter(p=>Array.isArray(p)&&p.length>=2).map(p=>[p[1],p[0]]),
-    {color:'#216be8',weight:7,opacity:.95,className:'map-v2-route-line'}).addTo(getMap());
+    {color:'#07c99e',weight:8,opacity:.97,className:'map-v2-route-line'}).addTo(getMap());
    if(options.fitBounds!==false)getMap().fitBounds(routeLayer.getBounds(),{padding:[42,42],maxZoom:16});
   }
   const box=el('hg4RouteAlternatives');
@@ -468,7 +469,7 @@
   const help=el('mapV2GpsHelp');if(help)help.hidden=true;
   phase('locating','Ustalam aktualną pozycję GPS i szukam celu…');
   if(external)external.hidden=true;
-  const raw=clean(field?.value,180);
+  const raw=clean(field?.value,180),viaRaw=clean(el('hgMapRouteStop')?.value,180);
   if(!raw){
    if(pendingRouteRequest?.ticket===ticket)pendingRouteRequest=null;
    phase('error','Wpisz adres celu lub wybierz miejsce na mapie.');
@@ -479,14 +480,16 @@
    // Manual origin remains preview-only and never pretends to track movement.
    const startPromise=locateOptIn();
    const targetPromise=destination&&raw===destination.name?Promise.resolve(destination):locateByName(raw);
-   const [start,target]=await Promise.all([startPromise,targetPromise]);
+   const stopPromise=viaRaw?locateByName(viaRaw):Promise.resolve(null);
+   const [start,target,via]=await Promise.all([startPromise,targetPromise,stopPromise]);
    if(ticket!==routeRequestTicket)return false;
    if(!target||!validPoint(target))throw new Error('DESTINATION_NOT_FOUND');
+   if(viaRaw&&!validPoint(via))throw new Error('STOP_NOT_FOUND');
    destination=target;
    if(!start||!validPoint(start))throw new Error('GPS_UNAVAILABLE');
    if(routeMode!=='car'){
     const mode=routeMode==='foot'?'fossgis_osrm_foot':'fossgis_osrm_bike';
-    const params=new URLSearchParams({engine:mode,route:start.lat+','+start.lon+';'+destination.lat+','+destination.lon});
+    const params=new URLSearchParams({engine:mode,route:start.lat+','+start.lon+';'+(via?via.lat+','+via.lon+';':'')+destination.lat+','+destination.lon});
     if(external){
      external.href='https://www.openstreetmap.org/directions?'+params.toString();
      external.hidden=false;
@@ -496,7 +499,8 @@
     return false;
    }
    phase('routing','Wyznaczam trasę samochodową z prawdziwymi skrętami…');
-   const url=routeUrl+encodeURIComponent(start.lon)+','+encodeURIComponent(start.lat)+';'+encodeURIComponent(destination.lon)+','+encodeURIComponent(destination.lat)+'?overview=full&geometries=geojson&steps=true&alternatives=true';
+   const segments=[[start.lon,start.lat],...(via?[[via.lon,via.lat]]:[]),[destination.lon,destination.lat]];
+   const url=routeUrl+segments.map(p=>encodeURIComponent(p[0])+','+encodeURIComponent(p[1])).join(';')+'?overview=full&geometries=geojson&steps=true&alternatives=true';
    const avoid=!!window.HealthGoMap4?.getSettings?.().avoidMotorways;
    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),17000);
    let json,fellBack=false;
@@ -507,7 +511,8 @@
     json=await res.json();
    }finally{clearTimeout(timer)}
    if(ticket!==routeRequestTicket)return false;
-   const realRoutes=(Array.isArray(json?.routes)?json.routes:[]).filter(validRouteGeometry);
+   const realRoutes=(Array.isArray(json?.routes)?json.routes:[]).filter(validRouteGeometry)
+    .map(item=>via?{...item,hgVia:[via.lon,via.lat]}:item);
    if(!realRoutes.length)throw new Error('ROUTE_EMPTY');
    routeStartWasManual=false;
    // With phone GPS, require maneuver data before showing a route as ready.
@@ -519,7 +524,7 @@
    if(!accepted)throw new Error('ROUTE_NOT_READY');
    if(fellBack&&output)output.textContent+=' Serwer nie obsłużył omijania autostrad; pokazano standardową trasę.';
    if(external){
-    const q=new URLSearchParams({engine:'fossgis_osrm_car',route:start.lat+','+start.lon+';'+destination.lat+','+destination.lon});
+    const q=new URLSearchParams({engine:'fossgis_osrm_car',route:start.lat+','+start.lon+';'+(via?via.lat+','+via.lon+';':'')+destination.lat+','+destination.lon});
     external.href='https://www.openstreetmap.org/directions?'+q.toString();
     external.textContent='Otwórz wskazówki dojazdu ↗';
     external.hidden=false;
@@ -550,6 +555,7 @@
    const msg=String(err?.message||err);
    if(help)help.hidden=msg!=='GPS_DENIED';
    if(msg==='GPS_DENIED'){const retry=el('hgGpsConsentAction');if(retry)retry.hidden=false;}
+   if(msg==='STOP_NOT_FOUND'&&output)output.textContent='Nie znaleziono przystanku pośredniego. Wpisz dokładniejszą nazwę.';
    const error=
     msg==='GPS_DENIED'?'Telefon zablokował GPS. Zezwól HealthGo na lokalizację w ustawieniach iPhone’a, a następnie spróbuj ponownie.':
     msg==='GPS_TIMEOUT'?'GPS nie odpowiedział na czas. Spróbuj ponownie w miejscu z lepszym sygnałem.':
@@ -724,5 +730,5 @@
   say(wasTracking?'GPS zatrzymany po ukryciu aplikacji. Nie zapisano trasy.':'Pomiar zakończony po ukryciu aplikacji.');
  }});
  window.addEventListener('pagehide',()=>{stopTracking(false);if(measuring)stopMeasure()});
- window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,navigateToAddress,chooseMode,planRoute,navigationState,navigationStopped,cancelPendingRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart,updateLiveRoute,getLayerKind:()=>tileKind,drawRecentDestinations,saveHomeFromCenter,goHome,clearHome,clearRecent,homePlace};
+ window.HealthGoMapV2={mount,toggle,close,chooseLayer,savePlace,saveCenter,selectDestination,navigateToAddress,chooseMode,planRoute,navigationState,navigationStopped,cancelPendingRoute,showFamily,startTracking,stopTracking,notice,centerGPS,startMeasure,undoMeasure,clearMeasure,stopMeasure,toggleSpacious,resizeViewport,showLocationWelcome,chooseWelcomeLocation,askLocationAgain,rememberPosition,getRecentPosition,centerIfSystemGranted,noteSystemLocationGranted,noteSystemLocationDenied,chooseRoute,swapRoute,useGPSStart,updateLiveRoute,getLayerKind:()=>tileKind,getSelectedRoute:()=>routeChoices[routeChosen]||null,drawRecentDestinations,saveHomeFromCenter,goHome,clearHome,clearRecent,homePlace};
 })();

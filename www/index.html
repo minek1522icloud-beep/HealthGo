@@ -347,7 +347,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-navigation-live.css?v=1">
 <link rel="stylesheet" href="./healthgo-navigation-mode.css?v=2">
 <link rel="stylesheet" href="./healthgo-route-3d-overlay.css?v=1">
-<link rel="stylesheet" href="./healthgo-map-extras.css?v=1">
+<link rel="stylesheet" href="./healthgo-map-extras.css?v=2">
 <link rel="stylesheet" href="./healthgo-emerald-2.css?v=1">
 <link rel="stylesheet" href="./healthgo-start-v3.css?v=1">
 <link rel="stylesheet" href="./healthgo-ai-emerald-v3.css?v=2">
@@ -628,7 +628,7 @@ html.hg-session-known #authScreen{display:none!important}
           <h4>🌦️ Pogoda i offline</h4>
           <div class="hg-map-extras-controls">
             <button type="button" data-hg-map-action="radar">Radar i alerty IMGW ↗</button>
-            <button type="button" data-hg-map-action="weather" onclick="HealthGoMapV2.toggle('weather')">Prognoza HealthGo</button>
+            <button type="button" data-hg-map-action="weather">Prognoza HealthGo</button>
           </div>
           <p id="hgMapWeatherRadar">Prognoza: Open-Meteo. Radar i oficjalne alerty wymagają zewnętrznego źródła.</p>
           <p class="hg-map-extras-note">Mapy offline: można zachować odwiedzone widoki w pamięci przeglądarki, ale pełne pobieranie obszaru i nawigacja bez sieci wymagają dostawcy map ze zgodą na pakiety offline. Nie pobieramy masowo kafelków OSM.</p>
@@ -731,6 +731,12 @@ html.hg-session-known #authScreen{display:none!important}
           <p class="hg-gps-inline-note">Początek trasy jest ustalany automatycznie z GPS telefonu. Możesz odmówić lokalizacji — wtedy prowadzenie nie rozpocznie się.</p>
           <label class="map-v2-field" for="mapV2RouteTo">Dokąd?</label>
           <input id="mapV2RouteTo" class="map-v2-input" type="search" autocomplete="off" placeholder="Adres, park albo wybrane miejsce">
+          <details class="hg-map-route-waypoint">
+            <summary>＋ Dodaj przystanek po drodze (opcjonalnie)</summary>
+            <label class="map-v2-field" for="hgMapRouteStop">Jeden przystanek pośredni</label>
+            <input id="hgMapRouteStop" class="map-v2-input" type="search" autocomplete="off" placeholder="Np. sklep lub punkt widokowy">
+            <p class="map-v2-muted">Przystanek uwzględniamy podczas wyznaczania i ponownego przeliczania trasy samochodowej.</p>
+          </details>
           <div class="hg-nav-planner-shortcuts" role="group" aria-label="Szybkie działania nawigacji">
             <button type="button" onclick="HealthGoMapV2.useGPSStart()">◎ Moja lokalizacja</button>
             <button type="button" onclick="HealthGoMapV2.toggle('saved')">☆ Zapisane</button>
@@ -3306,14 +3312,14 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-v2-ui.js"></script>
 <script src="./healthgo-mobile-suite.js"></script>
 <script src="./healthgo-map-recovery.js?v=2"></script>
-<script src="./healthgo-map-v2.js?v=5"></script>
+<script src="./healthgo-map-v2.js?v=6"></script>
 <script src="./healthgo-route-3d-overlay.js?v=1"></script>
 <script src="./healthgo-navigation-live.js?v=3"></script>
-<script src="./healthgo-navigation-mode.js?v=1"></script>
+<script src="./healthgo-navigation-mode.js?v=2"></script>
 <script src="./healthgo-navigation-follow-v1.js?v=2"></script>
-<script src="./healthgo-map-pro.js?v=10"></script>
+<script src="./healthgo-map-pro.js?v=11"></script>
 <script src="./healthgo-map4.js?v=3"></script>
-<script src="./healthgo-map-extras.js?v=1"></script>
+<script src="./healthgo-map-extras.js?v=2"></script>
 <script src="./healthgo-emerald-dashboard.js?v=3"></script>
 <script src="./healthgo-ai-emerald-v3.js?v=2"></script>
 <script src="./healthgo-plan-v4.js?v=2"></script>

@@ -87,7 +87,9 @@
    return false;
   }
   stopNavigation();
-  route={geometry:coords,steps,meters:Number(item.distance)||0,seconds:Number(item.duration)||0,destination:String(destination||'Cel podróży').slice(0,100)};
+  route={geometry:coords,steps,meters:Number(item.distance)||0,seconds:Number(item.duration)||0,
+   via:Array.isArray(item.hgVia)&&item.hgVia.length===2?item.hgVia.slice():null,
+   destination:String(destination||'Cel podróży').slice(0,100)};
   suffix(coords);stepIndex=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';setProgress(0);
   show('hgNavStartButton',steps.length>0);
   text('hgProNavDestination',route.destination);
@@ -121,8 +123,10 @@
   lastReroute=Date.now();rerouting=true;
   const destination=route.geometry[route.geometry.length-1];
   const current=route.destination,oldRoute=route;
+  const via=Array.isArray(route.via)?route.via:null;
   const url='https://router.project-osrm.org/route/v1/driving/'+
    encodeURIComponent(point.lon)+','+encodeURIComponent(point.lat)+';'+
+   (via?encodeURIComponent(via[0])+','+encodeURIComponent(via[1])+';':'')+
    encodeURIComponent(destination[0])+','+encodeURIComponent(destination[1])+
    '?overview=full&geometries=geojson&steps=true&alternatives=false';
   const ctl=new AbortController();rerouteCtl=ctl;
@@ -137,7 +141,7 @@
       geometry.some(p=>!Array.isArray(p)||!Number.isFinite(p[0])||!Number.isFinite(p[1])))return false;
    const steps=(updated.legs||[]).flatMap(l=>Array.isArray(l.steps)?l.steps:[]);
    if(!steps.length)return false;
-   route={geometry,steps,meters:Number(updated.distance)||0,seconds:Number(updated.duration)||0,destination:current};
+   route={geometry,steps,meters:Number(updated.distance)||0,seconds:Number(updated.duration)||0,destination:current,via};
    suffix(geometry);stepIndex=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';setProgress(0);
    window.HealthGoMapV2?.updateLiveRoute?.(updated);
    window.HealthGoNavigationFollow?.setRoute?.(updated);
@@ -161,6 +165,7 @@
   }
   gpsAlert(c.accuracy>80?'Dokładność GPS jest ograniczona. Sprawdź lokalizację przed jazdą.':'');
   position=point;
+  if(Array.isArray(route.via)&&c.accuracy<=35&&meters(point,{lat:route.via[1],lon:route.via[0]})<60)route.via=null;
   window.HealthGoMapV2?.rememberPosition?.({lat:point.lat,lon:point.lon,accuracy:c.accuracy});
   // OSRM starts with a departure maneuver at the origin. Move on to the
   // next instruction once that origin is reached instead of displaying

@@ -81,7 +81,7 @@
  function begin(gpsRoute){
   if(running)stop();
   route=gpsRoute;lastFix=null;mode=savedMode();running=true;
-  hideDiscoveryLayers();apply();
+  hideDiscoveryLayers();w.HealthGoMapExtras?.navigationStarted?.();apply();
   return true;
  }
  function rememberFix(position){
@@ -106,7 +106,7 @@
  function stop(){
   running=false;route=null;lastFix=null;
   w.HealthGoNavigationLive?.stop?.();
-  restoreLayers();
+  restoreLayers();w.HealthGoMapExtras?.navigationStopped?.();
   message('');
   buttons();
  }

@@ -46,6 +46,7 @@
   if(type==='saved'){close();nav()?.toggle?.('saved');return;}
   if(type==='settings'){close();nav()?.toggle?.('settings');return;}
   if(type==='treasurePage'){close();w.mobileGo?.('explore');return;}
+  if(type==='weather'){close();nav()?.toggle?.('weather');return;}
   if(type==='streetview'){streetView();return;}
   if(type==='radar'){
    const el=controller('hgMapWeatherRadar');
