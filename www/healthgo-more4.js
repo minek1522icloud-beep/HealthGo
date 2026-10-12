@@ -133,34 +133,58 @@ function missions(){
 }
 function healthDays(){
  const arr=S.state?.healthDays;return Array.isArray(arr)?arr.filter(x=>x&&typeof x.id==='string'):[];}
+let statsRange=7,statsMetric='steps';
 function stats(){
  const root=section($('activity'),'hg4Stats','📊 Statystyki PRO',
-  'Ostatnich siedem dni na podstawie rzeczywiście zsynchronizowanych danych. Puste dni nie są zerami.');
+  'Rzeczywiste dane urządzeń. Nieudostępniony pomiar oznaczamy kreską, nigdy zerem.');
  if(!root)return;
- const days=healthDays(),byId=new Map(days.map(x=>[x.id,x]));
- const today=new Date(),items=[];
- for(let offset=6;offset>=0;offset--){const day=new Date(today.getFullYear(),today.getMonth(),today.getDate()-offset,12);
+ const arr=healthDays(),byId=new Map(arr.map(x=>[x.id,x])),today=new Date(),items=[];
+ for(let offset=statsRange-1;offset>=0;offset--){
+  const day=new Date(today.getFullYear(),today.getMonth(),today.getDate()-offset,12);
   const id=[day.getFullYear(),String(day.getMonth()+1).padStart(2,'0'),String(day.getDate()).padStart(2,'0')].join('-');
-  const record=byId.get(id);items.push({id,label:day.toLocaleDateString('pl-PL',{weekday:'short'}),steps:record?.steps,minutes:record?.activeMinutes});}
- const measured=items.filter(x=>safeNumber(x.steps)>0||x.steps===0);
- stat(root,[['Dni z odczytem',String(measured.length)+'/7','Bez symulacji pomiarów'],
-  ['Łącznie kroków',measured.length?number(measured.reduce((s,x)=>s+safeNumber(x.steps),0)):'—','Dane z synchronizacji']]);
- const chart=node('div','hg4-chart');
- const max=Math.max(1,...items.map(x=>safeNumber(x.steps)));
- for(const item of items){const cell=node('div','hg4-chart-cell'),wrap=node('div','hg4-chart-bar-wrap'),bar=node('div','hg4-chart-bar');
-  const has=typeof item.steps==='number'&&Number.isFinite(item.steps)&&item.steps>=0;
-  bar.style.height=has?Math.max(2,item.steps/max*100)+'%':'0%';
-  bar.classList.toggle('missing',!has);wrap.appendChild(bar);
-  cell.append(node('small','',has?number(item.steps):'—'),wrap,node('span','',item.label));
-  chart.appendChild(cell);}
- root.appendChild(chart);
- actions(root,[['Eksportuj dane CSV',()=>downloadCsv('healthgo-aktywnosc-7-dni.csv',
+  const record=byId.get(id);
+  items.push({id,label:day.toLocaleDateString('pl-PL',{day:'numeric',month:'short'}),steps:record?.steps,minutes:record?.minutes});
+ }
+ const valid=x=>typeof x==='number'&&Number.isFinite(x)&&x>=0;
+ const steps=items.filter(x=>valid(x.steps)),minutes=items.filter(x=>valid(x.minutes));
+ stat(root,[['Dni z danymi',number(steps.length)+' / '+statsRange,'Pomiary kroków'],
+  ['Kroki',steps.length?number(steps.reduce((sum,x)=>sum+x.steps,0)):'—','Tylko z synchronizacji'],
+  ['Minuty',minutes.length?number(minutes.reduce((sum,x)=>sum+x.minutes,0)):'—','Jeśli dostępne']]);
+ const tools=node('div','hg4-stat-toolbar');
+ for(const [period,label] of [[7,'7 dni'],[30,'30 dni']]){
+  const btn=button(label,()=>{statsRange=period;stats();},statsRange!==period);
+  btn.setAttribute('aria-pressed',String(statsRange===period));tools.appendChild(btn);
+ }
+ const choice=node('select','hg4-select');choice.setAttribute('aria-label','Dane wykresu');
+ for(const [key,label] of [['steps','Kroki'],['minutes','Minuty aktywności']]){
+  const opt=node('option','',label);opt.value=key;choice.appendChild(opt);
+ }
+ choice.value=statsMetric;choice.addEventListener('change',()=>{statsMetric=choice.value;stats();});tools.appendChild(choice);
+ root.appendChild(tools);
+ const chartScroll=node('div','hg4-chart-scroll'),chart=node('div','hg4-chart');
+ chart.style.gridTemplateColumns='repeat('+statsRange+', minmax('+(statsRange===30?27:38)+'px, 1fr))';
+ const max=Math.max(1,...items.map(x=>valid(x[statsMetric])?x[statsMetric]:0));
+ for(const item of items){
+  const cell=node('div','hg4-chart-cell'),wrap=node('div','hg4-chart-bar-wrap'),bar=node('div','hg4-chart-bar');
+  const value=item[statsMetric],has=valid(value);
+  bar.style.height=has?Math.max(2,value/max*100)+'%':'0%';
+  bar.classList.toggle('missing',!has);
+  bar.setAttribute('aria-label',item.id+': '+(has?number(value):'brak danych'));
+  wrap.appendChild(bar);
+  cell.append(node('small','',has?number(value):'—'),wrap,node('span','',item.label));
+  chart.appendChild(cell);
+ }
+ chartScroll.appendChild(chart);root.appendChild(chartScroll);
+ actions(root,[['Eksportuj dane CSV',()=>downloadCsv('healthgo-aktywnosc-'+statsRange+'-dni.csv',
   [['Data','Kroki','Minuty'],...items.map(x=>[x.id,x.steps??'',x.minutes??''])]),false],
- ['Odśwież pomiary',async()=>{const msg=$('hg4StatsStatus');if(msg)msg.textContent='Odświeżam…';
-  try{if(typeof S.refreshHealth==='function'){await S.refreshHealth();if(msg)msg.textContent='Synchronizacja zakończona.';}
-   else if(msg)msg.textContent='Brak dostępnego połączenia do synchronizacji.';}
-  catch(_){if(msg)msg.textContent='Nie udało się zsynchronizować danych.';}},true]]);
- const status=node('p','hg4-footnote','Dane zdrowotne pozostają prywatne. Eksport pobierasz tylko po kliknięciu.');status.id='hg4StatsStatus';root.appendChild(status);
+ ['Odśwież pomiary',async()=>{
+  const msg=$('hg4StatsStatus');if(msg)msg.textContent='Odświeżam…';
+  try{if(typeof S.refreshHealth!=='function')throw Error('NO_SYNC');
+   await S.refreshHealth();if(msg)msg.textContent='Synchronizacja zakończona.';
+  }catch(_){if(msg)msg.textContent='Nie udało się zsynchronizować danych.';}
+ },true]]);
+ const status=node('p','hg4-footnote','Eksport jest pobierany wyłącznie po Twoim kliknięciu.');
+ status.id='hg4StatsStatus';status.setAttribute('role','status');root.appendChild(status);
 }
 function devices(){
  const root=section($('devices'),'hg4Devices','⌚ Urządzenia i synchronizacja',
