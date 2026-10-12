@@ -28,7 +28,7 @@ test('subsystems for XP, family, devices and point redemption remain server auth
  assert.match(script,/Engine\.viewChallenges\(engine/);
  assert.match(script,/Engine\.viewAchievements\(engine/);
  assert.match(script,/S\.state\.devices/);
- assert.match(script,/S\.state\.family/);
+ assert.match(script,/f=state\.family/);
  assert.match(script,/HealthGoPoints\?\.getState/);
  assert.doesNotMatch(script,/\.rpc\('hg_point_claim'|setItem\([^)]*xp|setItem\([^)]*units/i);
  assert.match(file('www/healthgo-point.js'),/healthgo:points-updated/);
