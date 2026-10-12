@@ -1,0 +1,13 @@
+/* Projected line remains above raster/WebGL surfaces, under GPS/HUD controls. */
+#map #hgNavigationPerspective .hg-3d-route-overlay{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ overflow:hidden!important;pointer-events:none!important;z-index:2!important;
+ filter:drop-shadow(0 2px 5px #00473477);
+}
+#map #hgNavigationPerspective .hg-3d-route-outline{
+ fill:none;stroke:#f6fff9;stroke-width:13;stroke-linecap:round;stroke-linejoin:round;opacity:.94;
+}
+#map #hgNavigationPerspective .hg-3d-route-core{
+ fill:none;stroke:#04dea7;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;opacity:1;
+}
+#map #hgNavigationPerspective .maplibregl-marker{z-index:4!important}
