@@ -8,9 +8,9 @@ body.hg-navigation-active #map .healthgo-family-name-tooltip,
 body.hg-navigation-active #map .healthgo-profile-marker.me{visibility:hidden!important}
 body.hg-navigation-active.hg-live-perspective #map #healthgoMap{visibility:hidden!important}
 body.hg-navigation-active.hg-live-perspective #map #hgNavigationPerspective:not([hidden]){visibility:visible!important}
-body.hg-navigation-active #map #hgNavigationPerspective .hg-live-car{width:52px;height:62px;filter:drop-shadow(0 5px 8px rgba(0,49,36,.45))}
-body.hg-navigation-active #map #hgNavigationPerspective .hg-live-car svg{display:block;width:52px;height:62px;overflow:visible}
-body.hg-navigation-active #map .hg-follow-arrow-shape svg{filter:drop-shadow(0 3px 8px rgba(0,111,82,.52))}
+body.hg-navigation-active #map #hgNavigationPerspective .hg-live-car{width:34px;height:38px;filter:drop-shadow(0 3px 5px rgba(3,45,93,.38))}
+body.hg-navigation-active #map #hgNavigationPerspective .hg-live-car svg{display:block;width:34px;height:38px;overflow:visible}
+body.hg-navigation-active #map .hg-follow-arrow-shape svg{filter:drop-shadow(0 2px 5px rgba(32,85,155,.38))}
 body.hg-navigation-active #map .hg-follow-marker-halo{border-color:rgba(63,245,198,.55)}
 #map .hg-route-location-info{margin-bottom:13px}
 #map .hg-route-location-info strong{color:inherit}

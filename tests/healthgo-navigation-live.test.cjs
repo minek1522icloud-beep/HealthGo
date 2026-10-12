@@ -37,7 +37,7 @@ test('Pitched guidance map uses an on-demand MapLibre 6 ES module and real OSM t
  assert.match(css,/#map #hgNavigationPerspective\[hidden\]/);
  assert.match(css,/\.hg-live-loading\{visibility:hidden!important\}/);
  assert.match(src,/new lib\.Marker\(/);
- assert.match(src,/svg width="52" height="62"/);
+ assert.match(src,/svg width="34" height="38"/);
  assert.doesNotMatch(src,/navigator\.geolocation\.watchPosition|navigator\.geolocation\.getCurrentPosition/);
 });
 test('Live map is not started until GPS has a valid position',async()=>{
@@ -83,6 +83,6 @@ test('Guidance connects live camera, voice prompts and real OSRM rerouting',()=>
  assert.match(pro,/speechSynthesis\.speak\(u\)/);
  assert.match(html,/id="hgNavigationPerspective"/);
  assert.match(html,/id="hgLiveWeather"/);
- assert.match(html,/healthgo-navigation-live\.js\?v=4/);
- assert.match(html,/healthgo-navigation-live\.css\?v=1/);
+ assert.match(html,/healthgo-navigation-live\.js\?v=5/);
+ assert.match(html,/healthgo-navigation-live\.css\?v=2/);
 });

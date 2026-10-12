@@ -84,10 +84,10 @@
   return '<span class="hg-follow-marker" role="img" aria-label="Twoja aktualna pozycja GPS">'+
    '<span class="hg-follow-marker-halo"></span>'+
    '<span class="hg-follow-arrow-shape" aria-hidden="true">'+
-    '<svg viewBox="0 0 64 70" width="64" height="70">'+
-     '<path d="M32 3 58 62 33 51 6 62Z" fill="#09dbb4" stroke="#fff" stroke-width="4.5" stroke-linejoin="round"/>'+
-     '<path d="M32 17 43 45 32 40 21 45Z" fill="#004535" opacity=".95"/>'+
-     '<path d="M14 61 32 53 50 61" fill="none" stroke="#07775b" stroke-width="2" opacity=".65"/>'+
+    '<svg viewBox="0 0 40 44" width="36" height="40">'+
+     '<circle cx="20" cy="23" r="17" fill="#4285f4" opacity=".12"/>'+
+     '<path d="M20 4 35 35 20 29 5 35Z" fill="#4285f4" stroke="#fff" stroke-width="3.2" stroke-linejoin="round"/>'+
+     '<path d="M20 14 26 27 20 25 14 27Z" fill="#194d9c" opacity=".92"/>'+
     '</svg>'+
    '</span><span class="hg-follow-unknown" aria-hidden="true"></span></span>';
  }
@@ -118,7 +118,7 @@
    if(!arrow){
     arrow=L.marker([point.lat,point.lon],{
      icon:L.divIcon({className:'hg-follow-user-icon',html:markerHTML(),
-      iconSize:[64,70],iconAnchor:[32,35]}),
+      iconSize:[36,40],iconAnchor:[18,20]}),
      interactive:false,keyboard:false,zIndexOffset:9000
     }).addTo(m);
    }else arrow.setLatLng([point.lat,point.lon]);

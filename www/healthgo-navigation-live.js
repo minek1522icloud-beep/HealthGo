@@ -68,11 +68,10 @@
   node.className='hg-live-car';
   node.setAttribute('aria-label','Strzałka bieżącej pozycji GPS');
   // Decorative geometry only; position always comes from the actual GPS fix.
-  node.innerHTML='<svg width="52" height="62" viewBox="0 0 52 62" aria-hidden="true">'+
-   '<ellipse cx="26" cy="33" rx="19" ry="21" fill="#28ddba" opacity=".17"/>'+
-   '<path d="M26 3 49 54 27 45 4 54Z" fill="#04d8ad" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>'+
-   '<path d="M26 17 34 39 26 35 18 39Z" fill="#065743" opacity=".96"/>'+
-   '<path d="M9 53 26 46 43 53" fill="none" stroke="#003a2d" stroke-width="2" opacity=".6"/>'+
+  node.innerHTML='<svg width="34" height="38" viewBox="0 0 40 44" aria-hidden="true">'+
+   '<circle cx="20" cy="23" r="17" fill="#4285f4" opacity=".12"/>'+
+   '<path d="M20 4 35 35 20 29 5 35Z" fill="#4285f4" stroke="#fff" stroke-width="3.2" stroke-linejoin="round"/>'+
+   '<path d="M20 14 26 27 20 25 14 27Z" fill="#194d9c" opacity=".92"/>'+
    '</svg>';
   return node;
  }

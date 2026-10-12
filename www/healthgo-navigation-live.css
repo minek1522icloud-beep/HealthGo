@@ -16,8 +16,8 @@ body.hg-navigation-active #map #hgNavigationPerspective:not([hidden]){
 #map #hgNavigationPerspective .maplibregl-ctrl-attrib{
  font-size:9px!important;background:rgba(255,255,255,.8)!important;
 }
-#map .hg-live-car{width:52px;height:62px;display:block;pointer-events:none;filter:drop-shadow(0 4px 7px rgba(0,31,84,.38))}
-#map .hg-live-car svg{display:block}
+#map .hg-live-car{width:34px;height:38px;display:block;pointer-events:none;filter:drop-shadow(0 3px 5px rgba(1,49,101,.38))}
+#map .hg-live-car svg{display:block;width:34px;height:38px;overflow:visible}
 #map .hg-live-weather{
  position:absolute!important;right:12px!important;
  top:calc(135px + env(safe-area-inset-top))!important;
