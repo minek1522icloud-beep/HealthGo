@@ -30,12 +30,12 @@ test('scripts compile, and live GPS HUD mounts the expected controls without rep
  new vm.Script(script);
  new vm.Script(pro);
  new vm.Script(live);
- for(const id of ['hgNavLaneAssistant','hgNavCurrentRoad','hgNavNextRoad','hgNavSpeedLimit','hgNavLimitEnable',
-  'hgNavStreetChip','hgNavAdvancedTools','hgNavMinimal','hgNavWeatherRisk',
+ for(const id of ['hgNavLaneAssistant','hgNavSpeedLimit','hgNavLimitEnable',
+  'hgNavAdvancedTools','hgNavMinimal','hgNavWeatherRisk',
   'hgNavArrivalSummary','hgNavTripWeatherStatus','hgNavCompassBearing'])
   assert.match(html,new RegExp('id="'+id+'"'));
- assert.match(html,/healthgo-nav-advanced\.js\?v=3/);
- assert.match(html,/healthgo-nav-advanced\.css\?v=2/);
+ assert.match(html,/healthgo-nav-advanced\.js\?v=4/);
+ assert.match(html,/healthgo-nav-advanced\.css\?v=3/);
  assert.match(pro,/HealthGoNavAdvanced\?\.gps\?\./);
  assert.match(pro,/HealthGoNavAdvanced\?\.start\?\./);
  assert.match(pro,/HealthGoNavAdvanced\?\.arrived\?\./);
@@ -85,8 +85,8 @@ test('navigation preferences store settings only; starting a route never request
  h.api.start({steps,geometry:[[21,52],[21.01,52]],meters:680});
  h.api.gps({position:{lat:52,lon:21},accuracy:9,speed:5,heading:90,stepIndex:1,distanceTo:350});
  assert.equal(h.calls.length,0,'opt-in disabled by default');
- assert.equal(h.$('hgNavCurrentRoad').textContent,'Ludowa');
- assert.equal(h.$('hgNavNextRoad').textContent,'Wspólna');
+ assert.equal(h.api.getState().currentStreet,'Ludowa');
+ assert.equal(h.api.getState().nextStreet,'Wspólna');
  assert.equal(h.$('hgNavLaneAssistant').hidden,false);
  h.api.setMinimal(true);
  assert.equal(h.classNames.has('hg-nav-minimal'),true);
@@ -164,4 +164,26 @@ test('fullscreen map and borderless compact ETA strip fix blank bottom and overf
  assert.match(css,/hg-nav-minimal/);
  assert.match(html,/data-hg-view="2d"/);
  assert.match(html,/data-hg-view="3d"/);
+});
+
+test('marked-up Teraz/Potem panel is completely removed while turn data remains internally available',()=>{
+ assert.doesNotMatch(html,/id="hgNavStreetChip"|id="hgNavCurrentRoad"|id="hgNavNextRoad"/);
+ assert.doesNotMatch(script,/hgNavStreetChip|hgNavCurrentRoad|hgNavNextRoad/);
+ const css=fs.readFileSync('www/healthgo-nav-advanced.css','utf8');
+ assert.doesNotMatch(css,/#hgNavStreetChip/);
+ assert.match(html,/id="hgProNavNext"/,'main top turn guidance is preserved');
+ assert.match(script,/currentStreet=clean\(last\?\.name\)/,'internal street name retained to match OSM maxspeed');
+});
+test('right-side map actions show explicit accessible labels and retain all three working actions',()=>{
+ for(const [action,label] of [
+  ['overview','Cała trasa'],['follow','Moja pozycja'],['north','Północ']
+ ]){
+  assert.match(html,new RegExp('data-hgna="'+action+'"[^>]*aria-label="[^"]+"[^>]*>[\\s\\S]*?<span>'+label+'</span>'));
+ }
+ const css=fs.readFileSync('www/healthgo-nav-advanced.css','utf8');
+ assert.match(css,/max-width:min\(126px,39vw\)/);
+ assert.match(css,/>button svg/);
+ assert.match(script,/if\(action==='overview'\)showOverview\(\)/);
+ assert.match(script,/if\(action==='follow'\)follow\(\)/);
+ assert.match(script,/if\(action==='north'\)north\(\)/);
 });

@@ -91,7 +91,7 @@ body.hg-navigation-active #map .leaflet-control-attribution{
  background:#edf7f0e6!important
 }
 /* First priorities: lane assistant, trustworthy current road, optional speed limit. */
-#map #hgNavLaneAssistant[hidden],#map #hgNavStreetChip[hidden],
+#map #hgNavLaneAssistant[hidden],
 #map #hgNavWeatherRisk[hidden],#map #hgNavAdvancedTools[hidden],
 #map #hgNavArrivalSummary[hidden]{display:none!important}
 body.hg-navigation-active #map #hgNavLaneAssistant{
@@ -111,17 +111,6 @@ body.hg-navigation-active #map .hgna-lane{
 body.hg-navigation-active #map .hgna-lane.valid{
  background:#81f0b2;color:#083c25;border:1px solid #a7ffcf;font-weight:900
 }
-body.hg-navigation-active #map #hgNavStreetChip{
- position:absolute;bottom:calc(158px + env(safe-area-inset-bottom));
- left:84px;right:76px;min-width:0;z-index:26000;pointer-events:none;
- border-radius:11px;padding:8px 11px;
- background:rgba(5,48,35,.85);border:1px solid #91f3c361;color:#e6fff3
-}
-body.hg-navigation-active #map #hgNavStreetChip .hgna-road-line{display:flex;gap:6px;align-items:center;min-width:0}
-body.hg-navigation-active #map #hgNavStreetChip small{flex:0 0 auto;font-size:10px;color:#91e4b8}
-body.hg-navigation-active #map #hgNavStreetChip strong{
- min-width:0;font-size:12px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
-}
 body.hg-navigation-active #map #hgNavLimitBadge{
  position:absolute;left:12px;bottom:calc(229px + env(safe-area-inset-bottom));
  width:62px;min-height:67px;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -137,19 +126,30 @@ body.hg-navigation-active #map #hgNavLimitBadge small{
  font-size:8px;line-height:1.3;text-align:center;margin-top:2px;color:#597269
 }
 body.hg-navigation-active #map #hgNavAdvancedTools{
- position:absolute;right:12px;top:calc(242px + env(safe-area-inset-top));
- z-index:26000;display:flex;flex-direction:column;align-items:flex-end;gap:7px;
- pointer-events:auto
+ position:absolute;right:10px;top:calc(242px + env(safe-area-inset-top));
+ z-index:26000;display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+ pointer-events:auto;max-width:min(132px,39vw)
 }
-body.hg-navigation-active #map #hgNavAdvancedTools button{
- width:45px;height:45px;border-radius:14px;background:rgba(7,49,37,.96);
- border:1px solid #6cbe98;color:#e1fff0;font-size:22px;
- display:grid;place-items:center;cursor:pointer;touch-action:manipulation
+body.hg-navigation-active #map #hgNavAdvancedTools>button{
+ width:126px;max-width:min(126px,39vw);min-height:48px;padding:9px 10px;
+ border-radius:13px;background:rgba(7,49,37,.96);
+ border:1px solid #6cbe98;color:#e1fff0;font-size:12px;font-weight:750;
+ display:flex!important;align-items:center;justify-content:flex-start;gap:7px;
+ cursor:pointer;touch-action:manipulation;text-align:left;
+ box-shadow:0 3px 12px rgba(0,35,24,.2)
 }
-body.hg-navigation-active #map #hgNavAdvancedTools button:focus-visible{
+body.hg-navigation-active #map #hgNavAdvancedTools>button svg{
+ width:20px;height:20px;flex:0 0 20px;stroke:currentColor;fill:none
+}
+body.hg-navigation-active #map #hgNavAdvancedTools>button span{
+ font-size:11px;line-height:1.15;flex:1;min-width:0;white-space:normal
+}
+body.hg-navigation-active #map #hgNavAdvancedTools>button .hgna-bearing{
+ font-size:9px;line-height:1;color:#b5ebd0;font-weight:750;flex:0 0 auto
+}
+body.hg-navigation-active #map #hgNavAdvancedTools>button:focus-visible{
  outline:3px solid #adffd3;outline-offset:2px
 }
-body.hg-navigation-active #map #hgNavAdvancedTools button small{font-size:10px}
 body.hg-navigation-active #map #hgNavWeatherRisk{
  position:absolute;left:12px;right:75px;top:calc(262px + env(safe-area-inset-top));
  padding:9px 11px;font-size:11px;line-height:1.5;border-radius:12px;z-index:26000;
@@ -158,8 +158,8 @@ body.hg-navigation-active #map #hgNavWeatherRisk{
 }
 body.hg-navigation-active #map #hgNavControlStatus:empty{display:none!important}
 body.hg-navigation-active #map #hgNavControlStatus{
- max-width:290px;padding:7px 10px;border-radius:10px;color:#dbffef;background:#12382bcf;
- font-size:11px;line-height:1.35;text-align:right
+ max-width:126px;padding:7px 9px;border-radius:10px;color:#dbffef;background:#12382bcf;
+ font-size:10px;line-height:1.35;text-align:left
 }
 body.hg-navigation-active #map #hgProNavigation #hgNavLimitHint{
  display:block!important;color:#a3e1be;font-size:10px;line-height:1.4
@@ -175,7 +175,6 @@ body.hg-navigation-active #map #mapWorkspace.hg-nav-dark .leaflet-tile-pane{
 }
 /* Minimal mode keeps turn banner, progress, ETA and exit; hides optional indicators. */
 body.hg-navigation-active.hg-nav-minimal #map #hgNavLaneAssistant,
-body.hg-navigation-active.hg-nav-minimal #map #hgNavStreetChip,
 body.hg-navigation-active.hg-nav-minimal #map #hgNavLimitBadge,
 body.hg-navigation-active.hg-nav-minimal #map #hgNavAdvancedTools,
 body.hg-navigation-active.hg-nav-minimal #map #hgNavWeatherRisk,
@@ -199,12 +198,14 @@ body.hg-navigation-active.hg-nav-minimal #map .hg-drive-speed{display:none!impor
  body.hg-navigation-active #map #hgNavAdvancedTools{top:calc(223px + env(safe-area-inset-top))}
  body.hg-navigation-active #map #hgNavLaneAssistant{top:calc(129px + env(safe-area-inset-top))}
  body.hg-navigation-active #map #hgNavLimitBadge{bottom:calc(201px + env(safe-area-inset-bottom))}
- body.hg-navigation-active #map #hgNavStreetChip{bottom:calc(145px + env(safe-area-inset-bottom))}
 }
 @media(max-width:390px){
- body.hg-navigation-active #map #hgNavStreetChip{left:75px;right:66px;padding:6px 8px}
- body.hg-navigation-active #map #hgNavAdvancedTools{right:8px}
- body.hg-navigation-active #map #hgNavAdvancedTools button{height:42px;width:42px}
+ body.hg-navigation-active #map #hgNavAdvancedTools{right:7px;max-width:110px}
+ body.hg-navigation-active #map #hgNavAdvancedTools>button{
+  width:110px;max-width:110px;min-height:45px;padding:8px;gap:6px
+ }
+ body.hg-navigation-active #map #hgNavAdvancedTools>button svg{width:18px;height:18px;flex-basis:18px}
+ body.hg-navigation-active #map #hgNavAdvancedTools>button span{font-size:10px}
  body.hg-navigation-active #map #hgNavLaneAssistant{left:8px}
  body.hg-navigation-active #map #hgProNavigation .hg-drive-footer{padding-left:10px!important;padding-right:10px!important}
 }

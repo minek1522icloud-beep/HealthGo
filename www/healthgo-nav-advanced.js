@@ -99,9 +99,6 @@
   const next=steps[index];
   currentStreet=clean(last?.name);
   nextStreet=clean(next?.name);
-  const copy=[$('hgNavCurrentRoad'),$('hgNavNextRoad')];
-  if(copy[0])copy[0].textContent=currentStreet||'Brak nazwy ulicy w danych trasy';
-  if(copy[1])copy[1].textContent=nextStreet||'Brak nazwy kolejnej ulicy';
  }
  function writeLimit(){
   const text=$('hgNavSpeedLimit'),hint=$('hgNavLimitHint');
@@ -164,7 +161,6 @@
   onRoute(value);
   document.body?.classList?.toggle('hg-nav-minimal',minimal);
   visible('hgNavAdvancedTools',true);
-  visible('hgNavStreetChip',true);
   visible('hgNavCompactWeather',false);
   visible('hgNavArrivalSummary',false);
   updateControls();
@@ -189,7 +185,6 @@
   const nextStep=Math.max(0,Math.min(steps.length-1,Number(detail.stepIndex)||0));
   if(nextStep!==lastStep){lastStep=nextStep;updateRoads(nextStep);limitDisplay=null;limitLastAt=0;}
   lastDistance=Number.isFinite(detail.distanceTo)&&detail.distanceTo>=0?detail.distanceTo:null;
-  const sign=$('hgNavCurrentRoad');if(sign)sign.hidden=minimal;
   renderLanes(!minimal&&Number.isFinite(detail.distanceTo)&&detail.distanceTo<=650?laneInfo(steps[nextStep]):null);
   writeLimit();
   const showSpeed=$('hgNavCurrentSpeed');if(showSpeed)showSpeed.textContent=speed===null?'—':String(Math.round(speed));
@@ -260,7 +255,6 @@
   if(button){button.setAttribute('aria-pressed',String(minimal));button.textContent=minimal?'Pokaż dodatki':'Tryb minimalistyczny';}
   document.body?.classList?.toggle('hg-nav-minimal',active&&minimal);
   visible('hgNavWeatherRisk',active&&!minimal&&!!$('hgNavWeatherRisk')?.textContent);
-  visible('hgNavStreetChip',active&&!minimal);
   visible('hgNavAdvancedTools',active&&!minimal);
   if(active&&minimal)renderLanes(null);
   else if(active)renderLanes(laneInfo(steps[lastStep]));
@@ -316,7 +310,7 @@
   lastPos=null;lastStep=-1;lastDistance=null;limitDisplay=null;heading=null;
   route=null;steps=[];limitLastAt=0;limitLastPos=null;weatherInfo=null;sessionStats.last=null;
   document.body?.classList?.remove('hg-nav-minimal');
-  visible('hgNavAdvancedTools',false);visible('hgNavStreetChip',false);
+  visible('hgNavAdvancedTools',false);
   visible('hgNavCompactWeather',false);renderLanes(null);
   writeLimit();
  }
