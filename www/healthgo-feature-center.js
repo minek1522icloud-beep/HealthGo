@@ -60,6 +60,61 @@ function message(parent,copy){
  const p=el('p','hfc-hint',copy);parent.appendChild(p);return p;
 }
 function level(engine){return engine?Engine.getLevel(engine.totalXp||0):null;}
+
+let questFilter='active',activityMetric='steps';
+function missionTarget(item){
+ const metric=item.requirement?.type||'';
+ if(['steps','activeMinutes','activeDays','healthDays'].includes(metric))return 'activity';
+ if(metric==='aiUsed')return 'ai';
+ if(metric==='mapExplored')return 'map';
+ if(['plans','dailyTasks','streak','perfectDays'].includes(metric))return 'plan';
+ return 'backpack';
+}
+function missionBoard(root,defs){
+ const section=el('section','hfc-missions');
+ section.appendChild(el('h4','hfc-mini-heading','Katalog misji · '+defs.length+' zadań'));
+ const filters=el('div','hfc-filter-tabs'),list=el('div','hfc-mission-list');
+ filters.setAttribute('role','group');filters.setAttribute('aria-label','Filtr wyzwań');
+ list.setAttribute('aria-live','polite');
+ const draw=()=>{
+  filters.replaceChildren();list.replaceChildren();
+  for(const [key,label] of [['active','Aktywne'],['completed','Ukończone'],['all','Wszystkie']]){
+   const b=action(label,()=>{questFilter=key;draw()},questFilter===key?'selected':'subtle');
+   b.setAttribute('aria-pressed',String(questFilter===key));filters.appendChild(b);
+  }
+  const rows=defs.filter(q=>questFilter==='all'||(questFilter==='completed'?q.status==='completed':q.status==='active'));
+  if(!rows.length){
+   list.appendChild(el('p','hfc-hint',questFilter==='completed'?'Nie masz jeszcze ukończonych wyzwań.':'Brak zadań w tej kategorii. Przełącz na „Wszystkie”.'));
+   return;
+  }
+  for(const item of rows.slice(0,35)){
+   const d=el('details','hfc-mission'),summary=el('summary','hfc-mission-summary');
+   const copy=el('span','hfc-mission-copy');
+   copy.append(el('strong','',(item.icon||'🎯')+' '+(item.name||'Wyzwanie HealthGo')),
+    el('small','',(item.status==='completed'?'Ukończone':item.status==='locked'?'Zablokowane':item.status==='expired'?'Zakończone':'Aktywne')+
+      ' · '+format(item.xpReward||0)+' XP'));
+   summary.append(copy,el('span','hfc-mission-chevron','⌄'));d.appendChild(summary);
+   const content=el('div','hfc-mission-body');
+   content.appendChild(el('p','',item.description||'Wykonaj to zadanie w HealthGo.'));
+   const target=Number(item.target),progress=Number(item.progress),
+    pct=Number.isFinite(Number(item.percent))?Math.max(0,Math.min(100,Number(item.percent))):0;
+   const amount=Number.isFinite(target)&&target>0&&Number.isFinite(progress)?
+    format(Math.min(target,Math.max(0,progress)))+' / '+format(target):
+    Math.round(pct)+'%';
+   content.appendChild(el('small','hfc-mission-numbers','Postęp: '+amount));
+   const bar=el('div','hfc-quest-track'),fill=el('span');fill.style.width=pct+'%';bar.appendChild(fill);content.appendChild(bar);
+   content.appendChild(el('p','hfc-mission-evidence','Źródło: '+(item.source||'Potwierdzone działania HealthGo')+
+    '. XP jest przyznawane po rzeczywistym zaliczeniu zadania.'));
+   if(item.status==='active'){
+    if(item.confirmationRequired)
+     content.appendChild(el('p','hfc-mission-evidence','Wykonaj zadanie w Planie Dnia. Samo otwarcie tej karty nie daje XP.'));
+    else content.appendChild(action('Przejdź do funkcji →',()=>go(missionTarget(item)),'subtle'));
+   }
+   d.appendChild(content);list.appendChild(d);
+  }
+ };
+ section.append(filters,list);root.appendChild(section);draw();
+}
 function challenges(){
  const root=mount('challenges','hfcChallenges');
  if(!root)return;
@@ -83,26 +138,8 @@ function challenges(){
  bar.appendChild(fill);progressBox.appendChild(bar);
  const caption=el('p','',progress?format(progress.xp||0)+' / '+(progress.needed?format(progress.needed):'MAX')+' XP w tym poziomie':'Postęp pobieramy z konta HealthGo.');
  progressBox.appendChild(caption);root.appendChild(progressBox);
- const trio=active.slice().sort((a,b)=>(b.percent||0)-(a.percent||0)).slice(0,3);
- const mini=el('div','hfc-mini-heading','Najbliższe cele');
- root.appendChild(mini);
- if(!engine)message(root,'Aby zobaczyć swoje wyzwania, zaloguj się i poczekaj na synchronizację.');
- else if(!trio.length)message(root,'Nie ma aktualnie rozpoczętych wyzwań. Zobacz pozostałe kategorie poniżej.');
- else{
-  const list=el('div','hfc-quest-list');
-  for(const item of trio){
-   const row=el('div','hfc-quest');
-   const text=el('div','hfc-quest-text');
-   text.append(el('b','',item.name||item.title),el('small','',item.description||'Wykonaj opisany cel, aby zdobyć XP.'));
-   const perc=Math.min(100,Math.max(0,Number(item.percent)||0));
-   const track=el('div','hfc-quest-track'),indicator=el('span');indicator.style.width=perc+'%';
-   track.append(indicator);text.appendChild(track);
-   row.append(text,el('strong','',item.target==null?String(Math.round(perc))+'%':
-    format(item.progress||0)+' / '+format(item.target)));
-   list.appendChild(row);
-  }
-  root.appendChild(list);
- }
+ if(!engine)message(root,'Zaloguj się, aby wyświetlić pełny katalog wyzwań i swój potwierdzony postęp.');
+ else missionBoard(root,defs);
  buttons(root,[['🏃 Aktywność',()=>go('activity'),''],['⌚ Źródła danych',()=>go('devices'),'subtle'],
   ['🛡️ Zobacz Plecak',()=>go('backpack'),'subtle']]);
 }
@@ -371,7 +408,7 @@ let queued=false,session='';
 function render(){
  const owner=String(S.state.uid||'');
  if(owner!==session){
-  session=owner;removeMap();
+  session=owner;removeMap();questFilter='active';activityMetric='steps';
  }
  challenges();activity();device();family();treasure();pointSummary();settings();
 }
