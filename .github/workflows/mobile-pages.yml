@@ -16,6 +16,7 @@ on:
       - "tests/healthgo-navigation-screen.test.cjs"
       - "tests/healthgo-navigation-live.test.cjs"
       - "tests/healthgo-navigation-mode.test.cjs"
+      - "tests/healthgo-nav-advanced.test.cjs"
       - "tests/healthgo-map-extras.test.cjs"
       - "www/healthgo-drive-ui.css"
       - "tests/healthgo-chat-modern.test.cjs"
@@ -69,7 +70,7 @@ jobs:
 
       - name: Sprawdz pobieranie i wznawianie AI na telefonie
         shell: bash
-        run: node --test tests/healthgo-map-recovery.test.cjs tests/healthgo-navigation-live.test.cjs tests/healthgo-navigation-mode.test.cjs tests/healthgo-map-extras.test.cjs tests/healthgo-navigation-screen.test.cjs tests/healthgo-spacious-ui.test.cjs tests/healthgo-map4.test.cjs tests/healthgo-map-pro.test.cjs tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
+        run: node --test tests/healthgo-map-recovery.test.cjs tests/healthgo-navigation-live.test.cjs tests/healthgo-navigation-mode.test.cjs tests/healthgo-nav-advanced.test.cjs tests/healthgo-map-extras.test.cjs tests/healthgo-navigation-screen.test.cjs tests/healthgo-spacious-ui.test.cjs tests/healthgo-map4.test.cjs tests/healthgo-map-pro.test.cjs tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
 
       - name: Sprawdz grafike 240 modeli, proporcje, 3D i zachowanie Plecaka
         shell: bash
@@ -103,6 +104,8 @@ jobs:
           test -s www/healthgo-spacious-ui.css
           test -s www/healthgo-navigation-screen.css
           test -s www/healthgo-drive-ui.css
+          test -s www/healthgo-nav-advanced.js
+          test -s www/healthgo-nav-advanced.css
           test -s www/healthgo-navigation-live.js
           test -s www/healthgo-navigation-live.css
           test -s www/healthgo-route-3d-overlay.js
