@@ -298,6 +298,42 @@ function academy(root){
   ['Dopiero gdy skończy się bateria',()=>{feedback.textContent='Nie trzeba czekać na wyłączenie urządzenia. Odpoczynek jest ważny wcześniej.';},true]]);
  quiz.appendChild(feedback);panel.appendChild(quiz);
 }
+/* Small, optional habit checklist. It never writes to health records or earns XP.
+   The account and current local day form the storage key; data stays on this device. */
+function habitsKey(){
+ const owner=String(S.state?.uid||'');
+ if(!owner)return null;
+ const now=new Date(),day=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+ return 'healthgo.more4.habits.'+encodeURIComponent(owner)+'.'+day;
+}
+function habits(){
+ const root=section($('challenges'),'hg4Habits','🌿 Centrum nawyków',
+  'Małe zadania w swoim tempie. Lista jest dobrowolna, nie ma kar za przerwy ani punktów XP.');
+ if(!root)return;
+ const key=habitsKey();
+ if(!key){empty(root,'Zaloguj się, aby korzystać z dzisiejszej listy.');return;}
+ let current={};
+ try{const data=JSON.parse(w.localStorage?.getItem(key)||'{}');if(data&&typeof data==='object')current=data;}catch(_){}
+ const tasks=[['rest','Zadbaj o chwilę odpoczynku'],['plan','Sprawdź swój plan dnia'],['learn','Poświęć chwilę hobby lub nauce']];
+ const done=tasks.filter(([id])=>current[id]===true).length;
+ const summary=node('p','hg4-habit-summary',done+' / '+tasks.length+' oznaczonych na dziś');
+ summary.setAttribute('role','status');root.appendChild(summary);
+ const list=node('div','hg4-toggle-list');
+ for(const [id,label] of tasks){
+  const row=node('label','hg4-toggle'),control=node('input');
+  control.type='checkbox';control.checked=current[id]===true;
+  control.addEventListener('change',()=>{
+   const next={...current,[id]:control.checked};
+   try{w.localStorage?.setItem(key,JSON.stringify(next));current=next;
+    summary.textContent=tasks.filter(([item])=>next[item]===true).length+' / '+tasks.length+' oznaczonych na dziś';
+   }catch(_){control.checked=!control.checked;summary.textContent='Nie udało się zapisać na tym urządzeniu.';}
+  });
+  row.append(node('span','',label),control);list.appendChild(row);
+ }
+ root.appendChild(list);
+ root.appendChild(node('p','hg4-footnote','Ta lista jest zapisywana tylko na tym telefonie, osobno dla każdego konta. Nie synchronizuje się i nie zmienia statystyk zdrowia.'));
+ actions(root,[['Otwórz plan dnia',()=>go('plan'),true]]);
+}
 function settings(){
  const parent=d.querySelector?.('#settings .settings-content')||$('settings');
  if(!parent)return;
@@ -332,7 +368,8 @@ function settings(){
   ['Urządzenia',()=>go('devices'),true],
   ['Powiadomienia',()=>jump('settings','hg4Notifications'),true],
   ['SOS i bezpieczeństwo',()=>jump('settings','hg4Security'),true],
-  ['Akademia',()=>jump('settings','hg4Academy'),true]]);
+  ['Akademia',()=>jump('settings','hg4Academy'),true],
+  ['Centrum nawyków',()=>jump('challenges','hg4Habits'),true]]);
  panel.appendChild(shortcuts);
  notifications(parent);security(parent);academy(parent);
  const info=section(parent,'hg4Info','🔬 HealthGo Labs i pomoc',
@@ -347,7 +384,7 @@ function settings(){
 }
 let oldOwner=null,scheduled=false;
 function render(){const owner=String(S.state?.uid||'');if(owner!==oldOwner){oldOwner=owner;period='all';missionStatus='all';missionSearch='';statsRange=7;statsMetric='steps';}
- applyPrefs();xpDashboard();missions();stats();devices();family();settings();}
+ applyPrefs();xpDashboard();missions();habits();stats();devices();family();settings();}
 function schedule(){if(scheduled)return;scheduled=true;
  const invoke=()=>{scheduled=false;render();};
  if(typeof w.requestAnimationFrame==='function')w.requestAnimationFrame(invoke);else w.setTimeout(invoke,0);}
