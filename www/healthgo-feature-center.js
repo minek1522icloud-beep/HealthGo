@@ -242,6 +242,19 @@ function device(){
   info.appendChild(row);
  }
  root.appendChild(info);
+ const explanation=el('section','hfc-device-explainer');
+ explanation.appendChild(el('h4','','Połączenie krok po kroku'));
+ const instructions=ios?[
+  'Połącz zegarek z iPhonem w oficjalnej aplikacji producenta.',
+  'Aby pobierać dane Apple Health bezpośrednio, HealthGo będzie potrzebowało integracji natywnej.',
+  'Webowa wersja HealthGo pokaże tylko pomiary, które rzeczywiście dotarły do konta.'
+ ]:[
+  'Włącz Bluetooth i otwórz HealthGo na HTTPS w obsługiwanej przeglądarce.',
+  'Kliknij „Połącz zegarek” i wybierz urządzenie, jeśli pojawi się okno Bluetooth.',
+  'Dostępne będą jedynie rzeczywiście obsługiwane przez urządzenie usługi, np. bateria lub tętno.'
+ ];
+ const ol=el('ol','');instructions.forEach(step=>ol.appendChild(el('li','',step)));
+ explanation.appendChild(ol);root.appendChild(explanation);
  const detail=el('p','hfc-hint',ios?
   'Na iPhonie ta wersja uruchomiona z ekranu początkowego działa jak aplikacja internetowa. Nie uzyska automatycznie danych Apple Health ani połączenia ze wszystkimi zegarkami. Do tego potrzebny jest obsługiwany moduł natywny.':
   'Na Androidzie niektóre czujniki działają przez Web Bluetooth. Dane Health Connect wymagają odpowiedniej integracji natywnej.');
