@@ -31,6 +31,7 @@
   const c=route?.geometry?.coordinates;
   coords=Array.isArray(c)?c.filter(p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1])):[];
   if(ready&&gl?.getSource?.('hg-route'))try{gl.getSource('hg-route').setData(line(coords))}catch(_){}
+  if(ready)window.HealthGoRoute3DOverlay?.setRoute?.(coords);
  }
  function showLayer(on){
   const box=$('hgNavigationPerspective');
@@ -38,6 +39,8 @@
   document.body?.classList?.toggle?.('hg-live-perspective',!!on);
  }
  function stop(){
+  window.HealthGoRoute3DOverlay?.detach?.();
+  window.HealthGoMapExtras?.detach3D?.();
   active=false;ready=false;generation++;lastHeading=null;lastPoint=null;
   if(weatherController){weatherController.abort();weatherController=null}
   inFlight=false;lastView=0;lastWeather=0;
@@ -98,6 +101,9 @@
       .setLngLat([point.lon,point.lat]).addTo(gl);
      if(Number.isFinite(heading))marker.setRotation(0); // With the camera bearing the heading, the forward arrow stays upright.
      ready=true;showLayer(true);gl.resize();
+     window.HealthGoRoute3DOverlay?.attach?.(gl,coords);
+     window.HealthGoMapExtras?.attach3D?.(gl);
+     if(lastPoint)window.HealthGoMapExtras?.gps3D?.(lastPoint);
      const status=$('hgLiveMapStatus');if(status){status.hidden=true;status.textContent='';}
     }catch(_){fail()}
    });
@@ -114,7 +120,7 @@
   showLayer(false);
   if(marker){try{marker.remove()}catch(_){}marker=null}
   if(gl){try{gl.remove()}catch(_){}gl=null}
-  ready=false;
+  ready=false;window.HealthGoRoute3DOverlay?.detach?.();
   const warning=$('hgLiveMapStatus');
   if(warning){warning.hidden=false;warning.textContent='Widok 2D — mapa perspektywiczna niedostępna na tym telefonie.'}
   window.HealthGoNavigationMode?.fallback?.();
@@ -144,6 +150,7 @@
   if(ready&&gl){
    try{
     marker?.setLngLat([p.lon,p.lat]);
+    window.HealthGoMapExtras?.gps3D?.(p);
     if(Number.isFinite(heading))marker?.setRotation((heading-(Number(gl.getBearing?.())||0)+360)%360);
     if(Date.now()-lastView>1050){
      lastView=Date.now();
