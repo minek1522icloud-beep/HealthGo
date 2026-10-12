@@ -76,7 +76,7 @@
  }
  const pointLatLon=x=>({lat:Number(x?.latitude),lon:Number(x?.longitude)});
  let active=false,following=true,geometry=[],mapRef=null;
- let arrow=null,remainingLayer=null,passedLayer=null;
+ let arrow=null,remainingLayer=null,passedLayer=null,visual=null;
  let previous=null,direction={degrees:null,source:'unknown'},displayHeading=null;
  let latestPoint=null,lastFrameAt=0,lastCameraPoint=null,lastProjection=null,lastAlong=0;
  const getMap=()=>typeof healthGoMap==='undefined'?null:healthGoMap;
@@ -121,15 +121,23 @@
       iconSize:[36,40],iconAnchor:[18,20]}),
      interactive:false,keyboard:false,zIndexOffset:9000
     }).addTo(m);
-   }else arrow.setLatLng([point.lat,point.lon]);
+    // Between real fixes interpolate only the visual marker, never the data
+    // used for OSRM progress, speed, statistics or geolocation rewards.
+    visual=window.HealthGoGpsVisual?.create?.(shown=>{
+     if(arrow)arrow.setLatLng([shown.lat,shown.lon]);
+    },{maxGap:85})||null;
+   }
+   if(!visual?.fix?.(point,Number(point.accuracy)||15))
+    arrow.setLatLng([point.lat,point.lon]);
    paintHeading();
   }catch(_){
    // If Leaflet is unavailable, never block turn-by-turn or GPS updates.
    if(arrow)try{m.removeLayer?.(arrow)}catch(_){}
-   arrow=null;
+   visual?.stop?.();visual=null;arrow=null;
   }
  }
  function clearOverlay(){
+  visual?.stop?.();visual=null;
   if(mapRef){
    for(const layer of [remainingLayer,passedLayer,arrow]){
     if(layer)try{mapRef.removeLayer?.(layer)}catch(_){}
@@ -173,8 +181,8 @@
   if(!active||!following)return false;
   const m=getMap();if(!m?.setView)return false;
   const now=Date.now();
-  if(!immediate&&now-lastFrameAt<800)return false;
-  if(!immediate&&lastCameraPoint&&meters(lastCameraPoint,point)<3)return false;
+  if(!immediate&&now-lastFrameAt<380)return false;
+  if(!immediate&&lastCameraPoint&&meters(lastCameraPoint,point)<1.5)return false;
   lastFrameAt=now;
   const zoom=Math.max(16,Math.min(17.5,Number(m.getZoom?.())||17));
   let center=[point.lat,point.lon];
@@ -190,7 +198,9 @@
   lastCameraPoint=point;
   try{
    const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-   m.setView(center,zoom,{animate:!immediate&&!far&&!reduced,pan:{duration:.75}});
+   if(typeof m.panTo==='function'&&!immediate&&!far&&!reduced)
+    m.panTo(center,{animate:true,duration:.58,noMoveStart:true});
+   else m.setView(center,zoom,{animate:!immediate&&!far&&!reduced,pan:{duration:.58}});
    return true;
   }catch(_){return false;}
  }
@@ -239,7 +249,7 @@
   }
   latestPoint=p;
   if(!remainingLayer)drawRoute();
-  paintPosition(p);
+  paintPosition({...p,accuracy});
   if(projected)redrawProgress(projected);
   moveCamera(p,!lastCameraPoint);
   return true;
