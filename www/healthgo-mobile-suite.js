@@ -202,26 +202,20 @@ function renderPrivacy(){
 }
 
 async function renderSecurity(){
- const body=ensureSection('settingsSecurityPro','Ochrona konta','Logowanie dwuetapowe konfigurujesz tutaj — HealthGo nie proponuje go automatycznie po zalogowaniu.','Ochrona konta');
- if(!body)return;body.replaceChildren();
- const session=Services.state.session||{},providers=(session.providers||[]).map(function(x){return String(x).replace('.com','');}).join(', ')||'e-mail';
- const grid=el('div','hg-mobile-grid'),a=el('div','hg-mobile-card'),b=el('div','hg-mobile-card');
- a.append(el('p','','Metoda logowania'),el('div','hg-mobile-kpi',providers));
- b.append(el('p','','2FA'),el('div','hg-mobile-kpi','Sprawdzam…'));grid.append(a,b);body.appendChild(grid);
- const api=window.HealthGoMFASettings;
- if(!api){b.querySelector('.hg-mobile-kpi').textContent='Niedostępne';return;}
- try{
-  const st=await api.status();if(!document.body.contains(body))return;
-  b.querySelector('.hg-mobile-kpi').textContent=st.enabled?'Włączone':'Wyłączone';
-  b.appendChild(el('div','hg-mobile-sub',st.enabled?st.count+' aktywny czynnik TOTP':'Brak skonfigurowanego TOTP'));
-  const actions=el('div','hg-mobile-actions');
-  if(st.enabled){
-   actions.append(button('Wyłącz 2FA',async function(){if(!confirm('Wyłączyć logowanie dwuetapowe dla tego konta?'))return;await api.disable();await renderSecurity();},true));
-  }else{
-   actions.append(button('Włącz 2FA',async function(){const ok=await api.enable();if(ok)await renderSecurity();},false));
-  }
-  body.appendChild(actions);
- }catch(_){b.querySelector('.hg-mobile-kpi').textContent='Błąd odczytu';}
+ const body=ensureSection('settingsSecurityPro','Ochrona konta',
+  'Bezpieczeństwo logowania i prywatność w jednym miejscu.','Ochrona konta');
+ if(!body)return;
+ body.replaceChildren();
+ const session=Services.state.session||{};
+ const provider=(session.providers||[]).map(x=>String(x).replace('.com','')).join(', ')||'e-mail';
+ const grid=el('div','hg-mobile-grid'),method=el('div','hg-mobile-card'),protection=el('div','hg-mobile-card');
+ method.append(el('p','','Metoda logowania'),el('div','hg-mobile-kpi',provider));
+ protection.append(el('p','','Ochrona sesji'),el('div','hg-mobile-kpi','Aktywna'));
+ grid.append(method,protection);body.appendChild(grid);
+ body.appendChild(el('p','hg-mobile-note',
+  'Ustawienia dodatkowego uwierzytelniania zostały wycofane z interfejsu HealthGo. '+
+  'Jeśli konto jest już chronione dodatkowym kodem, wymagana weryfikacja przy logowaniu pozostaje aktywna. '+
+  'Nie wyłączamy istniejących zabezpieczeń bez potwierdzenia właściciela konta.'));
 }
 
 function renderAppearance(){
@@ -333,7 +327,7 @@ function updateProfileIcon(){
 function renderAll(){
  if(!uid())return;
  if(currentUid!==uid()){currentUid=uid();loadSuite();}
- ensureSection('settingsSecurityPro','Ochrona konta','Logowanie dwuetapowe konfigurujesz tutaj.','Ochrona konta');
+ ensureSection('settingsSecurityPro','Ochrona konta','Metoda logowania i ochrona sesji.','Ochrona konta');
  renderChildAccount();renderGoals();renderNotifications();renderPrivacy();renderAppearance();renderEmergency();renderOffline();renderAISettings();renderMore();renderSecurity();renderHome();setupMobileNav();updateProfileIcon();
 }
 function scheduleRender(){
