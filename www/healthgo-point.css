@@ -71,3 +71,40 @@
 .hpt-start-links button>b{color:#b1f7cd;font-size:18px}
 .hpt-start-links button:focus-visible{outline:3px solid #b4ffda;outline-offset:2px}
 @media(max-width:630px){.hpt-start-links{grid-template-columns:1fr;gap:9px}.hpt-start-links>button{min-height:75px;padding:12px}}
+
+/* Treasure Hunt 2.0 — world map on iPhone, without synthetic sites or GPS polling. */
+#hgTreasureCenter .hpt-world-wrap{
+ margin:14px 0 16px;border:1px solid #34775b;border-radius:19px;
+ background:#09281e;overflow:hidden;min-width:0
+}
+#hgTreasureCenter .hpt-world-map{
+ width:100%;height:clamp(300px,52dvh,530px);min-height:300px;
+ background:#112f27;touch-action:pan-x pan-y
+}
+#hgTreasureCenter .hpt-map-caption{
+ margin:0;padding:10px 13px;font-size:11px;line-height:1.5;color:#cbebd7
+}
+#hgTreasureCenter .hpt-explore-actions [aria-pressed="true"]{
+ border-color:#aaf4cc;background:#276d50;color:#fff
+}
+#hgTreasureCenter .hpt-explore-actions button:disabled{
+ opacity:.55;cursor:not-allowed
+}
+#hgTreasureCenter .leaflet-container{font:inherit;z-index:1}
+#hgTreasureCenter .leaflet-popup-content{color:#17392b;min-width:140px}
+#hgTreasureCenter .leaflet-popup-content strong{font-size:14px;color:#103727}
+#hgTreasureCenter .leaflet-popup-content p{font-size:12px;line-height:1.45}
+#hgTreasureCenter .leaflet-popup-content button{
+ border:0;border-radius:9px;min-height:38px;padding:8px 10px;
+ color:#063022;background:#8cf1b7;font-weight:800
+}
+#hgTreasureCenter #hptTreasureNotice[hidden]{display:none!important}
+#hgPointCenter .hpt-empty b{display:block;color:#e4ffed;font-size:15px;margin-bottom:8px}
+@media(max-width:440px){
+ #hgTreasureCenter .hpt-world-map{height:46dvh;min-height:280px}
+ #hgTreasureCenter .hpt-explore-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ #hgTreasureCenter .hpt-explore-actions button{min-width:0;font-size:12px;padding:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ #hgTreasureCenter *,#hgPointCenter *{animation:none!important;transition:none!important}
+}
