@@ -19,8 +19,8 @@ test('all seven feature panels are installed in existing HealthGo sections witho
  const ids=['hfcChallenges','hfcActivity','hfcDevices','hfcFamily','hfcTreasure','hfcPoint','hfcSettings'];
  const pages=['challenges','activity','devices','family','explore','points','settings'];
  for(let i=0;i<ids.length;i++)assert.match(script,new RegExp("mount\\('"+pages[i]+"','"+ids[i]+"'"));
- assert.match(html,/healthgo-feature-center\.js\?v=2/);
- assert.match(html,/healthgo-feature-center\.css\?v=1/);
+ assert.match(html,/healthgo-feature-center\.js\?v=3/);
+ assert.match(html,/healthgo-feature-center\.css\?v=2/);
  assert.match(html,/healthgo-point\.js\?v=2/);
  assert.match(html,/healthgo-v2-ui\.js/);
 });
@@ -101,4 +101,25 @@ test('visuals are responsive, polished and retain high contrast',()=>{
  assert.match(styles,/\.hfc-week-chart/);
  assert.match(styles,/\.hfc-setting-link/);
  assert.match(styles,/#hfcTreasureMap\[hidden\]/);
+});
+
+test('seven sections have functional controls connected to real HealthGo systems',()=>{
+ assert.match(script,/function missionBoard\(root,defs\)/);
+ assert.match(script,/Engine\.viewChallenges\(engine/);
+ assert.match(script,/questFilter==='completed'/);
+ assert.match(script,/item\.xpReward/);
+ assert.match(script,/item\.source/);
+ assert.match(script,/activityMetric==='steps'/);
+ assert.match(script,/days\.map\(x=>x\[activityMetric\]/);
+ assert.match(script,/value===null\?'0%'/);
+ assert.match(script,/HealthGoDevices\?\.connect/);
+ assert.match(script,/Safari na iPhonie nie udostępnia Web Bluetooth/);
+ assert.match(script,/if\(linked&&Array\.isArray\(f\.members\)/);
+ assert.match(script,/w\.HealthGoPoints\?\.refresh\?\./);
+ assert.match(script,/w\.healthGoCheckMobileUpdate/);
+ assert.match(styles,/\.hfc-mission-summary/);
+ assert.match(styles,/\.hfc-filter-tabs/);
+ assert.match(styles,/\.hfc-family-person/);
+ assert.match(styles,/\.hfc-device-explainer/);
+ assert.doesNotMatch(script,/Math\.random|fakeStep|fakeXp|faker|mockMeasurement/i);
 });
