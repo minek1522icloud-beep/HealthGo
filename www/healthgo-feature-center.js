@@ -337,19 +337,19 @@ function settings(){
  header(root,'BEZPIECZEŃSTWO · KONTO','Szybkie ustawienia',
   'Wszystkie ustawienia w jednym miejscu, bez konieczności szukania ich w długiej liście.');
  const links=[
-  ['🛡️ Prywatność','Lokalizacja, uprawnienia i synchronizacja','settingsPrivacyPro'],
-  ['🔔 Powiadomienia','Kontrola przypomnień','settingsNotificationsPro'],
-  ['🎨 Wygląd','Motyw i wygląd aplikacji','settingsAppearance'],
-  ['🔐 Bezpieczeństwo','Logowanie i weryfikacja konta','settingsSecurityPro'],
-  ['👨‍👩‍👧 Rodzina','Dostęp bliskich do danych','family']
+  ['🛡️','Prywatność','Lokalizacja, uprawnienia i synchronizacja','settingsPrivacyPro'],
+  ['🔔','Powiadomienia','Kontrola przypomnień','settingsNotificationsPro'],
+  ['🎨','Wygląd','Motyw i wygląd aplikacji','settingsAppearance'],
+  ['🔐','Bezpieczeństwo','Logowanie i weryfikacja konta','settingsSecurityPro'],
+  ['👨‍👩‍👧','Rodzina','Dostęp bliskich do danych','family']
  ];
  const nav=el('div','hfc-settings-links');
- for(const [icon,title,target] of links){
+ for(const [icon,title,description,target] of links){
   const row=action('',()=>jump(target));
   row.classList.add('hfc-setting-link');
   row.replaceChildren(el('span','hfc-settings-icon',icon));
   const copy=el('span','hfc-setting-copy');copy.append(
-   el('strong','',title),el('small','',target==='family'?'Zarządzanie uprawnieniami':links.find(x=>x[0]===icon)?.[1]||''));
+   el('strong','',title),el('small','',description));
   row.append(copy,el('span','hfc-chevron','›'));nav.appendChild(row);
  }
  root.appendChild(nav);
