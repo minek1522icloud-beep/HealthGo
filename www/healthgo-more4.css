@@ -138,3 +138,8 @@ body[data-hg4-accent="violet"]{--hg4-accent:#c4a7ff;--hg4-accent-dark:#48356a}
  .hg4-device-row{align-items:flex-start;flex-wrap:wrap}
  .hg4-stat-toolbar .hg4-button{flex:1 1 auto}
 }
+
+.hg4-habit-summary{display:inline-flex;align-items:center;margin:0 0 12px;padding:7px 11px;border-radius:99px;
+ background:#123d2c;border:1px solid #4a8867;color:#d6ffe7;font-size:12px;font-weight:800}
+#hg4Habits .hg4-toggle-list{margin:4px 0 10px}
+#hg4Habits .hg4-toggle{min-height:49px}
