@@ -34,7 +34,7 @@ test('scripts compile, and live GPS HUD mounts the expected controls without rep
   'hgNavAdvancedTools','hgNavMinimal','hgNavWeatherRisk',
   'hgNavArrivalSummary','hgNavTripWeatherStatus','hgNavCompassBearing'])
   assert.match(html,new RegExp('id="'+id+'"'));
- assert.match(html,/healthgo-nav-advanced\.js\?v=4/);
+ assert.match(html,/healthgo-nav-advanced\.js\?v=5/);
  assert.match(html,/healthgo-nav-advanced\.css\?v=3/);
  assert.match(pro,/HealthGoNavAdvanced\?\.gps\?\./);
  assert.match(pro,/HealthGoNavAdvanced\?\.start\?\./);

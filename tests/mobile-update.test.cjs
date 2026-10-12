@@ -46,36 +46,37 @@ test('deployed build is not refreshed unnecessarily',async()=>{
  assert.match(x.status.textContent,/Aktualna wersja/);
 });
 
-test('new build triggers service worker update with cache-busted URL',async()=>{
+test('new build is announced and never reloads an actively used iPhone PWA',async()=>{
  const x=harness(V2,V1);
  await x.context.window.healthGoCheckMobileUpdate();
- assert.equal(x.history.length,1);
- assert.match(x.history[0],/hg_build=bbbbbbbbbbbb/);
- assert.deepEqual(x.updates,['update']);
- assert.equal(x.messages[0].type,'SKIP_WAITING');
+ assert.equal(x.history.length,0);
+ assert.equal(x.updates.length,0);
+ assert.match(x.status.textContent,/Nowa wersja/);
 });
-
-test('stale shell cannot create an infinite automatic refresh loop',async()=>{
+test('repeated automatic checks never trigger reload loops or extra worker activation',async()=>{
  const x=harness(V2,V1);
  await x.context.window.healthGoCheckMobileUpdate();
  await x.context.window.healthGoCheckMobileUpdate();
- assert.equal(x.history.length,1);
- assert.match(x.status.textContent,/Zamknij HealthGo/);
+ assert.equal(x.history.length,0);
+ assert.equal(x.messages.length,0);
+ assert.match(x.status.textContent,/Ustawień/);
 });
-
 test('login callbacks cannot lose auth code during automatic update',async()=>{
  const x=harness(V2,V1,'?code=example');
  await x.context.window.healthGoCheckMobileUpdate();
  assert.equal(x.history.length,0);
 });
 
-test('manual retry can override automatic cooldown',async()=>{
+test('the Settings update button explicitly installs a new build',async()=>{
  const x=harness(V2,V1);
  await x.context.window.healthGoCheckMobileUpdate();
+ assert.equal(x.history.length,0);
  await x.context.window.healthGoCheckMobileUpdate(true);
- assert.equal(x.history.length,2);
+ assert.equal(x.history.length,1);
+ assert.match(x.history[0],/hg_build=bbbbbbbbbbbb/);
+ assert.deepEqual(x.updates,['update']);
+ assert.equal(x.messages[0].type,'SKIP_WAITING');
 });
-
 test('deployment stamps real commit into HTML and publishes matching version',()=>{
  const workflow=fs.readFileSync('.github/workflows/mobile-pages.yml','utf8');
  const html=fs.readFileSync('www/index.html','utf8');
@@ -90,19 +91,26 @@ test('deployment stamps real commit into HTML and publishes matching version',()
  assert.match(sw,/healthgo-pwa-v59-navigation-2d3d-20261011/);
 });
 
-test('home-screen shortcut updates are postponed while AI model downloads',async()=>{
+test('the installed PWA never interrupts AI downloads, GPS driving or a hidden tab',async()=>{
  const x=harness(V2,V1,'',true);
  await x.context.window.healthGoCheckMobileUpdate();
  assert.equal(x.history.length,0);
- assert.equal(x.updates.length,0);
  await x.context.healthGoActivateNewVersion(V2,true);
  assert.equal(x.history.length,0);
  assert.match(x.status.textContent,/poczeka na zakończenie pobierania AI/);
  x.context.window.HealthGoOfflineAI.busy=false;
- await x.context.window.healthGoCheckMobileUpdate();
+ x.context.window.HealthGoMapPro={isNavigating:()=>true};
+ await x.context.window.healthGoCheckMobileUpdate(true);
+ assert.equal(x.history.length,0);
+ assert.match(x.status.textContent,/zakończenie nawigacji/);
+ x.context.window.HealthGoMapPro.isNavigating=()=>false;
+ x.context.document.hidden=true;
+ await x.context.window.healthGoCheckMobileUpdate(true);
+ assert.equal(x.history.length,0);
+ x.context.document.hidden=false;
+ await x.context.window.healthGoCheckMobileUpdate(true);
  assert.equal(x.history.length,1);
 });
-
 test('PWA checks installed shortcut updates after initial paint, not during startup',()=>{
  const html=fs.readFileSync('www/index.html','utf8');
  assert.match(html,/setTimeout\(checkHealthGoMobileUpdate,12000\)/);
