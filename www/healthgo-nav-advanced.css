@@ -1,0 +1,213 @@
+/* HealthGo Navigation v6: compact fullscreen map, verified road HUD and accessibility.
+ * Loaded LAST to override historical phone/route shell CSS.
+ */
+html:has(body.hg-navigation-active),body.hg-navigation-active{overflow:hidden!important;overscroll-behavior:none!important}
+body.hg-navigation-active #map.page.active{
+ position:fixed!important;inset:0!important;margin:0!important;padding:0!important;
+ width:100vw!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;
+ z-index:20000!important;background:#dce6de!important;border-radius:0!important;
+ overflow:hidden!important;transform:none!important;animation:none!important
+}
+body.hg-navigation-active #map #mapWorkspace.map-pro-navigating{
+ position:absolute!important;inset:0!important;
+ display:block!important;width:100%!important;height:100%!important;min-height:100%!important;
+ max-height:100%!important;overflow:hidden!important;margin:0!important;padding:0!important;
+ border-radius:0!important
+}
+body.hg-navigation-active #map .map-canvas-wrap{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ max-height:none!important;min-height:100%!important;overflow:hidden!important
+}
+body.hg-navigation-active #map #healthgoMap,
+body.hg-navigation-active #map #hgNavigationPerspective:not([hidden]){
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ min-height:100%!important;max-height:none!important;border:0!important
+}
+body.hg-navigation-active #map #hgProNavigation{
+ position:absolute!important;inset:0!important;z-index:25000!important;
+ width:100%!important;height:100%!important;pointer-events:none!important
+}
+/* The lower ETA information is a subtle strip over the map, NOT a big framed card. */
+body.hg-navigation-active #map #hgProNavigation .hg-drive-footer{
+ position:absolute!important;left:0!important;right:0!important;
+ bottom:0!important;width:100%!important;max-width:none!important;min-height:0!important;
+ padding:17px 15px calc(15px + env(safe-area-inset-bottom))!important;
+ margin:0!important;gap:7px!important;
+ background:linear-gradient(0deg,rgba(2,27,22,.96) 0%,rgba(4,38,29,.90) 65%,rgba(6,42,30,0) 100%)!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ color:#f1fff6!important;pointer-events:auto!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-metrics{
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,.9fr) minmax(0,1fr) 42px!important;
+ gap:10px!important;min-width:0!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-metric strong{
+ font-size:clamp(17px,5vw,25px)!important;color:#f3fff9!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-metric span{
+ color:#c0e2d0!important;font-size:11px!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-exit{
+ background:rgba(99,176,142,.25)!important;color:#effff4!important;
+ border:1px solid #72b99677!important;box-shadow:none!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-progress-block{gap:5px!important}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-progress-track{
+ width:100%!important;max-width:100%!important;overflow:hidden!important;
+ height:5px!important;margin:3px 0!important;
+ background:rgba(137,219,175,.23)!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-progress-fill{
+ background:#4ce6b2!important;transition:width .5s ease!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-progress-arrow{display:none!important}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-footer-end #hgProNavDestination{
+ color:#bde6d0!important;font-size:11px!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-options summary{
+ background:#1b5643!important;color:#ddffef!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-options[open] .hg-pro-nav-buttons{
+ background:#092d20!important;border:1px solid #468767!important;max-height:58dvh!important;overflow:auto!important;
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-options .hg-pro-nav-buttons button{
+ color:#e9fff3!important;background:#124534!important;border:1px solid #477a60!important
+}
+/* Top turn: preserve user's successful turn-by-turn view and route arrow. */
+body.hg-navigation-active #map #hgProNavigation .hg-drive-turn{
+ max-height:min(20dvh,175px)!important;
+ background:linear-gradient(115deg,#075c48,#053c31)!important;
+ border:1px solid #4bcd9b!important;box-shadow:0 11px 30px #012c2360!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-speed{
+ left:12px!important;bottom:calc(140px + env(safe-area-inset-bottom))!important;
+ background:#0d503d!important;border-color:#68d8a6!important;color:#effff5!important
+}
+body.hg-navigation-active #map #hgProNavigation .hg-drive-speed strong,
+body.hg-navigation-active #map #hgProNavigation .hg-drive-speed small{color:#ecfff5!important}
+body.hg-navigation-active #map .leaflet-control-attribution{
+ margin-bottom:calc(138px + env(safe-area-inset-bottom))!important;
+ background:#edf7f0e6!important
+}
+/* First priorities: lane assistant, trustworthy current road, optional speed limit. */
+#map #hgNavLaneAssistant[hidden],#map #hgNavStreetChip[hidden],
+#map #hgNavWeatherRisk[hidden],#map #hgNavAdvancedTools[hidden],
+#map #hgNavArrivalSummary[hidden]{display:none!important}
+body.hg-navigation-active #map #hgNavLaneAssistant{
+ position:absolute;top:calc(142px + env(safe-area-inset-top));left:12px;
+ width:min(270px,58vw);padding:10px 12px;z-index:26000;pointer-events:none;
+ background:rgba(4,38,29,.93);border-radius:13px;border:1px solid #2fbd88;
+ box-shadow:0 5px 18px #00170d77;color:#eafff1
+}
+body.hg-navigation-active #map #hgNavLaneAssistant small{
+ display:block;font-size:10px;line-height:1.35;color:#b8dfc8;white-space:normal;margin-bottom:7px
+}
+body.hg-navigation-active #map .hgna-lanes{display:flex;gap:4px;justify-content:space-between}
+body.hg-navigation-active #map .hgna-lane{
+ display:flex;justify-content:center;align-items:center;flex:1;min-width:0;min-height:29px;
+ border-radius:7px;color:#a1b5a8;background:#194436;border:1px solid #416957;font-size:21px
+}
+body.hg-navigation-active #map .hgna-lane.valid{
+ background:#81f0b2;color:#083c25;border:1px solid #a7ffcf;font-weight:900
+}
+body.hg-navigation-active #map #hgNavStreetChip{
+ position:absolute;bottom:calc(158px + env(safe-area-inset-bottom));
+ left:84px;right:76px;min-width:0;z-index:26000;pointer-events:none;
+ border-radius:11px;padding:8px 11px;
+ background:rgba(5,48,35,.85);border:1px solid #91f3c361;color:#e6fff3
+}
+body.hg-navigation-active #map #hgNavStreetChip .hgna-road-line{display:flex;gap:6px;align-items:center;min-width:0}
+body.hg-navigation-active #map #hgNavStreetChip small{flex:0 0 auto;font-size:10px;color:#91e4b8}
+body.hg-navigation-active #map #hgNavStreetChip strong{
+ min-width:0;font-size:12px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+body.hg-navigation-active #map #hgNavLimitBadge{
+ position:absolute;left:12px;bottom:calc(229px + env(safe-area-inset-bottom));
+ width:62px;min-height:67px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ padding:7px 3px;background:rgba(255,255,255,.96);color:#203629;border-radius:15px;
+ border:1px solid #6faa8b;z-index:26000;box-shadow:0 4px 12px #003c2160;
+ pointer-events:none
+}
+body.hg-navigation-active #map #hgNavLimitBadge .hgna-limit-circle{
+ display:flex;align-items:center;justify-content:center;width:40px;height:40px;
+ border:5px solid #ed524f;border-radius:50%;font-size:17px;font-weight:900;color:#25382d;line-height:1
+}
+body.hg-navigation-active #map #hgNavLimitBadge small{
+ font-size:8px;line-height:1.3;text-align:center;margin-top:2px;color:#597269
+}
+body.hg-navigation-active #map #hgNavAdvancedTools{
+ position:absolute;right:12px;top:calc(242px + env(safe-area-inset-top));
+ z-index:26000;display:flex;flex-direction:column;align-items:flex-end;gap:7px;
+ pointer-events:auto
+}
+body.hg-navigation-active #map #hgNavAdvancedTools button{
+ width:45px;height:45px;border-radius:14px;background:rgba(7,49,37,.96);
+ border:1px solid #6cbe98;color:#e1fff0;font-size:22px;
+ display:grid;place-items:center;cursor:pointer;touch-action:manipulation
+}
+body.hg-navigation-active #map #hgNavAdvancedTools button:focus-visible{
+ outline:3px solid #adffd3;outline-offset:2px
+}
+body.hg-navigation-active #map #hgNavAdvancedTools button small{font-size:10px}
+body.hg-navigation-active #map #hgNavWeatherRisk{
+ position:absolute;left:12px;right:75px;top:calc(262px + env(safe-area-inset-top));
+ padding:9px 11px;font-size:11px;line-height:1.5;border-radius:12px;z-index:26000;
+ background:rgba(78,53,17,.92);color:#fff0c8;border:1px solid #f7b95888;
+ pointer-events:none
+}
+body.hg-navigation-active #map #hgNavControlStatus:empty{display:none!important}
+body.hg-navigation-active #map #hgNavControlStatus{
+ max-width:290px;padding:7px 10px;border-radius:10px;color:#dbffef;background:#12382bcf;
+ font-size:11px;line-height:1.35;text-align:right
+}
+body.hg-navigation-active #map #hgProNavigation #hgNavLimitHint{
+ display:block!important;color:#a3e1be;font-size:10px;line-height:1.4
+}
+body.hg-navigation-active #map #hgNavCompactWeather{
+ position:absolute;right:122px;top:calc(146px + env(safe-area-inset-top));color:#ecfff4;
+ border-radius:10px;padding:6px 8px;background:#0b4435cf;font-size:12px;z-index:26000
+}
+/* Night mode dims map imagery, not HUD or route overlays. */
+body.hg-navigation-active #map #mapWorkspace.hg-nav-dark .maplibregl-canvas,
+body.hg-navigation-active #map #mapWorkspace.hg-nav-dark .leaflet-tile-pane{
+ filter:brightness(.70) saturate(.82)!important
+}
+/* Minimal mode keeps turn banner, progress, ETA and exit; hides optional indicators. */
+body.hg-navigation-active.hg-nav-minimal #map #hgNavLaneAssistant,
+body.hg-navigation-active.hg-nav-minimal #map #hgNavStreetChip,
+body.hg-navigation-active.hg-nav-minimal #map #hgNavLimitBadge,
+body.hg-navigation-active.hg-nav-minimal #map #hgNavAdvancedTools,
+body.hg-navigation-active.hg-nav-minimal #map #hgNavWeatherRisk,
+body.hg-navigation-active.hg-nav-minimal #map #hgLiveWeather,
+body.hg-navigation-active.hg-nav-minimal #map .hg-drive-speed{display:none!important}
+/* Arrival is only triggered after two accurate GPS fixes at the actual destination. */
+#hgNavArrivalSummary{position:fixed;inset:0;z-index:30000;display:grid;place-items:center;
+ background:rgba(2,20,15,.83);backdrop-filter:blur(5px);padding:18px}
+#hgNavArrivalSummary article{
+ width:min(400px,100%);border-radius:23px;border:1px solid #4ad197;
+ background:#0b3324;padding:24px;text-align:center;color:#eafff3;box-shadow:0 20px 60px #00140aa8
+}
+#hgNavArrivalSummary h2{color:#ecfff4;margin:7px 0 10px}
+#hgNavArrivalSummary p{font-size:13px;line-height:1.5;color:#bddfc9}
+#hgNavArrivalSummary .hgna-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0}
+#hgNavArrivalSummary .hgna-summary-grid span{border-radius:12px;background:#154b36;padding:13px 8px;font-size:12px}
+#hgNavArrivalSummary .hgna-summary-grid strong{display:block;font-size:20px;color:#9af5be}
+#hgNavArrivalSummary button{min-height:46px;border:0;border-radius:12px;background:#99f0c0;color:#073c24;font-weight:900;width:100%}
+/* Avoid overlapping controls at short heights: secondary tools accessible via Options. */
+@media(max-height:730px){
+ body.hg-navigation-active #map #hgNavAdvancedTools{top:calc(223px + env(safe-area-inset-top))}
+ body.hg-navigation-active #map #hgNavLaneAssistant{top:calc(129px + env(safe-area-inset-top))}
+ body.hg-navigation-active #map #hgNavLimitBadge{bottom:calc(201px + env(safe-area-inset-bottom))}
+ body.hg-navigation-active #map #hgNavStreetChip{bottom:calc(145px + env(safe-area-inset-bottom))}
+}
+@media(max-width:390px){
+ body.hg-navigation-active #map #hgNavStreetChip{left:75px;right:66px;padding:6px 8px}
+ body.hg-navigation-active #map #hgNavAdvancedTools{right:8px}
+ body.hg-navigation-active #map #hgNavAdvancedTools button{height:42px;width:42px}
+ body.hg-navigation-active #map #hgNavLaneAssistant{left:8px}
+ body.hg-navigation-active #map #hgProNavigation .hg-drive-footer{padding-left:10px!important;padding-right:10px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ body.hg-navigation-active #map #hgProNavigation .hg-drive-progress-fill{transition:none!important}
+}
