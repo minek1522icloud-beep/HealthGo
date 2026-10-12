@@ -1,0 +1,47 @@
+/* HealthGo GPS Smooth UI: small trustworthy GPS gauge inspired by road navigators.
+ * The speed figure is measured by iOS GPS, the limit is shown ONLY after
+ * matching an OSM road and only if the user explicitly enabled lookup.
+ */
+#map #hgNavLimitBadge{display:none!important} /* retired duplicate limit box */
+body.hg-navigation-active #map #hgProNavigation .hg-drive-speed{
+ display:flex!important;position:absolute!important;
+ left:12px!important;bottom:calc(146px + env(safe-area-inset-bottom))!important;
+ width:97px!important;min-width:97px!important;height:103px!important;
+ padding:7px!important;gap:0!important;
+ align-items:center!important;justify-content:center!important;
+ border:1px solid #386e59!important;border-radius:19px!important;
+ background:rgba(6,28,23,.97)!important;color:#ecfff6!important;
+ box-shadow:0 7px 23px #001a134f!important;
+ pointer-events:none!important;overflow:visible!important
+}
+body.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge{
+ width:82px;height:82px;position:relative;border-radius:50%;
+ display:flex;flex-direction:column;justify-content:center;align-items:center;
+ background:conic-gradient(from 210deg,#4edb75 0deg calc(var(--hg-speed-ratio,0)*240deg),#305248 0deg 240deg,transparent 240deg 360deg);
+}
+body.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge::before{
+ content:'';position:absolute;inset:8px;border-radius:50%;background:#091e1b;z-index:0
+}
+body.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge strong{
+ position:relative;z-index:1;color:#f1fff6!important;
+ font-size:clamp(23px,6vw,30px)!important;font-weight:900!important;letter-spacing:-.06em!important;
+ font-variant-numeric:tabular-nums!important;line-height:1.1!important
+}
+body.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge small{
+ position:relative;z-index:1;color:#accdbc!important;
+ font-size:9px!important;letter-spacing:.05em!important;line-height:1.2
+}
+body.hg-navigation-active #map #hgNavGaugeLimit:not([hidden]){
+ position:absolute;top:-8px;right:-9px;display:grid;place-items:center;
+ width:39px;height:39px;min-width:39px;border:4px solid #e74742;
+ border-radius:50%;background:white;color:#12231c!important;font-size:16px;font-weight:900;
+ box-shadow:0 3px 9px #0323186b
+}
+body.hg-navigation-active #map #hgNavGaugeLimit[hidden]{display:none!important}
+body.hg-navigation-active.hg-nav-minimal #map .hg-drive-speed{display:none!important}
+@media(max-width:375px){
+ body.hg-navigation-active #map #hgProNavigation .hg-drive-speed{
+ left:8px!important;width:88px!important;min-width:88px!important;height:95px!important
+ }
+ body.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge{width:77px;height:77px}
+}
