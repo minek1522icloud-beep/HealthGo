@@ -7,7 +7,7 @@
  let voice=false,follow=true,night=false,lastSpeech='',lastCamera=0,position=null;
  let furthestProgress=0;
  let offRouteTicks=0,lastReroute=0,rerouting=false,rerouteCtl=null,voiceStep=-1,voiceStage='';
- let arrivalCount=0,arrivalTimer=null;
+ let arrivalCount=0,arrivalTimer=null,lastValidGpsAt=0,resumeWatchTimer=null;
  const text=(id,value)=>{const n=node(id);if(n)n.textContent=String(value)};
  const show=(id,visible)=>{const n=node(id);if(n)n.hidden=!visible};
  function gpsAlert(message){
@@ -165,6 +165,7 @@
    gpsAlert('Słaby lub niedostępny sygnał GPS — czekam na dokładniejszy odczyt.');
    return;
   }
+  lastValidGpsAt=Date.now();
   gpsAlert(c.accuracy>80?'Dokładność GPS jest ograniczona. Sprawdź lokalizację przed jazdą.':'');
   position=point;
   if(Array.isArray(route.via)&&c.accuracy<=35&&meters(point,{lat:route.via[1],lon:route.via[0]})<60)route.via=null;
@@ -273,11 +274,39 @@
   node('mapWorkspace')?.classList?.toggle('hg-nav-dark',night);
  }
  let restoreMapLayer=null;
+ function armGpsWatcher(){
+  if(!active||!navigator.geolocation?.watchPosition)return false;
+  if(watchId!==null)try{navigator.geolocation.clearWatch(watchId)}catch(_){}
+  watchId=null;
+  try{
+   watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
+    const message=err?.code===1?'Telefon odmówił lokalizacji. Włącz GPS w ustawieniach iPhone’a.':
+     'Sygnał GPS chwilowo niedostępny. Nawigacja nie została zakończona.';
+    text('hgProNavNext',message);gpsAlert(message);
+    if(err?.code===1){
+     stopNavigation();
+     window.HealthGoMapV2?.toggle?.('route');
+     const btn=node('hgGpsConsentAction');if(btn)btn.hidden=false;
+     text('mapV2RouteOutput',message);
+    }
+   },{enableHighAccuracy:true,maximumAge:1000,timeout:17000});
+   return true;
+  }catch(_){watchId=null;return false}
+ }
+ function resumeGpsAfterForeground(){
+  if(!active||document.hidden)return;
+  map()?.invalidateSize?.({pan:false});
+  // iOS may suspend geolocation while FaceTime or another app is foreground.
+  // Re-arm a stale watch once when HealthGo comes back; do not log out or reset the route.
+  if(Date.now()-lastValidGpsAt<14000)return;
+  gpsAlert('Czekam na aktualny GPS po powrocie do HealthGo…');
+  armGpsWatcher();
+ }
  function startNavigation(initialFix){
   if(active)return true;
   if(!route?.steps?.length){text('mapV2RouteOutput','Nie udało się pobrać skrętów trasy. Wyznacz trasę ponownie.');return false}
   if(!navigator.geolocation){text('mapV2RouteOutput','GPS niedostępny. Możesz użyć podglądu trasy z wpisanego adresu.');return false}
-  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';arrivalCount=0;
+  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';arrivalCount=0;lastValidGpsAt=Date.now();
   setProgress(0);
   const options=node('hgProNavOptions');if(options)options.open=false;
   // During driving show a legible 2D street map instead of Esri satellite
@@ -313,18 +342,8 @@
    map()?.invalidateSize?.({pan:false});
    if(active&&follow)window.HealthGoNavigationFollow?.setFollowing?.(true);
   },110);
-  try{
-   watchId=navigator.geolocation.watchPosition(positionUpdate,err=>{
-    const message=err?.code===1?'Telefon nie zezwolił na GPS. Sprawdź uprawnienia lokalizacji w ustawieniach iPhone’a.':'Utracono GPS. Spróbuj na otwartej przestrzeni.';
-    text('hgProNavNext',message);text('hgProNavStreet','GPS niedostępny');gpsAlert(message);
-    if(err?.code===1){
-     stopNavigation();
-     window.HealthGoMapV2?.toggle?.('route');
-     const btn=node('hgGpsConsentAction');if(btn)btn.hidden=false;
-     text('mapV2RouteOutput',message);
-    }
-   },{enableHighAccuracy:true,maximumAge:5000,timeout:17000});
-  }catch(_){stopNavigation();return false}
+  if(!armGpsWatcher()){stopNavigation();return false}
+
   // Immediate turn card and location from the authentic GPS fix obtained
   // when the user chose the destination, while continuous watch starts.
   const lat=Number(initialFix?.lat),lon=Number(initialFix?.lon),accuracy=Number(initialFix?.accuracy);
@@ -335,6 +354,7 @@
   return true;
  }
  function stopNavigation(){
+  if(resumeWatchTimer){clearTimeout(resumeWatchTimer);resumeWatchTimer=null;}
   window.HealthGoNavAdvanced?.stop?.();
   active=false;
   if(arrivalTimer){window.clearTimeout?.(arrivalTimer);arrivalTimer=null;}
@@ -403,8 +423,14 @@
  // in HTML but cannot be shown until startNavigation explicitly opens it.
  show('hgProNavigation',false);
  document.body?.classList?.remove('hg-navigation-active');
- document.addEventListener('visibilitychange',()=>{if(document.hidden)stopNavigation()});
- window.addEventListener('pagehide',stopNavigation);
+ document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&active){
+   if(resumeWatchTimer)clearTimeout(resumeWatchTimer);
+   resumeWatchTimer=setTimeout(()=>{resumeWatchTimer=null;resumeGpsAfterForeground()},950);
+  }
+ });
+ window.addEventListener('pageshow',event=>{if(event.persisted&&active)resumeGpsAfterForeground()});
+ // BFCache/page backgrounding does not sign out or end an active GPS route.
  window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,isNavigating,toggleVoice,toggleFollow,resumeFollow,
   toggleNavigationTheme,repeatInstruction,leaveMap,routeRemaining,instruction,maneuverInfo,navigationProgress,nearestRouteDistance};
 })();
