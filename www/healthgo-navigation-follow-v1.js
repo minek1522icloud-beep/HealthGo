@@ -179,6 +179,9 @@
  }
  function moveCamera(point,immediate=false){
   if(!active||!following)return false;
+  // MapLibre handles camera in 3D. Do not animate a second, hidden Leaflet map
+  // simultaneously on iPhone: it wastes GPU time and causes visible stutter.
+  if(document.body?.classList?.contains?.('hg-live-perspective'))return false;
   const m=getMap();if(!m?.setView)return false;
   const now=Date.now();
   if(!immediate&&now-lastFrameAt<380)return false;
