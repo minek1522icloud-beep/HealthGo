@@ -6,7 +6,7 @@
  let route=null,remaining=[],watchId=null,active=false,stepIndex=0,arrow=null;
  let voice=false,follow=true,night=false,lastSpeech='',lastCamera=0,position=null;
  let furthestProgress=0;
- let offRouteTicks=0,lastReroute=0,rerouting=false,rerouteCtl=null,voiceStep=-1,voiceStage='';
+ let offRouteTicks=0,offRoutePrev=null,lastReroute=0,rerouting=false,rerouteCtl=null,voiceStep=-1,voiceStage='';
  let arrivalCount=0,arrivalTimer=null,lastValidGpsAt=0,resumeWatchTimer=null;
  const text=(id,value)=>{const n=node(id);if(n)n.textContent=String(value)};
  const show=(id,visible)=>{const n=node(id);if(n)n.hidden=!visible};
@@ -90,7 +90,7 @@
   route={geometry:coords,steps,meters:Number(item.distance)||0,seconds:Number(item.duration)||0,
    via:Array.isArray(item.hgVia)&&item.hgVia.length===2?item.hgVia.slice():null,
    destination:String(destination||'Cel podróży').slice(0,100)};
-  suffix(coords);stepIndex=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';setProgress(0);
+  suffix(coords);stepIndex=0;furthestProgress=0;offRouteTicks=0;offRoutePrev=null;voiceStep=-1;voiceStage='';setProgress(0);
   show('hgNavStartButton',steps.length>0);
   text('hgProNavDestination',route.destination);
   window.HealthGoNavAdvanced?.route?.(route);
@@ -143,13 +143,13 @@
    const steps=(updated.legs||[]).flatMap(l=>Array.isArray(l.steps)?l.steps:[]);
    if(!steps.length)return false;
    route={geometry,steps,meters:Number(updated.distance)||0,seconds:Number(updated.duration)||0,destination:current,via};
-   suffix(geometry);stepIndex=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';setProgress(0);
+   suffix(geometry);stepIndex=0;furthestProgress=0;offRouteTicks=0;offRoutePrev=null;voiceStep=-1;voiceStage='';setProgress(0);
    window.HealthGoMapV2?.updateLiveRoute?.(updated);
    window.HealthGoNavigationFollow?.setRoute?.(updated);
    window.HealthGoNavigationLive?.setRoute?.(updated);
    window.HealthGoNavigationMode?.setRoute?.(updated);
    window.HealthGoNavAdvanced?.route?.(route);
-   speak('Trasa została przeliczona','route-recomputed-'+lastReroute);
+   speak('Trasa została zmieniona. Prowadzę nową drogą.','route-recomputed-'+lastReroute);
    text('hgProNavNext','Zaktualizowano trasę na podstawie GPS');
    return true;
   }catch(_){if(active)text('hgProNavNext','Nie udało się przeliczyć. Pozostaje poprzednia trasa.');return false}
@@ -209,13 +209,24 @@
   window.HealthGoNavigationMode?.rememberFix?.(pos);
   if(!followed)placeArrow(point,c.heading==null?NaN:Number(c.heading));
   window.HealthGoNavigationLive?.update?.(pos);
-  if(Number(c.accuracy)<35&&Number(c.speed)>=0.8&&route?.geometry?.length>1){
+  // iOS can report null speed even during movement. Require several accurate
+  // off-route GPS fixes and evidence of movement rather than a single GPS jump.
+  if(Number(c.accuracy)<=35&&route?.geometry?.length>1&&!arrivalTimer){
    const away=nearestRouteDistance(point);
-   offRouteTicks=away>90?offRouteTicks+1:0;
-   if(offRouteTicks>=3&&!rerouting&&Date.now()-lastReroute>90000){
-    offRouteTicks=0;requestReroute(point);
-   }
-  }else offRouteTicks=0;
+   if(away>Math.max(90,c.accuracy*2.8)){
+    const moved=offRoutePrev?meters(offRoutePrev,point):0;
+    const sensorMoving=Number.isFinite(c.speed)&&c.speed>=0.8;
+    const gpsMoving=(c.speed==null||!Number.isFinite(c.speed))&&
+     moved>Math.max(9,c.accuracy*1.2);
+    if(!offRoutePrev)offRouteTicks=1;
+    else if(sensorMoving||gpsMoving)offRouteTicks++;
+    offRoutePrev=point;
+    if(offRouteTicks>=3&&!rerouting&&Date.now()-lastReroute>90000){
+     offRouteTicks=0;offRoutePrev=null;
+     void requestReroute(point);
+    }
+   }else{offRouteTicks=0;offRoutePrev=null;}
+  }else{offRouteTicks=0;offRoutePrev=null;}
   if(!window.HealthGoNavigationFollow?.status?.().active &&
       follow&&Date.now()-lastCamera>=1100){
    lastCamera=Date.now();map()?.setView?.([point.lat,point.lon],Math.max(16,map()?.getZoom?.()||16),{animate:true});
@@ -239,7 +250,7 @@
    text('hgProNavStreet',route.destination);text('hgProNavNext','Sprawdź dokładne położenie');
    setProgress(100);
    if(arrivalCount>=2&&!arrivalTimer){
-    speak('Dotarłeś do celu. Kończę prowadzenie.','destination-arrived');
+    speak('Jesteś na miejscu.','destination-arrived');
     // Leave a moment to see the real arrival on screen, then return to Map.
     arrivalTimer=window.setTimeout?.(()=>{
      arrivalTimer=null;
@@ -306,7 +317,7 @@
   if(active)return true;
   if(!route?.steps?.length){text('mapV2RouteOutput','Nie udało się pobrać skrętów trasy. Wyznacz trasę ponownie.');return false}
   if(!navigator.geolocation){text('mapV2RouteOutput','GPS niedostępny. Możesz użyć podglądu trasy z wpisanego adresu.');return false}
-  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';arrivalCount=0;lastValidGpsAt=Date.now();
+  active=true;stepIndex=0;lastSpeech='';lastCamera=0;furthestProgress=0;offRouteTicks=0;offRoutePrev=null;voiceStep=-1;voiceStage='';arrivalCount=0;lastValidGpsAt=Date.now();
   setProgress(0);
   const options=node('hgProNavOptions');if(options)options.open=false;
   // During driving show a legible 2D street map instead of Esri satellite
@@ -358,7 +369,7 @@
   window.HealthGoNavAdvanced?.stop?.();
   active=false;
   if(arrivalTimer){window.clearTimeout?.(arrivalTimer);arrivalTimer=null;}
-  arrivalCount=0;
+  arrivalCount=0;offRouteTicks=0;offRoutePrev=null;
   if(rerouteCtl){rerouteCtl.abort();rerouteCtl=null}rerouting=false;
   window.HealthGoNavigationMode?.stop?.();
   window.HealthGoNavigationLive?.stop?.();
