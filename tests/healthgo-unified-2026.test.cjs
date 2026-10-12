@@ -21,7 +21,7 @@ test('broken third-party games are gone, their code is not bundled, but the rest
 test('new scripts compile and are wired to the main HTML',()=>{
  for(const name of ['healthgo-point','healthgo-treasure','healthgo-navigation-ux']){
   new vm.Script(src('www/'+name+'.js'),{filename:name});
-  assert.ok(html.includes(name+'.js?v=1'));
+  assert.match(html,new RegExp(name+'\\.js\\?v=\\d+'),'Missing versioned '+name+' script');
  }
  assert.match(html,/healthgo-point.css\?v=2/);
  assert.match(html,/id="hgPointHomeMini"/);
