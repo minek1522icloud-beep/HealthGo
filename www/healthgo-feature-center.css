@@ -133,3 +133,59 @@
  .hfc-quest>strong{margin-left:auto}
 }
 @media(prefers-reduced-motion:reduce){.hfc-progress-fill{transition:none!important}}
+
+
+/* Feature Center v3: every mission is expandable, not a mock XP carousel. */
+.hfc-missions{margin:17px 0 8px;display:grid;gap:10px}
+.hfc-missions>.hfc-mini-heading{font-size:15px;color:#c6ffdc;letter-spacing:0;font-weight:850;margin:0}
+.hfc-filter-tabs{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.hfc-filter-tabs>.hfc-action{padding:8px 13px;min-height:39px;font-size:11px;
+ border-radius:999px;border:1px solid #426e55;background:#103b2c;color:#c6e8d1}
+.hfc-filter-tabs>.hfc-action.selected,
+.hfc-filter-tabs>.hfc-action[aria-pressed="true"]{background:#9df5c2;color:#093a27;border-color:#b3ffd2;font-weight:850}
+.hfc-filter-tabs>.hfc-action:focus-visible{outline:3px solid #c4ffdf;outline-offset:2px}
+.hfc-mission-list{display:grid;gap:8px}
+.hfc-mission{border:1px solid #366e52;border-radius:13px;overflow:hidden;background:#103729;color:#eaffee}
+.hfc-mission[open]{background:#123e2c;border-color:#60b78a}
+.hfc-mission-summary{display:flex;align-items:center;gap:10px;justify-content:space-between;
+ padding:13px 14px;cursor:pointer;list-style:none;min-height:60px;touch-action:manipulation}
+.hfc-mission-summary::-webkit-details-marker{display:none}
+.hfc-mission-summary:focus-visible{outline:3px solid #94f8b8;outline-offset:-3px}
+.hfc-mission-copy{min-width:0;display:grid;gap:4px;flex:1}
+.hfc-mission-copy strong{font-size:13px;color:#effff5;line-height:1.3;overflow-wrap:anywhere}
+.hfc-mission-copy small{font-size:11px;color:#b4d8c1;line-height:1.4}
+.hfc-mission-chevron{color:#8beeba;transform:rotate(0deg);transition:transform .2s}
+.hfc-mission[open] .hfc-mission-chevron{transform:rotate(180deg)}
+.hfc-mission-body{padding:2px 15px 14px;border-top:1px solid #31654c;display:grid;gap:10px}
+.hfc-mission-body p{font-size:12px;line-height:1.55;color:#bfe7d0;margin:8px 0 0}
+.hfc-mission-numbers{font-size:11px;color:#c8f6d7;font-variant-numeric:tabular-nums}
+.hfc-mission-evidence{font-size:11px!important;color:#a3c6ae!important;margin:0!important}
+.hfc-mission-body .hfc-action{justify-self:start;margin-top:2px;background:#9af2bd;color:#0b3421}
+.hfc-activity-switch{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:15px 0 3px}
+.hfc-activity-switch strong{font-size:13px;color:#e5ffef}
+.hfc-week-bar.zero{min-height:2px;background:#468970;opacity:.5}
+.hfc-device-explainer,.hfc-update-card,.hfc-family-roster{
+ margin:15px 0 0;padding:14px;border:1px solid #367256;border-radius:14px;background:#0e3627;color:#eafff2
+}
+.hfc-device-explainer h4,.hfc-family-roster h4{font-size:14px;color:#e8fff3;margin:0 0 10px}
+.hfc-device-explainer ol{padding-left:19px;margin:0;display:grid;gap:8px}
+.hfc-device-explainer li{font-size:12px;line-height:1.55;color:#c1e4cf}
+.hfc-family-roster{display:grid;gap:8px}
+.hfc-family-person{display:flex;align-items:center;gap:12px;padding:10px 12px;
+ background:#164432;border:1px solid #2f664b;border-radius:11px}
+.hfc-family-person>span{font-size:17px}
+.hfc-family-person strong{min-width:0;flex:1;font-size:12px;overflow-wrap:anywhere}
+.hfc-family-person small{font-size:11px;color:#afdbbd}
+.hfc-update-card{display:grid;gap:11px}
+.hfc-update-card strong{font-size:13px;color:#e7fff0}
+.hfc-update-card p{font-size:12px;line-height:1.5;color:#bddcc8;margin:0}
+.hfc-update-card button{justify-self:start}
+@media(max-width:560px){
+ .hfc-missions{margin-top:15px}
+ .hfc-filter-tabs{gap:5px}
+ .hfc-filter-tabs>.hfc-action{min-height:40px;padding:9px 12px;font-size:11px}
+ .hfc-mission-summary{padding:12px}
+ .hfc-activity-switch{align-items:flex-start}
+ .hfc-device-explainer,.hfc-update-card,.hfc-family-roster{padding:12px}
+}
+@media(prefers-reduced-motion:reduce){.hfc-mission-chevron{transition:none!important}}
