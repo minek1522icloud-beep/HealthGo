@@ -84,7 +84,7 @@ test('real mobile UI offers accessible buttons and does not allow manual origin'
  assert.match(html,/data-hg-view="2d"/);
  assert.match(html,/data-hg-view="3d"/);
  assert.match(html,/healthgo-navigation-mode\.js\?v=2/);
- assert.match(html,/healthgo-navigation-mode\.css\?v=2/);
+ assert.match(html,/healthgo-navigation-mode\.css\?v=3/);
  assert.match(html,/id="hgGpsConsentAction"/);
  assert.doesNotMatch(html,/id="mapV2RouteFrom"|id="hgRouteManualOrigin"/);
  assert.match(fs.readFileSync('www/healthgo-map-pro.js','utf8'),/HealthGoNavigationMode\?\.begin/);
@@ -99,4 +99,20 @@ test('iPhone map fills the screen during GPS, without leaving blank bottom space
  assert.match(css,/map-workspace\.map-pro-navigating/);
  assert.match(css,/map-canvas-wrap/);
  assert.match(css,/hg-live-perspective/);
+});
+
+test('compact blue location arrow is consistent between 2D and 3D, without changing GPS routing',()=>{
+ const follow=fs.readFileSync('www/healthgo-navigation-follow-v1.js','utf8');
+ const pitched=fs.readFileSync('www/healthgo-navigation-live.js','utf8');
+ const followCss=fs.readFileSync('www/healthgo-navigation-follow-v1.css','utf8');
+ const cameraCss=fs.readFileSync('www/healthgo-navigation-mode.css','utf8');
+ assert.match(follow,/iconSize:\[36,40\],iconAnchor:\[18,20\]/);
+ assert.match(follow,/viewBox="0 0 40 44" width="36" height="40"/);
+ assert.match(pitched,/width="34" height="38" viewBox="0 0 40 44"/);
+ assert.match(follow,/fill="#4285f4"/);
+ assert.match(pitched,/fill="#4285f4"/);
+ assert.match(followCss,/width:36px!important;height:40px!important/);
+ assert.match(cameraCss,/\.hg-live-car\{width:34px;height:38px/);
+ assert.match(pitched,/marker\?\.setLngLat\(\[p.lon,p.lat\]\)/);
+ assert.match(follow,/arrow\.setLatLng\(\[point.lat,point.lon\]\)/);
 });
