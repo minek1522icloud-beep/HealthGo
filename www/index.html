@@ -668,7 +668,7 @@ html.hg-session-known #authScreen{display:none!important}
         <div id="hgNavAdvancedTools" aria-label="Narzędzia prowadzenia" hidden>
           <button type="button" data-hgna="overview" aria-label="Pokaż całą trasę" title="Cała trasa">♧</button>
           <button type="button" data-hgna="follow" aria-label="Wróć do kamery GPS" title="Śledź GPS">◎</button>
-          <button type="button" data-hgna="north" aria-label="Skieruj kamerę na północ" title="Północ">⌖</button>
+          <button type="button" data-hgna="north" aria-label="Skieruj kamerę na północ" title="Północ">⌖<small id="hgNavCompassBearing">N</small></button>
           <div id="hgNavControlStatus" role="status" aria-live="polite"></div>
         </div>
         <div id="hgNavCompactWeather" aria-label="Temperatura podczas nawigacji"></div>
@@ -705,6 +705,9 @@ html.hg-session-known #authScreen{display:none!important}
                   <button type="button" data-hgna="repeat">Powtórz komunikat</button>
                   <button type="button" data-hgna="overview">Cała trasa</button>
                   <button type="button" data-hgna="minimal" id="hgNavMinimal" aria-pressed="false">Tryb minimalistyczny</button>
+                  <button type="button" data-hgna="tripWeather">Pogoda wzdłuż trasy</button>
+                  <p id="hgNavTripWeatherStatus" role="status" aria-live="polite">Pogodę z trzech punktów trasy sprawdzisz po kliknięciu. To bieżące dane modelowe, nie oficjalny alert.</p>
+                  <p class="hgna-caution">Korki, remonty i utrudnienia na żywo: niedostępne bez wiarygodnego dostawcy ruchu.</p>
                   <p class="hgna-caution">Pasy i limity tylko, jeśli dane są dostępne i wiarygodne. Zawsze przestrzegaj znaków drogowych.</p>
                 </div>
               </details>
@@ -3354,7 +3357,7 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-navigation-live.js?v=4"></script>
 <script src="./healthgo-navigation-mode.js?v=2"></script>
 <script src="./healthgo-navigation-follow-v1.js?v=2"></script>
-<script src="./healthgo-nav-advanced.js?v=1"></script>
+<script src="./healthgo-nav-advanced.js?v=2"></script>
 <script src="./healthgo-map-pro.js?v=12"></script>
 <script src="./healthgo-map4.js?v=3"></script>
 <script src="./healthgo-map-extras.js?v=2"></script>
