@@ -370,6 +370,7 @@ html.hg-session-known #authScreen{display:none!important}
   <link rel="stylesheet" href="./healthgo-friends.css?v=1">
   <link rel="stylesheet" href="./healthgo-release-notes.css?v=1">
   <link rel="stylesheet" href="./healthgo-map-extras.css?v=3">
+  <link rel="stylesheet" href="./healthgo-nav-advanced.css?v=1">
 </head>
 <body class="hg-emerald" data-dark="1" style="background:#061a14">
 <div id="splashScreen" class="splash-screen" aria-label="Uruchamianie HealthGo">
@@ -656,6 +657,22 @@ html.hg-session-known #authScreen{display:none!important}
         <p id="hgLiveMapStatus" class="hg-live-status" role="status" hidden></p>
         <p id="hgLiveWeather" class="hg-live-weather" role="status" hidden></p>
         <p id="hgNavGpsStatus" class="hg-follow-gps-alert" role="status" aria-live="polite" hidden></p>
+        <div id="hgNavLaneAssistant" class="hgna-lane-assistant" aria-label="Wskazówki o pasach ruchu, jeśli dostępne w OSRM" hidden></div>
+        <div id="hgNavStreetChip" aria-label="Nazwy ulic" hidden>
+          <div class="hgna-road-line"><small>Teraz</small><strong id="hgNavCurrentRoad">Czekam na GPS</strong></div>
+          <div class="hgna-road-line"><small>Potem</small><strong id="hgNavNextRoad">Czekam na instrukcje</strong></div>
+        </div>
+        <div id="hgNavLimitBadge" aria-label="Ograniczenie prędkości OSM, jeśli potwierdzone">
+          <span class="hgna-limit-circle" id="hgNavSpeedLimit">—</span><small>Limit OSM</small>
+        </div>
+        <div id="hgNavAdvancedTools" aria-label="Narzędzia prowadzenia" hidden>
+          <button type="button" data-hgna="overview" aria-label="Pokaż całą trasę" title="Cała trasa">♧</button>
+          <button type="button" data-hgna="follow" aria-label="Wróć do kamery GPS" title="Śledź GPS">◎</button>
+          <button type="button" data-hgna="north" aria-label="Skieruj kamerę na północ" title="Północ">⌖</button>
+          <div id="hgNavControlStatus" role="status" aria-live="polite"></div>
+        </div>
+        <div id="hgNavCompactWeather" aria-label="Temperatura podczas nawigacji"></div>
+        <p id="hgNavWeatherRisk" role="status" hidden></p>
         <button type="button" id="hgFollowRecenter" class="hg-follow-recenter" aria-label="Ponownie śledź pozycję GPS" onclick="HealthGoMapPro.resumeFollow()" hidden>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/><path d="M12 1v4m0 14v4M1 12h4m14 0h4"/></svg>
           Śledź moją strzałkę
@@ -682,14 +699,32 @@ html.hg-session-known #authScreen{display:none!important}
                 <div class="hg-pro-nav-buttons">
                   <button id="hgProVoice" type="button" aria-label="Włącz lub wyłącz głos" aria-pressed="false" onclick="HealthGoMapPro.toggleVoice()">Głos: wyłączony</button>
                   <button id="hgProFollow" type="button" aria-pressed="true" onclick="HealthGoMapPro.toggleFollow()">Śledź położenie</button>
-                  <button id="hgProNavTheme" type="button" onclick="HealthGoMapPro.toggleNavigationTheme()">Motyw</button>
+                  <button id="hgProNavTheme" type="button" onclick="HealthGoMapPro.toggleNavigationTheme()">Motyw dzień / noc</button>
+                  <button type="button" data-hgna="limits" id="hgNavLimitEnable" aria-pressed="false">Sprawdzaj limity OSM</button>
+                  <small id="hgNavLimitHint">Brak danych OSM. Sprawdzanie opcjonalne wysyła przybliżoną pozycję do Overpass.</small>
+                  <button type="button" data-hgna="repeat">Powtórz komunikat</button>
+                  <button type="button" data-hgna="overview">Cała trasa</button>
+                  <button type="button" data-hgna="minimal" id="hgNavMinimal" aria-pressed="false">Tryb minimalistyczny</button>
+                  <p class="hgna-caution">Pasy i limity tylko, jeśli dane są dostępne i wiarygodne. Zawsze przestrzegaj znaków drogowych.</p>
                 </div>
               </details>
             </div>
           </div>
         </footer>
-        <p class="hg-pro-nav-warning">Wskazówki orientacyjne, bez danych o korkach i ograniczeniach prędkości. Nie obsługuj telefonu podczas prowadzenia.</p>
+        <p class="hg-pro-nav-warning">Wskazówki orientacyjne, bez danych o korkach w czasie rzeczywistym. Limity OSM tylko po włączeniu i dopasowaniu. Nie obsługuj telefonu podczas prowadzenia.</p>
       </aside>
+      <div id="hgNavArrivalSummary" aria-live="polite" hidden>
+        <article role="dialog" aria-modal="true" aria-labelledby="hgNavSummaryTitle">
+          <span aria-hidden="true" style="font-size:38px">🏁</span>
+          <h2 id="hgNavSummaryTitle">Dotarłeś do celu</h2>
+          <p>Zakończono prowadzenie GPS. Dane są orientacyjne.</p>
+          <div class="hgna-summary-grid">
+            <span><strong id="hgNavSummaryTime">—</strong>Czas podróży</span>
+            <span><strong id="hgNavSummaryDistance">—</strong>Długość trasy</span>
+          </div>
+          <button type="button" data-hgna-close-arrival>Wróć do mapy</button>
+        </article>
+      </div>
       <aside id="mapV2MeasureHud" class="map-v2-measure-hud" role="status" aria-live="polite" hidden>
         <div class="map-v2-measure-info">
           <b>📏 Odległość: <span id="mapV2MeasureDistance">0 m</span></b>
@@ -3316,10 +3351,11 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-map-recovery.js?v=2"></script>
 <script src="./healthgo-map-v2.js?v=6"></script>
 <script src="./healthgo-route-3d-overlay.js?v=1"></script>
-<script src="./healthgo-navigation-live.js?v=3"></script>
+<script src="./healthgo-navigation-live.js?v=4"></script>
 <script src="./healthgo-navigation-mode.js?v=2"></script>
 <script src="./healthgo-navigation-follow-v1.js?v=2"></script>
-<script src="./healthgo-map-pro.js?v=11"></script>
+<script src="./healthgo-nav-advanced.js?v=1"></script>
+<script src="./healthgo-map-pro.js?v=12"></script>
 <script src="./healthgo-map4.js?v=3"></script>
 <script src="./healthgo-map-extras.js?v=2"></script>
 <script src="./healthgo-map-photos.js?v=1"></script>

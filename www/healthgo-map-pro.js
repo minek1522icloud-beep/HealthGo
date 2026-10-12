@@ -93,6 +93,7 @@
   suffix(coords);stepIndex=0;furthestProgress=0;offRouteTicks=0;voiceStep=-1;voiceStage='';setProgress(0);
   show('hgNavStartButton',steps.length>0);
   text('hgProNavDestination',route.destination);
+  window.HealthGoNavAdvanced?.route?.(route);
   return true;
  }
  function clearRoute(){stopNavigation();route=null;remaining=[];furthestProgress=0;setProgress(0);show('hgNavStartButton',false)}
@@ -147,6 +148,7 @@
    window.HealthGoNavigationFollow?.setRoute?.(updated);
    window.HealthGoNavigationLive?.setRoute?.(updated);
    window.HealthGoNavigationMode?.setRoute?.(updated);
+   window.HealthGoNavAdvanced?.route?.(route);
    speak('Trasa została przeliczona','route-recomputed-'+lastReroute);
    text('hgProNavNext','Zaktualizowano trasę na podstawie GPS');
    return true;
@@ -194,6 +196,12 @@
   text('hgProNavDistance',nice(left));
   setProgress(navigationProgress(left));
   text('hgProNavSpeed',c.speed==null||!Number.isFinite(c.speed)?'—':String(Math.max(0,Math.round(c.speed*3.6))));
+  window.HealthGoNavAdvanced?.gps?.({
+   position:point,accuracy:c.accuracy,
+   speed:c.speed==null||!Number.isFinite(c.speed)?null:c.speed,
+   heading:c.heading==null||!Number.isFinite(c.heading)?null:c.heading,
+   stepIndex,distanceTo:Number.isFinite(distanceTo)?distanceTo:null
+  });
   // A single GPS marker driven by real watchPosition samples. When the new
   // lightweight controller is unavailable, preserve the old Leaflet marker.
   const followed=window.HealthGoNavigationFollow?.update?.(pos);
@@ -232,7 +240,10 @@
    if(arrivalCount>=2&&!arrivalTimer){
     speak('Dotarłeś do celu. Kończę prowadzenie.','destination-arrived');
     // Leave a moment to see the real arrival on screen, then return to Map.
-    arrivalTimer=window.setTimeout?.(()=>{arrivalTimer=null;if(active)stopNavigation();},4500)||null;
+    arrivalTimer=window.setTimeout?.(()=>{
+     arrivalTimer=null;
+     if(active){window.HealthGoNavAdvanced?.arrived?.(route);stopNavigation();}
+    },4500)||null;
    }
   }
  }
@@ -285,9 +296,10 @@
   loadOptions();
   removeArrow();
   window.HealthGoNavigationFollow?.begin?.({geometry:{coordinates:route.geometry}},{follow});
-  // Begin the preferred view; 3D waits for the first real GPS fix.
-  // Existing OSRM instructions and GPS watch remain authoritative.
+  // Begin the preferred camera and auxiliary HUD using the same GPS route.
+  // No extra GPS watcher or simulated positions are introduced.
   window.HealthGoNavigationMode?.begin?.({geometry:{coordinates:route.geometry}});
+  window.HealthGoNavAdvanced?.start?.(route);
   speak('Rozpoczynam prowadzenie. Sprawdzam pozycję GPS.','navigation-start');
   text('hgProNavDestination',route.destination);
   text('hgProNavDirection','Ustalam pozycję');text('hgProNavIcon','↑');
@@ -323,6 +335,7 @@
   return true;
  }
  function stopNavigation(){
+  window.HealthGoNavAdvanced?.stop?.();
   active=false;
   if(arrivalTimer){window.clearTimeout?.(arrivalTimer);arrivalTimer=null;}
   arrivalCount=0;
@@ -366,6 +379,14 @@
   return true;
  }
  function toggleNavigationTheme(){setNight(!night);window.HealthGoMap4?.saveSettings?.({theme:night?'dark':'light'});return night}
+ function repeatInstruction(){
+  if(!active||!route)return false;
+  const step=route.steps[stepIndex];if(!step)return false;
+  if(!voice){text('hgProNavNext','Włącz głos, aby powtórzyć wskazówkę.');return false}
+  lastSpeech='';
+  speak(instruction(step)[0],'repeat-'+Date.now());
+  return true;
+ }
  function isNavigating(){
   const hud=node('hgProNavigation');
   if(!active||!document.body?.classList?.contains?.('hg-navigation-active')||hud?.hidden!==false)return false;
@@ -385,5 +406,5 @@
  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopNavigation()});
  window.addEventListener('pagehide',stopNavigation);
  window.HealthGoMapPro={setRoute,clearRoute,startNavigation,stopNavigation,isNavigating,toggleVoice,toggleFollow,resumeFollow,
-  toggleNavigationTheme,leaveMap,routeRemaining,instruction,maneuverInfo,navigationProgress,nearestRouteDistance};
+  toggleNavigationTheme,repeatInstruction,leaveMap,routeRemaining,instruction,maneuverInfo,navigationProgress,nearestRouteDistance};
 })();

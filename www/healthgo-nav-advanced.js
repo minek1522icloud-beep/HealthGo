@@ -184,7 +184,7 @@
   sessionStats.readings++;
   const nextStep=Math.max(0,Math.min(steps.length-1,Number(detail.stepIndex)||0));
   if(nextStep!==lastStep){lastStep=nextStep;updateRoads(nextStep);renderLanes(laneInfo(steps[nextStep]));limitDisplay=null;limitLastAt=0;}
-  lastDistance=Number(detail.distanceTo);
+  lastDistance=Number.isFinite(detail.distanceTo)&&detail.distanceTo>=0?detail.distanceTo:null;
   const sign=$('hgNavCurrentRoad');if(sign)sign.hidden=minimal;
   const lane=$('hgNavLaneAssistant');if(lane&&minimal)lane.hidden=true;
   writeLimit();
