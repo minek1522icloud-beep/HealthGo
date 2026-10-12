@@ -15,7 +15,7 @@ test('broken third-party games are gone, their code is not bundled, but the rest
  assert.ok(!fs.existsSync('www/community-games/fruit-slice/index.html'));
  assert.match(html,/id="backpack"/);
  assert.match(html,/healthgo-badge-shields.js\?v=1/);
- assert.match(html,/healthgo-map-v2.js\?v=5/);
+ assert.match(html,/healthgo-map-v2.js\?v=6/);
  assert.match(html,/healthgo-profile-pro.js\?v=5/);
 });
 test('new scripts compile and are wired to the main HTML',()=>{

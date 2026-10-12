@@ -83,7 +83,7 @@ test('real mobile UI offers accessible buttons and does not allow manual origin'
  assert.match(html,/id="hgViewModeSwitch"/);
  assert.match(html,/data-hg-view="2d"/);
  assert.match(html,/data-hg-view="3d"/);
- assert.match(html,/healthgo-navigation-mode\.js\?v=1/);
+ assert.match(html,/healthgo-navigation-mode\.js\?v=2/);
  assert.match(html,/healthgo-navigation-mode\.css\?v=2/);
  assert.match(html,/id="hgGpsConsentAction"/);
  assert.doesNotMatch(html,/id="mapV2RouteFrom"|id="hgRouteManualOrigin"/);
