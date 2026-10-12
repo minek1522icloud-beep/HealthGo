@@ -9,7 +9,7 @@
  const clean=x=>String(x??'').trim().replace(/\s+/g,' ').slice(0,85);
  let active=false,route=null,steps=[],startedAt=0,lastPos=null,arrived=false,summary=null,sessionStats={maxSpeed:null,gpsDistance:0,readings:0,last:null};
  let minimal=false,limitsEnabled=false,limitLastAt=0,limitLastPos=null,limitRequest=null,limitDisplay=null,limitStatus='',limitNonce=0,lastStep=-1,weatherInfo=null,mode='3d',tripWeatherRequest=null;
- let currentStreet='',nextStreet='',lastDistance=null,heading=null;
+ let currentStreet='',nextStreet='',lastDistance=null,heading=null,lastSpeedKmh=null;
  const key=(name)=>{const user=String(w.HealthGoServices?.state?.uid||'').trim();return user?'healthgo.nav.advanced.'+name+'.'+user:null;};
  const getPref=(name)=>{const k=key(name);try{return k?localStorage.getItem(k)==='1':false}catch(_){return false}};
  const setPref=(name,yes)=>{const k=key(name);if(k)try{localStorage.setItem(k,yes?'1':'0')}catch(_){}};
@@ -114,6 +114,9 @@
    sign.hidden=!(active&&limitsEnabled&&limitDisplay);
    sign.textContent=active&&limitsEnabled&&limitDisplay?String(limitDisplay.kmh):'';
   }
+  const gauge=$('hgNavSpeedGauge');
+  gauge?.classList?.toggle?.('hg-gauge-over-limit',active&&limitsEnabled&&!!limitDisplay&&
+    Number.isFinite(lastSpeedKmh)&&lastSpeedKmh>limitDisplay.kmh+3);
   const button=$('hgNavLimitEnable');
   if(button){button.textContent=limitsEnabled?'Limity OSM: włączone':'Sprawdzaj limity OSM';button.setAttribute('aria-pressed',String(limitsEnabled));}
  }
@@ -160,7 +163,7 @@
   lastStep=-1;lastDistance=null;limitDisplay=null;limitLastAt=0;renderLanes(null);writeLimit();
  }
  function onStart(value){
-  active=true;arrived=false;startedAt=Date.now();lastPos=null;summary=null;
+  active=true;arrived=false;startedAt=Date.now();lastPos=null;summary=null;lastSpeedKmh=null;
   sessionStats={maxSpeed:null,gpsDistance:0,readings:0,last:null};
   minimal=getPref('minimal');limitsEnabled=getPref('limits');
   onRoute(value);
@@ -177,7 +180,10 @@
   lastPos={lat:pos.lat,lon:pos.lon};
   if(Number.isFinite(detail.heading)&&detail.heading>=0&&detail.heading<360)heading=detail.heading;
   safeText('hgNavCompassBearing',Number.isFinite(heading)?Math.round((360-heading)%360)+'° N':'N');
-  const speed=Number.isFinite(detail.speed)&&detail.speed>=0&&detail.speed<=85?detail.speed*3.6:null;
+  // GPS speed is optional on iOS. Never derive it from a guessed road or route duration.
+  const speed=detail.accuracy<=50&&Number.isFinite(detail.speed)&&detail.speed>=0&&detail.speed<=85
+    ?detail.speed*3.6:null;
+  lastSpeedKmh=speed;
   if(speed!==null)sessionStats.maxSpeed=Math.max(sessionStats.maxSpeed??0,speed);
   const prev=sessionStats.last;
   // Conservative GPS distance: ignore jumps/noisy fixes and reject unrealistic speed.
@@ -191,10 +197,14 @@
   if(nextStep!==lastStep){lastStep=nextStep;updateRoads(nextStep);limitDisplay=null;limitLastAt=0;}
   lastDistance=Number.isFinite(detail.distanceTo)&&detail.distanceTo>=0?detail.distanceTo:null;
   renderLanes(!minimal&&Number.isFinite(detail.distanceTo)&&detail.distanceTo<=650?laneInfo(steps[nextStep]):null);
-  writeLimit();
   const showSpeed=$('hgNavCurrentSpeed');if(showSpeed)showSpeed.textContent=speed===null?'—':String(Math.round(speed));
   const dial=$('hgNavSpeedGauge');
-  if(dial)dial.style?.setProperty?.('--hg-speed-ratio',speed===null?'0':String(Math.min(1,speed/130)));
+  if(dial){
+    dial.style?.setProperty?.('--hg-speed-ratio',speed===null?'0':String(Math.min(1,speed/130)));
+    dial.setAttribute?.('aria-label',speed===null?'Prędkość GPS niedostępna':
+      'Prędkość GPS '+Math.round(speed)+' kilometrów na godzinę');
+  }
+  writeLimit();
   const rel=$('hgNavUpcomingRoad');if(rel)rel.textContent=nextStreet||'Nawigacja GPS';
   if(limitsEnabled)void fetchLimit(lastPos,currentStreet);
   w.HealthGoNavigationLive?.setApproach?.(lastDistance);
@@ -314,7 +324,7 @@
   active=false;
   if(limitRequest){limitRequest.abort();limitRequest=null}limitNonce++;
   if(tripWeatherRequest){tripWeatherRequest.abort();tripWeatherRequest=null;}
-  lastPos=null;lastStep=-1;lastDistance=null;limitDisplay=null;heading=null;
+  lastPos=null;lastStep=-1;lastDistance=null;limitDisplay=null;heading=null;lastSpeedKmh=null;
   route=null;steps=[];limitLastAt=0;limitLastPos=null;weatherInfo=null;sessionStats.last=null;
   document.body?.classList?.remove('hg-nav-minimal');
   visible('hgNavAdvancedTools',false);
