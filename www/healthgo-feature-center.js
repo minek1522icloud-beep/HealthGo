@@ -178,16 +178,31 @@ function activity(){
  grid(root,[['👣','Kroki z 7 dni',measured.length?format(steps):'—',measured.length+' z 7 dni ma odczyt'],
   ['⏱️','Minuty ruchu',days.some(x=>x.minutes!==null)?format(totalMinutes):'—','Zarejestrowane źródła'],
   ['⌚','Ostatnie źródło',state.health?.source||'Brak',state.health?'Odczyt':'Jeszcze nie połączono']]);
- const bars=el('div','hfc-week-chart');bars.setAttribute('aria-label','Wykres kroków z ostatnich 7 dni');
- const top=Math.max(1,...days.map(x=>x.steps||0));
- for(const x of days){
-  const bucket=el('div','hfc-week-day'),container=el('div','hfc-bar-wrap'),bar=el('div','hfc-week-bar');
-  bar.style.height=x.steps===null?'0%':Math.max(4,(x.steps/top)*100)+'%';
-  if(x.steps===null)bar.classList.add('missing');
-  container.appendChild(bar);bucket.append(el('small','hfc-bar-value',x.steps===null?'—':format(x.steps)),container,el('small','',x.label));
-  bucket.title=x.key+': '+(x.steps===null?'brak pomiaru':format(x.steps)+' kroków');bars.appendChild(bucket);
- }
- root.appendChild(bars);
+ const switcher=el('div','hfc-activity-switch');switcher.appendChild(el('strong','','Ostatni tydzień'));
+ const tabs=el('div','hfc-filter-tabs'),bars=el('div','hfc-week-chart');
+ bars.setAttribute('aria-live','polite');
+ const paintChart=()=>{
+  tabs.replaceChildren();bars.replaceChildren();
+  for(const [key,label] of [['steps','Kroki'],['minutes','Minuty ruchu']]){
+   const b=action(label,()=>{activityMetric=key;paintChart();},activityMetric===key?'selected':'subtle');
+   b.setAttribute('aria-pressed',String(activityMetric===key));tabs.appendChild(b);
+  }
+  const unit=activityMetric==='steps'?'kroków':'minut';
+  const top=Math.max(1,...days.map(x=>x[activityMetric]||0));
+  bars.setAttribute('aria-label','Prawdziwe pomiary '+unit+' z siedmiu dni');
+  for(const x of days){
+   const value=x[activityMetric],bucket=el('div','hfc-week-day'),
+    container=el('div','hfc-bar-wrap'),bar=el('div','hfc-week-bar');
+   bar.style.height=value===null?'0%':value===0?'2%':Math.max(4,Math.round(value/top*100))+'%';
+   if(value===null)bar.classList.add('missing');
+   if(value===0)bar.classList.add('zero');
+   container.appendChild(bar);
+   bucket.append(el('small','hfc-bar-value',value===null?'—':format(value)),container,el('small','',x.label));
+   bucket.title=x.key+': '+(value===null?'brak odczytu':format(value)+' '+unit);
+   bars.appendChild(bucket);
+  }
+ };
+ switcher.appendChild(tabs);root.append(switcher,bars);paintChart();
  const status=el('p','hfc-sync-state',state.health?
   'Ostatni zapis: '+date(state.health.updatedAt||state.health.timestamp)+'. Dane pochodzą ze źródła '+(state.health.source||'HealthGo')+'.':
   'Brak danych z urządzenia. Możesz korzystać z planu dnia i wyzwań, nawet gdy nie masz zegarka.');
