@@ -211,3 +211,6 @@ body.hg-navigation-active.hg-nav-minimal #map .hg-drive-speed{display:none!impor
 @media(prefers-reduced-motion:reduce){
  body.hg-navigation-active #map #hgProNavigation .hg-drive-progress-fill{transition:none!important}
 }
+
+/* Keep limit and weather readouts absent until verified source data exists. */
+#map #hgNavLimitBadge[hidden],#map #hgNavCompactWeather[hidden]{display:none!important}

@@ -109,6 +109,9 @@
   if(hint)hint.textContent=limitsEnabled
    ?(limitDisplay?'OSM · '+limitDisplay.meters+' m od oznaczonej drogi':limitStatus||'Brak potwierdzonych danych OSM')
    :'Włącz dobrowolne sprawdzanie limitów OSM w opcjach';
+  // Never show a red speed-limit sign with a guessed or unknown number.
+  const badge=$('hgNavLimitBadge');
+  if(badge)badge.hidden=!(active&&limitsEnabled&&limitDisplay);
   const button=$('hgNavLimitEnable');
   if(button){button.textContent=limitsEnabled?'Limity OSM: włączone':'Sprawdzaj limity OSM';button.setAttribute('aria-pressed',String(limitsEnabled));}
  }
@@ -162,6 +165,7 @@
   document.body?.classList?.toggle('hg-nav-minimal',minimal);
   visible('hgNavAdvancedTools',true);
   visible('hgNavStreetChip',true);
+  visible('hgNavCompactWeather',false);
   visible('hgNavArrivalSummary',false);
   updateControls();
  }
@@ -198,7 +202,9 @@
   weatherInfo=weather;
   const n=$('hgNavWeatherRisk'),temp=$('hgNavCompactWeather');
   const degc=Number(weather.temp),rain=Number(weather.rain),wind=Number(weather.wind);
-  if(temp&&Number.isFinite(degc))temp.textContent=Math.round(degc)+'°C';
+  if(temp&&weather.temp!=null&&Number.isFinite(degc)){
+   temp.textContent=Math.round(degc)+'°C';temp.hidden=false;
+  }
   if(n){
    const risks=[];
    if(Number.isFinite(rain)&&rain>=2)risks.push('Opady '+rain.toFixed(1)+' mm');
@@ -310,7 +316,8 @@
   lastPos=null;lastStep=-1;lastDistance=null;limitDisplay=null;heading=null;
   route=null;steps=[];limitLastAt=0;limitLastPos=null;weatherInfo=null;sessionStats.last=null;
   document.body?.classList?.remove('hg-nav-minimal');
-  visible('hgNavAdvancedTools',false);visible('hgNavStreetChip',false);renderLanes(null);
+  visible('hgNavAdvancedTools',false);visible('hgNavStreetChip',false);
+  visible('hgNavCompactWeather',false);renderLanes(null);
   writeLimit();
  }
  const box=$('hgProNavigation');
