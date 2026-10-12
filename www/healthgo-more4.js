@@ -101,7 +101,7 @@ function stats(){
  const today=new Date(),items=[];
  for(let offset=6;offset>=0;offset--){const day=new Date(today.getFullYear(),today.getMonth(),today.getDate()-offset,12);
   const id=[day.getFullYear(),String(day.getMonth()+1).padStart(2,'0'),String(day.getDate()).padStart(2,'0')].join('-');
-  const record=byId.get(id);items.push({id,label:day.toLocaleDateString('pl-PL',{weekday:'short'}),steps:record?.steps,minutes:record?.minutes});}
+  const record=byId.get(id);items.push({id,label:day.toLocaleDateString('pl-PL',{weekday:'short'}),steps:record?.steps,minutes:record?.activeMinutes});}
  const measured=items.filter(x=>safeNumber(x.steps)>0||x.steps===0);
  stat(root,[['Dni z odczytem',String(measured.length)+'/7','Bez symulacji pomiarów'],
   ['Łącznie kroków',measured.length?number(measured.reduce((s,x)=>s+safeNumber(x.steps),0)):'—','Dane z synchronizacji']]);
