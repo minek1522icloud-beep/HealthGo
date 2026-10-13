@@ -194,55 +194,190 @@ function missionDestination(item){
  if(item?.confirmationRequired)return 'plan';
  const metric=String(item?.requirement?.type||'');
  if(/plan|focus|rest|relax|learn|habit/i.test(metric))return 'plan';
- if(/step|heart|distance|sleep|health|device/i.test(metric))return 'devices';
+ if(/step|heart|distance|sleep|health|device|activeDay/i.test(metric))return 'activity';
  if(/map|explore|treasure|route/i.test(metric))return 'map';
+ if(/aiUsed/i.test(metric))return 'ai';
  return 'activity';
 }
+function personalGoalsKey(){
+ const uid=String(S.state?.uid||'');
+ return uid?'healthgo.challenges3.goals.'+encodeURIComponent(uid):null;
+}
+function pinnedGoals(){
+ const key=personalGoalsKey();if(!key)return [];
+ try{
+  const data=JSON.parse(w.localStorage?.getItem(key)||'[]');
+  return Array.isArray(data)?data.filter(x=>typeof x==='string'&&/^[a-z0-9_-]{1,80}$/.test(x)).slice(0,3):[];
+ }catch(_){return [];}
+}
+function pinGoal(id){
+ const key=personalGoalsKey();
+ if(!key||!/^[a-z0-9_-]{1,80}$/.test(id))return false;
+ const selected=pinnedGoals();
+ const next=selected.includes(id)?selected.filter(x=>x!==id):
+  selected.length<3?[...selected,id]:null;
+ if(!next)return false;
+ try{w.localStorage?.setItem(key,JSON.stringify(next));return true;}catch(_){return false;}
+}
+function journey(root,defs){
+ const series=defs.filter(x=>x.category==='series'&&x.seriesId==='foundation')
+  .sort((a,b)=>safeNumber(a.stage)-safeNumber(b.stage));
+ if(!series.length)return;
+ const box=node('section','hg4-journey');
+ box.append(node('span','hg4-kicker','MISJA FABULARNA · SERIA'),
+  node('h4','','🌱 Dobry początek'));
+ box.appendChild(node('p','hg4-description','Trzy etapy z prawdziwego katalogu wyzwań. Następny otwiera się po zaliczeniu poprzedniego. Odpoczynek nie resetuje postępów.'));
+ const list=node('div','hg4-journey-steps');
+ for(const item of series){
+  const step=node('div','hg4-journey-step');
+  step.classList?.toggle?.('complete',item.status==='completed');
+  step.classList?.toggle?.('locked',item.status==='locked');
+  const flag=node('span','hg4-journey-index',item.status==='completed'?'✓':String(item.stage||'•'));
+  const copy=node('div','hg4-journey-copy');
+  copy.append(node('strong','',String(item.name||'Etap').slice(0,110)),
+   node('small','',item.status==='completed'?'Ukończone':
+    item.status==='locked'?'Odblokuj poprzedni etap':
+    number(item.progress||0)+' / '+number(item.target||0)+' · '+number(item.xpReward||0)+' XP'));
+  step.append(flag,copy);list.appendChild(step);
+ }
+ box.appendChild(list);
+ const completed=series.filter(x=>x.status==='completed').length;
+ box.appendChild(node('p','hg4-footnote',completed+' / '+series.length+' ukończonych etapów, potwierdzonych w historii konta.'));
+ root.appendChild(box);
+}
+function seasonal(root,defs){
+ const defsSeason=defs.filter(x=>x.category==='seasonal'||x.period==='season');
+ const panel=node('section','hg4-season');
+ panel.append(node('span','hg4-kicker','WYDARZENIA'),
+  node('h4','','🍂 Misje sezonowe'));
+ if(!defsSeason.length)empty(panel,'Obecnie nie ma sezonowego wyzwania w katalogu HealthGo.');
+ else for(const item of defsSeason){
+  const card=node('div','hg4-season-card');
+  card.append(node('strong','',String(item.name||'Wydarzenie')),
+   node('p','',String(item.description||'').slice(0,250)),
+   node('small','',item.status==='completed'?'Potwierdzone ukończenie':
+    item.status==='expired'?'Wydarzenie zakończone':
+    'Postęp '+Math.round(safeNumber(item.percent))+'% · '+number(item.xpReward||0)+' XP po ukończeniu'));
+  if(item.endsAt){
+   const dateValue=new Date(item.endsAt);
+   if(Number.isFinite(dateValue.getTime()))card.appendChild(node('small','',
+    'Koniec wydarzenia: '+dateValue.toLocaleDateString('pl-PL',{year:'numeric',month:'long',day:'numeric'})));
+  }
+  panel.appendChild(card);
+ }
+ panel.appendChild(node('p','hg4-footnote','Nie ma płatnego pasa sezonowego. Misje mogą być nieaktywne po zakończeniu wydarzenia.'));
+ root.appendChild(panel);
+}
+function teamChallenges(root){
+ const panel=node('section','hg4-team');
+ panel.append(node('span','hg4-kicker','WSPÓLNE CELE'),
+  node('h4','','🤝 Wyzwania znajomych i rodziny'));
+ const confirmed=history().filter(x=>x.type==='FAMILY_CHALLENGE_COMPLETED');
+ const family=S.state?.family,linked=Array.isArray(family?.members)?family.members.length:0;
+ panel.appendChild(node('p','',linked
+  ?'Połączone konta rodzinne: '+linked+'. Wyzwania wspólne są dostępne wyłącznie za zgodą uczestników.'
+  :'Wspólne zadania wymagają zaproszenia i zgody. Nic nie jest udostępniane automatycznie.'));
+ panel.appendChild(node('p','hg4-footnote','Potwierdzone wspólne ukończenia w historii: '+number(confirmed.length)+'. Nie przyznajemy XP za samo zaproszenie.'));
+ actions(panel,[['Znajomi i rodzina',()=>go('family'),true]]);
+ root.appendChild(panel);
+}
+function missionHistory(root){
+ const panel=node('section','hg4-completed-history');
+ panel.appendChild(node('h4','','📜 Historia ukończonych misji'));
+ const completed=history().filter(x=>x.type==='CHALLENGE_COMPLETED').slice(-8).reverse();
+ if(!completed.length)empty(panel,'Nie ma jeszcze potwierdzonych ukończeń w historii zdarzeń.');
+ else for(const event of completed){
+  const id=String(event.payload?.challengeId||event.payload?.definitionId||'Wyzwanie').slice(0,90);
+  const row=node('div','hg4-event');
+  row.append(node('strong','',id),node('span','',date(event.occurredAt)));panel.appendChild(row);
+ }
+ root.appendChild(panel);
+}
 function missions(){
- const root=section($('challenges'),'hg4MissionPeriods','🎯 Centrum misji',
-  'Misje dzienne, tygodniowe, miesięczne i specjalne — wyłącznie z katalogu HealthGo.');
+ const root=section($('challenges'),'hg4MissionPeriods','🎯 Wyzwania 3.0 · Centrum misji',
+  'Misje dzienne, tygodniowe, fabularne i sezonowe z prawdziwego katalogu HealthGo. Wybieraj własne cele bez presji.');
  if(!root)return;
  const e=engine();if(!e){empty(root,'Zaloguj się, aby zobaczyć swoje misje.');return;}
  let defs=[];try{defs=Engine.viewChallenges(e,new Date().toISOString())||[];}catch(_){}
  const completed=defs.filter(x=>x.status==='completed').length;
- stat(root,[['Misje',number(defs.length),'Z katalogu'],['Ukończone',number(completed),'Potwierdzone'],['W toku',number(defs.filter(x=>x.status==='active').length),'Bez presji']]);
+ stat(root,[['Misje',number(defs.length),'Z katalogu'],['Ukończone',number(completed),'Potwierdzone'],
+  ['W toku',number(defs.filter(x=>x.status==='active').length),'Bez presji']]);
+ const overview=node('p','hg4-footnote','⭐ Przypnij maksymalnie 3 zadania jako własne cele. Przypinanie niczego nie zalicza i nie przyznaje XP.');
+ root.appendChild(overview);
  const tools=node('div','hg4-mission-tools');
  const search=node('input','hg4-search');search.type='search';search.value=missionSearch;
  search.placeholder='Szukaj wyzwania';search.setAttribute('aria-label','Szukaj wyzwania po nazwie');
  const status=node('select','hg4-select');status.setAttribute('aria-label','Stan misji');
- for(const [key,label] of [['all','Każdy stan'],['active','W toku'],['completed','Ukończone']]){
+ for(const [key,label] of [['all','Każdy stan'],['active','W toku'],['completed','Ukończone'],['locked','Zablokowane']]){
   const opt=node('option','',label);opt.value=key;status.appendChild(opt);
  }
  status.value=missionStatus;tools.append(search,status);
- const tabs=node('div','hg4-tabs');const list=node('div','hg4-mission-list'),count=node('p','hg4-footnote');
- const groups=[['all','Wszystkie'],['daily','Dzienne'],['weekly','Tygodniowe'],['monthly','Miesięczne'],['special','Specjalne']];
+ const tabs=node('div','hg4-tabs'),list=node('div','hg4-mission-list'),count=node('p','hg4-footnote');
+ const groups=[['all','Wszystkie'],['pinned','⭐ Moje cele'],['daily','Dzienne'],['weekly','Tygodniowe'],
+  ['monthly','Miesięczne'],['series','Fabularne'],['seasonal','Sezonowe'],['special','Specjalne']];
  const draw=()=>{
   tabs.replaceChildren();list.replaceChildren();
-  for(const [value,label] of groups){const b=button(label,()=>{period=value;draw()},period!==value);b.setAttribute('aria-pressed',String(period===value));tabs.appendChild(b);}
-  const filtered=defs.filter(x=>
-   (period==='all'||(period==='special'?['event','seasonal','special'].includes(x.period):x.period===period))&&
-   (missionStatus==='all'||x.status===missionStatus)&&
-   (String(x.name||'')+' '+String(x.description||'')).toLocaleLowerCase('pl').includes(missionSearch.toLocaleLowerCase('pl')));
-  count.textContent='Znaleziono '+number(filtered.length)+' misji';
+  for(const [value,label] of groups){
+   const b=button(label,()=>{period=value;draw()},period!==value);
+   b.setAttribute('aria-pressed',String(period===value));tabs.appendChild(b);
+  }
+  const selected=pinnedGoals();
+  const filtered=defs.filter(x=>{
+   const defId=String(x.definitionId||x.id||'');
+   const grouping=period==='all'||period==='pinned'&&selected.includes(defId)||
+    period==='series'&&x.category==='series'||
+    period==='seasonal'&&(x.period==='season'||x.category==='seasonal')||
+    period==='special'&&(x.period==='once'||x.category==='special'||x.category==='secret')||
+    x.period===period;
+   return grouping&&(missionStatus==='all'||x.status===missionStatus)&&
+    (String(x.name||'')+' '+String(x.description||'')).toLocaleLowerCase('pl').includes(missionSearch.toLocaleLowerCase('pl'));
+  });
+  count.textContent='Znaleziono '+number(filtered.length)+' misji · Przypięte '+selected.length+' / 3';
   if(!filtered.length){empty(list,'Brak misji w tej kategorii. Możesz przełączyć filtr.');return;}
   for(const x of filtered.slice(0,30)){
    const card=node('article','hg4-mission');
+   card.classList?.toggle?.('hg4-mission-done',x.status==='completed');
    const title=node('div','hg4-mission-top');
-   title.append(node('strong','',(x.icon||'🎯')+' '+String(x.name||'Wyzwanie').slice(0,100)),node('small','',x.status==='completed'?'Ukończone':x.status==='active'?'Aktywne':'Niedostępne'));
+   title.append(node('strong','',(x.icon||'🎯')+' '+String(x.name||'Wyzwanie').slice(0,100)),
+    node('small','',x.status==='completed'?'Ukończone':x.status==='active'?'Aktywne':
+     x.status==='locked'?'Zablokowane':x.status==='expired'?'Zakończone':'Niedostępne'));
    card.append(title,node('p','',String(x.description||'').slice(0,240)));
-   const track=node('div','hg4-track'),fill=node('span','hg4-fill');fill.style.width=Math.min(100,Math.max(0,safeNumber(x.percent)))+'%';
-   track.setAttribute('role','progressbar');track.setAttribute('aria-label','Postęp misji: '+String(x.name||''));
-   track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');
-   track.setAttribute('aria-valuenow',String(Math.min(100,Math.round(safeNumber(x.percent)))));track.appendChild(fill);
-   card.append(track,node('small','',Math.round(safeNumber(x.percent))+'% · '+number(x.xpReward||0)+' XP po rzeczywistym wykonaniu'));
+   const target=safeNumber(x.target),progress=safeNumber(x.progress);
+   if(target>0)card.appendChild(node('p','hg4-mission-progress-number',
+    'Postęp '+number(Math.min(target,progress))+' / '+number(target)));
+   const bar=node('div','hg4-track'),fill=node('span','hg4-fill');
+   fill.style.width=Math.min(100,Math.max(0,safeNumber(x.percent)))+'%';
+   bar.setAttribute('role','progressbar');bar.setAttribute('aria-label','Postęp misji: '+String(x.name||''));
+   bar.setAttribute('aria-valuemin','0');bar.setAttribute('aria-valuemax','100');
+   bar.setAttribute('aria-valuenow',String(Math.min(100,Math.round(safeNumber(x.percent)))));bar.appendChild(fill);
+   card.append(bar,node('small','',Math.round(safeNumber(x.percent))+'% · '+number(x.xpReward||0)+' XP po rzeczywistym wykonaniu'));
+   if(x.additionalReward){
+    const prize=earnedBadges().some(b=>b.id===x.additionalReward);
+    card.appendChild(node('small','hg4-mission-reward',prize?'🏅 Zdobyta odznaka':'🏅 Możliwa odznaka po potwierdzeniu'));
+   }
    card.appendChild(node('p','hg4-footnote','Źródło: '+String(x.source||'Historia HealthGo').slice(0,140)));
-   if(x.status==='active')card.appendChild(button('Przejdź do zadania →',()=>go(missionDestination(x)),true));
+   const id=String(x.definitionId||x.id||'');
+   const controls=node('div','hg4-mission-actions');
+   if(/^[a-z0-9_-]{1,80}$/.test(id)){
+    const pin=button(selected.includes(id)?'★ Odpnij cel':'☆ Przypnij cel',()=>{
+     if(!pinGoal(id)){
+      const message=$('hg4GoalStatus');
+      if(message)message.textContent='Możesz przypiąć maksymalnie 3 cele. Najpierw odepnij jeden.';
+     }else draw();
+    },true);
+    pin.setAttribute('aria-pressed',String(selected.includes(id)));
+    controls.appendChild(pin);
+   }
+   if(x.status==='active')controls.appendChild(button('Przejdź do zadania →',()=>go(missionDestination(x)),true));
+   if(controls.children.length)card.appendChild(controls);
    list.appendChild(card);
   }
  };
  search.addEventListener('input',()=>{missionSearch=String(search.value).slice(0,100);draw();});
  status.addEventListener('change',()=>{missionStatus=status.value;draw();});
- root.append(tools,tabs,count,list);draw();
+ const goalStatus=node('p','hg4-footnote');goalStatus.id='hg4GoalStatus';goalStatus.setAttribute('role','status');
+ root.append(tools,tabs,count,goalStatus,list);draw();
+ journey(root,defs);seasonal(root,defs);teamChallenges(root);missionHistory(root);
 }
 function healthDays(){
  const arr=S.state?.healthDays;return Array.isArray(arr)?arr.filter(x=>x&&typeof x.id==='string'):[];}
