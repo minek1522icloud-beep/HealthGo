@@ -53,8 +53,8 @@ test('Devices PRO compiles with iPhone-safe, truthful missing readings and no fa
  assert.match(script,/HealthGoServices/);
  assert.doesNotMatch(script,/grantXP|Math\.random|recordProgressEvent/);
  const html=fs.readFileSync('www/index.html','utf8');
- assert.match(html,/healthgo-devices-pro45\.js\?v=1/);
- assert.match(html,/healthgo-devices-pro45\.css\?v=1/);
+ assert.match(html,/healthgo-devices-pro45\.js\?v=2/);
+ assert.match(html,/healthgo-devices-pro45\.css\?v=2/);
 });
 test('A saved device is never mistaken for an active Bluetooth connection',()=>{
  const f=fixture();
