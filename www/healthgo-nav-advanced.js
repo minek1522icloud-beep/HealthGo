@@ -160,7 +160,7 @@
  }
  function setLimits(enabled){
   limitsEnabled=!!enabled;setPref('limits',limitsEnabled);limitLastAt=0;limitLastPos=null;limitDisplay=null;limitStatus='';
-  if(!limitsEnabled&&limitRequest){limitRequest.abort();limitRequest=null;}
+  if(limitRequest){limitRequest.abort();limitRequest=null;}limitNonce++;
   writeLimit();
   if(limitsEnabled&&active&&lastPos)void fetchLimit(lastPos,currentStreet);
   return limitsEnabled;
@@ -202,7 +202,9 @@
  }
  function onRoute(value){
   route=value||null;steps=Array.isArray(route?.steps)?route.steps:[];
-  lastStep=-1;lastDistance=null;limitDisplay=null;limitLastAt=0;renderLanes(null);writeLimit();
+  lastStep=-1;lastDistance=null;limitDisplay=null;limitLastAt=0;limitLastPos=null;
+  if(limitRequest){limitRequest.abort();limitRequest=null;}limitNonce++;
+  renderLanes(null);writeLimit();
  }
  function onStart(value){
   active=true;arrived=false;startedAt=Date.now();lastPos=null;summary=null;lastSpeedKmh=null;
@@ -236,7 +238,8 @@
   sessionStats.last={...lastPos,accuracy:detail.accuracy,at:Date.now()};
   sessionStats.readings++;
   const nextStep=Math.max(0,Math.min(steps.length-1,Number(detail.stepIndex)||0));
-  if(nextStep!==lastStep){lastStep=nextStep;updateRoads(nextStep);limitDisplay=null;limitLastAt=0;}
+  if(nextStep!==lastStep){lastStep=nextStep;updateRoads(nextStep);limitDisplay=null;limitLastAt=0;
+   if(limitRequest){limitRequest.abort();limitRequest=null;}limitNonce++;}
   lastDistance=Number.isFinite(detail.distanceTo)&&detail.distanceTo>=0?detail.distanceTo:null;
   renderLanes(!minimal&&Number.isFinite(detail.distanceTo)&&detail.distanceTo<=650?laneInfo(steps[nextStep]):null);
   const showSpeed=$('hgNavCurrentSpeed');if(showSpeed)showSpeed.textContent=speed===null?'—':String(Math.round(speed));
@@ -252,6 +255,7 @@
    // Old road's posted value must never persist down a different road.
    limitDisplay=null;limitStatus='Sprawdzam ograniczenie na bieżącej drodze';
    limitLastAt=0;
+   if(limitRequest){limitRequest.abort();limitRequest=null;}limitNonce++;
   }
   if(limitsEnabled)void fetchLimit(lastPos,currentStreet);
   w.HealthGoNavigationLive?.setApproach?.(lastDistance);
