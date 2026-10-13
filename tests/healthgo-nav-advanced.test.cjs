@@ -187,3 +187,32 @@ test('right-side map actions show explicit accessible labels and retain all thre
  assert.match(script,/if\(action==='follow'\)follow\(\)/);
  assert.match(script,/if\(action==='north'\)north\(\)/);
 });
+
+
+test('speed limit matching can use explicit maxspeed on unnamed but precise OSM geometry',()=>{
+ const fn=harness().api.matchMaxspeed,point={lat:52,lon:21.005};
+ const way=(name,limit,lat=52)=>({type:'way',tags:{name,maxspeed:limit,highway:'residential'},
+  geometry:[{lat,lon:21},{lat,lon:21.01}]});
+ assert.equal(fn({elements:[way('', '50')]},point,'Ludowa',90).kmh,50);
+ assert.equal(fn({elements:[way('Inna', '50')]},point,'Ludowa',90),null,
+  'a different named street is not a match');
+ assert.equal(fn({elements:[way('Inna', '50')]},point,'',90).kmh,50,
+  'route with no OSRM street name can use a uniquely near real road');
+ assert.equal(fn({elements:[way('', '50'),way('', '30')]},point,'',90),null,
+  'conflicting close limits are never guessed');
+ assert.equal(fn({elements:[way('', '50',52.005)]},point,'',90),null);
+ assert.equal(fn({elements:[way('', '50')]},point,'',0),null,'reject perpendicular road');
+});
+test('navigation shows an explicit unknown badge before permission and a clear planner opt-in',()=>{
+ const h=harness();
+ h.api.start({steps:[{name:'Ludowa'}],geometry:[[21,52],[21.01,52]]});
+ h.api.gps({position:{lat:52,lon:21},accuracy:9,speed:5,heading:90,stepIndex:0,distanceTo:200});
+ assert.equal(h.$('hgNavGaugeLimit').hidden,false);
+ assert.equal(h.$('hgNavGaugeLimit').textContent,'—');
+ assert.equal(h.$('hgNavPlannerLimits').attrs['aria-pressed'],'false');
+ assert.equal(h.calls.length,0,'GPS coordinates must not leave the device before opt-in');
+ h.api.setLimits(true);
+ assert.equal(h.$('hgNavPlannerLimits').attrs['aria-pressed'],'true');
+ assert.match(html,/id="hgNavPlannerLimits"/);
+ h.api.stop();
+});
