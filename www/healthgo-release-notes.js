@@ -5,8 +5,23 @@
  'use strict';
  const w=window,d=w.document,S=w.HealthGoServices;
  if(!d||!S)return;
- const RELEASE='4.5.1',KEY='healthgo.release-notes.last-build.v1',RELEASE_KEY='healthgo.release-notes.last-release.v1';
+ const RELEASE='5.0',KEY='healthgo.release-notes.last-build.v1',RELEASE_KEY='healthgo.release-notes.last-release.v1';
  const NOTES=[
+  {id:'5.0',title:'Urządzenia PRO 5.0 — wybierz swój zegarek',date:'2026-10-13',
+   tags:['ZEGARKI','SAMSUNG','GARMIN','XIAOMI','IPHONE','ANDROID'],
+   sections:[
+    {title:'Kreator obsługi różnych producentów',items:[
+     'Dodano wybór Apple Watch, Samsung Galaxy Watch, Garmin, Xiaomi, Huawei, Amazfit, Fitbit, Polar i innych zgodnych urządzeń.',
+     'Po wyborze rodziny modelu HealthGo pokazuje odpowiednie metody synchronizacji i informuje o wymaganych aplikacjach.',
+     'Na obsługiwanym Androidzie lub komputerze można uruchomić rzeczywisty wybór standardowego Bluetooth LE. Odczyty zależą od usług, które udostępnia zegarek.',
+     'Na iPhonie aplikacja internetowa nie udaje połączenia przez Apple Health ani Bluetooth. Integracja z HealthKit wymaga osobno zainstalowanej aplikacji natywnej.',
+     'Wybrana marka i rodzina modelu mogą zostać zapamiętane lokalnie dla konta, bez zapisywania fikcyjnych pomiarów.'
+    ]},
+    {title:'Weryfikacja połączenia i prywatność',items:[
+     'Połączenie jest potwierdzane tylko wtedy, gdy rzeczywista sesja BLE została nawiązana; samo wybranie modelu nie oznacza parowania.',
+     'Informacje o wsparciu producenta są wskazówkami, a nie potwierdzeniem kompatybilności wszystkich modeli. Dla niektórych modeli potrzebna jest aplikacja producenta lub autoryzowana integracja.'
+    ]}
+   ]},
   {id:'4.5.1',title:'Poprawka połączeń z zegarkami na iPhonie',date:'2026-10-13',
    tags:['IPHONE','APPLE HEALTH','URZĄDZENIA'],
    sections:[{title:'Naprawa błędu Safari',items:[
