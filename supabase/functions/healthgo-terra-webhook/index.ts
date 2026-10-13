@@ -54,7 +54,7 @@ Deno.serve(async(req)=>{
   const user=event.user&&typeof event.user==="object"&&!Array.isArray(event.user)?event.user as Record<string,unknown>:{};
   const terraId=user.user_id;
   if(kind==="auth"){
-    const ref=user.reference_id;
+    const ref=event.reference_id||user.reference_id;
     if(!validId(terraId)||typeof ref!=="string"||!/^[a-f0-9-]{36}$/i.test(ref))
       return json(400,{error:"invalid_auth"});
     const {data:request,error}=await db.from("hg_terra_link_requests").select("id,user_id,expires_at,consumed_at")
