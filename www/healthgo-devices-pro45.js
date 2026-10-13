@@ -280,6 +280,7 @@ function render(){
  if(w.HealthGoDeviceWizard50)w.HealthGoDeviceWizard50.render(root);
  else renderPairing(root);
  renderHelp(root);
+ w.HealthGoTerra50?.render?.(root);
 }
 S.subscribe?.(render);
 w.addEventListener?.('healthgo:device-connection',render);
