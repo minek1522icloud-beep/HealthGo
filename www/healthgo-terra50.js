@@ -40,7 +40,7 @@ async function refresh(force=false){
   lastFetched=Date.now();
  }catch(e){
   configured=false;connections=[];metrics=[];
-  if(account===String(S.state?.uid||''))setMsg('Nie udało się sprawdzić integracji Terra. Dane innych urządzeń pozostają dostępne.');
+  if(account===String(S.state?.uid||'')){lastFetched=Date.now();setMsg('Nie udało się sprawdzić integracji Terra. Dane innych urządzeń pozostają dostępne.');}
  }finally{loading=false;if(account===String(S.state?.uid||''))draw();}
 }
 async function connect(){
@@ -63,7 +63,7 @@ async function disconnect(id){
  try{
   await apiRequest('POST',{action:'disconnect',connection_id:id});
   setMsg('Źródło odłączone. Jego dane Terra zostały usunięte z HealthGo.');
-  lastFetched=0;await refresh(true);
+  lastFetched=0;busy=false;await refresh(true);
  }catch(_){setMsg('Nie udało się potwierdzić odłączenia. Spróbuj ponownie.');}
  finally{busy=false;draw();}
 }
