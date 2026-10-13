@@ -1,0 +1,151 @@
+name: HealthGo Native Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_android_release:
+        description: "Opublikuj podpisany APK (wymaga sekretow podpisywania)"
+        type: boolean
+        required: false
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/native-android.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: healthgo-native-android
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Buduj natywne HealthGo na Androida
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Pobierz HealthGo
+        uses: actions/checkout@v6
+
+      - name: Zainstaluj Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Zainstaluj Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Przygotuj Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Zbuduj pakiet AI tak jak dla strony
+        shell: bash
+        run: |
+          mkdir -p native-ai-build
+          cp www/healthgo-ai-entry.js native-ai-build/entry.js
+          cd native-ai-build
+          npm init -y >/dev/null 2>&1
+          npm install --no-package-lock --no-save firebase@12.19.0 esbuild@0.25.10
+          npx esbuild entry.js --bundle --format=iife --platform=browser --target=es2020 --minify --outfile=../www/healthgo-ai-bundle.js
+
+      - name: Przygotuj pliki aplikacji
+        shell: bash
+        run: |
+          mkdir -p mobile/web
+          cp -a www/. mobile/web/
+          cp icon.png mobile/web/icon.png
+          test -s mobile/web/index.html
+          test -s mobile/web/healthgo-ai-bundle.js
+
+      - name: Zainstaluj Capacitor
+        working-directory: mobile
+        run: npm install --no-audit --no-fund
+
+      - name: Utworz natywny projekt Android
+        working-directory: mobile
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Zbuduj testowy instalator APK
+        working-directory: mobile/android
+        shell: bash
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Udostepnij APK do testow jako artefakt Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: HealthGo-Android-debug
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      # CI debug signing changes per run. Public releases require stable private signing key.
+      - name: Sprawdz sekrety dla wydania Android
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_android_release }}
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ] || [ -z "$ANDROID_KEYSTORE_PASSWORD" ] || [ -z "$ANDROID_KEY_ALIAS" ] || [ -z "$ANDROID_KEY_PASSWORD" ]; then
+            echo "::error::Brak sekretow do podpisywania. Nie publikujemy niepodpisanego APK."
+            exit 1
+          fi
+
+      - name: Zbuduj release APK
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_android_release }}
+        working-directory: mobile/android
+        shell: bash
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Podpisz release prywatnym kluczem
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_android_release }}
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/healthgo-release.jks"
+          chmod 600 "$RUNNER_TEMP/healthgo-release.jks"
+          BUILD_TOOLS="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          test -x "$BUILD_TOOLS/zipalign"
+          test -x "$BUILD_TOOLS/apksigner"
+          INPUT="mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          test -s "$INPUT"
+          "$BUILD_TOOLS/zipalign" -f 4 "$INPUT" "$RUNNER_TEMP/HealthGo-aligned.apk"
+          "$BUILD_TOOLS/apksigner" sign \
+            --ks "$RUNNER_TEMP/healthgo-release.jks" \
+            --ks-key-alias "$ANDROID_KEY_ALIAS" \
+            --ks-pass env:ANDROID_KEYSTORE_PASSWORD \
+            --key-pass env:ANDROID_KEY_PASSWORD \
+            --out "$RUNNER_TEMP/HealthGo-Android.apk" \
+            "$RUNNER_TEMP/HealthGo-aligned.apk"
+          "$BUILD_TOOLS/apksigner" verify "$RUNNER_TEMP/HealthGo-Android.apk"
+
+      - name: Opublikuj podpisany APK do publicznego linku
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_android_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release create "android-$GITHUB_RUN_NUMBER" \
+            "$RUNNER_TEMP/HealthGo-Android.apk" \
+            --target "$GITHUB_SHA" \
+            --title "HealthGo Android $GITHUB_RUN_NUMBER" \
+            --notes "Podpisany instalator Android. Aplikacja natywna jest we wczesnej fazie testow." \
+            --latest
