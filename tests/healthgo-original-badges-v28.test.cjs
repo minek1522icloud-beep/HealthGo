@@ -48,7 +48,7 @@ test('PWA uses only the new clean SVG renderer and invalidates the old iPhone ca
  assert.match(html,/healthgo-badge-simple\.css\?v=1/);
  assert.doesNotMatch(html,/src="\.\/healthgo-badge-board\.js/);
  assert.doesNotMatch(html,/href="\.\/healthgo-badge-board\.css/);
- assert.match(sw,/healthgo-pwa-v59-navigation-2d3d-20261011/);
+ assert.match(sw,/healthgo-pwa-v60-activity44-updates-20261013/);
  const before=html.indexOf('healthgo-badge-3d.js?v=3');
  const simple=html.indexOf('healthgo-badge-simple.js?v=1');
  const pack=html.indexOf('healthgo-pack-pro.js?v=9');
