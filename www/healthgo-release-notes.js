@@ -133,7 +133,10 @@
   }
   if(!$('hguOpenInbox')){
    const b=d.createElement('button');b.id='hguOpenInbox';b.type='button';b.className='btn secondary hgu-settings-button';
-   b.textContent='Wiadomości o aktualizacjach';b.addEventListener('click',()=>{
+   b.textContent='Wiadomości o aktualizacjach';
+   const badge=d.createElement('span');badge.id='hguUpdateBadge';badge.className='hgu-unread-badge';badge.hidden=true;
+   b.appendChild(badge);
+   b.addEventListener('click',()=>{
     if(typeof w.mobileGo==='function')w.mobileGo('notifications');else w.go?.('notifications');
     inbox();
    });help.appendChild(b);
@@ -145,6 +148,19 @@
   if(old.version===remote)return;
   save('pending',{version:remote,read:false,at:new Date().toISOString()});
   pendingRemote=remote;inbox();
+  // Show a foreground device notification only when the user has previously
+  // granted permission and the installed service worker supports it.
+  try{
+   if(w.Notification?.permission==='granted'&&w.navigator?.serviceWorker?.getRegistration){
+    w.navigator.serviceWorker.getRegistration().then(reg=>{
+     if(reg?.showNotification)return reg.showNotification('Nowa aktualizacja HealthGo',{
+      body:'Wersja '+remote.slice(0,8)+' jest dostępna. Otwórz HealthGo, aby ją pobrać.',
+      tag:'healthgo-update-'+remote.slice(0,12),renotify:false
+     });
+    }).catch(()=>{});
+   }
+  }catch(_){}
+
  }
  function inbox(){
   notifyCount();
