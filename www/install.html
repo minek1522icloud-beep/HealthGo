@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#061a14">
+<meta name="description" content="Pobierz HealthGo na iPhone lub Android. Jeden link, właściwa wersja aplikacji.">
+<title>Pobierz HealthGo — iPhone i Android</title>
+<link rel="icon" href="./icon.png">
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#061a14;color:#ebfff4}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;background:radial-gradient(ellipse at 85% 5%,#1e805346,transparent 53%),#061a14}
+main{width:min(740px,100%);margin:0 auto;padding:clamp(18px,5vw,42px) 20px calc(50px + env(safe-area-inset-bottom,0px))}
+a{color:#8afac0}.brand{display:flex;align-items:center;gap:14px;margin-bottom:32px;text-decoration:none;color:inherit;font-weight:900;font-size:20px}
+.brand img{height:54px;width:54px;object-fit:contain;border-radius:15px;background:#0b3e2c}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:#89e9b3}
+h1{font-size:clamp(33px,7vw,54px);line-height:1.07;letter-spacing:-.04em;margin:12px 0 15px}
+.intro{line-height:1.7;color:#bedbc9;margin:0 0 25px}
+.card{border:1px solid #397452;background:linear-gradient(145deg,#124330,#09261c);border-radius:25px;padding:clamp(19px,4vw,30px);box-shadow:0 16px 40px #03140c88;margin:15px 0}
+.platform{display:flex;gap:13px;align-items:center;margin-bottom:18px}
+.platform-icon{width:51px;height:51px;flex:none;display:grid;place-items:center;border-radius:14px;background:#1c6646;font-size:25px}
+h2{font-size:20px;line-height:1.2;margin:0 0 7px}
+.desc{font-size:13px;line-height:1.55;color:#b4d7c2;margin:0}
+.button{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;width:100%;min-height:54px;padding:15px;border-radius:15px;font-size:15px;font-weight:800;text-decoration:none;background:#75f0ab;color:#05251a;border:1px solid #a5ffca}
+.button[aria-disabled="true"]{background:#174230;color:#a6c9b4;border-color:#3a7251;cursor:not-allowed}
+.button:focus-visible,a:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.status{min-height:20px;margin:12px 0 0;font-size:12px;line-height:1.6;color:#acd0b9}
+small{color:#a8cab6;line-height:1.6}
+.secondary{margin-top:18px;border-top:1px solid #326349;padding-top:17px}
+.secondary summary{font-weight:750;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.inline-link{display:inline-block;margin-top:12px;font-weight:750}
+.footnote{line-height:1.7;font-size:12px;color:#b6d6c1}
+#androidCard[data-primary="true"],#iosCard[data-primary="true"]{border-color:#76e8a7;box-shadow:0 0 0 1px #4fcd8c55,0 20px 50px #03140c99}
+@media(min-width:720px){.platforms{display:grid;grid-template-columns:1fr 1fr;gap:15px}.platforms .card{margin:0;display:flex;flex-direction:column}.platforms .button{margin-top:auto}.platforms .platform{min-height:92px}}
+</style>
+<script src="./healthgo-installer.js?v=1" defer></script>
+</head>
+<body>
+<main>
+<a class="brand" href="./index.html"><img src="./icon.png" alt=""> HealthGo</a>
+<div class="kicker">HEALTHGO MOBILE · INSTALACJA</div>
+<h1>Twoje zdrowie.<br>Twoja aplikacja.</h1>
+<p class="intro">Jeden link dla iPhone'a i Androida. Wybierz dostępną instalację. Jeśli aplikacja natywna nie została jeszcze opublikowana, powiemy o tym wprost.</p>
+<div class="platforms">
+<section class="card" id="iosCard" aria-labelledby="iosTitle">
+<div class="platform"><div class="platform-icon" aria-hidden="true">◉</div><div><h2 id="iosTitle">iPhone</h2><p class="desc">Prawdziwa aplikacja iOS przez App Store lub TestFlight</p></div></div>
+<a id="iosDownload" class="button" aria-disabled="true" tabindex="-1">W przygotowaniu</a>
+<p class="status" id="iosStatus" role="status">Czekamy na podpisaną i zatwierdzoną wersję iOS.</p>
+</section>
+<section class="card" id="androidCard" aria-labelledby="androidTitle">
+<div class="platform"><div class="platform-icon" aria-hidden="true">▶</div><div><h2 id="androidTitle">Android</h2><p class="desc">Instalator APK — po opublikowaniu podpisanej wersji</p></div></div>
+<a id="androidDownload" class="button" aria-disabled="true" tabindex="-1">Sprawdzam dostępność…</a>
+<p class="status" id="androidStatus" role="status">Sprawdzam oficjalne wydania HealthGo.</p>
+</section>
+</div>
+<details class="card secondary">
+<summary>Jak to działa?</summary>
+<p class="footnote">Android: kiedy opublikujemy podpisaną wersję, przycisk pobierze plik APK z oficjalnego repozytorium HealthGo. iPhone: po zaakceptowaniu dystrybucji przez Apple przycisk otworzy prawdziwy App Store lub TestFlight.</p>
+<p class="footnote">To nie jest instalator PWA ani skrót WWW. Natywna wersja i synchronizacja zegarków to osobne etapy; instalacja sama w sobie nie zapewnia jeszcze dostępu do Apple Health ani wszystkich zegarków.</p>
+</details>
+<p class="footnote">HealthGo jest nadal dostępne przez przeglądarkę. <a href="./index.html">Otwórz obecną wersję HealthGo</a>.</p>
+</main>
+</body>
+</html>
