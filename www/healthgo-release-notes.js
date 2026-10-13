@@ -5,8 +5,24 @@
  'use strict';
  const w=window,d=w.document,S=w.HealthGoServices;
  if(!d||!S)return;
- const RELEASE='4.4',KEY='healthgo.release-notes.last-build.v1',RELEASE_KEY='healthgo.release-notes.last-release.v1';
+ const RELEASE='4.5',KEY='healthgo.release-notes.last-build.v1',RELEASE_KEY='healthgo.release-notes.last-release.v1';
  const NOTES=[
+  {id:'4.5',title:'Urządzenia PRO — połączenia i synchronizacja',date:'2026-10-13',
+   tags:['ZEGARKI','BLUETOOTH','ZDROWIE','PRYWATNOŚĆ'],
+   sections:[
+    {title:'Centrum urządzeń 4.5',items:[
+     'Nowy ekran pokazuje osobno aktywne połączenie Bluetooth, urządzenia zapisane na koncie oraz ostatnie rzeczywiście zsynchronizowane dane.',
+     'Dostępne pomiary pokazują nazwę źródła i datę zapisu. Jeśli urządzenie nie udostępnia danych, HealthGo nie wymyśla odczytów.',
+     'Dodano wybór Apple Health, Health Connect, standardowego Bluetooth LE i integracji aplikacji producenta.',
+     'Naprawiono resetowanie połączenia przy zmianie konta oraz obsługę starszych zdarzeń Bluetooth.'
+    ]},
+    {title:'Integracje natywne',items:[
+     'Na Androidzie dodano przekierowania do rzeczywistych ekranów Bluetooth i Health Connect w natywnej aplikacji HealthGo.',
+     'Na iPhonie istniejąca integracja wykorzystuje CoreBluetooth i Apple Health, gdy zgodna natywna aplikacja jest zainstalowana.',
+     'Samo dodanie strony do ekranu początkowego nie daje Safari dostępu do Apple Health ani uniwersalnego łączenia wszystkich zegarków.',
+     'Podłączenie i odczyt wymagają obsługi danego modelu, zgody użytkownika oraz testu na prawdziwym urządzeniu.'
+    ]}
+   ]},
   {id:'4.4',title:'Aktywność PRO i aktualizacje — poprawione',date:'2026-10-13',
    tags:['AKTYWNOŚĆ','STATYSTYKI','WIADOMOŚCI','AKTUALIZACJE'],
    sections:[
