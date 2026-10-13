@@ -1,4 +1,5 @@
 /* HealthGo Activity PRO 4.4 — dark mint, iPhone safe areas, truthful empty states. */
+body.hg44-ready #activity>.hero,
 body.hg44-ready #activity>.activity-shell,
 body.hg44-ready #activity>#hfcActivity,
 body.hg44-ready #activity>#hg4Stats{display:none!important}
