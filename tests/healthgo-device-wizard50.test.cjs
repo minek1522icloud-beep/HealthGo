@@ -101,7 +101,7 @@ test('on compatible Android Bluetooth requires direct user action and real confi
  await start.listeners.click();
  assert.equal(f.calls,1);
  assert.match(f.wizard.getState().status,/Połączono przez Bluetooth LE/);
- assert.match(f.wizard.getState().status,/prawdziwe połączenie/i);
+ assert.match(f.wizard.getState().status,/rzeczywiste połączenie/i);
 });
 test('missing Web Bluetooth displays unavailable state and never attempts pairing',()=>{
  const f=fixture();f.win.navigator.bluetooth={};
