@@ -73,6 +73,7 @@
  }
  function isRemote(v){return /^[a-f0-9]{40}$/i.test(String(v||''));}
  function unreadCount(){
+  if(!account())return 0;
   const seen=read('seen'),pending=read('pending');
   return (seen[RELEASE]?0:1)+(pending.version&&pending.version!==build()&&!pending.read?1:0);
  }
