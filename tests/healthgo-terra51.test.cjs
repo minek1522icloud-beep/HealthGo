@@ -43,7 +43,7 @@ function fixture(initial={configured:false,connections:[]}){
  return {document,root,win,responses,calls,links,
   render:()=>win.HealthGoTerra50.render(root),
   allText:()=>text(root),
-  button:s=>els.find(x=>x.tag==='button'&&x.textContent.includes(s)&&x.parentElement?.children.includes(x))
+  button:s=>els.filter(x=>x.tag==='button'&&x.textContent.includes(s)&&x.parentElement?.children.includes(x)).at(-1)
  };
 }
 test('Terra frontend is valid JavaScript and does not expose secret keys',()=>{
