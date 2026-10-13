@@ -11,7 +11,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "mobile/**"
+      - "native-shell/**"
       - ".github/workflows/native-android.yml"
 
 permissions:
@@ -58,24 +58,24 @@ jobs:
       - name: Przygotuj pliki aplikacji
         shell: bash
         run: |
-          mkdir -p mobile/web
-          cp -a www/. mobile/web/
-          cp icon.png mobile/web/icon.png
-          test -s mobile/web/index.html
-          test -s mobile/web/healthgo-ai-bundle.js
+          mkdir -p native-shell/web
+          cp -a www/. native-shell/web/
+          cp icon.png native-shell/web/icon.png
+          test -s native-shell/web/index.html
+          test -s native-shell/web/healthgo-ai-bundle.js
 
       - name: Zainstaluj Capacitor
-        working-directory: mobile
+        working-directory: native-shell
         run: npm install --no-audit --no-fund
 
       - name: Utworz natywny projekt Android
-        working-directory: mobile
+        working-directory: native-shell
         run: |
           npx cap add android
           npx cap sync android
 
       - name: Zbuduj testowy instalator APK
-        working-directory: mobile/android
+        working-directory: native-shell/android
         shell: bash
         run: |
           chmod +x ./gradlew
@@ -85,7 +85,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: HealthGo-Android-debug
-          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          path: native-shell/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
 
@@ -106,7 +106,7 @@ jobs:
 
       - name: Zbuduj release APK
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_android_release }}
-        working-directory: mobile/android
+        working-directory: native-shell/android
         shell: bash
         run: ./gradlew assembleRelease --no-daemon
 
@@ -125,7 +125,7 @@ jobs:
           BUILD_TOOLS="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
           test -x "$BUILD_TOOLS/zipalign"
           test -x "$BUILD_TOOLS/apksigner"
-          INPUT="mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk"
+          INPUT="native-shell/android/app/build/outputs/apk/release/app-release-unsigned.apk"
           test -s "$INPUT"
           "$BUILD_TOOLS/zipalign" -f 4 "$INPUT" "$RUNNER_TEMP/HealthGo-aligned.apk"
           "$BUILD_TOOLS/apksigner" sign \
