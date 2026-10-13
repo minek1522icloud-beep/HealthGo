@@ -107,7 +107,7 @@ function renderAction(container,plan){
   el('p','',p.note));
  const actions=el('div','hg50-actions');
  if(p.kind==='ble'&&p.enabled){
-  const b=button(busy?'Trwa łączenie…':'Wyszukaj i połącz Bluetooth LE',()=>void startBle());
+  const b=button(busy?'Trwa łączenie…':'Wyszukaj i połącz Bluetooth LE',()=>startBle());
   b.disabled=busy;actions.appendChild(b);
  }else if(p.kind==='ble'){
   pane.appendChild(caption('Ta przeglądarka nie umożliwia bezpośredniego wyszukania urządzenia. Nie otwieramy nieobsługiwanych adresów systemowych.'));
