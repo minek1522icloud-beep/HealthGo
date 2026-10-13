@@ -8,6 +8,7 @@ on:
     paths:
       - "www/**"
       - "scripts/build-safe-mobile.py"
+      - "scripts/check-syntax.cjs"
       - "tests/build-safe-mobile.test.cjs"
       - "tests/healthgo-map-v2.test.cjs"
       - "tests/healthgo-map-pro.test.cjs"
