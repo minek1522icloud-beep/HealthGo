@@ -53,19 +53,35 @@ function nativeLink(host){
 
 function openNative(host,fallback){
   const status=document.getElementById('hgRealDeviceStatus');
+  if(isIOS()){
+    // Safari and a home-screen web shortcut cannot detect whether the native
+    // app with a registered healthgo:// URL scheme is installed. Navigating
+    // blindly shows the system's "invalid address" alert on iPhones without it.
+    // Open the installed native HealthGo *manually*; never fake HealthKit access.
+    if(status)status.textContent=fallback;
+    return false;
+  }
+  if(!isAndroid()){
+    if(status)status.textContent='Połączenie wymaga obsługiwanej aplikacji mobilnej.';
+    return false;
+  }
   const started=Date.now();
-  try{window.location.href=nativeLink(host)}catch(_){}
+  try{window.location.href=nativeLink(host)}catch(_){
+    if(status)status.textContent=fallback;
+    return false;
+  }
   setTimeout(()=>{
     if(document.visibilityState==='visible'&&Date.now()-started>1200&&status){
       status.textContent=fallback;
     }
   },1700);
+  return true;
 }
 
 function openNativeBluetooth(){
   openNative(
     'connect-bluetooth',
-    'Na iPhonie bezpośrednie łączenie zegarka działa w natywnej aplikacji HealthGo. Otwórz zainstalowane HealthGo i wybierz „Szukaj zegarka”.'
+    'To jest internetowa wersja HealthGo. Safari na iPhonie nie łączy się bezpośrednio z zegarkiem BLE. Potrzebna jest osobno zainstalowana natywna aplikacja HealthGo z CoreBluetooth. Skrót strony na ekranie głównym nie wystarcza.'
   );
 }
 
@@ -74,7 +90,7 @@ function openHealthPlatform(){
   if(isIOS()){
     openNative(
       'connect-health',
-      'Safari nie ma dostępu do systemowych danych zdrowotnych. Otwórz natywną aplikację HealthGo na iPhonie.'
+      'Wersja internetowa HealthGo nie może odczytać Apple Health. Zegarek sparuj w aplikacji Watch, a pomiary sprawdź w aplikacji Zdrowie. Do ich przenoszenia do HealthGo potrzebna jest osobno zainstalowana natywna aplikacja z HealthKit; skrót Safari nie wystarczy.'
     );
     return;
   }
