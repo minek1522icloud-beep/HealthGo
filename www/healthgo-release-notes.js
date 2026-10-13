@@ -5,8 +5,19 @@
  'use strict';
  const w=window,d=w.document,S=w.HealthGoServices;
  if(!d||!S)return;
- const RELEASE='5.0',KEY='healthgo.release-notes.last-build.v1',RELEASE_KEY='healthgo.release-notes.last-release.v1';
+ const RELEASE='5.1',KEY='healthgo.release-notes.last-build.v1',RELEASE_KEY='healthgo.release-notes.last-release.v1';
  const NOTES=[
+  {id:'5.1',title:'Integracje zegarków — Terra przygotowana bez opłat',date:'2026-10-13',
+   tags:['ZEGARKI','INTEGRACJE','PRYWATNOŚĆ'],
+   sections:[
+    {title:'Przygotowanie integracji Terra',items:[
+      'Dodano do Centrum Urządzeń opcjonalny moduł łączenia kont producentów przez Terra.',
+      'Terra jest płatną usługą dla administratora — integracja pozostaje wyłączona do czasu konfiguracji i świadomej zgody.',
+      'Nowe tabele i zabezpieczone funkcje serwerowe pozwolą odebrać podpisane zdarzenia Terra, bez udostępniania kluczy w aplikacji.',
+      'W HealthGo będzie można zobaczyć wyłącznie rzeczywiście potwierdzone źródła, zsynchronizowane kroki, dystans i czas aktywności.',
+      'Można później odłączyć źródło i usunąć jego pomiary. Nie zmieniamy XP ani innych systemów.'
+    ]}
+   ]},
   {id:'5.0',title:'Urządzenia PRO 5.0 — wybierz swój zegarek',date:'2026-10-13',
    tags:['ZEGARKI','SAMSUNG','GARMIN','XIAOMI','IPHONE','ANDROID'],
    sections:[
