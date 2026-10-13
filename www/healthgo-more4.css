@@ -143,3 +143,145 @@ body[data-hg4-accent="violet"]{--hg4-accent:#c4a7ff;--hg4-accent-dark:#48356a}
  background:#123d2c;border:1px solid #4a8867;color:#d6ffe7;font-size:12px;font-weight:800}
 #hg4Habits .hg4-toggle-list{margin:4px 0 10px}
 #hg4Habits .hg4-toggle{min-height:49px}
+
+
+/* HealthGo 4.3: Challenges 3.0 and XP 3.0. No changes to badge 3D or navigation. */
+#hg4XpDashboard .hg4-xp-hero{
+ display:flex;align-items:center;gap:clamp(15px,4vw,29px);
+ padding:18px;border-radius:21px;margin:14px 0;
+ background:radial-gradient(circle at 15% 30%,#1c75544d,transparent 52%),linear-gradient(145deg,#123e2d,#091f19);
+ border:1px solid #429b6d;box-shadow:0 10px 28px #021c1438
+}
+#hg4XpDashboard .hg4-xp-ring{
+ flex:0 0 142px;width:142px;height:142px;
+ border-radius:50%;display:grid;place-items:center;position:relative;
+ box-shadow:0 0 28px #65eeb52a;
+}
+#hg4XpDashboard .hg4-xp-ring-inner{
+ width:calc(100% - 15px);height:calc(100% - 15px);
+ display:flex;align-items:center;justify-content:center;
+ flex-direction:column;background:#0a241b;border-radius:50%;
+ color:#f1fff6;border:1px solid #1c6247
+}
+#hg4XpDashboard .hg4-xp-ring-inner small{
+ font-size:10px;font-weight:900;letter-spacing:.16em;color:#a2e2be
+}
+#hg4XpDashboard .hg4-xp-ring-inner strong{
+ font-variant-numeric:tabular-nums;font-size:48px;line-height:1.05;
+ font-weight:950;color:#eafff3
+}
+#hg4XpDashboard .hg4-xp-ring-inner span{
+ font-size:11px;font-weight:850;color:var(--hg4-accent)
+}
+#hg4XpDashboard .hg4-xp-summary{min-width:0;flex:1}
+#hg4XpDashboard .hg4-xp-summary h4{
+ font-size:clamp(19px,4vw,27px);line-height:1.12;
+ margin:8px 0;color:#eafff3
+}
+#hg4XpDashboard .hg4-xp-summary>p{
+ font-size:12px;line-height:1.55;color:#c8e8d5;margin:7px 0
+}
+.hg4-kicker{
+ display:block;font-size:10px;font-weight:900;letter-spacing:.15em;
+ color:var(--hg4-accent);text-transform:uppercase
+}
+.hg4-chip-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.hg4-chip{display:inline-flex;padding:9px 12px;border:1px solid #5da783;
+ border-radius:99px;background:#194f39;color:#eefff3;font-weight:800;font-size:11px}
+.hg4-next-rewards,.hg4-xp-week,.hg4-journey,.hg4-season,.hg4-team,.hg4-completed-history{
+ background:linear-gradient(155deg,#0d3426,#0b241c);
+ border:1px solid #356f50;border-radius:18px;padding:15px;
+ margin:15px 0;min-width:0
+}
+.hg4-reward-row{
+ display:flex;justify-content:space-between;align-items:center;gap:12px;
+ border-radius:12px;padding:12px;background:#174431;margin-top:7px
+}
+.hg4-reward-row strong{font-size:12px;line-height:1.45;color:#e8fff1}
+.hg4-reward-row span{font-size:11px;white-space:nowrap;color:#a5efc3}
+.hg4-xp-bars{
+ display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:end;
+ gap:7px;height:156px;padding:11px 6px 6px;border-radius:13px;
+ background:#09271d;border:1px solid #2d6348
+}
+.hg4-xp-day{min-width:0;display:flex;flex-direction:column;align-items:center;
+ justify-content:flex-end;gap:6px;height:100%;color:#b9e5c7}
+.hg4-xp-day small,.hg4-xp-day span{
+ display:block;font-size:10px;line-height:1.1;
+ text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums
+}
+.hg4-xp-bar{
+ flex:0 0 auto;width:min(25px,85%);height:0;min-height:0;
+ border-radius:6px 6px 2px 2px;background:linear-gradient(0deg,#19805d,#81edb8);
+ box-shadow:0 0 12px #48d99420
+}
+.hg4-journey-steps{display:grid;gap:7px;margin:11px 0}
+.hg4-journey-step{
+ display:flex;align-items:center;gap:12px;min-width:0;
+ padding:12px;border:1px solid #437759;background:#15412d;border-radius:13px
+}
+.hg4-journey-index{
+ width:38px;height:38px;flex:0 0 38px;border-radius:50%;
+ display:grid;place-items:center;font-weight:900;font-size:16px;
+ background:#25593e;border:2px solid #6dc897;color:#eaffee
+}
+.hg4-journey-step.complete .hg4-journey-index{background:#7fe9ae;color:#063020}
+.hg4-journey-step.locked{opacity:.7}
+.hg4-journey-copy{min-width:0;display:grid;gap:4px}
+.hg4-journey-copy strong{font-size:12px;color:#effff6}
+.hg4-journey-copy small{font-size:11px;color:#b8dec5;line-height:1.4}
+.hg4-season-card{display:grid;gap:7px;padding:13px;margin:10px 0;
+ background:#173a2b;border:1px solid #458560;border-radius:13px}
+.hg4-season-card strong{font-size:13px;color:#edfff3}
+.hg4-season-card p{font-size:12px;line-height:1.55;color:#bfdfca;margin:0}
+.hg4-season-card small{font-size:11px;color:#a4e5bd}
+.hg4-team>p{color:#bfdfca;font-size:12px;line-height:1.6}
+.hg4-mission-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.hg4-mission-actions>.hg4-button{flex:1 1 120px;min-width:0}
+.hg4-mission-reward{display:block;color:#abf5c9!important;margin-top:7px}
+.hg4-mission-progress-number{font-size:11px!important;color:#d3ffe8!important;margin-bottom:0!important}
+.hg4-mission-done{border-color:#5eb98a;background:#194733}
+#hg4MissionPeriods .hg4-tabs{flex-wrap:nowrap;overflow-x:auto;
+ overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:5px 2px 11px;
+ scroll-snap-type:x proximity}
+#hg4MissionPeriods .hg4-tabs .hg4-button{flex:0 0 auto;scroll-snap-align:start}
+#hg4MissionPeriods .hg4-mission-tools{margin-bottom:6px}
+.hg4-level-overlay{
+ position:fixed;inset:0;z-index:299999;
+ display:grid;place-items:center;padding:max(20px,env(safe-area-inset-top)) 15px;
+ background:#011c15e8;backdrop-filter:blur(10px)
+}
+.hg4-level-dialog{
+ display:grid;justify-items:center;gap:13px;text-align:center;
+ width:min(480px,100%);padding:30px 24px;border-radius:24px;
+ border:1px solid #84e7b3;
+ background:radial-gradient(circle at 50% 0%,#2c896342,transparent 55%),linear-gradient(160deg,#18503a,#081e17);
+ box-shadow:0 20px 85px #0009;color:#eafff4;animation:hg4-level-appear .48s ease both
+}
+.hg4-level-tag{font-size:11px;font-weight:900;letter-spacing:.18em;color:#a9ffcd}
+.hg4-level-mark{
+ font-size:64px;line-height:1;color:#98ffd1;text-shadow:0 0 30px #6df4b9aa;
+ animation:hg4-level-mark 1.3s ease-in-out 1
+}
+.hg4-level-dialog h2{color:#f1fff6;font-size:clamp(29px,7vw,43px);margin:0}
+.hg4-level-dialog p{font-size:13px;line-height:1.6;color:#c7e9d5;margin:0}
+.hg4-level-dialog .hg4-button{width:100%}
+@keyframes hg4-level-appear{from{opacity:0;transform:translateY(12px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes hg4-level-mark{50%{transform:scale(1.18) rotate(8deg)}}
+@media(max-width:600px){
+ #hg4XpDashboard .hg4-xp-hero{padding:12px;gap:13px}
+ #hg4XpDashboard .hg4-xp-ring{flex-basis:108px;width:108px;height:108px}
+ #hg4XpDashboard .hg4-xp-ring-inner strong{font-size:36px}
+ #hg4XpDashboard .hg4-xp-summary h4{font-size:18px}
+ #hg4XpDashboard .hg4-xp-summary p{font-size:11px}
+ .hg4-reward-row{align-items:flex-start;flex-direction:column;gap:4px}
+ .hg4-xp-bars{gap:4px}
+ .hg4-xp-day small,.hg4-xp-day span{font-size:9px}
+}
+@media(max-width:360px){
+ #hg4XpDashboard .hg4-xp-hero{flex-direction:column;text-align:center}
+}
+@media(prefers-reduced-motion:reduce){
+ .hg4-level-dialog,.hg4-level-mark{animation:none!important}
+}
+.hg4-quiet .hg4-level-dialog,.hg4-quiet .hg4-level-mark{animation:none!important}
