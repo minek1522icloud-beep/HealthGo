@@ -70,7 +70,7 @@ test('PWA loads vector graphics before backpack and profile, never requesting le
  assert.ok(find('healthgo-badge-simple.js?v=1')<find('healthgo-pack-pro.js?v=9'));
  assert.ok(find('healthgo-badge-simple.js?v=1')<find('healthgo-profile-pro.js?v=5'));
  assert.doesNotMatch(html,/healthgo-badge-gallery/);
- assert.match(sw,/healthgo-pwa-v59-navigation-2d3d-20261011/);
+ assert.match(sw,/healthgo-pwa-v60-activity44-updates-20261013/);
  const pack=read('www/healthgo-pack-pro.js');
  const profile=read('www/healthgo-profile-pro.js');
  const room=read('www/healthgo-collector-room.js');
