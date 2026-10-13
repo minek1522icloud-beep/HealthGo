@@ -176,7 +176,7 @@ async function invoke(){
  }
  if(chosen==='apple'||chosen==='android'){
   if(typeof a?.openHealth==='function'){
-   setMessage('Przechodzę do natywnego modułu zdrowia, jeśli jest zainstalowany.');
+   setMessage('Jeśli natywne HealthGo jest zainstalowane, telefon spróbuje otworzyć jego moduł zdrowia. Sama strona nie odczytuje danych systemowych.');
    a.openHealth();
   }else setMessage('Otwórz natywną aplikację HealthGo i udziel zgody w Apple Health lub Health Connect.');
   return;
@@ -185,9 +185,19 @@ async function invoke(){
   setMessage('Moduł Bluetooth nie jest dostępny w tej wersji.');return;
  }
  // Keep the browser's Bluetooth prompt within the direct user gesture.
- setMessage(platformId==='ios'?'Próbuję otworzyć natywne HealthGo. Safari nie obsługuje Web Bluetooth.':
+ setMessage(platformId==='ios'?
+  'Jeśli natywne HealthGo jest zainstalowane, telefon spróbuje je otworzyć. Safari nie obsługuje Web Bluetooth.':
   'Otwieram systemowy wybór Bluetooth; urządzenie może wymagać własnej aplikacji.');
- try{await a.connect();}catch(e){setMessage('Połączenie nie powiodło się: '+String(e?.message||'spróbuj ponownie'));}
+ try{
+  await a.connect();
+  if(platformId!=='ios'){
+   if(a.connected)setMessage('Połączono z '+String(a.activeDevice?.name||'urządzeniem').slice(0,85)+'.');
+   else{
+    const legacy=$('hgRealDeviceStatus')?.textContent;
+    if(legacy)setMessage(legacy);
+   }
+  }
+ }catch(e){setMessage('Połączenie nie powiodło się: '+String(e?.message||'spróbuj ponownie'));}
 }
 function renderPairing(root){
  const panel=card('hg45-pairing');panel.appendChild(node('span','hg45-kicker','DODAJ URZĄDZENIE'));
