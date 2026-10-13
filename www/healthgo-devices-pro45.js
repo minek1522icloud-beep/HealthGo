@@ -71,7 +71,7 @@ function showMissing(root){
 function renderHeader(root){
  const hero=node('header','hg45-hero');
  const info=node('div','hg45-hero-copy');
- info.append(node('span','hg45-kicker','HEALTHGO 4.5 · CENTRUM URZĄDZEŃ'),
+ info.append(node('span','hg45-kicker','HEALTHGO 5.0 · CENTRUM URZĄDZEŃ'),
   node('h2','','Twoje urządzenia'),
   node('p','','Bezpieczne połączenia, realne pomiary i pełna kontrola. Nie pokazujemy fikcyjnych danych.'));
  const mark=node('div','hg45-emblem','⌚');mark.setAttribute('aria-hidden','true');
@@ -277,7 +277,9 @@ function render(){
  }
  root.replaceChildren();
  renderHeader(root);renderOverview(root);renderSources(root);renderList(root);
- renderPairing(root);renderHelp(root);
+ if(w.HealthGoDeviceWizard50)w.HealthGoDeviceWizard50.render(root);
+ else renderPairing(root);
+ renderHelp(root);
 }
 S.subscribe?.(render);
 w.addEventListener?.('healthgo:device-connection',render);
