@@ -65,7 +65,7 @@ test('Activity 44 offers selectable day, 30-day real history and metric details'
  assert.equal(metrics.children.length,5);
  metrics.children[0].events.click();
  assert.ok(f.find('hg44Detail'));
- assert.match(f.find('hg44Detail').children[0].children[1].textContent,/prawdziwe pomiary/i);
+ assert.match(f.find('hg44Detail').children[0].children[1].textContent,/rzeczywiste pomiary/i);
 });
 test('starting a workout does not request GPS, does not write XP and pauses when hidden',()=>{
  const f=fixture();
