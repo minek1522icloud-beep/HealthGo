@@ -279,7 +279,8 @@ function teamChallenges(root){
  const panel=node('section','hg4-team');
  panel.append(node('span','hg4-kicker','WSPÓLNE CELE'),
   node('h4','','🤝 Wyzwania znajomych i rodziny'));
- const confirmed=history().filter(x=>x.type==='FAMILY_CHALLENGE_COMPLETED');
+ const saved=S.state?.engine?.metrics?.familyChallenges;
+ const confirmed=saved&&typeof saved==='object'?Object.keys(saved).filter(key=>saved[key]?.completedAt):[];
  const family=S.state?.family,linked=Array.isArray(family?.members)?family.members.length:0;
  panel.appendChild(node('p','',linked
   ?'Połączone konta rodzinne: '+linked+'. Wyzwania wspólne są dostępne wyłącznie za zgodą uczestników.'
@@ -294,9 +295,9 @@ function missionHistory(root){
  const completed=history().filter(x=>x.type==='CHALLENGE_COMPLETED').slice(-8).reverse();
  if(!completed.length)empty(panel,'Nie ma jeszcze potwierdzonych ukończeń w historii zdarzeń.');
  else for(const event of completed){
-  const id=String(event.payload?.challengeId||event.payload?.definitionId||'Wyzwanie').slice(0,90);
+  const name=String(event.payload?.name||event.payload?.challengeId||event.payload?.definitionId||'Wyzwanie').slice(0,90);
   const row=node('div','hg4-event');
-  row.append(node('strong','',id),node('span','',date(event.occurredAt)));panel.appendChild(row);
+  row.append(node('strong','',name),node('span','',date(event.occurredAt)));panel.appendChild(row);
  }
  root.appendChild(panel);
 }
@@ -489,7 +490,7 @@ function family(){
   ['Wyzwania',()=>go('challenges'),true]]);
 }
 const allowedEvents={XP_GAINED:['xp','Zdobyto XP'],LEVEL_UP:['xp','Nowy poziom'],REWARD_GRANTED:['missions','Nowa nagroda'],
- CHALLENGE_COMPLETED:['missions','Ukończono misję'],ACHIEVEMENT_EARNED:['missions','Zdobyto osiągnięcie']};
+ CHALLENGE_COMPLETED:['missions','Ukończono misję'],ACHIEVEMENT_UNLOCKED:['missions','Zdobyto osiągnięcie']};
 function notices(){
  const opts=preferences();
  return history().filter(x=>allowedEvents[x.type]&&opts[allowedEvents[x.type][0]]!==false)
