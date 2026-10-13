@@ -513,7 +513,7 @@ function notifications(root){
   control.addEventListener('change',()=>{savePrefs({[key]:control.checked});notifications(root);});
   labelNode.append(node('span','',label),control);toggleRoot.appendChild(labelNode);}
  n.appendChild(toggleRoot);
- actions(n,[['Przypomnienia planu dnia',()=>go('plan'),true]]);
+ actions(n,[['Wiadomości HealthGo',()=>go('notifications'),false],['Przypomnienia planu dnia',()=>go('plan'),true]]);
  const feed=node('div','hg4-events');feed.appendChild(node('h4','','Ostatnie zdarzenia'));
  const list=notices();if(!list.length)empty(feed,'Brak zapisanych zdarzeń dla wybranych kategorii.');
  for(const ev of list.slice(0,12)){const row=node('div','hg4-event');
