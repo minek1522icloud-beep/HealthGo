@@ -1,0 +1,8 @@
+node_modules/
+web/
+android/
+ios/
+*.jks
+*.keystore
+*.p12
+.env
