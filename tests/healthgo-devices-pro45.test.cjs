@@ -87,11 +87,15 @@ test('BLE pairing is user-initiated; native iOS health is routed separately',asy
  assert.equal(android.calls.ble,1);
  assert.equal(android.calls.health,0);
  const ios=fixture('Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X)');
- assert.ok(ios.btn('Otwórz integrację Apple Health'));
- await ios.btn('Otwórz integrację Apple Health').listeners.click();
- assert.equal(ios.calls.health,1);
+ assert.ok(ios.btn('Jak połączyć Apple Health'));
+ await ios.btn('Jak połączyć Apple Health').listeners.click();
+ assert.equal(ios.calls.health,0,'the iPhone PWA must not attempt a native deep link');
  assert.equal(ios.calls.ble,0);
- assert.match(ios.output(),/natywn/i);
+ assert.match(ios.output(),/Skrót|skrót|Safari/);
+ ios.btn('Zegarek z Bluetooth LE').listeners.click();
+ const ble=ios.btn('Jak podłączyć zegarek na iPhonie');
+ assert.ok(ble);await ble.listeners.click();
+ assert.equal(ios.calls.ble,0,'Web Bluetooth is not available in iOS Safari');
 });
 test('existing device backend cannot leak a live BLE connection across accounts',()=>{
  assert.match(old,/connectionGeneration/);
@@ -109,4 +113,31 @@ test('native Android deep links route to real Bluetooth and Health Connect actio
  assert.match(source,/"connect-health"->requestHealth\(\)/);
  assert.match(source,/"connect-bluetooth"->scanForWatch\(\)/);
  assert.match(source,/override fun onNewIntent\(intent: Intent\)/);
+});
+
+
+test('native link is never opened from an iPhone PWA without confirming native app installation',async()=>{
+ const vm=require('node:vm');
+ function boot(userAgent){
+  const status={textContent:''};let navigations=0;
+  const win={navigator:{userAgent},location:{set href(v){navigations++;this.last=v;}},HealthGoServices:{
+   state:{uid:'alice',devices:[]},subscribe(){},
+  }};
+  const doc={getElementById:id=>id==='hgRealDeviceStatus'?status:null};
+  const context={window:win,document:doc,navigator:win.navigator,
+   setTimeout(){},Date,Number,String,Promise,console};
+  vm.runInNewContext(old,context);
+  return {win,status,get navigations(){return navigations}};
+ }
+ const ios=boot('Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X)');
+ ios.win.HealthGoDevices.openHealth();
+ assert.equal(ios.navigations,0);
+ assert.match(ios.status.textContent,/natywna|natywnej|Safari|internetowa/i);
+ await ios.win.HealthGoDevices.connect();
+ assert.equal(ios.navigations,0);
+ assert.match(ios.status.textContent,/natywna|natywnej|internetowa/i);
+ const android=boot('Mozilla/5.0 (Linux; Android 16)');
+ android.win.HealthGoDevices.openHealth();
+ assert.equal(android.navigations,1,'Android native deep link remains available');
+ assert.equal(android.win.location.last,'healthgo://connect-health');
 });
