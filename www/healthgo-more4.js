@@ -51,30 +51,143 @@ function downloadCsv(name,rows){
  const a=node('a');a.href=url;a.download=name;d.body.appendChild(a);a.click();a.remove();
  w.setTimeout?.(()=>w.URL.revokeObjectURL(url),1500);return true;
 }
+function earnedBadges(){
+ const e=engine();
+ if(!e||typeof Engine.viewAchievements!=='function')return [];
+ try{return (Engine.viewAchievements(e)||[]).filter(x=>x&&x.earned===true);}
+ catch(_){return [];}
+}
+function achievementsPreview(){
+ const e=engine();
+ if(!e||typeof Engine.viewAchievements!=='function')return [];
+ try{
+  const defs=Engine.viewAchievements(e)||[];
+  return defs.filter(x=>x&&!x.earned&&!x.secret).sort((a,b)=>safeNumber(b.percent)-safeNumber(a.percent)).slice(0,3);
+ }catch(_){return [];}
+}
+function verifiedLevelEvent(){
+ const rows=eventsOf('LEVEL_UP');
+ return rows.length?rows[rows.length-1]:null;
+}
+let levelBaseline=null,levelEventBaseline=null;
+function showLevelUp(lvl){
+ if(!d.body||!Number.isInteger(lvl)||lvl<2)return;
+ let overlay=$('hg4LevelUp');
+ if(overlay?.remove)overlay.remove();
+ overlay=node('div','hg4-level-overlay');overlay.id='hg4LevelUp';
+ const dialog=node('div','hg4-level-dialog');
+ dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');
+ dialog.setAttribute('aria-label','Zdobyto nowy poziom XP');
+ const tag=node('span','hg4-level-tag','ZDOBYTO NOWY POZIOM');
+ const mark=node('div','hg4-level-mark','✦');
+ const title=node('h2','', 'POZIOM '+lvl);
+ const explanation=node('p','',
+  'Awans został potwierdzony przez historię XP Twojego konta. Odkryj następne wyzwania we własnym tempie.');
+ const close=button('Odkryj nowe wyzwania',()=>overlay.remove());
+ dialog.append(tag,mark,title,explanation,close);overlay.appendChild(dialog);
+ overlay.addEventListener('click',event=>{if(event.target===overlay)overlay.remove();});
+ overlay.addEventListener('keydown',event=>{if(event.key==='Escape')overlay.remove();});
+ d.body.appendChild(overlay);
+ close.focus?.({preventScroll:true});
+}
+function watchVerifiedLevel(){
+ const e=engine();if(!e)return;
+ let current=null;
+ try{current=Engine.getLevel(safeNumber(e.totalXp)).level;}catch(_){return;}
+ const event=verifiedLevelEvent(),eventId=event?.id||null;
+ if(levelBaseline===null){levelBaseline=current;levelEventBaseline=eventId;return;}
+ if(current>levelBaseline&&eventId&&eventId!==levelEventBaseline){
+  showLevelUp(current);
+ }
+ levelBaseline=current;levelEventBaseline=eventId;
+}
 function xpDashboard(){
- const root=section($('challenges'),'hg4XpDashboard','⚡ XP i nagrody 2.0',
-  'Wyniki pochodzą z historii potwierdzonych działań na Twoim koncie. Otwieranie kart nie dodaje XP.');
+ const root=section($('challenges'),'hg4XpDashboard','⚡ XP 3.0 · Twoja droga',
+  'Poziomy są obliczane tylko z XP zapisanych na Twoim koncie. Samo oglądanie ekranów nie przyznaje punktów.');
  if(!root)return;
  const e=engine(),l=e?Engine.getLevel(safeNumber(e.totalXp)):null;
+ const hero=node('div','hg4-xp-hero'),ring=node('div','hg4-xp-ring');
+ const percent=l?Math.round(Math.min(100,Math.max(0,l.percent))):0;
+ ring.style.background='conic-gradient(var(--hg4-accent) 0% '+percent+'%,#194c38 '+percent+'% 100%)';
+ const ringInner=node('div','hg4-xp-ring-inner');
+ ringInner.append(node('small','','POZIOM'),node('strong','',l?String(l.level):'—'),
+  node('span','',l?percent+'%':'Brak danych'));
+ ring.appendChild(ringInner);
+ const summary=node('div','hg4-xp-summary');
+ summary.append(node('span','hg4-kicker','HEALTHGO EXPERIENCE'),
+  node('h4','',l?'Twój poziom '+l.level:'Twoje doświadczenie'));
+ summary.appendChild(node('p','',l?number(l.xp)+' / '+number(l.needed)+' XP w obecnym poziomie.':
+  'Zaloguj się, aby zobaczyć postęp XP.'));
+ summary.appendChild(node('p','hg4-footnote',l?number(l.remaining)+' XP do kolejnego poziomu. Odpoczynek nie powoduje utraty punktów.':''));
+ hero.append(ring,summary);root.appendChild(hero);
  stat(root,[['Poziom',l?String(l.level):'—','Z zapisanych XP'],['Łącznie XP',e?number(e.totalXp):'—','Potwierdzone punkty'],
   ['Do awansu',l?number(l.remaining)+' XP':'—','W tym poziomie']]);
- const track=node('div','hg4-track');const fill=node('div','hg4-fill');fill.style.width=l?Math.min(100,l.percent)+'%':'0%';
- track.appendChild(fill);track.setAttribute('role','progressbar');track.setAttribute('aria-label','Postęp poziomu XP');
+ const track=node('div','hg4-track'),fill=node('div','hg4-fill');
+ fill.style.width=percent+'%';track.appendChild(fill);
+ track.setAttribute('role','progressbar');track.setAttribute('aria-label','Postęp poziomu XP');
  track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax','100');
- track.setAttribute('aria-valuenow',String(l?Math.round(l.percent):0));
- root.appendChild(track);
+ track.setAttribute('aria-valuenow',String(percent));root.appendChild(track);
  if(l)root.appendChild(node('p','hg4-footnote',number(l.xp)+' / '+number(l.needed)+' XP na tym poziomie. Nagrody przyznaje wyłącznie silnik potwierdzonych zdarzeń.'));
+ const titles=node('div','hg4-titles');
+ titles.appendChild(node('h4','','Zdobyte tytuły'));
+ const owned=Array.isArray(e?.titles)?e.titles.filter(x=>typeof x==='string'&&x.length<100):[];
+ if(!owned.length)titles.appendChild(node('p','hg4-footnote','Brak zapisanych tytułów na tym koncie.'));
+ else{
+  const list=node('div','hg4-chip-list');
+  for(const value of owned.slice(0,10))list.appendChild(node('span','hg4-chip',value));
+  titles.appendChild(list);
+ }
+ root.appendChild(titles);
+ const next=node('div','hg4-next-rewards');next.appendChild(node('h4','','Kolejne prawdziwe osiągnięcia'));
+ const upcoming=achievementsPreview();
+ if(!upcoming.length)empty(next,'Brak osiągnięć do podglądu w aktualnym katalogu.');
+ else for(const reward of upcoming){
+  const row=node('div','hg4-reward-row');
+  row.append(node('strong','',(reward.icon||'🏅')+' '+String(reward.name||'Osiągnięcie').slice(0,90)),
+   node('span','','Postęp '+Math.round(safeNumber(reward.percent))+'%'));
+  next.appendChild(row);
+ }
+ root.appendChild(next);
+ const graph=node('section','hg4-xp-week');
+ graph.appendChild(node('h4','','XP w ostatnich 7 dniach'));
+ const grouped=new Map();
+ for(const item of xpRows()){
+  const dt=new Date(item.occurredAt);
+  if(Number.isFinite(dt.getTime())){
+   const key=[dt.getFullYear(),String(dt.getMonth()+1).padStart(2,'0'),String(dt.getDate()).padStart(2,'0')].join('-');
+   grouped.set(key,(grouped.get(key)||0)+safeNumber(item.payload?.xp));
+  }
+ }
+ const cells=[],now=new Date();
+ for(let offset=6;offset>=0;offset--){
+  const at=new Date(now.getFullYear(),now.getMonth(),now.getDate()-offset,12);
+  const key=[at.getFullYear(),String(at.getMonth()+1).padStart(2,'0'),String(at.getDate()).padStart(2,'0')].join('-');
+  cells.push({label:at.toLocaleDateString('pl-PL',{weekday:'short'}),amount:grouped.get(key)||0});
+ }
+ const peak=Math.max(1,...cells.map(x=>x.amount));
+ const bars=node('div','hg4-xp-bars');
+ for(const row of cells){
+  const col=node('div','hg4-xp-day'),bar=node('div','hg4-xp-bar');
+  bar.style.height=(row.amount?Math.max(6,Math.round(row.amount/peak*100)):0)+'%';
+  col.append(node('small','',number(row.amount)),bar,node('span','',row.label));bars.appendChild(col);
+ }
+ graph.appendChild(bars);
+ graph.appendChild(node('p','hg4-footnote','Wykres pokazuje tylko zapisane zdarzenia XP z ostatnich siedmiu dni, nie symulowane punkty.'));
+ root.appendChild(graph);
  const timeline=node('div','hg4-events');timeline.appendChild(node('h4','','Historia XP'));
  const data=xpRows().slice(-8).reverse();
  if(!e)empty(timeline,'Zaloguj się, aby zobaczyć swoje XP.');
  else if(!data.length)empty(timeline,'Brak nowych zapisów XP. Starsze nagrody mogły zostać przeniesione bez dat.');
- else for(const row of data){const item=node('div','hg4-event');item.append(node('strong','', '+'+number(row.payload.xp)+' XP'),node('span','',date(row.occurredAt)));timeline.appendChild(item);}
+ else for(const row of data){
+  const item=node('div','hg4-event');item.append(node('strong','', '+'+number(row.payload.xp)+' XP'),
+   node('span','',date(row.occurredAt)));timeline.appendChild(item);
+ }
  root.appendChild(timeline);
  actions(root,[['Historia XP CSV',()=>{
   if(!e)return;
   downloadCsv('healthgo-historia-xp.csv',[['Data','Zdarzenie','XP'],...xpRows().map(x=>[x.occurredAt,x.type,x.payload.xp])]);
  },true],['Sklep nagród HG',()=>go('points'),false],['Odznaki',()=>go('backpack'),true]]);
- root.appendChild(node('p','hg4-footnote','HealthGo Point (HG) jest istniejącą walutą cyfrowych nagród. Nie tworzymy drugiego, niespójnego salda „HealthCoins”.'));
+ root.appendChild(node('p','hg4-footnote','HealthGo Point (HG) pozostaje osobną, istniejącą walutą cyfrowych nagród. Nie tworzymy fikcyjnego salda ani drugiej waluty.'));
 }
 let period='all',missionStatus='all',missionSearch='';
 function missionDestination(item){
@@ -383,8 +496,8 @@ function settings(){
   const msg=node('p','hg4-footnote','Bez nowego trybu offline; ustawienia istniejącej aplikacji pozostają bez zmian.');msg.id='hg4UpdateState';info.appendChild(msg);}
 }
 let oldOwner=null,scheduled=false;
-function render(){const owner=String(S.state?.uid||'');if(owner!==oldOwner){oldOwner=owner;period='all';missionStatus='all';missionSearch='';statsRange=7;statsMetric='steps';}
- applyPrefs();xpDashboard();missions();habits();stats();devices();family();settings();}
+function render(){const owner=String(S.state?.uid||'');if(owner!==oldOwner){oldOwner=owner;period='all';missionStatus='all';missionSearch='';statsRange=7;statsMetric='steps';levelBaseline=null;levelEventBaseline=null;}
+ applyPrefs();watchVerifiedLevel();xpDashboard();missions();habits();stats();devices();family();settings();}
 function schedule(){if(scheduled)return;scheduled=true;
  const invoke=()=>{scheduled=false;render();};
  if(typeof w.requestAnimationFrame==='function')w.requestAnimationFrame(invoke);else w.setTimeout(invoke,0);}
