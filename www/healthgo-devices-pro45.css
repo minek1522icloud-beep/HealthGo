@@ -1,0 +1,98 @@
+/* HealthGo Devices PRO 4.5 — modern connected-device hub. */
+body.hg45-ready #devices>.hero,
+body.hg45-ready #devices>.grid,
+body.hg45-ready #devices>.card,
+body.hg45-ready #devices>#hgRealDevices,
+body.hg45-ready #devices>#hg4Devices,
+body.hg45-ready #devices>#hfcDevices{display:none!important}
+#devices .hg45-root{
+ --hg45-mint:#8af5bd;--hg45-line:#356a50;
+ color:#edfff3;max-width:1120px;margin:0 auto;
+ padding:0 0 calc(126px + env(safe-area-inset-bottom,0px));
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px
+}
+.hg45-root *{box-sizing:border-box}
+.hg45-hero{grid-column:1/-1;min-width:0;
+ border:1px solid #4d9670;border-radius:24px;
+ background:radial-gradient(ellipse at 85% 12%,#1b8c5e75,transparent 53%),linear-gradient(125deg,#133f2e,#071e17);
+ display:flex;justify-content:space-between;align-items:center;gap:18px;padding:24px;
+ box-shadow:0 12px 40px #04190f50
+}
+.hg45-hero-copy{min-width:0}
+.hg45-kicker{display:block;font-weight:900;font-size:10px;letter-spacing:.16em;color:#8efac6}
+.hg45-hero h2{margin:7px 0;color:#f5fff8;font-size:clamp(23px,4vw,32px);line-height:1.2}
+.hg45-hero p{color:#c2e8cf;font-size:12px;line-height:1.55;max-width:560px;margin:4px 0}
+.hg45-emblem{width:98px;height:98px;flex:0 0 98px;border:1px solid #77ddaa;
+ display:grid;place-items:center;border-radius:27px;font-size:55px;
+ background:linear-gradient(135deg,#1e6a4a,#0b3326);box-shadow:0 0 40px #5cffaa2d}
+.hg45-card{
+ border:1px solid var(--hg45-line);border-radius:19px;min-width:0;
+ background:linear-gradient(150deg,#143d2d,#0a251c);
+ padding:18px;box-shadow:0 10px 26px #02190d2c;align-self:start
+}
+.hg45-card h3{font-size:17px;margin:0 0 13px;color:#effff6;line-height:1.35}
+.hg45-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.hg45-fact{display:flex;flex-direction:column;gap:7px;padding:14px 10px;border:1px solid #326e4f;
+ border-radius:13px;background:#0d3023;min-width:0}
+.hg45-fact span{font-size:11px;color:#b4d8c2}
+.hg45-fact strong{font-size:clamp(13px,2vw,18px);color:#edfff4;line-height:1.2;overflow-wrap:anywhere}
+.hg45-fact small{font-size:10px;line-height:1.4;color:#acd2bb}
+.hg45-live{margin-top:12px;padding:13px;border-radius:14px;background:#154b33;border:1px solid #56ba81}
+.hg45-live-copy{display:grid;gap:6px;color:#eafff3;font-size:13px}
+.hg45-live-copy span{color:#b9e9c9;font-size:11px}
+.hg45-live-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}
+.hg45-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.hg45-card .hg45-caption,.hg45-pairing-info p{
+ font-size:12px;line-height:1.55;color:#b4d8c3;margin:10px 0 0
+}
+.hg45-empty{padding:14px;line-height:1.55;font-size:12px;color:#c4ead2;border:1px dashed #397253;
+ background:#0e3023;border-radius:12px}
+.hg45-roster{grid-column:1/-1}
+.hg45-device-row{
+ display:flex;align-items:center;gap:12px;padding:13px;border:1px solid #376e50;
+ border-radius:14px;background:#102f25;margin:8px 0
+}
+.hg45-device-icon{display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;
+ border-radius:13px;background:#1a6346;color:#c0ffde;font-size:24px}
+.hg45-device-copy{min-width:0;flex:1;display:grid;gap:4px}
+.hg45-device-copy strong{font-size:13px;color:#effff5;overflow-wrap:anywhere}
+.hg45-device-copy span,.hg45-device-copy small{font-size:11px;line-height:1.4;color:#b3d9c2;overflow-wrap:anywhere}
+.hg45-device-badge{font-size:10px;font-weight:900;color:#c8f6d9;
+ border:1px solid #4a956a;border-radius:999px;padding:7px 10px;
+ background:#124c33;white-space:nowrap}
+.hg45-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hg45-btn{font:inherit;font-size:12px;font-weight:800;line-height:1.4;
+ border:1px solid #9aefc0;background:#83f1b5;color:#063a24;border-radius:12px;
+ min-height:46px;padding:11px 13px;cursor:pointer;min-width:0;text-align:center;
+ touch-action:manipulation}
+.hg45-btn.secondary{background:#143d2d;border-color:#4a8863;color:#e7fff1}
+.hg45-btn[aria-pressed="true"]{background:#75eab0;border-color:#a0ffd1;color:#053621}
+.hg45-btn:focus-visible,.hg45-help summary:focus-visible{outline:3px solid #b8ffde;outline-offset:2px}
+.hg45-pairing-info{margin:14px 0;padding:13px;border:1px solid #3d7955;border-radius:13px;background:#0d3225}
+.hg45-pairing-info strong{color:#c0ffdf;font-size:13px}
+.hg45-actions{display:flex;flex-wrap:wrap;gap:8px}
+.hg45-actions .hg45-btn{flex:1 1 155px}
+.hg45-message{font-size:12px;line-height:1.5;color:#b8f3d0;min-height:20px}
+.hg45-help{grid-column:1/-1}
+.hg45-help summary{font-size:13px;min-height:44px;cursor:pointer;font-weight:850;color:#bbffd9}
+.hg45-faq{padding:11px 0;border-top:1px solid #2e6549}
+.hg45-faq strong{font-size:12px;color:#eafff2}
+.hg45-faq p{font-size:12px;line-height:1.55;color:#bddac9;margin:5px 0}
+@media(max-width:760px){
+ #devices .hg45-root{grid-template-columns:1fr;gap:11px}
+ .hg45-card{padding:14px}
+ .hg45-hero{padding:17px}
+ .hg45-emblem{width:69px;height:69px;flex-basis:69px;border-radius:20px;font-size:42px}
+ .hg45-stats{gap:6px}
+ .hg45-fact{padding:11px 7px}
+ .hg45-device-row{align-items:flex-start;flex-wrap:wrap}
+ .hg45-device-badge{margin-left:54px}
+}
+@media(max-width:420px){
+ .hg45-options{grid-template-columns:1fr}
+ .hg45-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .hg45-stats>.hg45-fact:last-child{grid-column:1/-1}
+ .hg45-metrics{grid-template-columns:1fr 1fr}
+ .hg45-emblem{width:55px;height:55px;flex-basis:55px;font-size:33px}
+}
+@media(prefers-reduced-motion:reduce){.hg45-root *{animation:none!important;transition:none!important}}
