@@ -154,6 +154,9 @@
     Number.isFinite(lastSpeedKmh)&&lastSpeedKmh>limitDisplay.kmh+3);
   const button=$('hgNavLimitEnable');
   if(button){button.textContent=limitsEnabled?'Limity prędkości: WŁ.':'Włącz limity prędkości';button.setAttribute('aria-pressed',String(limitsEnabled));}
+  const planning=$('hgNavPlannerLimits');
+  if(planning){planning.textContent=limitsEnabled?'✓ Limity prędkości włączone':'Włącz limity prędkości';
+   planning.setAttribute('aria-pressed',String(limitsEnabled));}
  }
  function setLimits(enabled){
   limitsEnabled=!!enabled;setPref('limits',limitsEnabled);limitLastAt=0;limitLastPos=null;limitDisplay=null;limitStatus='';
