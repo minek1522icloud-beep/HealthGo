@@ -24,3 +24,52 @@
 .hgu-settings-button{margin-top:12px}
 @media(max-width:520px){.hgu-overlay{padding:max(6px,env(safe-area-inset-top,0px)) 6px max(6px,env(safe-area-inset-bottom,0px))}.hgu-modal{border-radius:16px;max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 12px)}.hgu-hero{padding:17px 17px 15px}.hgu-tags span{font-size:8px}.hgu-body{padding:4px 17px 14px}.hgu-actions{padding:12px 17px max(14px,env(safe-area-inset-bottom,0px))}.hgu-actions span{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.hgu-modal{scroll-behavior:auto}}
+
+
+/* HealthGo 4.4: compact release details and persistent in-app inbox. */
+.hgu-modal .hgu-hero{padding:18px 21px 16px}
+.hgu-modal .hgu-hero h2{font-size:clamp(20px,5vw,27px)}
+.hgu-modal .hgu-body{padding:8px 20px 16px}
+.hgu-modal .hgu-section{padding:11px 0}
+.hgu-modal .hgu-section li{font-size:12px}
+.hgu-more-details{
+ margin-top:9px;padding:9px 12px;background:#173a2b;border:1px solid #3b7e57;
+ border-radius:12px
+}
+.hgu-more-details summary{font-weight:850;cursor:pointer;color:#baffdc;font-size:12px;min-height:35px}
+.hgu-more-details summary:focus-visible{outline:3px solid #82fac3;outline-offset:2px}
+.hgu-version-history{display:grid;gap:7px;margin:8px 0}
+.hgu-version-history button{
+ font:inherit;font-size:12px;text-align:left;padding:11px;
+ min-height:44px;background:#0e2b21;border:1px solid #3f7355;
+ border-radius:10px;color:#effff5;cursor:pointer
+}
+.hgu-inbox{
+ color:#eafff2;max-width:980px;width:100%;
+ margin:15px auto 20px;padding:17px;border:1px solid #458461;
+ border-radius:19px;background:linear-gradient(145deg,#134330,#09261d)
+}
+.hgu-inbox-heading{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.hgu-inbox-heading h3{margin:0;font-size:19px;color:#f1fff5}
+.hgu-inbox-heading span{padding:7px 10px;border:1px solid #5aa57b;background:#184b36;border-radius:99px;
+ font-size:11px;color:#c2ffdb}
+.hgu-inbox-help{font-size:12px;line-height:1.55;color:#bfdfca}
+.hgu-inbox-row{display:flex;justify-content:space-between;align-items:center;gap:10px;
+ padding:14px;margin:9px 0;background:#0e2c21;border:1px solid #326a4a;border-radius:12px}
+.hgu-inbox-row.unread{border-color:#83eab0;background:#165239}
+.hgu-inbox-row strong{font-size:13px;color:#effff6}
+.hgu-inbox-row p{font-size:11px;line-height:1.5;color:#b9dcc8;margin:6px 0 0}
+.hgu-inbox-actions{display:flex;flex-wrap:wrap;gap:7px;flex-shrink:0}
+.hgu-inbox-actions button{min-height:42px;padding:9px 12px;
+ font:inherit;font-size:11px;font-weight:800;border:1px solid #82d5a7;
+ border-radius:9px;background:#19583d;color:#e9fff4}
+.hgu-inbox-actions button:focus-visible{outline:3px solid #b2ffdc;outline-offset:2px}
+.hgu-settings-button{margin:12px 8px 0 0}
+@media(max-width:520px){
+ .hgu-inbox{padding:13px;border-radius:15px}
+ .hgu-inbox-row{align-items:flex-start;flex-direction:column}
+ .hgu-inbox-actions{width:100%}
+ .hgu-inbox-actions button{flex:1}
+ .hgu-modal .hgu-hero{padding:15px 16px 12px}
+ .hgu-modal .hgu-body{padding:4px 15px 15px}
+}
