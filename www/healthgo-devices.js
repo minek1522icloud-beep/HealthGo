@@ -78,7 +78,12 @@ function openHealthPlatform(){
     );
     return;
   }
-  if(status)status.textContent='Na Androidzie dane zegarka mogą trafiać do Health Connect. Otwórz natywną aplikację HealthGo i wybierz „Połącz dane zdrowotne”.';
+  if(isAndroid()){
+    openNative('connect-health',
+      'Otwórz natywną aplikację HealthGo na Androidzie i wybierz „Połącz dane zdrowotne”. Health Connect wymaga osobnej zgody.');
+    return;
+  }
+  if(status)status.textContent='Dostęp do danych zdrowotnych wymaga natywnej aplikacji HealthGo lub zatwierdzonej integracji.';
 }
 
 function deviceType(name){
