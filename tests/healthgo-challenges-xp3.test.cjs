@@ -38,7 +38,8 @@ function boot(){
   subscribe(fn){this.notify=fn},refreshHealth:async()=>{},refreshDevices:async()=>{}};
  const Engine={
   getLevel(total){
-   return total>=400?{level:2,xp:total-400,needed:412,remaining:812-total,percent:(total-400)/412*100}:
+   return total>=800?{level:3,xp:total-800,needed:424,remaining:1224-total,percent:(total-800)/424*100}:
+    total>=400?{level:2,xp:total-400,needed:412,remaining:812-total,percent:(total-400)/412*100}:
     {level:1,xp:total,needed:400,remaining:400-total,percent:total/4};
   },
   viewChallenges:()=>defined,
@@ -62,7 +63,7 @@ test('XP 3.0 shows a ring and 7-day graph derived only from account engine',()=>
  assert.equal(h.byClass('hg4-xp-ring').length,1);
  assert.equal(h.byClass('hg4-xp-day').length,7);
  const ring=h.byClass('hg4-xp-ring')[0];
- assert.match(ring.style.background,/37%/);
+ assert.match(ring.style.background,/38%/);
  assert.match(script,/Engine\.viewAchievements\(e\)/);
  assert.match(script,/Engine\.getLevel\(safeNumber\(e\.totalXp\)\)/);
  assert.match(styles,/hg4-xp-ring/);
