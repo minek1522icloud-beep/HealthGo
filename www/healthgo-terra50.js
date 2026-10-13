@@ -123,4 +123,5 @@ function draw(){
  const state=n('p','hg50-terra-message',message);state.id='hg50TerraMessage';state.setAttribute('role','status');root.appendChild(state);
 }
 w.HealthGoTerra50=Object.freeze({render,refresh,getState:()=>({configured,connections:connections.length,metrics:metrics.length,loading,busy})});
+w.HealthGoDevicesPro45?.render?.();
 })(window);
