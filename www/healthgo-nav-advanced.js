@@ -37,31 +37,60 @@
   const n=m?Number(m[1]):NaN;
   return Number.isInteger(n)&&n>=5&&n<=140?n:null;
  }
- function matchMaxspeed(data,position,road){
-  const name=norm(road);
-  if(!name||!position||!Array.isArray(data?.elements))return null;
-  const candidates=[];
-  for(const way of data.elements.slice(0,45)){
+ function wayHeadingMatches(geometry,position,bearing){
+  if(!Number.isFinite(bearing)||bearing<0||bearing>=360)return true;
+  let nearest=Infinity,segment=null;
+  for(let i=1;i<geometry.length;i++){
+   const a={lat:Number(geometry[i-1].lat),lon:Number(geometry[i-1].lon)};
+   const b={lat:Number(geometry[i].lat),lon:Number(geometry[i].lon)};
+   if(!Number.isFinite(a.lat)||!Number.isFinite(a.lon)||!Number.isFinite(b.lat)||!Number.isFinite(b.lon))continue;
+   const d=pointToSegment(position,a,b);
+   if(d<nearest){nearest=d;segment=[a,b];}
+  }
+  if(!segment)return false;
+  const a=segment[0],b=segment[1],east=(b.lon-a.lon)*Math.cos(position.lat*deg);
+  const north=b.lat-a.lat;
+  const heading=(Math.atan2(east,north)*180/Math.PI+360)%360;
+  const diff=Math.abs(((heading-bearing+540)%360)-180);
+  // OSM way geometry can be digitized in either direction.
+  return Math.min(diff,180-diff)<=36;
+ }
+ function matchMaxspeed(data,position,road,bearing=null){
+  if(!position||!Number.isFinite(position.lat)||!Number.isFinite(position.lon)||
+     !Array.isArray(data?.elements))return null;
+  const expected=norm(road),named=[],spatial=[];
+  for(const way of data.elements.slice(0,100)){
    if(way?.type!=='way')continue;
    const n=speedLimitValue(way.tags?.maxspeed);
-   if(!n||norm(way.tags?.name)!==name)continue;
-   const geo=way.geometry;
-   if(!Array.isArray(geo)||geo.length<2||geo.length>300)continue;
+   if(!n)continue; // No guessed country-wide or type-based defaults.
+   const geometry=way.geometry;
+   if(!Array.isArray(geometry)||geometry.length<2||geometry.length>400)continue;
    let nearest=Infinity;
-   for(let i=1;i<geo.length;i++){
-    const a={lat:Number(geo[i-1].lat),lon:Number(geo[i-1].lon)};
-    const b={lat:Number(geo[i].lat),lon:Number(geo[i].lon)};
+   for(let i=1;i<geometry.length;i++){
+    const a={lat:Number(geometry[i-1].lat),lon:Number(geometry[i-1].lon)};
+    const b={lat:Number(geometry[i].lat),lon:Number(geometry[i].lon)};
     if(!Number.isFinite(a.lat)||!Number.isFinite(a.lon)||!Number.isFinite(b.lat)||!Number.isFinite(b.lon))continue;
     nearest=Math.min(nearest,pointToSegment(position,a,b));
    }
-   if(nearest<=18)candidates.push({n,distance:nearest});
+   if(!Number.isFinite(nearest)||nearest>20||!wayHeadingMatches(geometry,position,bearing))continue;
+   const tagged=norm(way.tags?.name);
+   const candidate={n,distance:nearest,name:tagged};
+   spatial.push(candidate);
+   if(expected&&tagged===expected)named.push(candidate);
   }
-  candidates.sort((a,b)=>a.distance-b.distance);
-  // Parallel or crossing roads can report conflicting limits. Never guess.
+  // Prefer the current OSRM street name when it exists.
+  // For unnamed OSM road segments, or a route with no street name, a close
+  // geometry match can still identify a limit — but never trust another
+  // explicitly named street when OSRM supplies a different one.
+  const candidates=named.length?named:spatial.filter(x=>expected?!x.name:x.distance<=12);
   if(!candidates.length)return null;
-  const local=candidates.filter(x=>x.distance-candidates[0].distance<7);
-  if(new Set(local.map(x=>x.n)).size!==1)return null;
-  return {kmh:local[0].n,meters:Math.round(local[0].distance)};
+  candidates.sort((a,b)=>a.distance-b.distance);
+  if(!named.length&&candidates[0].distance>12)return null;
+  const local=candidates.filter(x=>x.distance-candidates[0].distance<=8);
+  // Nearby conflicting tagged limits (e.g. parallel carriageways) are unsafe.
+  const conflicts=spatial.filter(x=>x.distance-candidates[0].distance<=5&&x.n!==candidates[0].n);
+  if(conflicts.length||new Set(local.map(x=>x.n)).size!==1)return null;
+  return {kmh:candidates[0].n,meters:Math.round(candidates[0].distance)};
  }
  function laneInfo(step){
   const junction=(Array.isArray(step?.intersections)?step.intersections:[]).find(i=>
@@ -111,14 +140,20 @@
   if(badge)badge.hidden=true; // Legacy box retired; use compact gauge sign.
   const sign=$('hgNavGaugeLimit');
   if(sign){
-   sign.hidden=!(active&&limitsEnabled&&limitDisplay);
-   sign.textContent=active&&limitsEnabled&&limitDisplay?String(limitDisplay.kmh):'';
+   sign.hidden=!active;
+   sign.textContent=limitsEnabled&&limitDisplay?String(limitDisplay.kmh):'—';
+   sign.classList?.toggle?.('hg-limit-unknown',!limitsEnabled||!limitDisplay);
+   sign.setAttribute?.('aria-label',limitsEnabled&&limitDisplay
+    ?'Limit z OpenStreetMap: '+limitDisplay.kmh+' kilometrów na godzinę; sprawdź znaki'
+    :limitsEnabled?'Limit prędkości niepotwierdzony w OpenStreetMap':'Włącz limity OSM w opcjach');
+   sign.title=limitsEnabled&&limitDisplay?'Limit OSM '+limitDisplay.kmh+' km/h — obserwuj znaki':
+     limitsEnabled?(limitStatus||'Brak potwierdzonego limitu'):'Limity OSM są wyłączone';
   }
   const gauge=$('hgNavSpeedGauge');
   gauge?.classList?.toggle?.('hg-gauge-over-limit',active&&limitsEnabled&&!!limitDisplay&&
     Number.isFinite(lastSpeedKmh)&&lastSpeedKmh>limitDisplay.kmh+3);
   const button=$('hgNavLimitEnable');
-  if(button){button.textContent=limitsEnabled?'Limity OSM: włączone':'Sprawdzaj limity OSM';button.setAttribute('aria-pressed',String(limitsEnabled));}
+  if(button){button.textContent=limitsEnabled?'Limity prędkości: WŁ.':'Włącz limity prędkości';button.setAttribute('aria-pressed',String(limitsEnabled));}
  }
  function setLimits(enabled){
   limitsEnabled=!!enabled;setPref('limits',limitsEnabled);limitLastAt=0;limitLastPos=null;limitDisplay=null;limitStatus='';
@@ -128,18 +163,22 @@
   return limitsEnabled;
  }
  async function fetchLimit(pos,road){
-  if(!active||!limitsEnabled||!pos||!norm(road)||!w.fetch||typeof AbortController==='undefined')return;
+  if(!active||!limitsEnabled||!pos||!w.fetch||typeof AbortController==='undefined')return;
+   // Avoid matching another carriageway when the position fix is too imprecise.
+   if(!Number.isFinite(sessionStats.last?.accuracy)||sessionStats.last.accuracy>25){
+    limitDisplay=null;limitStatus='GPS zbyt niedokładny do sprawdzenia limitu';writeLimit();return;
+   }
   if(limitRequest)return;
   const now=Date.now();
-  if(now-limitLastAt<150000&&(limitLastPos&&distance(limitLastPos,pos)<350))return;
+  if(now-limitLastAt<90000&&limitLastPos&&distance(limitLastPos,pos)<180)return;
   limitLastAt=now;limitLastPos={...pos};
   limitDisplay=null;limitStatus='Weryfikacja oznaczeń drogi OSM…';writeLimit();
   const controller=new AbortController();limitRequest=controller;const nonce=++limitNonce;
   const lat=pos.lat,lon=pos.lon;
   // Limited 90m viewport; Overpass is not queried in the background without opt-in.
-  const d=.0008,dlon=d/Math.max(.35,Math.cos(lat*deg));
+  const d=.00105,dlon=d/Math.max(.35,Math.cos(lat*deg));
   const box=[lat-d,lon-dlon,lat+d,lon+dlon].map(x=>x.toFixed(5)).join(',');
-  const query='[out:json][timeout:10];way["highway"]["maxspeed"]('+box+');out geom 45;';
+  const query='[out:json][timeout:10];way["highway"]["maxspeed"]('+box+');out geom 85;';
   const timer=setTimeout(()=>controller.abort(),11000);
   try{
    const res=await w.fetch('https://overpass-api.de/api/interpreter',{
@@ -149,7 +188,7 @@
    if(!res.ok)throw new Error('HTTP');
    const parsed=await res.json();
    if(!active||!limitsEnabled||nonce!==limitNonce||controller!==limitRequest)return;
-   limitDisplay=matchMaxspeed(parsed,pos,road);
+   limitDisplay=matchMaxspeed(parsed,pos,road,heading);
    limitStatus=limitDisplay?'':'Brak pewnego dopasowania prędkości do ulicy';
    writeLimit();
   }catch(_){
@@ -206,6 +245,11 @@
   }
   writeLimit();
   const rel=$('hgNavUpcomingRoad');if(rel)rel.textContent=nextStreet||'Nawigacja GPS';
+  if(limitDisplay&&limitLastPos&&distance(limitLastPos,lastPos)>110){
+   // Old road's posted value must never persist down a different road.
+   limitDisplay=null;limitStatus='Sprawdzam ograniczenie na bieżącej drodze';
+   limitLastAt=0;
+  }
   if(limitsEnabled)void fetchLimit(lastPos,currentStreet);
   w.HealthGoNavigationLive?.setApproach?.(lastDistance);
  }
