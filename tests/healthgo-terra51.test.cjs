@@ -49,8 +49,8 @@ function fixture(initial={configured:false,connections:[]}){
 test('Terra frontend is valid JavaScript and does not expose secret keys',()=>{
  new vm.Script(browser);
  assert.doesNotMatch(browser,/const\s+(TERRA_API_KEY|TERRA_WEBHOOK_SECRET|TERRA_DEV_ID)\s*=/);
- assert.match(html,/healthgo-terra50.js\?v=1/);
- assert.match(html,/healthgo-terra50.css\?v=1/);
+ assert.doesNotMatch(html,/src="\.\/healthgo-terra50\.js/);
+ assert.doesNotMatch(html,/href="\.\/healthgo-terra50\.css/);
  assert.match(css,/hg50-terra-btn:disabled/);
  assert.match(browser,/HealthGoSupabase/);
 });
