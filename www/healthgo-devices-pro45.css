@@ -96,3 +96,13 @@ body.hg45-ready #devices>#hfcDevices{display:none!important}
  .hg45-emblem{width:55px;height:55px;flex-basis:55px;font-size:33px}
 }
 @media(prefers-reduced-motion:reduce){.hg45-root *{animation:none!important;transition:none!important}}
+
+/* iOS PWA cannot invoke a missing native healthgo:// app: explain inline. */
+.hg45-native-warning{
+ margin:12px 0 16px;padding:15px 16px;
+ border:1px solid #6ac99c;border-left:4px solid #8bf5b9;
+ border-radius:14px;background:#124632;color:#ebfff4;
+}
+.hg45-native-warning strong{display:block;font-size:13px;line-height:1.4}
+.hg45-native-warning p{font-size:12px;line-height:1.6;color:#cbead8;margin:9px 0 0}
+@media(max-width:500px){.hg45-native-warning{padding:13px 12px}}
