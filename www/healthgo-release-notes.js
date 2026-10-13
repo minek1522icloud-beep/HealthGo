@@ -5,8 +5,16 @@
  'use strict';
  const w=window,d=w.document,S=w.HealthGoServices;
  if(!d||!S)return;
- const RELEASE='4.5',KEY='healthgo.release-notes.last-build.v1',RELEASE_KEY='healthgo.release-notes.last-release.v1';
+ const RELEASE='4.5.1',KEY='healthgo.release-notes.last-build.v1',RELEASE_KEY='healthgo.release-notes.last-release.v1';
  const NOTES=[
+  {id:'4.5.1',title:'Poprawka połączeń z zegarkami na iPhonie',date:'2026-10-13',
+   tags:['IPHONE','APPLE HEALTH','URZĄDZENIA'],
+   sections:[{title:'Naprawa błędu Safari',items:[
+    'Naprawiono przycisk Apple Health, który próbował otworzyć nieobsługiwany adres healthgo:// i wyświetlał błąd Safari.',
+    'Zamiast błędnego przekierowania HealthGo jasno wyjaśnia, jak sparować Apple Watch i gdzie sprawdzić prawdziwe odczyty.',
+    'Bezpośrednia synchronizacja z Apple Health wciąż wymaga osobno zainstalowanej natywnej aplikacji HealthGo z uprawnieniami HealthKit.',
+    'Przycisk Bluetooth LE na iPhonie również nie próbuje otwierać nieobsługiwanego adresu. Android zachowuje obsługę natywnego łączenia.'
+   ]}]},
   {id:'4.5',title:'Urządzenia PRO — połączenia i synchronizacja',date:'2026-10-13',
    tags:['ZEGARKI','BLUETOOTH','ZDROWIE','PRYWATNOŚĆ'],
    sections:[
