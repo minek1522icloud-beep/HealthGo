@@ -23,7 +23,7 @@ const providers=[
  {id:'ultrahuman',name:'Ultrahuman'}, {id:'google_health',name:'Google Health'}
 ];
 const allowed=new Set(providers.map(p=>p.id));
-let owner='',status='checking',connections=[],selection='garmin',loading=false,busy=false,message='',lastFetch=0,nonce=0;
+let status='checking',connections=[],selection='garmin',loading=false,busy=false,message='',lastFetch=0,nonce=0;
 const endpoint='/functions/v1/healthgo-open-wearables';
 const validAuthorizationUrl=raw=>{
  if(typeof raw!=='string')return null;
@@ -41,7 +41,7 @@ function info(text){
  const box=$('hg52Message');if(box)box.textContent=message;
 }
 function reset(nextUid){
- owner=nextUid;status='checking';connections=[];selection='garmin';
+ status='checking';connections=[];selection='garmin';
  busy=false;loading=false;message='';lastFetch=0;nonce++;
 }
 async function refresh(force=false){
