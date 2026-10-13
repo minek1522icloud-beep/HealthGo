@@ -130,9 +130,8 @@ async function startBle(){
  const uid=owner(),generation=++gen;busy=true;
  setStatus('Otwieram systemowy wybór urządzeń Bluetooth…');
  // Call BLE directly from the click callback before crossing an await boundary.
- const connecting=a.connect();
  try{
-  await connecting;
+  await a.connect();
   if(generation!==gen||uid!==owner())return;
   if(a.connected&&a.activeDevice){
    setStatus('Połączono przez Bluetooth LE: '+String(a.activeDevice.name||'wybrane urządzenie').slice(0,90)+
