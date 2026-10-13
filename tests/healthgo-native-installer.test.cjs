@@ -12,8 +12,8 @@ test('installation hub has separate honest platform states and no unverified lin
  new vm.Script(js);new vm.Script(read('www/healthgo-install-entry.js'));
 });
 test('native scaffold is separate from desktop Electron and includes both platforms',()=>{
- const cfg=JSON.parse(read('mobile/capacitor.config.json'));
- const pkg=JSON.parse(read('mobile/package.json'));
+ const cfg=JSON.parse(read('native-shell/capacitor.config.json'));
+ const pkg=JSON.parse(read('native-shell/package.json'));
  assert.equal(cfg.appName,'HealthGo');assert.equal(cfg.webDir,'web');
  assert.ok(pkg.dependencies['@capacitor/android']);assert.ok(pkg.dependencies['@capacitor/ios']);
  assert.match(read('.github/workflows/native-android.yml'),/assembleDebug/);
