@@ -1,0 +1,43 @@
+/* HealthGo Devices PRO 5.0: compact, accessible multi-brand wizard. */
+#devices .hg50-wizard{grid-column:1/-1;min-width:0}
+.hg50-wizard .hg50-heading h3{font-size:21px;margin:6px 0;color:#ecfff5}
+.hg50-caption{color:#b8e0ca;font-size:12px;line-height:1.6;margin:6px 0 11px}
+.hg50-section-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px;
+ border-top:1px solid #2c7250;padding-top:15px;margin-top:14px}
+.hg50-section-heading h4,.hg50-instructions h4{font-size:15px;color:#eafff2;margin:2px 0}
+.hg50-brands{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;padding:8px 0}
+.hg50-button{font:inherit;font-size:12px;font-weight:820;line-height:1.45;
+ background:#8cf3bb;color:#063a25;border:1px solid #9df5c8;border-radius:13px;
+ padding:11px 13px;min-width:0;min-height:47px;text-align:center;cursor:pointer;touch-action:manipulation}
+.hg50-button.subtle{background:#123e2e;color:#e8fff1;border-color:#417e5b}
+.hg50-button[aria-pressed="true"]{border:2px solid #a6ffdb;background:#78eab0;color:#073924}
+.hg50-button:focus-visible,.hg50-select:focus-visible{outline:3px solid #beffdf;outline-offset:3px}
+.hg50-button:disabled{cursor:not-allowed;opacity:.6}
+.hg50-model{display:grid;gap:7px;font-size:12px;font-weight:750;color:#d4f6df;padding:12px 0 3px}
+.hg50-select{width:100%;font:inherit;font-size:14px;background:#0b3022;color:#effff7;
+ border:1px solid #5cab7e;border-radius:12px;min-height:48px;padding:10px 13px}
+.hg50-status-card{display:grid;gap:6px;border-radius:13px;padding:13px;
+ background:#0d3426;border:1px solid #3e855d;margin:7px 0 12px}
+.hg50-status-card strong{font-size:13px;color:#d5ffe7}
+.hg50-status-card span{color:#b5dec4;font-size:11px;line-height:1.45}
+.hg50-method-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.hg50-method{border:1px solid #346e4e;border-radius:14px;padding:12px;background:#0d2c21;min-width:0}
+.hg50-method .hg50-button{width:100%;margin-bottom:7px;min-height:48px}
+.hg50-method .hg50-caption{margin:5px 0 0;font-size:11px}
+.hg50-instructions{margin:16px 0 0;padding:15px;background:linear-gradient(135deg,#18523b,#0d3526);
+ border:1px solid #5da77f;border-radius:16px}
+.hg50-instructions>p{font-size:12px;color:#d3f4e0;line-height:1.65;margin:10px 0}
+.hg50-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.hg50-actions .hg50-button{flex:1 1 175px}
+.hg50-result{color:#d3ffe5;line-height:1.6;font-size:12px;margin:7px 0;white-space:pre-wrap}
+@media(max-width:720px){
+ .hg50-brands{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .hg50-method-list{grid-template-columns:1fr}
+ .hg50-section-heading{display:block}
+}
+@media(max-width:390px){
+ .hg50-wizard{padding:13px}
+ .hg50-brands{gap:7px}
+ .hg50-brands .hg50-button{padding:9px 7px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.hg50-wizard *{animation:none!important;transition:none!important}}
