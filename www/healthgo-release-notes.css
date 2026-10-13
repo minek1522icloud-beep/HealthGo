@@ -73,3 +73,6 @@
  .hgu-modal .hgu-hero{padding:15px 16px 12px}
  .hgu-modal .hgu-body{padding:4px 15px 15px}
 }
+
+.hgu-unread-badge{display:inline-flex;align-items:center;justify-content:center;margin-left:8px;padding:2px 7px;min-width:20px;min-height:20px;border-radius:99px;background:#70edb0;color:#063524;font-weight:900;font-size:11px}
+.hgu-unread-badge[hidden]{display:none!important}
