@@ -1,0 +1,102 @@
+name: HealthGo Native iOS (Xcode build)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "native-shell/**"
+      - ".github/workflows/native-ios.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: healthgo-native-ios
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    name: Przygotuj i sprawdz aplikacje iPhone
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - name: Pobierz kod HealthGo
+        uses: actions/checkout@v4
+
+      - name: Ustaw Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Sprawdz Xcode
+        run: xcodebuild -version
+
+      - name: Zbuduj mobilny pakiet AI
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p native-ai-build
+          cp www/healthgo-ai-entry.js native-ai-build/entry.js
+          cd native-ai-build
+          npm init -y >/dev/null 2>&1
+          npm install --no-package-lock --no-save firebase@12.19.0 esbuild@0.25.10
+          npx esbuild entry.js --bundle --format=iife --platform=browser --target=es2020 --minify --outfile=../www/healthgo-ai-bundle.js
+
+      - name: Spakuj obecny interfejs HealthGo
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p native-shell/web
+          cp -a www/. native-shell/web/
+          cp icon.png native-shell/web/icon.png
+          test -s native-shell/web/index.html
+          test -s native-shell/web/healthgo-ai-bundle.js
+
+      - name: Zainstaluj Capacitor
+        working-directory: native-shell
+        run: npm install --no-audit --no-fund
+
+      - name: Utworz natywny projekt iOS
+        working-directory: native-shell
+        run: |
+          npx cap add ios --packagemanager SPM
+          npx cap sync ios
+          test -f ios/App/App.xcodeproj/project.pbxproj
+
+      - name: Skompiluj aplikacje iOS dla symulatora (bez podpisu Apple)
+        working-directory: native-shell/ios/App
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -resolvePackageDependencies \
+            -project App.xcodeproj -scheme App
+          xcodebuild \
+            -project App.xcodeproj -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/HealthGo-iOS-build" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Spakuj projekt do podpisania w Xcode
+        working-directory: native-shell/ios
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip -qry "$RUNNER_TEMP/HealthGo-iPhone-Xcode-project.zip" App \
+            -x '*/xcuserdata/*' '*/.DS_Store' '*/.build/*'
+          test -s "$RUNNER_TEMP/HealthGo-iPhone-Xcode-project.zip"
+
+      - name: Udostepnij projekt iOS do pobrania
+        uses: actions/upload-artifact@v4
+        with:
+          name: HealthGo-iPhone-Xcode-project
+          path: ${{ runner.temp }}/HealthGo-iPhone-Xcode-project.zip
+          retention-days: 14
+          if-no-files-found: error
+
+# Uwaga: to prawdziwy projekt natywny, ale NIE instalator na iPhone'a.
+# Instalacja na urzadzeniu wymaga podpisania Apple w Xcode albo dystrybucji
+# przez TestFlight/App Store. Nie publikuj niepodpisanej IPA jako instalatora.
