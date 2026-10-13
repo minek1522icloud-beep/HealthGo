@@ -295,3 +295,28 @@ body.hg-emerald.hg-navigation-active.hg-nav-minimal #map #hgProNavigation .hg-dr
 @media(prefers-reduced-motion:reduce){
  body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavSpeedGauge::before{transition:none!important}
 }
+
+/* Verified only: neutral sign when limit is not confirmed, never show a fake 50. */
+body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgNavGaugeLimit.hg-limit-unknown{
+ border-color:#85968d!important;background:#ebf3ec!important;
+ color:#50655b!important;font-weight:850!important;
+ box-shadow:0 3px 10px #00170b55!important
+}
+#map .hg-limit-planner-consent{
+ display:grid;gap:5px;margin:12px 0;padding:13px;
+ background:#103a2b;border:1px solid #40795b;
+ border-radius:14px;min-width:0;color:#e8fff2
+}
+#map .hg-limit-planner-consent #hgNavPlannerLimits{
+ cursor:pointer;touch-action:manipulation;
+ min-height:44px;padding:11px;border-radius:11px;
+ border:1px solid #62cd99;background:#1a654a;color:#f0fff7;
+ font:inherit;font-size:12px;font-weight:850
+}
+#map .hg-limit-planner-consent #hgNavPlannerLimits[aria-pressed="true"]{
+ background:#97eec2;color:#073920;border-color:#9effce
+}
+#map .hg-limit-planner-consent small{
+ font-size:10px;color:#bfdfcc;line-height:1.5
+}
+#map #hgNavPlannerLimits:focus-visible{outline:3px solid #a7ffd2;outline-offset:2px}
