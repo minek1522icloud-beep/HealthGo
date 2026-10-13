@@ -43,7 +43,7 @@ const methods=[
   hint:'Synchronizuj zegarek w oficjalnej aplikacji producenta. Jeżeli udostępnia ona pomiary do Apple Health albo Health Connect, sprawdź je w aplikacji systemowej.',
   action:'Sprawdź możliwości'}
 ];
-let chosen='ble',owner=null,message='',busy=false,helpOpen=false;
+let chosen='ble',owner=null,message='',busy=false,helpOpen=false,advancedOpen=false;
 function api(){return w.HealthGoDevices||null;}
 function records(){return Array.isArray(S.state?.devices)?S.state.devices.filter(x=>x&&typeof x==='object').slice(0,50):[];}
 function currentDevice(){const a=api();return a?.connected&&a.activeDevice?a.activeDevice:null;}
@@ -277,10 +277,19 @@ function render(){
  }
  root.replaceChildren();
  renderHeader(root);renderOverview(root);renderSources(root);renderList(root);
- if(w.HealthGoDeviceWizard50)w.HealthGoDeviceWizard50.render(root);
- else renderPairing(root);
+ // Provider accounts are the primary route; keep native/BLE details available,
+ // without repeating five full-screen setup instructions on every iPhone.
+ w.HealthGoOpenWearables52?.render?.(root);
+ const advanced=node('details','hg45-card hg52-advanced');
+ advanced.open=advancedOpen;
+ const summary=node('summary','','Bluetooth, Apple Health i inne metody');
+ summary.setAttribute('aria-label','Pokaż zaawansowane sposoby połączenia zegarka');
+ advanced.appendChild(summary);
+ advanced.addEventListener('toggle',()=>{advancedOpen=!!advanced.open;});
+ root.appendChild(advanced);
+ if(w.HealthGoDeviceWizard50)w.HealthGoDeviceWizard50.render(advanced);
+ else renderPairing(advanced);
  renderHelp(root);
- w.HealthGoTerra50?.render?.(root);
 }
 S.subscribe?.(render);
 w.addEventListener?.('healthgo:device-connection',render);
