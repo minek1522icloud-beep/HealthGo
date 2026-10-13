@@ -1,0 +1,38 @@
+/* HealthGo 5.2 — readable source connections, no misleading unconfigured button. */
+#devices .hg52-wearables{grid-column:1/-1;min-width:0;background:
+ radial-gradient(ellipse at 88% 0%,#175c4099,transparent 52%),linear-gradient(145deg,#0c3929,#091f19);
+ border-color:#448e68}
+.hg52-heading h3{font-size:19px;color:#f3fff7;margin:7px 0 6px}
+.hg52-muted{font-size:12px;line-height:1.65;color:#b8e3ca;margin:8px 0}
+.hg52-state{border:1px solid #438a62;background:#102c22;padding:13px 15px;border-radius:14px;margin:12px 0}
+.hg52-state strong{display:block;color:#eafff4;font-size:14px;margin-bottom:6px}
+.hg52-state p{font-size:12px;line-height:1.6;color:#badcc8;margin:0}
+.hg52-providers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}
+.hg52-button{font:inherit;font-weight:800;font-size:12px;line-height:1.35;min-height:45px;min-width:0;
+ background:#7becb1;color:#083922;border:1px solid #8affc1;border-radius:11px;padding:10px 11px;
+ cursor:pointer;touch-action:manipulation}
+.hg52-button.quiet{background:#154833;color:#ecfff4;border-color:#4f976a}
+.hg52-button[aria-pressed="true"]{background:#8df9c3;color:#06351e;border:2px solid #b1ffda}
+.hg52-button:disabled{cursor:not-allowed;opacity:.5}
+.hg52-button:focus-visible,.hg52-advanced summary:focus-visible{outline:3px solid #baffd6;outline-offset:2px}
+.hg52-actions{display:flex;flex-wrap:wrap;gap:9px;margin:13px 0}
+.hg52-actions .hg52-button{flex:1 1 160px}
+.hg52-connections{display:grid;gap:8px;margin:15px 0}
+.hg52-connections h4{font-size:14px;color:#e8fff3;margin:0 0 4px}
+.hg52-connection{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+ border-radius:12px;background:#123e2d;border:1px solid #488863;padding:13px}
+.hg52-connection>div{display:grid;gap:5px;min-width:0}
+.hg52-connection strong{font-size:13px;color:#edfff3}
+.hg52-connection span{color:#bce4cc;font-size:11px;line-height:1.5}
+.hg52-message{min-height:12px;color:#beefd1;line-height:1.5;font-size:12px}
+#devices .hg52-advanced{grid-column:1/-1}
+.hg52-advanced>summary{display:list-item;cursor:pointer;font-size:14px;font-weight:800;
+ color:#dcffec;padding:9px 2px;min-height:44px}
+.hg52-advanced .hg50-wizard{border:none;box-shadow:none;background:transparent;padding:12px 0 0;margin:0}
+@media(max-width:760px){
+ .hg52-providers{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .hg52-connection{align-items:stretch}
+ .hg52-connection>.hg52-button{width:100%}
+}
+@media(max-width:400px){.hg52-providers .hg52-button{font-size:11px;padding:9px 8px}}
+@media(prefers-reduced-motion:reduce){.hg52-wearables *{animation:none!important;transition:none!important}}
