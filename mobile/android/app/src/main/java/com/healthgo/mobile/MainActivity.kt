@@ -124,7 +124,7 @@ class MainActivity:ComponentActivity(){
 
     private fun handleHealthGoLink(intent: Intent?) {
         if(intent?.data?.scheme!="healthgo")return
-        when(intent.data?.host){
+        when(intent?.data?.host){
             "connect-health"->requestHealth()
             "connect-bluetooth"->scanForWatch()
         }
