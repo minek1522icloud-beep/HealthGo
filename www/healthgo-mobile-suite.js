@@ -314,6 +314,37 @@ function renderHome(){
  grid.append(week,device);root.appendChild(grid);
 }
 
+function simplifySettings(){
+ const menu=document.querySelector('.settings-menu');
+ if(!menu)return;
+ // Keep the four existing familiar sections visible. Additional controls stay
+ // available under one expandable group instead of an endless horizontal strip.
+ let profile=menu.querySelector?.('#hgSettingsProfileShortcut');
+ if(!profile){
+  profile=el('button','hg-settings-profile-shortcut','Mój profil');
+  profile.id='hgSettingsProfileShortcut';profile.type='button';
+  profile.addEventListener('click',function(){
+   if(typeof window.HealthGoProfile?.open==='function')window.HealthGoProfile.open('me');
+   else document.getElementById('settingsAccount')?.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  menu.insertBefore(profile,menu.firstChild);
+ }
+ let extra=menu.querySelector?.('#hgSettingsExtras'),holder;
+ if(!extra){
+  extra=el('details','hg-settings-extras');extra.id='hgSettingsExtras';
+  const summary=el('summary','','Pozostałe ustawienia'),label=el('small','','Powiadomienia, urządzenia, rodzina i inne opcje');
+  summary.appendChild(label);
+  holder=el('div','hg-settings-extra-list');
+  extra.append(summary,holder);menu.appendChild(extra);
+ }else holder=extra.querySelector('.hg-settings-extra-list');
+ if(holder){
+  menu.querySelectorAll('button[data-mobile-suite-target]').forEach(function(b){
+   if(b.parentElement!==holder)holder.appendChild(b);
+  });
+ }
+ const title=document.querySelector('#settings .hero p');
+ if(title)title.textContent='Wybierz najważniejszą kategorię. Dodatkowe opcje znajdziesz w „Pozostałych ustawieniach”.';
+}
 function setupMobileNav(){
  const nav=document.getElementById('mobileNav');
  if(!nav)return;
@@ -328,7 +359,7 @@ function renderAll(){
  if(!uid())return;
  if(currentUid!==uid()){currentUid=uid();loadSuite();}
  ensureSection('settingsSecurityPro','Ochrona konta','Metoda logowania i ochrona sesji.','Ochrona konta');
- renderChildAccount();renderGoals();renderNotifications();renderPrivacy();renderAppearance();renderEmergency();renderOffline();renderAISettings();renderMore();renderSecurity();renderHome();setupMobileNav();updateProfileIcon();
+ renderChildAccount();renderGoals();renderNotifications();renderPrivacy();renderAppearance();renderEmergency();renderOffline();renderAISettings();renderMore();renderSecurity();simplifySettings();renderHome();setupMobileNav();updateProfileIcon();
 }
 function scheduleRender(){
  if(renderQueued)return;renderQueued=true;queueMicrotask(function(){renderQueued=false;renderAll();});
