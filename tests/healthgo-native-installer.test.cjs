@@ -6,7 +6,7 @@ test('installation hub has separate honest platform states and no unverified lin
  assert.match(html,/id="iosDownload"/);assert.match(html,/id="androidDownload"/);
  assert.match(html,/healthgo-installer\.js\?v=/);assert.match(html,/href="\.\/index\.html"/);
  assert.match(js,/releases\?per_page=10/);assert.match(js,/HealthGo-Android\.apk/);
- assert.match(js,/asset\.state==='uploaded'/);
+ assert.match(js,/a\.state==='uploaded'/);
  assert.match(js,/iosTestFlightUrl=null/);assert.match(js,/iosAppStoreUrl=null/);
  assert.doesNotMatch(html,/<a[^>]+href="https:\/\/testflight\.apple\.com/);
  new vm.Script(js);new vm.Script(read('www/healthgo-install-entry.js'));
