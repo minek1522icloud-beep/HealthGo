@@ -102,10 +102,14 @@ function headerCard(p,isSelf){
  return '<div class="hgp-profile-cover hgr-wallpaper-'+wall+'"><span class="hgp-cover-label">HEALTHGO COLLECTOR PROFILE</span><span class="hgp-cover-glow" aria-hidden="true"></span></div>'+
  '<div class="hgp-profile-identity"><div class="hgp-profile-avatar hgp-frame-'+frame+'">'+art+(tag?'<span class="hgp-profile-sticker">'+(window.HealthGoCollectibleArt?window.HealthGoCollectibleArt.sticker(tag):esc(stickerLabel(tag)))+'</span>':'')+'</div>'+
  '<div class="hgp-identity-label"><h2>'+esc(nick)+'</h2><p>Poziom '+lv+' · '+(isSelf?'Twój profil':'Profil użytkownika HealthGo')+'</p></div></div>'+
+ (isSelf?'<div class="hgp-profile-quick" role="group" aria-label="Szybka edycja profilu">'+
+  '<button type="button" data-profile-action="photo">Zmień zdjęcie</button>'+
+  '<button type="button" data-profile-action="edit">Edytuj profil</button></div>'+
+  '<p class="hgp-privacy-hint">Twoje zdjęcie profilowe jest prywatne i zapisane tylko na tym urządzeniu.</p>':'')+
  '<div class="hgp-profile-statrow">'+
  '<span><strong>'+lv+'</strong><small>Poziom</small></span>'+
  '<span><strong>'+list.length+'</strong><small>Wyróżnienia</small></span>'+
- '<span><strong>'+(isSelf?unlocked('sticker').length:'—')+'</strong><small>Naklejki</small></span></div>'+
+ '<span><strong>'+(isSelf?badges().length:'—')+'</strong><small>Zdobyte odznaki</small></span></div>'+
  '<div class="hgp-profile-about"><strong>O mnie</strong><p>'+esc(about||'Witaj na moim profilu HealthGo!')+'</p></div>'+
  '<div class="hgp-profile-badges"><strong>Wyróżnione odznaki</strong><div class="hgp-featured-grid">'+
  (list.length?list.map(function(x){var medal=window.HealthGoBadge3D?.thumbnail({id:x.id||x.code,name:x.name,earned:true,category:x.category||'badges',rarity:x.rarity||'common'})||window.HealthGoMedalArt?.render({id:x.id||x.code,name:x.name,earned:true,category:x.category||'badges',rarity:x.rarity||'common'},false)||'★';return '<div class="hgp-feature"><button type="button" class="hgp-featured-inspect" data-profile-inspect="'+esc(x.id||x.code)+'" aria-label="Obejrzyj 3D: '+esc(x.name)+'"><div>'+medal+'</div><span>'+esc(x.name)+'</span></button></div>';}).join(''):
@@ -143,7 +147,7 @@ function menu(){
  var p=state.local||defaults();
  return headerCard(p,true)+roomLaunch(false)+
  '<div class="hgp-menu">'+
- menuButton('edit','Edytuj profil','Awatar, tapeta, ramka i opis','settings')+
+ menuButton('edit','Edytuj profil','Zdjęcie, awatar, wygląd i opis','settings')+
  menuButton('friends','Znajomi','Znajomi i zaproszenia','users')+
  menuButton('room','Pokój trofeów','Interaktywna gablota sześciu zdobytych odznak','layers')+
  menuButton('cosmetics','Moja kolekcja','Naklejki, skrzynie, tekstury i tapety','gift')+
@@ -175,7 +179,7 @@ function editor(kind){
   section='<div class="hgp-editor"><h3>Edytuj wygląd profilu</h3>'+
    '<label class="hgp-field-label">O mnie (maksymalnie 160 znaków)<textarea data-profile-bio maxlength="160" rows="3" placeholder="Napisz kilka słów o sobie">'+esc(p.about)+'</textarea></label>'+
    '<h4>Awatar</h4><div class="hgp-avatars">'+avatarBtns+'</div>'+
-   '<label class="hgp-upload">Wybierz własne zdjęcie (widoczne tylko na tym urządzeniu)<input type="file" data-profile-photo accept="image/png,image/jpeg,image/webp"></label>'+
+   '<label class="hgp-upload">Moje zdjęcie profilowe (tylko na tym urządzeniu)<input type="file" data-profile-photo accept="image/png,image/jpeg,image/webp"></label>'+
    (state.photo?'<button type="button" data-profile-action="remove-photo" class="hgp-lite-button">Usuń moje zdjęcie</button>':'')+
    '<h4>Tapeta profilu</h4><p class="hgp-muted">Tapety zdobyte w Plecaku będą widoczne tutaj.</p><div class="hgp-wall-grid">'+wallBtns+'</div>'+
    '<h4>Ramka avatara</h4><div class="hgp-frame-grid">'+frames+'</div>'+
@@ -322,6 +326,12 @@ function onClick(e){
  var act=btn.getAttribute('data-profile-action');
  if(act==='close'){close();return;}
  if(act==='back'){if(state.visitor){state.visitor=null;state.card=null;state.tab='friends';render();}else if(state.tab!=='menu'){state.tab='menu';state.message='';render();}else close();return;}
+ if(act==='photo'){
+  state.tab='edit';state.message='';render();
+  var picker=document.querySelector('#hgProfileProOverlay [data-profile-photo]');
+  picker?.scrollIntoView?.({behavior:'smooth',block:'center'});
+  picker?.focus?.({preventScroll:true});return;
+ }
  if(act==='edit'||act==='privacy'||act==='friends'||act==='looks'){state.tab=act;state.message='';render();return;}
  if(act==='room'){openRoom();return;}
  if(act==='settings'){close();if(typeof window.mobileGo==='function')window.mobileGo('settings');else if(typeof window.go==='function')window.go('settings');return;}
