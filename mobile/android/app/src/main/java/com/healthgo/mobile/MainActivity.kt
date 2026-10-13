@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Build
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.widget.*
@@ -112,6 +113,21 @@ class MainActivity:ComponentActivity(){
             email.setText(session.email)
             status.text="Zalogowano: ${session.email.ifBlank{"konto HealthGo"}}"
         }else status.text="Zaloguj się tym samym kontem co w HealthGo."
+        handleHealthGoLink(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleHealthGoLink(intent)
+    }
+
+    private fun handleHealthGoLink(intent: Intent?) {
+        if(intent?.data?.scheme!="healthgo")return
+        when(intent.data?.host){
+            "connect-health"->requestHealth()
+            "connect-bluetooth"->scanForWatch()
+        }
     }
 
     private fun login(){
