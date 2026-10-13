@@ -29,7 +29,7 @@ const methods=[
  {id:'apple',title:'Apple Watch / Apple Health',icon:'⌚',
   explanation:'Na iPhonie potrzebna jest natywna aplikacja HealthGo i zgoda na odczyt z Apple Health. Zwykła strona nie może korzystać z HealthKit.',
   hint:'Najpierw sparuj Apple Watch w aplikacji Watch. Następnie otwórz natywne HealthGo, zaloguj się tym samym kontem i wybierz połączenie z Apple Health.',
-  action:'Otwórz integrację Apple Health'},
+  action:'Jak połączyć Apple Health'},
  {id:'android',title:'Health Connect / Android',icon:'📱',
   explanation:'Na Androidzie dane mogą być udostępnione przez Health Connect i zgodną natywną aplikację HealthGo. Sama strona nie ma dostępu do Health Connect.',
   hint:'Połącz zegarek z aplikacją producenta. W Health Connect sprawdź, czy dane są udostępniane i zezwól natywnemu HealthGo na ich odczyt.',
@@ -174,11 +174,19 @@ async function invoke(){
  if(chosen==='android'&&platformId!=='android'){
   setMessage('Health Connect jest dostępny na kompatybilnych telefonach z Androidem.');return;
  }
- if(chosen==='apple'||chosen==='android'){
+ if(chosen==='apple'&&platformId==='ios'){
+  setMessage('Wersja HealthGo z ekranu początkowego działa przez Safari i nie ma dostępu do Apple Health. Najpierw sparuj zegarek w aplikacji Watch, a odczyty sprawdź w Zdrowiu. Synchronizacja z HealthGo wymaga osobno zainstalowanej natywnej aplikacji z HealthKit. Ten przycisk nie uruchamia parowania w przeglądarce.');
+  return;
+ }
+ if(chosen==='android'){
   if(typeof a?.openHealth==='function'){
    setMessage('Jeśli natywne HealthGo jest zainstalowane, telefon spróbuje otworzyć jego moduł zdrowia. Sama strona nie odczytuje danych systemowych.');
    a.openHealth();
   }else setMessage('Otwórz natywną aplikację HealthGo i udziel zgody w Apple Health lub Health Connect.');
+  return;
+ }
+ if(chosen==='ble'&&platformId==='ios'){
+  setMessage('Safari na iPhonie nie udostępnia Web Bluetooth. Sparuj zegarek w systemowej aplikacji Watch lub aplikacji producenta. Do bezpośredniego odczytu BLE przez HealthGo potrzebna jest osobno zainstalowana aplikacja natywna. Sam skrót strony nie wystarcza.');
   return;
  }
  if(typeof a?.connect!=='function'){
@@ -213,8 +221,18 @@ function renderPairing(root){
  const explanation=node('div','hg45-pairing-info');
  explanation.append(node('strong','',selected.title),node('p','',selected.explanation),
   node('p','',selected.hint));panel.appendChild(explanation);
+ if(platform()==='ios'&&(chosen==='apple'||chosen==='ble')){
+  const warning=node('section','hg45-native-warning');
+  warning.setAttribute('role','note');
+  warning.append(
+   node('strong','','Dlaczego iPhone nie może połączyć się tutaj?'),
+   node('p','','Korzystasz z internetowej wersji HealthGo. Ikona na ekranie głównym nie daje Safari uprawnień Apple Health ani CoreBluetooth. Próba otwarcia adresu healthgo:// bez natywnej aplikacji powoduje błąd „nieprawidłowy adres”.'),
+   node('p','','Co możesz zrobić: sparuj zegarek w aplikacji Watch (lub aplikacji producenta), sprawdź jego pomiary w aplikacji Zdrowie. Aby zsynchronizować te dane z HealthGo, potrzebna jest osobna natywna aplikacja HealthGo, zainstalowana i zalogowana na to samo konto. Jeśli jej nie masz, połączenie z tego skrótu jest obecnie niedostępne.')
+  );
+  panel.appendChild(warning);
+ }
  const actions=node('div','hg45-actions');
- actions.append(btn(selected.action,invoke));
+ actions.append(btn(platform()==='ios'&&chosen==='ble'?'Jak podłączyć zegarek na iPhonie':selected.action,invoke));
  if(currentDevice())actions.append(btn('Rozłącz Bluetooth',async()=>{
   if(!api()?.disconnect)return;
   setMessage('Rozłączam bieżące urządzenie…');
