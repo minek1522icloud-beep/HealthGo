@@ -41,6 +41,13 @@ on:
       - "tests/healthgo-activity44.test.cjs"
       - "tests/healthgo-devices-pro45.test.cjs"
       - "tests/healthgo-device-wizard50.test.cjs"
+      - "tests/healthgo-terra51.test.cjs"
+      - "www/healthgo-terra50.js"
+      - "www/healthgo-terra50.css"
+      - "www/healthgo-devices-pro45.js"
+      - "supabase/functions/healthgo-terra-link/**"
+      - "supabase/functions/healthgo-terra-webhook/**"
+      - "supabase/migrations/20261013_healthgo_terra_connections.sql"
       - "tests/device-pairing.test.cjs"
       - "tests/phone-offline-ai.test.cjs"
       - "tests/ai-download-stream.test.cjs"
@@ -79,7 +86,7 @@ jobs:
 
       - name: Sprawdz pobieranie i wznawianie AI na telefonie
         shell: bash
-        run: node --test tests/healthgo-map-recovery.test.cjs tests/healthgo-navigation-live.test.cjs tests/healthgo-navigation-mode.test.cjs tests/healthgo-nav-advanced.test.cjs tests/healthgo-gps-smooth.test.cjs tests/healthgo-auth-resilience.test.cjs tests/google-oauth.test.cjs tests/navigation-follow-v1.test.cjs tests/navigation-arrival-v6.test.cjs tests/healthgo-feature-center.test.cjs tests/healthgo-map-extras.test.cjs tests/healthgo-navigation-screen.test.cjs tests/healthgo-spacious-ui.test.cjs tests/healthgo-map4.test.cjs tests/healthgo-map-pro.test.cjs tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/healthgo-release-notes.test.cjs tests/healthgo-activity44.test.cjs tests/healthgo-devices-pro45.test.cjs tests/healthgo-device-wizard50.test.cjs tests/device-pairing.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
+        run: node --test tests/healthgo-map-recovery.test.cjs tests/healthgo-navigation-live.test.cjs tests/healthgo-navigation-mode.test.cjs tests/healthgo-nav-advanced.test.cjs tests/healthgo-gps-smooth.test.cjs tests/healthgo-auth-resilience.test.cjs tests/google-oauth.test.cjs tests/navigation-follow-v1.test.cjs tests/navigation-arrival-v6.test.cjs tests/healthgo-feature-center.test.cjs tests/healthgo-map-extras.test.cjs tests/healthgo-navigation-screen.test.cjs tests/healthgo-spacious-ui.test.cjs tests/healthgo-map4.test.cjs tests/healthgo-map-pro.test.cjs tests/healthgo-map-v2.test.cjs tests/build-safe-mobile.test.cjs tests/healthgo-chat-modern.test.cjs tests/ai-multiturn.test.cjs tests/mobile-suite.test.cjs tests/mobile-update.test.cjs tests/healthgo-release-notes.test.cjs tests/healthgo-activity44.test.cjs tests/healthgo-devices-pro45.test.cjs tests/healthgo-device-wizard50.test.cjs tests/healthgo-terra51.test.cjs tests/device-pairing.test.cjs tests/phone-offline-ai.test.cjs tests/ai-download-stream.test.cjs
 
       - name: Sprawdz grafike 240 modeli, proporcje, 3D i zachowanie Plecaka
         shell: bash
