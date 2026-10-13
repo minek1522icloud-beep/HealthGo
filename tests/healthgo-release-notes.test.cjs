@@ -42,16 +42,16 @@ function fixture(){
   {filename:'healthgo-release-notes.js'});
  return{win,doc,stored,timers,nodes,state,subscriber,build};
 }
-test('HealthGo 5.0 shows the multi-brand release, not stale patch notes',()=>{
+test('HealthGo 5.1 shows the optional Terra rollout, not stale patch notes',()=>{
  new vm.Script(source);
  const x=fixture();
- assert.equal(x.win.HealthGoWhatsNew.release,'5.0');
+ assert.equal(x.win.HealthGoWhatsNew.release,'5.1');
  assert.ok(x.timers.length>0);
  x.timers.splice(0).forEach(fn=>fn());
  const modal=x.doc.getElementById('hguReleaseOverlay');
  assert.ok(modal);
- assert.match(modal.innerHTML,/AKTUALIZACJA 5\.0/);
- assert.match(modal.innerHTML,/Urządzenia PRO 5\.0/);
+ assert.match(modal.innerHTML,/AKTUALIZACJA 5\.1/);
+ assert.match(modal.innerHTML,/Integracje zegarków/);
  assert.doesNotMatch(modal.innerHTML,/AKTUALIZACJA 3\.2/);
  assert.match(modal.innerHTML,/Historia wersji/);
  assert.equal(x.win.HealthGoWhatsNew.unreadCount(),1);
@@ -78,7 +78,7 @@ test('local in-app update inbox is per account and only admits real remote SHAs'
 test('changelog and inbox work with safe areas without promising fake push',()=>{
  const html=fs.readFileSync('www/index.html','utf8');
  const css=fs.readFileSync('www/healthgo-release-notes.css','utf8');
- assert.match(html,/healthgo-release-notes\.js\?v=21/);
+ assert.match(html,/healthgo-release-notes\.js\?v=22/);
  assert.match(html,/healthgo-release-notes\.css\?v=3/);
  assert.match(html,/healthgo:update-available/);
  assert.match(source,/aria-modal="true"/);
