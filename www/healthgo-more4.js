@@ -16,7 +16,14 @@ function jump(page,id){go(page);w.setTimeout?.(()=>$(id)?.scrollIntoView?.({beha
 function button(label,click,secondary=false){const b=node('button','hg4-button'+(secondary?' subtle':''),label);b.type='button';b.addEventListener('click',click);return b;}
 function section(parent,id,title,description){
  if(!parent)return null;
- let root=$(id);if(!root){root=node('section','hg4-panel');root.id=id;parent.appendChild(root);}
+ let root=$(id);if(!root){
+  root=node('section','hg4-panel');root.id=id;
+  // Show the new challenges/XP view first instead of below legacy dashboards.
+  const anchor=parent.id==='challenges'&&(id==='hg4XpDashboard'||id==='hg4MissionPeriods')
+   ?(id==='hg4XpDashboard'?parent.querySelector?.('.hero'):$('hg4XpDashboard')):null;
+  if(anchor?.insertAdjacentElement)anchor.insertAdjacentElement('afterend',root);
+  else parent.appendChild(root);
+ }
  root.replaceChildren();root.append(node('h3','hg4-title',title),node('p','hg4-description',description));return root;
 }
 function actions(root,items){const row=node('div','hg4-actions');for(const [label,fn,sub] of items)row.appendChild(button(label,fn,sub));root.appendChild(row);}
