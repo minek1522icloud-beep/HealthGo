@@ -42,8 +42,11 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Przygotuj Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Sprawdz Android SDK dostepny na runnerze
+        shell: bash
+        run: |
+          test -d "${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "Android SDK: ${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
 
       - name: Zbuduj pakiet AI tak jak dla strony
         shell: bash
