@@ -79,7 +79,9 @@ test('speed gauge displays real GPS speed and only opted-in validated OSM limits
  assert.match(html,/id="hgNavSpeedGauge"/);
  assert.match(html,/id="hgNavGaugeLimit"[^>]*hidden/);
  assert.match(advanced,/speed===null\?'0':String\(Math\.min\(1,speed\/130\)\)/);
- assert.match(advanced,/sign\.hidden=!\(active&&limitsEnabled&&limitDisplay\)/);
+ assert.match(advanced,/sign\.hidden=!active/);
+ assert.match(advanced,/sign\.textContent=limitsEnabled&&limitDisplay\?String\(limitDisplay\.kmh\):'—'/);
+ assert.match(advanced,/sign\.classList\?\.toggle\?\.\('hg-limit-unknown'/);
  assert.match(advanced,/speedLimitValue\(way\.tags\?\.maxspeed\)/);
  assert.match(css,/#map #hgNavLimitBadge\{display:none!important\}/);
 });
