@@ -78,8 +78,8 @@ test('local in-app update inbox is per account and only admits real remote SHAs'
 test('changelog and inbox work with safe areas without promising fake push',()=>{
  const html=fs.readFileSync('www/index.html','utf8');
  const css=fs.readFileSync('www/healthgo-release-notes.css','utf8');
- assert.match(html,/healthgo-release-notes\.js\?v=17/);
- assert.match(html,/healthgo-release-notes\.css\?v=2/);
+ assert.match(html,/healthgo-release-notes\.js\?v=18/);
+ assert.match(html,/healthgo-release-notes\.css\?v=3/);
  assert.match(html,/healthgo:update-available/);
  assert.match(source,/aria-modal="true"/);
  assert.match(source,/localStorage\?\.getItem|localStorage\?\.setItem/);
