@@ -1,0 +1,30 @@
+/* HealthGo 5.1 — Terra integration is optional and requires paid administrator setup. */
+#devices .hg50-terra{grid-column:1/-1;min-width:0}
+.hg50-terra-top h3{font-size:19px;margin:6px 0 11px;color:#edfff4}
+.hg50-terra-note,.hg50-terra-small{font-size:12px;line-height:1.6;color:#b4dfc6;margin:10px 0}
+.hg50-terra-state{margin:12px 0;padding:14px;border-radius:15px;
+ background:linear-gradient(125deg,#143f30,#0d2b23);border:1px solid #47926e}
+.hg50-terra-state strong{display:block;font-size:13px;color:#eafff5}
+.hg50-terra-state p{margin:7px 0 0;font-size:12px;color:#c5ead7;line-height:1.65}
+.hg50-terra-actions{display:flex;flex-wrap:wrap;gap:9px;margin:11px 0}
+.hg50-terra-btn{font:inherit;font-size:12px;min-height:45px;min-width:0;
+ flex:1 1 185px;background:#82efb7;color:#063a26;border:1px solid #92ffca;
+ font-weight:800;border-radius:12px;padding:11px 13px;cursor:pointer}
+.hg50-terra-btn.quiet{background:#184935;color:#f0fff4;border-color:#518e6c}
+.hg50-terra-btn:disabled{opacity:.55;cursor:not-allowed}
+.hg50-terra-btn:focus-visible{outline:3px solid #b8ffda;outline-offset:3px}
+.hg50-terra-list{border-top:1px solid #3b7255;padding-top:13px;margin-top:13px}
+.hg50-terra-list h4{font-size:14px;color:#effff5;margin:0 0 11px}
+.hg50-terra-row{display:flex;justify-content:space-between;align-items:center;
+ gap:10px;padding:12px;margin:8px 0;border:1px solid #346e4d;
+ border-radius:13px;background:#12382a}
+.hg50-terra-row>div{display:grid;gap:6px;min-width:0}
+.hg50-terra-row strong{font-size:12px;color:#effff5}
+.hg50-terra-row span{font-size:11px;color:#b4e4c7}
+.hg50-terra-row .hg50-terra-btn{flex:0 1 auto}
+.hg50-terra-measure{font-size:11px;color:#c9f3dd;line-height:1.6;margin:2px 0}
+.hg50-terra-message{font-size:12px;color:#c3f5d7;line-height:1.55;min-height:20px}
+@media(max-width:560px){
+ .hg50-terra-row{align-items:stretch;flex-direction:column}
+ .hg50-terra-row .hg50-terra-btn{width:100%}
+}
