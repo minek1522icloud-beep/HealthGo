@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
-const files=['main.cjs','desktop-security.cjs','healthgo-ai-server.mjs','www/supabase-client.js','www/healthgo-services.js','www/healthgo-feature-center.js','www/healthgo-v2-ui.js','www/healthgo-pro.js','www/healthgo-emerald-dashboard.js','www/healthgo-ai-emerald-v3.js','www/healthgo-navigation-follow-v1.js','www/healthgo-navigation-mode.js','www/healthgo-gps-visual.js','www/healthgo-nav-advanced.js','www/healthgo-route-3d-overlay.js','www/healthgo-map-extras.js','www/healthgo-map-photos.js','www/healthgo-plan-v4.js','www/healthgo-point.js','www/healthgo-treasure.js','www/healthgo-navigation-ux.js','www/healthgo-collectible-art.js','www/healthgo-medals.js','www/healthgo-badge-3d.js','www/healthgo-badge-simple.js','www/healthgo-badge-photo.js','www/healthgo-badge-shields.js','www/healthgo-map-recovery.js','www/healthgo-badge-vector.js','www/healthgo-collector-room.js','www/healthgo-rewards.js','www/healthgo-friends.js','www/healthgo-profile-pro.js','www/healthgo-pack-pro.js','www/healthgo-release-notes.js','www/healthgo-activity44.js','www/healthgo-devices.js','www/healthgo-devices-pro45.js','www/service-worker.js','www/core/achievement-engine.js','www/core/health-data.js'];
+const files=['main.cjs','desktop-security.cjs','healthgo-ai-server.mjs','www/supabase-client.js','www/healthgo-services.js','www/healthgo-feature-center.js','www/healthgo-v2-ui.js','www/healthgo-pro.js','www/healthgo-emerald-dashboard.js','www/healthgo-ai-emerald-v3.js','www/healthgo-navigation-follow-v1.js','www/healthgo-navigation-mode.js','www/healthgo-gps-visual.js','www/healthgo-nav-advanced.js','www/healthgo-route-3d-overlay.js','www/healthgo-map-extras.js','www/healthgo-map-photos.js','www/healthgo-plan-v4.js','www/healthgo-point.js','www/healthgo-treasure.js','www/healthgo-navigation-ux.js','www/healthgo-collectible-art.js','www/healthgo-medals.js','www/healthgo-badge-3d.js','www/healthgo-badge-simple.js','www/healthgo-badge-photo.js','www/healthgo-badge-shields.js','www/healthgo-map-recovery.js','www/healthgo-badge-vector.js','www/healthgo-collector-room.js','www/healthgo-rewards.js','www/healthgo-friends.js','www/healthgo-profile-pro.js','www/healthgo-pack-pro.js','www/healthgo-release-notes.js','www/healthgo-activity44.js','www/healthgo-devices.js','www/healthgo-devices-pro45.js','www/healthgo-device-catalog50.js','www/healthgo-device-wizard50.js','www/service-worker.js','www/core/achievement-engine.js','www/core/health-data.js'];
 for(const file of files){if(file.endsWith('.mjs')){require('node:child_process').execFileSync(process.execPath,['--check',file]);}else new vm.Script(fs.readFileSync(file,'utf8'),{filename:file});}
 const html=fs.readFileSync('www/index.html','utf8');let count=0;
 for(const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)){if(match[1].trim()){new vm.Script(match[1],{filename:'www/index.html:inline-'+(++count)});}}
@@ -23,8 +23,11 @@ console.log('Validated application, Emerald assets and '+count+' inline scripts.
 
 if(!html.includes('healthgo-rewards.css?v=3')||!html.includes('healthgo-release-notes.css?v=3'))throw Error('Missing rewards CSS or release notes CSS');
 if(!html.includes('healthgo-activity44.js?v=1')||!html.includes('healthgo-activity44.css?v=2'))throw Error('Missing Activity 4.4 scripts or styles');
-if(!html.includes('healthgo-devices.js?v=3')||!html.includes('healthgo-devices-pro45.js?v=2')||
-   !html.includes('healthgo-devices-pro45.css?v=2'))throw Error('Missing Devices PRO 4.5 scripts or styles');
+if(!html.includes('healthgo-devices.js?v=3')||!html.includes('healthgo-devices-pro45.js?v=3')||
+   !html.includes('healthgo-devices-pro45.css?v=2'))throw Error('Missing Devices PRO scripts or styles');
+if(!html.includes('healthgo-device-catalog50.js?v=1')||
+   !html.includes('healthgo-device-wizard50.js?v=1')||
+   !html.includes('healthgo-device-wizard50.css?v=1'))throw Error('Missing Devices PRO 5.0 catalogue, wizard or styles');
 
 if(!html.includes('healthgo-friends.js?v=1')||!html.includes('healthgo-friends.css?v=1'))throw Error('Missing friends assets');
 
