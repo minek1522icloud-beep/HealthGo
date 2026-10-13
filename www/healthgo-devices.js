@@ -10,6 +10,11 @@ let batteryLevel=null;
 let heartRate=null;
 let activeCapabilities=[];
 let heartCharacteristic=null;
+let connectionOwner=null;
+let connectionGeneration=0;
+function announceConnection(){
+ try{window.dispatchEvent?.(new CustomEvent('healthgo:device-connection'));}catch(_){}
+}
 
 function el(tag,cls,text){
   const node=document.createElement(tag);
@@ -131,7 +136,7 @@ function onHeartRate(event){
     const value=parseHeartRate(event.target.value);
     if(Number.isFinite(value)&&value>0&&value<300){
       heartRate=value;
-      render();
+      render();announceConnection();
     }
   }catch(_){}
 }
@@ -164,31 +169,58 @@ async function detectCapabilities(server){
   return{caps,battery};
 }
 
-async function handleDisconnected(){
-  const device=activeDevice;
-  activeServer=null;
-  batteryLevel=null;
-  heartRate=null;
-  activeCapabilities=[];
-  heartCharacteristic=null;
-  if(device){
+async function handleDisconnected(event){
+  // Delayed callbacks from an older peripheral must not disconnect a newer watch.
+  if(event?.target&&event.target!==activeDevice)return;
+  const device=activeDevice,uid=connectionOwner;
+  connectionGeneration++;
+  activeDevice=null;activeServer=null;batteryLevel=null;heartRate=null;
+  activeCapabilities=[];heartCharacteristic=null;connectionOwner=null;
+  render();announceConnection();
+  if(device&&uid&&uid===Services.state.uid){
     try{await saveDevice(device,false,null)}catch(_){}
   }
-  render();
 }
 
 async function connectDevice(device){
+  if(!Services.state.uid)throw new Error('Zaloguj się, aby połączyć urządzenie.');
   if(!device||!device.gatt)throw new Error('To urządzenie nie udostępnia połączenia BLE/GATT.');
-  activeDevice=device;
+  const generation=++connectionGeneration,uid=Services.state.uid;
+  if(activeDevice&&activeDevice!==device){
+    try{activeDevice.removeEventListener?.('gattserverdisconnected',handleDisconnected);
+      activeDevice.gatt?.disconnect?.();}catch(_){}
+    activeServer=null;heartCharacteristic=null;heartRate=null;batteryLevel=null;activeCapabilities=[];
+  }
+  activeDevice=device;connectionOwner=uid;
   device.removeEventListener?.('gattserverdisconnected',handleDisconnected);
   device.addEventListener?.('gattserverdisconnected',handleDisconnected);
-  activeServer=await withTimeout(device.gatt.connect(),15000,'Połączenie Bluetooth przekroczyło limit czasu.');
-  const capabilities=await detectCapabilities(activeServer);
-  activeCapabilities=capabilities.caps;
-  batteryLevel=capabilities.battery;
-  await saveDevice(device,true,batteryLevel);
-  render();
-  return device;
+  try{
+    const server=await withTimeout(device.gatt.connect(),15000,'Połączenie Bluetooth przekroczyło limit czasu.');
+    if(generation!==connectionGeneration||uid!==Services.state.uid){
+      try{server.disconnect?.();}catch(_){}
+      throw new Error('Sesja konta została zmieniona. Wybierz urządzenie ponownie.');
+    }
+    activeServer=server;
+    const capabilities=await detectCapabilities(server);
+    if(generation!==connectionGeneration||uid!==Services.state.uid)throw new Error('Połączenie nie jest już aktywne.');
+    activeCapabilities=capabilities.caps;batteryLevel=capabilities.battery;
+    render();announceConnection();
+    // BLE can be live even if temporary backend persistence fails.
+    try{await saveDevice(device,true,batteryLevel);}
+    catch(_){const status=document.getElementById('hgRealDeviceStatus');
+      if(status)status.textContent='Bluetooth działa, ale nie udało się zapisać urządzenia na koncie.';}
+    render();announceConnection();
+    return device;
+  }catch(error){
+    if(generation===connectionGeneration&&activeDevice===device){
+      device.removeEventListener?.('gattserverdisconnected',handleDisconnected);
+      try{device.gatt?.disconnect?.();}catch(_){}
+      activeDevice=null;activeServer=null;heartCharacteristic=null;heartRate=null;batteryLevel=null;
+      activeCapabilities=[];connectionOwner=null;
+      render();announceConnection();
+    }
+    throw error;
+  }
 }
 
 async function requestBluetooth(){
@@ -271,27 +303,22 @@ async function reconnectGranted(){
 }
 
 async function disconnectCurrent(){
-  try{
-    if(heartCharacteristic){
-      heartCharacteristic.removeEventListener?.('characteristicvaluechanged',onHeartRate);
-      await heartCharacteristic.stopNotifications?.().catch(()=>{});
-    }
-  }catch(_){}
-  heartCharacteristic=null;
-
-  if(activeDevice&&activeDevice.gatt&&activeDevice.gatt.connected){
-    activeDevice.gatt.disconnect();
-    return;
+  const device=activeDevice,uid=connectionOwner;
+  ++connectionGeneration;
+  if(heartCharacteristic){
+    try{heartCharacteristic.removeEventListener?.('characteristicvaluechanged',onHeartRate);
+      await heartCharacteristic.stopNotifications?.();}catch(_){}
   }
-  if(activeDevice){
-    try{await saveDevice(activeDevice,false,null)}catch(_){}
+  if(device){
+    try{device.removeEventListener?.('gattserverdisconnected',handleDisconnected);
+      if(device.gatt?.connected)device.gatt.disconnect();}catch(_){}
   }
-  activeDevice=null;
-  activeServer=null;
-  batteryLevel=null;
-  heartRate=null;
-  activeCapabilities=[];
-  render();
+  activeDevice=null;activeServer=null;batteryLevel=null;heartRate=null;
+  activeCapabilities=[];heartCharacteristic=null;connectionOwner=null;
+  render();announceConnection();
+  if(device&&uid&&uid===Services.state.uid){
+    try{await saveDevice(device,false,null);}catch(_){}
+  }
 }
 
 function ensureRoot(){
@@ -392,10 +419,19 @@ function render(){
   root.appendChild(info);
 }
 
-Services.subscribe(render);
+Services.subscribe(function(state){
+  if(!state.uid||state.uid!==connectionOwner&&connectionOwner!==null){
+    if(activeDevice){ // User's next account cannot inherit a previous BLE session.
+      void disconnectCurrent();
+    }
+  }
+  render();
+});
 window.HealthGoDevices={
   connect:requestBluetooth,
   reconnect:reconnectGranted,
+  openHealth:openHealthPlatform,
+  refresh:refreshDatabaseDevices,
   disconnect:disconnectCurrent,
   get activeDevice(){return activeDevice;},
   get connected(){return !!(activeServer&&activeServer.connected);},
