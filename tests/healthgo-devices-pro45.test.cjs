@@ -81,7 +81,8 @@ test('Device-health readings are shown only for signed-in account with real sour
  assert.doesNotMatch(f.output(),/2[\s\u00a0]?512/);
 });
 test('BLE pairing is user-initiated; native iOS health is routed separately',async()=>{
- const android=fixture();const control=android.btn('Wybierz zegarek Bluetooth');
+ const android=fixture();android.btn('Zegarek z Bluetooth LE').listeners.click();
+ const control=android.btn('Wybierz zegarek Bluetooth');
  assert.ok(control);await control.listeners.click();
  assert.equal(android.calls.ble,1);
  assert.equal(android.calls.health,0);
@@ -90,7 +91,7 @@ test('BLE pairing is user-initiated; native iOS health is routed separately',asy
  await ios.btn('Otwórz integrację Apple Health').listeners.click();
  assert.equal(ios.calls.health,1);
  assert.equal(ios.calls.ble,0);
- assert.match(ios.output(),/Safari/i);
+ assert.match(ios.output(),/natywn/i);
 });
 test('existing device backend cannot leak a live BLE connection across accounts',()=>{
  assert.match(old,/connectionGeneration/);
