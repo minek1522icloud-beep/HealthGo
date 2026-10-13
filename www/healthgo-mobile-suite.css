@@ -30,3 +30,76 @@ body.hg-compact .card,body.hg-compact .hg2-card,body.hg-compact .settings-sectio
  .settings-content .settings-section{scroll-margin-top:72px}
  .hg-mobile-actions{display:grid;grid-template-columns:1fr}.hg-mobile-actions button{width:100%}
 }
+
+/* HealthGo 4.2: familiar settings, five clear entry points and one advanced group. */
+#settings .settings-menu{
+ position:relative;display:flex;flex-direction:column;align-items:stretch;
+ gap:7px;overflow:visible;min-width:0;
+}
+#settings .settings-menu>button{
+ width:100%;min-width:0;min-height:47px;text-align:left;
+ border-radius:13px;padding:12px 13px;
+ border:1px solid var(--border);background:var(--card);
+ color:var(--text);font-size:13px;font-weight:750;
+}
+#settings .settings-menu .hg-settings-profile-shortcut{
+ background:linear-gradient(115deg,#1f835b,#105d44);
+ border:1px solid #5cc695;color:#effff7;
+}
+#settings .hg-settings-extras{
+ margin-top:6px;min-width:0;border-radius:15px;
+ border:1px solid var(--border);background:var(--card);
+ color:var(--text);overflow:hidden
+}
+#settings .hg-settings-extras summary{
+ cursor:pointer;list-style:none;min-height:52px;padding:12px 14px;
+ font-size:13px;font-weight:800;line-height:1.4;
+ display:flex;flex-direction:column;justify-content:center;gap:3px;
+}
+#settings .hg-settings-extras summary::-webkit-details-marker{display:none}
+#settings .hg-settings-extras summary:after{
+ content:'⌄';font-size:21px;position:absolute;right:12px;
+ transform:translateY(-17px);
+}
+#settings .hg-settings-extras[open] summary:after{content:'⌃'}
+#settings .hg-settings-extras summary small{font-size:10px;color:var(--muted);font-weight:500;padding-right:20px}
+#settings .hg-settings-extra-list{
+ display:grid;grid-template-columns:1fr;gap:5px;
+ border-top:1px solid var(--border);padding:10px;
+ max-height:min(43dvh,360px);overflow-y:auto;
+}
+#settings .hg-settings-extra-list button{
+ min-width:0!important;width:100%!important;
+ min-height:40px;text-align:left;white-space:normal;
+ border-radius:9px;padding:9px 11px;font-weight:650;
+ background:transparent;border:1px solid transparent;
+ color:var(--text)
+}
+#settings .hg-settings-extra-list button:hover,
+#settings .hg-settings-extra-list button:focus-visible{
+ background:var(--hover);border-color:var(--border)
+}
+#settings .settings-menu button:focus-visible,#settings .hg-settings-extras summary:focus-visible{
+ outline:3px solid #6ce9ac;outline-offset:2px
+}
+#settings .settings-content{min-width:0}
+#settings .settings-content .settings-section{scroll-margin-top:90px}
+@media(max-width:1000px){
+ #settings .settings-menu{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;overflow:visible!important;border:0;padding:0 0 6px
+ }
+ #settings .settings-menu>button{
+  width:100%;min-width:0!important;white-space:normal;
+  text-align:center;min-height:50px
+ }
+ #settings .settings-menu .hg-settings-profile-shortcut{grid-column:1/-1;text-align:center}
+ #settings .hg-settings-extras{grid-column:1/-1;margin-top:0}
+ #settings .hg-settings-extras summary{min-height:50px}
+ #settings .hg-settings-extra-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:390px){
+ #settings .settings-menu{gap:7px}
+ #settings .settings-menu>button{padding:10px 6px;font-size:12px}
+ #settings .hg-settings-extra-list{grid-template-columns:1fr}
+}
