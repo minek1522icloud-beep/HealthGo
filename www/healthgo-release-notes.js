@@ -5,8 +5,24 @@
  'use strict';
  const w=window,d=w.document,S=w.HealthGoServices;
  if(!d||!S)return;
- const RELEASE='5.1',KEY='healthgo.release-notes.last-build.v1',RELEASE_KEY='healthgo.release-notes.last-release.v1';
+ const RELEASE='5.2',KEY='healthgo.release-notes.last-build.v1',RELEASE_KEY='healthgo.release-notes.last-release.v1';
  const NOTES=[
+  {id:'5.2',title:'Universal Devices — Open Wearables bez Terra',date:'2026-10-13',
+   tags:['ZEGARKI','OPEN SOURCE','BEZPIECZEŃSTWO'],
+   sections:[
+    {title:'Nowe źródła danych i prostszy ekran',items:[
+      'Dodano opcjonalną integrację z samodzielnie uruchamianym Open Wearables, bez abonamentu Terra.',
+      'Centrum Urządzeń ma czytelniejszy ekran: konta producentów i potwierdzone statusy na górze, Bluetooth i inne metody w rozwijanej sekcji.',
+      'Open Wearables obsługuje zgodne konta dostawców przez OAuth. Każdy producent może wymagać osobnego zatwierdzenia kluczy API.',
+      'Klucze Open Wearables pozostają na serwerze, a konto źródłowe przypisane jest do zalogowanego użytkownika HealthGo.',
+      'Terra pozostaje wyłączona i usunięta z nowego ekranu. Nie kasujemy historii ani pozostałych funkcji HealthGo.'
+    ]},
+    {title:'Co trzeba uruchomić osobno',items:[
+      'Open Wearables musi działać na własnym serwerze z HTTPS. Do czasu jego konfiguracji nie pokazujemy fikcyjnego połączenia.',
+      'Apple Health i Health Connect nadal wymagają odpowiednich aplikacji natywnych; sama ikona Safari nie daje dostępu do ich danych.',
+      'Xiaomi i Huawei mogą wymagać aplikacji producenta; nie deklarujemy bezpośredniej zgodności wszystkich modeli.'
+    ]}
+   ]},
   {id:'5.1',title:'Integracje zegarków — Terra przygotowana bez opłat',date:'2026-10-13',
    tags:['ZEGARKI','INTEGRACJE','PRYWATNOŚĆ'],
    sections:[
