@@ -6,6 +6,41 @@ let generation=0,pollTimer=null,initializing=null;
 const emptyFamily=()=>({id:null,members:[],permissions:[],locations:[],devices:[],audit:[],invites:[],projections:{}});
 const empty=()=>({uid:null,profile:null,engine:null,health:null,healthDays:[],syncEvents:[],notifications:[],devices:[],family:emptyFamily(),online:navigator.onLine,backendAvailable:false,error:null,loading:false,privacy:null,locationSettings:{enabled:false,mode:'off'},session:null,cloudState:null});
 let state=empty();
+// HealthKit values remain local and account-scoped (never uploaded here).
+let nativeHealth=null,nativeHealthOwner='';
+function overlayNativeHealth(){
+ if(!nativeHealth||!state.uid||nativeHealthOwner!==state.uid)return;
+ const day=nativeHealth.day,previous=Array.isArray(state.healthDays)?state.healthDays:[];
+ const original=previous.find(row=>row?.id===day&&row?.source!=='Apple Health (na tym iPhonie)')||{};
+ const row=Object.assign({},original,nativeHealth,{id:day,source:'Apple Health (na tym iPhonie)'});
+ state.healthDays=[row,...previous.filter(x=>x?.id!==day)].sort((a,b)=>String(b.id).localeCompare(String(a.id))).slice(0,366);
+ state.health=state.healthDays[0]||null;
+}
+function applyNativeHealthSnapshot(input,requestUid){
+ if(!state.uid||requestUid!==state.uid||!input||typeof input!=='object')return false;
+ const now=new Date();
+ const today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+ if(input.day!==today)return false;
+ const keys={steps:100000,distanceKm:1000,heartRate:350,sleepMinutes:1440,activeCalories:20000};
+ const clean={day:today,updatedAt:now.toISOString(),timestamp:now.toISOString()};
+ let found=false;
+ for(const [key,max] of Object.entries(keys)){
+  const value=input[key];
+  if(typeof value==='number'&&Number.isFinite(value)&&value>=0&&value<=max){clean[key]=value;found=true;}
+ }
+ if(!found)return false;
+ nativeHealth=clean;nativeHealthOwner=requestUid;
+ overlayNativeHealth();emit('HEALTH_SYNCED',state.health);notify();return true;
+}
+function clearNativeHealthSnapshot(requestUid){
+ if(!state.uid||requestUid!==state.uid)return false;
+ nativeHealth=null;nativeHealthOwner='';
+ state.healthDays=(state.healthDays||[]).filter(x=>x?.source!=='Apple Health (na tym iPhonie)');
+ state.health=state.healthDays[0]||null;
+ emit('HEALTH_SYNCED',state.health);notify();
+ if(state.uid&&S?.hasSession?.())void refreshHealth().catch(()=>{});
+ return true;
+}
 
 function emit(type,detail){events.dispatchEvent(new CustomEvent(type,{detail}));}
 function notify(){for(const fn of subscribers){try{fn(state);}catch(_){}}emit('STATE_CHANGED',state);}
@@ -219,7 +254,7 @@ async function flush(){
  for(const event of queue.slice()){if(uid!==state.uid)return;try{await call('recordProgressEvent',event);queue.splice(queue.findIndex(x=>x.id===event.id),1);save('outbox',queue);}catch(_){break;}}
 }
 async function markNotificationRead(id){if(!state.uid)return;await rpc('healthgo_mark_notification_read',{p_notification_id:id});await initialize();}
-const api={events,get state(){return state;},subscribe(fn){subscribers.add(fn);fn(state);return()=>subscribers.delete(fn);},start,stop,initialize,call,record,refreshHealth,refreshDevices,refreshEngine,markNotificationRead,loadFamilyProjections(){return initialize();},syncCloudState,loadCloudState,
+const api={events,applyNativeHealthSnapshot,clearNativeHealthSnapshot,get state(){return state;},subscribe(fn){subscribers.add(fn);fn(state);return()=>subscribers.delete(fn);},start,stop,initialize,call,record,refreshHealth,refreshDevices,refreshEngine,markNotificationRead,loadFamilyProjections(){return initialize();},syncCloudState,loadCloudState,
  refreshLegacy(){if(!state.engine&&Engine&&typeof loadProgress==='function'){state.engine=Engine.migrateLegacy(loadProgress(),new Date().toISOString());state.legacyPreview=true;notify();}},
  setTitle(titleId){return call('updateProfilePreferences',{titleId});},errorMessage};
 window.HealthGoServices=api;
