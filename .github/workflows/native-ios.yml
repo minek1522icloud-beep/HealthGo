@@ -45,7 +45,7 @@ jobs:
       - name: Testy kluczowe Apple Health i Urzadzenia
         run: |
           node scripts/check-syntax.cjs
-          node --test tests/healthgo-apple-health53.test.cjs tests/healthgo-devices-pro45.test.cjs tests/healthgo-device-wizard50.test.cjs tests/health-data.test.cjs tests/healthgo-activity44.test.cjs tests/emerald-theme.test.cjs
+          node --test tests/healthgo-apple-health53.test.cjs tests/healthgo-devices-pro45.test.cjs tests/healthgo-device-wizard50.test.cjs tests/health-data.test.cjs tests/healthgo-activity44.test.cjs tests/emerald-theme.test.cjs tests/services.test.cjs
 
       - name: Diagnostyka calej aplikacji (wczesniejsze testy moga zawodzic)
         continue-on-error: true
