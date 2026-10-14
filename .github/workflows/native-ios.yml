@@ -6,6 +6,9 @@ on:
     branches: [main]
     paths:
       - "native-shell/**"
+      - "scripts/patch-capacitor-ios-healthkit.py"
+      - "www/healthgo-apple-health53.js"
+      - "www/healthgo-services.js"
       - ".github/workflows/native-ios.yml"
 
 permissions:
@@ -63,6 +66,21 @@ jobs:
           npx cap add ios --packagemanager SPM
           npx cap sync ios
           test -f ios/App/App.xcodeproj/project.pbxproj
+
+      - name: Wlacz Apple HealthKit i natywny most Capacitor
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/patch-capacitor-ios-healthkit.py --project native-shell/ios/App
+          plutil -lint native-shell/ios/App/App/Info.plist
+          plutil -lint native-shell/ios/App/App/HealthGo.entitlements
+          grep -q 'HealthGoBridgeViewController' native-shell/ios/App/App/Base.lproj/Main.storyboard
+          grep -q 'HealthGoHealthPlugin.swift in Sources' native-shell/ios/App/App.xcodeproj/project.pbxproj
+
+      - name: Sprawdz natywny most JavaScript
+        run: |
+          node --check www/healthgo-apple-health53.js
+          node --test tests/healthgo-apple-health53.test.cjs
 
       - name: Skompiluj aplikacje iOS dla symulatora (bez podpisu Apple)
         working-directory: native-shell/ios/App
