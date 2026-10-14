@@ -67,12 +67,17 @@ public class HealthGoHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         let query = HKSampleQuery(sampleType: sleep, predicate: predicate, limit: HKObjectQueryNoLimit,
                                   sortDescriptors: nil) { _, samples, error in
             guard error == nil else { done(nil); return }
-            let asleep: Set<Int> = [
-                HKCategoryValueSleepAnalysis.asleepCore.rawValue,
-                HKCategoryValueSleepAnalysis.asleepDeep.rawValue,
-                HKCategoryValueSleepAnalysis.asleepREM.rawValue,
-                HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue
-            ]
+            let asleep: Set<Int>
+            if #available(iOS 16.0, *) {
+                asleep = [
+                    HKCategoryValueSleepAnalysis.asleepCore.rawValue,
+                    HKCategoryValueSleepAnalysis.asleepDeep.rawValue,
+                    HKCategoryValueSleepAnalysis.asleepREM.rawValue,
+                    HKCategoryValueSleepAnalysis.asleepUnspecified.rawValue
+                ]
+            } else {
+                asleep = [HKCategoryValueSleepAnalysis.asleep.rawValue]
+            }
             let minutes = (samples as? [HKCategorySample] ?? [])
                 .filter { asleep.contains($0.value) }
                 .reduce(0.0) { $0 + $1.endDate.timeIntervalSince($1.startDate) / 60.0 }
