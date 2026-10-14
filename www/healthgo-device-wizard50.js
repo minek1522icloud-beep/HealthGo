@@ -18,6 +18,7 @@ const button=(text,handler,muted=false)=>{
 const detectedPlatform=()=>/iPhone|iPad|iPod/i.test(w.navigator?.userAgent||'')?'ios':
  /Android/i.test(w.navigator?.userAgent||'')?'android':'desktop';
 const bleAvailable=()=>typeof w.navigator?.bluetooth?.requestDevice==='function';
+const nativeHealth=()=>w.Capacitor?.isNativePlatform?.()===true&&w.Capacitor?.getPlatform?.()==='ios';
 const owner=()=>String(S.state?.uid||'');
 const prefKey=()=>owner()?'healthgo.devices50.selection.'+encodeURIComponent(owner()):null;
 let currentOwner=null,brand='apple',model='Series',method='health',step=1,status='';
@@ -36,7 +37,7 @@ function restore(){
  step=1;status='';busy=false;gen++;
 }
 function resolve(){
- return cat.resolve({brand,model,platform:detectedPlatform(),webBluetooth:bleAvailable()});
+ return cat.resolve({brand,model,platform:detectedPlatform(),webBluetooth:bleAvailable(),nativeHealth:nativeHealth()});
 }
 function setBrand(id){
  const next=cat.getBrand(id);
@@ -113,6 +114,7 @@ function renderAction(container,plan){
   pane.appendChild(caption('Ta przeglądarka nie umożliwia bezpośredniego wyszukania urządzenia. Nie otwieramy nieobsługiwanych adresów systemowych.'));
  }else if(p.id==='health'){
   pane.appendChild(caption('Najpierw sparuj zegarek w aplikacji producenta. Sprawdź, czy dane są zapisane w Zdrowiu (iPhone) albo Health Connect (Android). Synchronizacja do HealthGo wymaga natywnej aplikacji z odpowiednimi uprawnieniami.'));
+  if(p.enabled&&plan.brand==='apple'&&typeof w.HealthGoAppleHealth53?.connect==='function')actions.append(button('Połącz Apple Health',()=>void w.HealthGoAppleHealth53.connect()));
  }else{
   pane.appendChild(caption('Otwórz na telefonie oficjalną aplikację producenta. Jeśli udostępnia dane do systemowej aplikacji zdrowotnej, natywne HealthGo będzie mogło je odczytać po uzyskaniu zgody.'));
  }
