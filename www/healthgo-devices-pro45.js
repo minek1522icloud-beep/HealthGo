@@ -96,7 +96,7 @@ function renderOverview(root){
   live.appendChild(device);
   const a=api(),readings=node('div','hg45-live-readings');
   readings.append(fact('Bateria',number(a?.batteryLevel)===null?'—':format(a.batteryLevel)+'%','Odczyt BLE'),
-   fact('Tętno',number(a?.heartRate)===null?'—':format(a.heartRate)+' bpm','Odczyt BLE (na żywo)'));
+   fact('Połączenie', 'Bluetooth LE', 'Bieżąca sesja'));
   live.appendChild(readings);summary.appendChild(live);
  }
  root.appendChild(summary);
@@ -276,7 +276,7 @@ function render(){
   owner=String(S.state?.uid||'');chosen=platform()==='ios'?'apple':platform()==='android'?'android':'ble';message='';
  }
  root.replaceChildren();
- renderHeader(root);renderOverview(root);renderSources(root);renderList(root);
+ renderHeader(root);w.HealthGoAppleHealth53?.render?.(root);renderOverview(root);renderList(root);
  // Provider accounts are the primary route; keep native/BLE details available,
  // without repeating five full-screen setup instructions on every iPhone.
  w.HealthGoOpenWearables52?.render?.(root);
