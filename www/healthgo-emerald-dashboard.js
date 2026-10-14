@@ -210,10 +210,10 @@
   const heart=h?number(h.heartRate):null;
   putText('hgsHeart',heart===null?'Brak danych':fmt(heart)+' bpm');
   putText('hgsHeartSub',heart===null?'Brak pomiaru':'Ostatni zapis z dzisiaj');
-  // The currently connected health-data schema has no calories field.
-  // Never derive calories from steps or create a synthetic calorie goal.
-  putText('hgsCalories','—');
-  putText('hgsCaloriesSub','Brak źródła pomiaru');
+  // Never infer calories from steps; show only a genuine Apple Health reading.
+  const calories=h?number(h.activeCalories):null;
+  putText('hgsCalories',calories===null?'—':fmt(calories)+' kcal');
+  putText('hgsCaloriesSub',calories===null?'Brak źródła pomiaru':'Rzeczywisty odczyt Apple Health');
  }
  function renderXpAndChallenge(state){
   const progress=state?.uid?state.engine:null;
