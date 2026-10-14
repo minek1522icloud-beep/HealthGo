@@ -84,8 +84,9 @@ test('Native Apple Health snapshot is local, scoped to owner and survives cloud 
  const day=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
  const sample={day,steps:2468,distanceKm:2.4,heartRate:68,activeCalories:150};
  assert.equal(f.service.applyNativeHealthSnapshot(sample,'B'),false,'other account must be rejected');
- assert.equal(f.service.applyNativeHealthSnapshot({...sample,steps:-100},'A'),true);
- assert.equal(f.service.state.health.steps,2468,'invalid field is dropped while other valid fields survive');
+ assert.equal(f.service.applyNativeHealthSnapshot({...sample,heartRate:-100},'A'),true);
+ assert.equal(f.service.state.health.steps,2468,'valid readings survive a bad field');
+ assert.equal(f.service.state.health.heartRate,undefined,'invalid heart-rate reading is discarded');
  assert.equal(f.service.state.health.activeCalories,150);
  assert.equal(f.service.state.health.source,'Apple Health (na tym iPhonie)');
  await f.service.refreshHealth();
