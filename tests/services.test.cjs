@@ -75,3 +75,27 @@ test('pending event from A cannot enter B outbox after account switch',async()=>
  resolveEvent({duplicate:false});assert.equal(await pending,false);
  assert.equal(f.storage.get('healthgo_v2_outbox_B'),undefined);f.service.stop();
 });
+
+
+test('Native Apple Health snapshot is local, scoped to owner and survives cloud refresh',async()=>{
+ const f=fixture();
+ await f.service.start(f.login('A'));
+ const date=new Date();
+ const day=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+ const sample={day,steps:2468,distanceKm:2.4,heartRate:68,activeCalories:150};
+ assert.equal(f.service.applyNativeHealthSnapshot(sample,'B'),false,'other account must be rejected');
+ assert.equal(f.service.applyNativeHealthSnapshot({...sample,steps:-100},'A'),true);
+ assert.equal(f.service.state.health.steps,2468,'invalid field is dropped while other valid fields survive');
+ assert.equal(f.service.state.health.activeCalories,150);
+ assert.equal(f.service.state.health.source,'Apple Health (na tym iPhonie)');
+ await f.service.refreshHealth();
+ assert.equal(f.service.state.health.steps,2468,'local readings should survive backend refresh');
+ assert.equal(f.service.state.health.activeCalories,150);
+ assert.equal(f.service.clearNativeHealthSnapshot('B'),false);
+ assert.equal(f.service.clearNativeHealthSnapshot('A'),true);
+ assert.equal(f.service.state.health,null);
+ f.service.stop();
+ await f.service.start(f.localUser('B'));
+ assert.equal(f.service.state.health,null,'native readings must not leak to another account');
+ f.service.stop();
+});
