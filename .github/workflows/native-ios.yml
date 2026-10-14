@@ -3,9 +3,19 @@ name: HealthGo Native iOS (Xcode build)
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, feature/apple-healthkit-native-20261014]
     paths:
       - "native-shell/**"
+      - "scripts/patch-capacitor-ios-healthkit.py"
+      - "www/healthgo-apple-health53.js"
+      - "www/healthgo-services.js"
+      - "www/index.html"
+      - "www/healthgo-emerald-dashboard.js"
+      - "www/healthgo-device-catalog50.js"
+      - "www/healthgo-device-wizard50.js"
+      - "www/healthgo-devices-pro45.js"
+      - "www/healthgo-apple-health53.css"
+      - "tests/healthgo-apple-health53.test.cjs"
       - ".github/workflows/native-ios.yml"
 
 permissions:
@@ -31,6 +41,15 @@ jobs:
 
       - name: Sprawdz Xcode
         run: xcodebuild -version
+
+      - name: Testy kluczowe Apple Health i Urzadzenia
+        run: |
+          node scripts/check-syntax.cjs
+          node --test tests/healthgo-apple-health53.test.cjs tests/healthgo-devices-pro45.test.cjs tests/healthgo-device-wizard50.test.cjs tests/health-data.test.cjs tests/healthgo-activity44.test.cjs tests/emerald-theme.test.cjs tests/services.test.cjs
+
+      - name: Diagnostyka calej aplikacji (wczesniejsze testy moga zawodzic)
+        continue-on-error: true
+        run: node --test tests/*.test.cjs
 
       - name: Zbuduj mobilny pakiet AI
         shell: bash
@@ -63,6 +82,21 @@ jobs:
           npx cap add ios --packagemanager SPM
           npx cap sync ios
           test -f ios/App/App.xcodeproj/project.pbxproj
+
+      - name: Wlacz Apple HealthKit i natywny most Capacitor
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/patch-capacitor-ios-healthkit.py --project native-shell/ios/App
+          plutil -lint native-shell/ios/App/App/Info.plist
+          plutil -lint native-shell/ios/App/App/HealthGo.entitlements
+          grep -q 'HealthGoBridgeViewController' native-shell/ios/App/App/Base.lproj/Main.storyboard
+          grep -q 'HealthGoHealthPlugin.swift in Sources' native-shell/ios/App/App.xcodeproj/project.pbxproj
+
+      - name: Sprawdz natywny most JavaScript
+        run: |
+          node --check www/healthgo-apple-health53.js
+          node --test tests/healthgo-apple-health53.test.cjs
 
       - name: Skompiluj aplikacje iOS dla symulatora (bez podpisu Apple)
         working-directory: native-shell/ios/App
