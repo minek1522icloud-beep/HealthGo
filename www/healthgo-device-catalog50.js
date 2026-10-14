@@ -34,14 +34,15 @@ function resolve(opts={}){
  const brand=getBrand(opts.brand),model=getModel(brand.id,opts.model);
  const platform=platforms(opts.platform);
  const webBluetooth=!!opts.webBluetooth&&platform!=='ios';
+ const nativeHealth=!!opts.nativeHealth&&platform==='ios';
  const healthMethod=platform==='ios'?'Apple Health':platform==='android'?'Health Connect':'brak';
  const systemHealth=platform!=='desktop';
  const isApple=brand.id==='apple';
  const recommendSource=isApple?'Apple Health':brand.id==='samsung'&&platform==='android'?'Health Connect':brand.companion;
  const paths=[];
  if(isApple&&platform==='ios'){
-  paths.push({id:'health',label:'Apple Health (aplikacja natywna)',kind:'native',enabled:false,
-   note:'Wymaga osobno zainstalowanej, podpisanej aplikacji HealthGo na iPhone i zgody HealthKit. Skrót Safari nie wystarcza.'});
+  paths.push({id:'health',label:'Apple Health (aplikacja natywna)',kind:'native',enabled:nativeHealth,
+   note:nativeHealth?'W natywnej aplikacji możesz poprosić o zgodę Apple Health i odczytać dostępne dane. Nie jest to ponowne parowanie zegarka.':'Wymaga osobno zainstalowanej, podpisanej aplikacji HealthGo na iPhone i zgody HealthKit. Skrót Safari nie wystarcza.'});
  }else if(isApple){
   paths.push({id:'manual',label:'Wymagany iPhone i Apple Health',kind:'manual',enabled:false,
    note:'Apple Watch nie może być bezpośrednio odczytywany przez standardowy Web Bluetooth.'});
