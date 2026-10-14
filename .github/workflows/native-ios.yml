@@ -3,10 +3,11 @@ name: HealthGo Native iOS (Xcode build)
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/apple-healthkit-native-20261014]
+    branches: [main, feature/ios-device-ipa-20261014]
     paths:
       - "native-shell/**"
       - "scripts/patch-capacitor-ios-healthkit.py"
+      - "scripts/verify-ios-ipa.py"
       - "www/healthgo-apple-health53.js"
       - "www/healthgo-services.js"
       - "www/index.html"
@@ -114,6 +115,44 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build
 
+      - name: Skompiluj na prawdziwy iPhone (arm64, bez podpisu Apple)
+        working-directory: native-shell/ios/App
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project App.xcodeproj -scheme App \
+            -configuration Debug \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/HealthGo-iOS-device-build" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+          test -s "$RUNNER_TEMP/HealthGo-iOS-device-build/Build/Products/Debug-iphoneos/App.app/App"
+
+      - name: Zbuduj i sprawdz HealthGo IPA (wymaga pozniejszego podpisania)
+        shell: bash
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/HealthGo-iOS-device-build/Build/Products/Debug-iphoneos/App.app"
+          python3 scripts/verify-ios-ipa.py \
+            --app "$APP" \
+            --entitlements native-shell/ios/App/App/HealthGo.entitlements \
+            --output "$RUNNER_TEMP/HealthGo-iPhone-TEST-unsigned.ipa"
+          shasum -a 256 "$RUNNER_TEMP/HealthGo-iPhone-TEST-unsigned.ipa" \
+            > "$RUNNER_TEMP/HealthGo-iPhone-TEST-unsigned.ipa.sha256"
+
+      - name: Udostepnij IPA do samodzielnego podpisania
+        uses: actions/upload-artifact@v4
+        with:
+          name: HealthGo-iPhone-TEST-unsigned
+          path: |
+            ${{ runner.temp }}/HealthGo-iPhone-TEST-unsigned.ipa
+            ${{ runner.temp }}/HealthGo-iPhone-TEST-unsigned.ipa.sha256
+          retention-days: 14
+          if-no-files-found: error
+
       - name: Spakuj projekt do podpisania w Xcode
         working-directory: native-shell/ios
         shell: bash
@@ -131,6 +170,6 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
-# Uwaga: to prawdziwy projekt natywny, ale NIE instalator na iPhone'a.
-# Instalacja na urzadzeniu wymaga podpisania Apple w Xcode albo dystrybucji
-# przez TestFlight/App Store. Nie publikuj niepodpisanej IPA jako instalatora.
+# IPA powstaje dla ARM64 iPhone, lecz jest NIEPODPISANA i nie instaluje sie samym kliknieciem.
+# Test na iPhonie wymaga osobistego podpisania przez dopuszczona metode Apple.
+# Nie mylic artefaktu testowego z TestFlight ani publicznym instalatorem.
