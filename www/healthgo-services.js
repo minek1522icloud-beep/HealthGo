@@ -43,7 +43,7 @@ function clearNativeHealthSnapshot(requestUid){
 }
 
 function emit(type,detail){events.dispatchEvent(new CustomEvent(type,{detail}));}
-function notify(){for(const fn of subscribers){try{fn(state);}catch(_){}}emit('STATE_CHANGED',state);}
+function notify(){overlayNativeHealth();for(const fn of subscribers){try{fn(state);}catch(_){}}emit('STATE_CHANGED',state);}
 function key(area,uid){return 'healthgo_v2_'+area+'_'+(uid||state.uid||'signed-out');}
 function read(area,uid){try{return JSON.parse(localStorage.getItem(key(area,uid))||'null');}catch(_){return null;}}
 function saveFor(area,uid,value){if(!uid)return;try{localStorage.setItem(key(area,uid),JSON.stringify(value));}catch(_){}}
