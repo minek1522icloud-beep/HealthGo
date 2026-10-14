@@ -67,10 +67,10 @@ test('A saved device is never mistaken for an active Bluetooth connection',()=>{
  f.setConnected(true,{heartRate:72,batteryLevel:56});
  f.events['healthgo:device-connection']();
  assert.match(f.output(),/Połączono teraz/);
- assert.match(f.output(),/72 bpm/);
+ assert.doesNotMatch(f.output(),/72 bpm/,'heart rate belongs on Start or Activity');
  assert.match(f.output(),/56%/);
 });
-test('Device-health readings are shown only for signed-in account with real source',()=>{
+test('Devices shows health connection state but leaves numeric readings to Start and Activity',()=>{
  const f=fixture();
  f.state.health={steps:2512,distanceKm:2.3,activeMinutes:20,heartRate:null,sleepMinutes:null,
   source:'Apple Health',updatedAt:'2026-10-13T08:00:00Z'};
