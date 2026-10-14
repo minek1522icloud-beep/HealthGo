@@ -3,12 +3,19 @@ name: HealthGo Native iOS (Xcode build)
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, feature/apple-healthkit-native-20261014]
     paths:
       - "native-shell/**"
       - "scripts/patch-capacitor-ios-healthkit.py"
       - "www/healthgo-apple-health53.js"
       - "www/healthgo-services.js"
+      - "www/index.html"
+      - "www/healthgo-emerald-dashboard.js"
+      - "www/healthgo-device-catalog50.js"
+      - "www/healthgo-device-wizard50.js"
+      - "www/healthgo-devices-pro45.js"
+      - "www/healthgo-apple-health53.css"
+      - "tests/healthgo-apple-health53.test.cjs"
       - ".github/workflows/native-ios.yml"
 
 permissions:
@@ -34,6 +41,11 @@ jobs:
 
       - name: Sprawdz Xcode
         run: xcodebuild -version
+
+      - name: Uruchom wszystkie testy HealthGo
+        run: |
+          node scripts/check-syntax.cjs
+          node --test tests/*.test.cjs
 
       - name: Zbuduj mobilny pakiet AI
         shell: bash
