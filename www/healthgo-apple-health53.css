@@ -1,0 +1,11 @@
+/* Apple Health connection card — device management only, not health statistics. */
+#devices .hg53-applehealth{grid-column:1/-1;border-color:#4fbd8b;background:linear-gradient(135deg,#103a2c,#081e18)}
+#devices .hg53-applehealth h3{margin:8px 0 6px}
+#devices .hg53-state{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+ padding:13px;border:1px solid #35694f;border-radius:15px;background:#0d3023;margin-top:12px}
+#devices .hg53-state strong{color:#b4ffdb}
+#devices .hg53-state span{color:#cee8d9;font-size:12px;line-height:1.5}
+#devices .hg53-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+#devices .hg53-actions .hg45-btn{min-height:44px}
+#devices .hg53-message{min-height:16px;color:#c4ead4;font-size:12px;line-height:1.5;margin:10px 0 0}
+@media(max-width:450px){#devices .hg53-actions{flex-direction:column}#devices .hg53-actions button{width:100%}}
