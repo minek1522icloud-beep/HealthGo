@@ -12,9 +12,11 @@ The \`HealthGo Native Android\` GitHub Actions workflow:
 Only a **manually approved signed release** containing asset \`HealthGo-Android.apk\` appears on \`www/install.html\`. To publish, provision four repository Actions secrets: \`ANDROID_KEYSTORE_BASE64\`, \`ANDROID_KEYSTORE_PASSWORD\`, \`ANDROID_KEY_ALIAS\`, \`ANDROID_KEY_PASSWORD\`. Preserve the private signing key securely for future Android updates. Do not publish it, paste it into chats or commit it.
 
 ## iPhone
-Prepare the project on a Mac using Xcode and valid Apple signing, then distribute through a valid TestFlight invitation/App Store link. Set that genuine URL in \`www/healthgo-installer.js\` once available. A webpage cannot itself side-load a native HealthKit app.
+The \`HealthGo Native iOS (Xcode build)\` workflow on GitHub Actions compiles both an iOS Simulator app and a **physical iPhoneOS arm64** build with the local HealthKit Capacitor plugin. It packages the latter as \`HealthGo-iPhone-TEST-unsigned.ipa\` for **local, personal signing and testing**. This is an **unsigned IPA**, not a one-tap iPhone installer, TestFlight build or App Store release. Only the owner can provision/sign it using a permitted Apple development setup and install it on an actual iPhone. Follow \`docs/TEST_IPHONE_WINDOWS.md\`.
+
+For public distribution, sign and distribute through a real TestFlight/App Store channel; add only a verified URL to \`www/healthgo-installer.js\`. A webpage cannot install native HealthKit apps directly.
 
 ## Health measurements
-The Capacitor app wraps the existing HealthGo interface; **it does not automatically add HealthKit, Health Connect or CoreBluetooth permissions**. These native integrations, entitlement review, per-user consent, background handling, and real-device testing remain separate work. Existing \`mobile/\` native health code is not wired into the new shell automatically. Do not display fictitious connected status or claim any model works without testing.
+The Capacitor iOS shell now includes a **read-only HealthKit plugin** for Apple Health readings plus the Apple Health entitlement and user-facing permission string. The plugin compiles on iPhoneOS and the simulator, but **real-device permissions and any Apple Watch data remain unverified** until signing and a device test. Health Connect and CoreBluetooth integration in the new native shell are still future work; the older \`mobile/\` implementations are not wired into it. Do not display fictitious connected status or claim any model works without testing.
 
 Installation entry: \`https://minek1522icloud-beep.github.io/HealthGo/install.html\`.
