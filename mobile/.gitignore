@@ -1,0 +1,10 @@
+node_modules/
+web/
+android/
+ios/
+.gradle/
+build/
+*.jks
+*.keystore
+*.p12
+.env
