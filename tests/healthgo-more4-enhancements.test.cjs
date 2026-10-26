@@ -78,7 +78,7 @@ test('accessibility preferences are scoped to one account and never invent data'
  assert.equal(h.classes.has('hg4-contrast'),true);
  h.state.uid='another';assert.equal(api.preferences().contrast,false);
  assert.match(src,/Tylko z synchronizacji/);
- assert.match(src,/Bez sztucznych danych/);
+ assert.match(src,/Nieudostępniony pomiar oznaczamy kreską, nigdy zerem/);
 });
 
 test('daily habits persist only in account-scoped local settings without awarding XP',()=>{
