@@ -274,38 +274,100 @@ function family(){
  const root=mount('family','hfcFamily');if(!root)return;
  const state=S.state,profile=state.profile||{},f=state.family||{};
  header(root,'HEALTHGO FAMILY','Bliscy i prywatność',
-  'Zaproszenia, kontrola dostępu i udostępnianie danych tylko za zgodą. Członkowie nie widzą automatycznie Twojego zdrowia ani lokalizacji.');
+  'Twórz rodzinę, zapraszaj bliskich kodem i zarządzaj połączeniem. Zdrowie ani lokalizacja nie są udostępniane automatycznie.');
  const n=Array.isArray(f.members)?f.members.length:0,linked=!!f.id,mode=state.locationSettings?.mode||'off';
+ const role=f.callerRole||profile.accountType||'standard';
  grid(root,[['👥','Członkowie',linked?String(n):'—',linked?'Dołączone konta':'Rodzina niepołączona'],
-  ['🔑','Twoja rola',profile.accountType==='guardian'?'Opiekun':profile.accountType==='child'?'Dziecko':'Użytkownik','Kontrola przez serwer'],
-  ['📍','Lokalizacja',mode==='off'?'Wyłączona':mode==='precise'?'Dokładna':'Przybliżona','Nigdy bez zgody telefonu']]);
+  ['🔑','Twoja rola',role==='guardian'?'Opiekun':role==='child'?'Dziecko':linked?'Członek':'Użytkownik','Uprawnienia sprawdza serwer'],
+  ['📍','Lokalizacja',mode==='off'?'Wyłączona':mode==='precise'?'Dokładna':'Przybliżona','Oddzielna zgoda']]);
  const privacy=el('div','hfc-family-privacy');
- privacy.append(el('strong','','Twoja prywatność ma pierwszeństwo'),
-  el('p','','Tylko osoby z zatwierdzonymi uprawnieniami mogą otrzymywać wybrane informacje. Lokalizacja jest udostępniana osobno, po Twojej decyzji.'));
+ privacy.append(el('strong','','Prywatność ma pierwszeństwo'),
+  el('p','','Członkostwo nie oznacza automatycznego dostępu do danych zdrowotnych. Dokładna lokalizacja wymaga zgody i uprawnień; nie udostępniaj kodu zaproszenia publicznie.'));
  root.appendChild(privacy);
+ const status=el('p','hfc-sync-state',state.uid?'':'Zaloguj się, aby zarządzać HealthGo Family.');
+ status.id='hfcFamilyStatus';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+ const setStatus=(message)=>{const node=d.getElementById('hfcFamilyStatus');if(node)node.textContent=message;};
+ const run=async(label,operation)=>{
+  const node=d.getElementById('hfcFamilyStatus');if(node)node.textContent=label;
+  try{await operation();setStatus('Gotowe. Stan rodziny został odświeżony.');}
+  catch(error){setStatus(S.errorMessage?.(error)||error?.message||'Nie udało się wykonać operacji.');}
+ };
  if(linked&&Array.isArray(f.members)&&f.members.length){
   const roster=el('div','hfc-family-roster');
   roster.appendChild(el('h4','','Członkowie HealthGo Family'));
-  for(const member of f.members.slice(0,12)){
+  for(const member of f.members.slice(0,20)){
    const row=el('div','hfc-family-person');
    const nick=String(member.nickname||member.displayName||member.display_name||'Członek rodziny').slice(0,48);
-   const role=member.role==='guardian'?'Opiekun':member.role==='child'?'Dziecko':'Członek';
-   row.append(el('span','','👤'),el('strong','',nick),el('small','',role));
+   const memberRole=member.role==='guardian'?'Opiekun':member.role==='child'?'Dziecko':'Członek';
+   row.append(el('span','','👤'),el('strong','',nick),el('small','',memberRole));
    roster.appendChild(row);
   }
   root.appendChild(roster);
+  const invitePanel=el('div','hfc-family-form');
+  invitePanel.append(el('h4','','Zaproś członka rodziny'),el('p','','Kod jest jednorazowy i wygasa po 30 minutach. Wysyłaj go tylko osobie, którą chcesz dodać.'));
+  if(role==='guardian'){
+   invitePanel.appendChild(action('＋ Utwórz kod zaproszenia',async()=>{
+    await run('Tworzę bezpieczny kod zaproszenia…',async()=>{
+     const result=await S.call('createFamilyInvite',{});
+     const code=String(result?.code||'').trim();
+     if(!/^[A-Z0-9]{8}$/.test(code))throw new Error('Serwer nie zwrócił poprawnego kodu zaproszenia.');
+     const box=d.getElementById('hfcFamilyInviteResult');
+     if(box){box.replaceChildren();box.append(el('span','hfc-family-code-label','Twój kod zaproszenia'),el('strong','hfc-invite-code',code),el('small','', 'Ważny do: '+date(result.expiresAt)));
+      box.appendChild(action('Kopiuj kod',async()=>{try{await navigator.clipboard.writeText(code);setStatus('Kod skopiowany. Wyślij go zaufanej osobie.');}catch(_){setStatus('Nie udało się skopiować. Zaznacz kod i skopiuj go ręcznie.');}},'subtle'));
+     }
+     setStatus('Kod utworzony. Pamiętaj: wygasa po 30 minutach.');
+    });
+   },''));
+  }else{
+   invitePanel.appendChild(el('p','hfc-hint','Nowy kod może utworzyć opiekun rodziny.'));
+  }
+  const resultBox=el('div','hfc-family-invite-result');resultBox.id='hfcFamilyInviteResult';resultBox.setAttribute('aria-live','polite');invitePanel.appendChild(resultBox);
+  root.appendChild(invitePanel);
+  root.appendChild(action('↪ Opuść rodzinę',()=>{
+   if(!w.confirm('Czy na pewno chcesz opuścić tę rodzinę? Dostęp do danych rodzinnych zostanie cofnięty.'))return;
+   void run('Opuszczam rodzinę…',()=>S.call('leaveFamily',{}));
+  },'subtle'));
+ }else{
+  const forms=el('div','hfc-family-forms');
+  if(!state.uid){
+   forms.appendChild(el('p','hfc-hint','Zaloguj się, aby utworzyć rodzinę lub dołączyć kodem zaproszenia.'));
+  }else{
+   if(profile.accountType!=='child'){
+    const create=el('form','hfc-family-form');
+    create.append(el('h4','','Utwórz rodzinę'),el('p','','Załóż rodzinę HealthGo jako opiekun. Nazwę możesz zostawić pustą.'));
+    const nameLabel=el('label','','Nazwa rodziny (opcjonalnie)');nameLabel.htmlFor='hfcFamilyName';
+    const name=el('input');name.id='hfcFamilyName';name.name='familyName';name.maxLength=60;name.autocomplete='off';name.placeholder='Np. Nasza rodzina';
+    const submit=action('Utwórz rodzinę',async()=>{
+     if(submit.disabled)return;submit.disabled=true;
+     await run('Tworzę rodzinę…',async()=>{await S.call('createFamily',{name:name.value.trim()});});
+     submit.disabled=false;
+    },'');
+    create.addEventListener('submit',e=>e.preventDefault());
+    create.append(nameLabel,name,submit);forms.appendChild(create);
+   }
+   const join=el('form','hfc-family-form');
+   join.append(el('h4','','Dołącz do rodziny'),el('p','','Wpisz kod otrzymany od opiekuna. Nie używaj kodu, którego źródła nie znasz.'));
+   const codeLabel=el('label','','Kod zaproszenia');codeLabel.htmlFor='hfcFamilyCode';
+   const code=el('input');code.id='hfcFamilyCode';code.name='familyCode';code.maxLength=16;code.autocomplete='one-time-code';code.autocapitalize='characters';code.spellcheck=false;code.placeholder='8 znaków';code.inputMode='text';
+   code.addEventListener('input',()=>{code.value=code.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);});
+   const submitJoin=action('Dołącz kodem',async()=>{
+    const clean=code.value.trim();
+    if(!/^[A-Z0-9]{8}$/.test(clean)){setStatus('Wpisz pełny kod złożony z 8 liter lub cyfr.');code.focus();return;}
+    if(submitJoin.disabled)return;submitJoin.disabled=true;
+    await run('Sprawdzam kod zaproszenia…',()=>S.call('acceptFamilyInvite',{code:clean}));
+    submitJoin.disabled=false;
+   },'');
+   join.addEventListener('submit',e=>e.preventDefault());
+   join.append(codeLabel,code,submitJoin);forms.appendChild(join);
+  }
+  root.appendChild(forms);
  }
- const stateText=el('p','hfc-sync-state',linked?
-  'Połączono z HealthGo Family. Uprawnienia członków zmieniaj w panelu poniżej.':
-  'Nie połączono jeszcze z rodziną. Możesz utworzyć ją jako opiekun lub dołączyć kodem.');
- root.appendChild(stateText);
+ root.appendChild(status);
  buttons(root,[['↻ Odśwież rodzinę',async()=>{
-  stateText.textContent='Odświeżam rodzinę…';
-  try{await S.initialize();stateText.textContent='Dane rodziny odświeżone.';}
-  catch(e){stateText.textContent='Brak połączenia z rodziną: '+(S.errorMessage?.(e)||'błąd');}
- },''],['🛡️ Prywatność',()=>{
+  await run('Odświeżam dane rodziny…',()=>S.initialize());
+ },''],['🛡️ Ustawienia prywatności',()=>{
   go('settings');
-  w.setTimeout(()=>d.getElementById('settingsPrivacyPro')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
+  w.setTimeout(()=>d.getElementById('settingsPrivacy')?.scrollIntoView({behavior:'smooth',block:'start'}),120);
  },'subtle']]);
 }
 function pointSummary(){
