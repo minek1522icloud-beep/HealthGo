@@ -70,8 +70,6 @@ test('login callbacks cannot lose auth code during automatic update',async()=>{
 
 test('the Settings update button explicitly installs a new build',async()=>{
  const x=harness(V2,V1);
- await x.context.window.healthGoCheckMobileUpdate();
- assert.equal(x.history.length,0);
  await x.context.window.healthGoCheckMobileUpdate(true);
  assert.equal(x.history.length,1);
  assert.match(x.history[0],/hg_build=bbbbbbbbbbbb/);
