@@ -282,7 +282,7 @@ function family(){
   ['📍','Lokalizacja',mode==='off'?'Wyłączona':mode==='precise'?'Dokładna':'Przybliżona','Oddzielna zgoda']]);
  const privacy=el('div','hfc-family-privacy');
  privacy.append(el('strong','','Prywatność ma pierwszeństwo'),
-  el('p','','Członkostwo nie oznacza automatycznego dostępu do danych zdrowotnych. Dokładna lokalizacja wymaga zgody i uprawnień; nie udostępniaj kodu zaproszenia publicznie.'));
+  el('p','','Tylko osoby z zatwierdzonymi uprawnieniami mogą otrzymywać wybrane informacje. Członkostwo nie oznacza automatycznego dostępu do danych zdrowotnych. Dokładna lokalizacja wymaga zgody i uprawnień; nie udostępniaj kodu zaproszenia publicznie.'));
  root.appendChild(privacy);
  const status=el('p','hfc-sync-state',state.uid?'':'Zaloguj się, aby zarządzać HealthGo Family.');
  status.id='hfcFamilyStatus';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
