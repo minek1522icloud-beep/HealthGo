@@ -204,3 +204,7 @@
 .hfc-family-form .hfc-action{justify-self:start}
 .hfc-family-forms+.hfc-action{margin-top:12px}
 @media(max-width:640px){.hfc-family-forms{grid-template-columns:1fr}.hfc-family-form{padding:13px}.hfc-invite-code{font-size:21px}}
+
+.hfc-family-form>.hfc-action{border:1px solid #b3fdd0;background:#98efbb;color:#093622;border-radius:11px;min-height:44px;padding:10px 14px;font-weight:800;font-size:12px;cursor:pointer;touch-action:manipulation}
+.hfc-family-form>.hfc-action.subtle{background:#164933;border-color:#498966;color:#e9fff1}
+.hfc-family-invite-result>.hfc-action{justify-self:start;border:1px solid #498966;background:#164933;color:#e9fff1;border-radius:11px;min-height:40px;padding:9px 13px;font-weight:800;font-size:12px;cursor:pointer}
