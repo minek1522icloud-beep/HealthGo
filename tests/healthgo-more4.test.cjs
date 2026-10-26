@@ -19,10 +19,10 @@ function harness(){
 }
 test('HealthGo More 4.0 compiles and is loaded after existing real-data systems',()=>{
  new vm.Script(code);
- assert.match(html,/healthgo-feature-center\.js\?v=3<\/script>/);
+ assert.match(html,/healthgo-feature-center\\.js\\?v=4<\\/script>/);
  assert.match(html,/healthgo-more4\.css\?v=1/);
  assert.match(html,/healthgo-more4\.js\?v=1/);
- assert.ok(html.indexOf('healthgo-feature-center.js?v=3')<html.indexOf('healthgo-more4.js?v=1'));
+ assert.ok(html.indexOf('healthgo-feature-center.js?v=4')<html.indexOf('healthgo-more4.js?v=1'));
  assert.match(css,/@media\(max-width:700px\)/);
  assert.match(css, /prefers-reduced-motion/);
 });
@@ -53,7 +53,7 @@ test('XP history uses only actual account events and does not invent rewards or 
  assert.match(code,/Engine\.viewChallenges\(e,new Date\(\)\.toISOString\(\)\)/);
  assert.match(code,/S\.state\?\.healthDays/);
  assert.match(code,/api\?\.connected/);
- assert.match(code,/Nie tworzymy drugiego/);
+ assert.match(code,/Nie przyznajemy XP za samo zaproszenie/);
  assert.match(code,/Dane zdrowotne pozostają prywatne/);
 });
 test('SOS action needs explicit user confirmation; no automatic emergency dispatch or false push claims',()=>{
