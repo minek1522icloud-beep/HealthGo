@@ -1545,10 +1545,17 @@ async function checkHealthGoMobileUpdate(force=false){
   }catch(_){}
   // A deployed page always contains its build SHA. Local/dev HTML is never
   // accepted as proof that the latest version is actually running.
-  // Background polling must NEVER unload an open map, an AI chat or a session.
+  // Auto-apply published updates when the app is idle. Never interrupt text entry,
+  // an AI request/download, active GPS navigation, a hidden tab, or auth callbacks.
   if(!force){
-   healthGoUpdateStatus('Nowa wersja '+remote.slice(0,8)+' jest dostępna. Przejdź do Ustawień → Aktualizacje, aby ją pobrać.');
-   return;
+   const active=document.activeElement;
+   const typing=active&&(/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)||active.isContentEditable);
+   if(typing||window.HealthGoOfflineAI?.busy||window.healthGoAIRequestBusy||
+      window.HealthGoMapPro?.isNavigating?.()||document.hidden){
+    healthGoUpdateStatus('Aktualizacja pobierze się automatycznie, gdy HealthGo będzie bezczynny.');
+    return;
+   }
+   healthGoUpdateStatus('Wykryto nową wersję HealthGo — aktualizuję…');
   }
   await healthGoActivateNewVersion(remote,true);
  }catch(error){
