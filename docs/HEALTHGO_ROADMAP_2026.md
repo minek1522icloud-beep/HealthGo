@@ -54,6 +54,8 @@
 ## Etap 5 — Motywy sezonowe
 
 - Halloween, Boże Narodzenie, Wielkanoc, lato i motyw standardowy.
+- Pierwsza ikona Halloween jest dodana do manifestu PWA i jako ikona karty przeglądarki.
+- Ikona ekranu początkowego iOS nadal korzysta z istniejącego pliku PNG; jej podmiana wymaga osobnego przygotowania i testu zasobu PNG.
 - Oddzielna weryfikacja ikon i instalacji dla PWA, iOS, Androida i desktopu.
 
 ## Etap 6 — Testy i stabilizacja
