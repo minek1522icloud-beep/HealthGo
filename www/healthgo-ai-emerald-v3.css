@@ -724,3 +724,69 @@ body.hg-emerald #ai .ai-topic {
     min-width:35px!important;min-height:35px!important;
   }
 }
+
+
+/* HealthGo AI Glossy voice companion — visual layer only. */
+body.hg-emerald #ai .hga-glossy-panel{
+ display:grid;grid-template-columns:58px minmax(0,1fr) auto;align-items:center;gap:12px;
+ padding:10px 14px;margin:0 0 2px;border:1px solid var(--hga-border);
+ border-radius:18px;background:linear-gradient(115deg,rgba(10,25,29,.96),rgba(17,39,40,.88));
+ min-width:0;
+}
+body.hg-emerald #ai .hga-glossy-orb{
+ position:relative;width:54px;height:54px;display:block;overflow:hidden;isolation:isolate;
+ border-radius:48% 52% 58% 42% / 45% 42% 58% 55%;
+ background:radial-gradient(circle at 32% 24%,#eaffff 0 2%,#7df8e0 5%,#147c76 18%,#07191d 44%,#020609 72%);
+ box-shadow:inset -7px -8px 14px rgba(0,0,0,.8),inset 3px 3px 8px rgba(188,255,244,.48),0 0 0 1px rgba(91,255,218,.32),0 0 20px rgba(39,231,190,.23);
+ animation:hga-glossy-float 4.2s ease-in-out infinite;
+}
+body.hg-emerald #ai .hga-glossy-orb:before,
+body.hg-emerald #ai .hga-glossy-orb:after,
+body.hg-emerald #ai .hga-glossy-orb span{
+ content:"";position:absolute;display:block;pointer-events:none;border-radius:50%;
+}
+body.hg-emerald #ai .hga-glossy-orb:before{
+ width:35px;height:25px;left:7px;top:5px;transform:rotate(-28deg);
+ background:linear-gradient(145deg,rgba(255,255,255,.72),rgba(123,255,230,.18) 48%,transparent 74%);
+ filter:blur(1px);
+}
+body.hg-emerald #ai .hga-glossy-orb:after{
+ width:40px;height:19px;right:-9px;bottom:3px;transform:rotate(-35deg);
+ border:2px solid rgba(52,255,208,.46);border-left-color:transparent;border-top-color:transparent;
+ filter:drop-shadow(0 0 4px rgba(42,255,205,.8));
+}
+body.hg-emerald #ai .hga-glossy-orb span{
+ width:22px;height:30px;left:16px;top:15px;transform:rotate(24deg);
+ background:radial-gradient(ellipse at 30% 25%,rgba(126,255,224,.78),rgba(8,73,70,.7) 48%,rgba(0,0,0,.2) 74%);
+ box-shadow:5px -3px 0 -2px rgba(88,255,218,.6),-7px 4px 0 -4px rgba(110,255,225,.72);
+}
+body.hg-emerald #ai .hga-glossy-copy{min-width:0;display:grid;gap:3px}
+body.hg-emerald #ai .hga-glossy-copy b{font-size:12px;font-weight:850;letter-spacing:.01em;color:#eafff9}
+body.hg-emerald #ai .hga-glossy-copy span{font-size:11px;line-height:1.4;color:#a6c8c3;overflow-wrap:anywhere}
+body.hg-emerald #ai .hga-glossy-controls{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+body.hg-emerald #ai .hga-glossy-controls button{
+ min-height:34px;padding:7px 10px;border-radius:11px;border:1px solid rgba(111,245,212,.22);
+ background:rgba(24,57,57,.76);color:#dffff7;font-size:11px;font-weight:750;cursor:pointer;
+}
+body.hg-emerald #ai .hga-glossy-controls button[aria-pressed="true"]{background:#75f3d0;color:#05251f;border-color:transparent}
+body.hg-emerald #ai .hga-glossy-controls button:disabled{opacity:.48;cursor:not-allowed}
+body.hg-emerald #ai .hga-glossy-panel[data-state="listening"] .hga-glossy-orb{
+ animation:hga-glossy-listen 1.1s ease-in-out infinite;box-shadow:0 0 0 5px rgba(80,255,215,.1),0 0 28px rgba(39,231,190,.52);
+}
+body.hg-emerald #ai .hga-glossy-panel[data-state="speaking"] .hga-glossy-orb{
+ animation:hga-glossy-speak .7s ease-in-out infinite alternate;box-shadow:0 0 0 4px rgba(80,255,215,.09),0 0 30px rgba(39,231,190,.48);
+}
+@keyframes hga-glossy-float{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-3px) rotate(4deg)}}
+@keyframes hga-glossy-listen{0%,100%{transform:scale(1);filter:saturate(1)}50%{transform:scale(1.07);filter:saturate(1.5)}}
+@keyframes hga-glossy-speak{from{transform:scale(.96) rotate(-3deg)}to{transform:scale(1.08) rotate(5deg)}}
+@media(max-width:700px){
+ body.hg-emerald #ai .hga-glossy-panel{grid-template-columns:46px minmax(0,1fr);gap:10px;padding:9px 10px}
+ body.hg-emerald #ai .hga-glossy-orb{width:44px;height:44px}
+ body.hg-emerald #ai .hga-glossy-controls{grid-column:1/-1;justify-content:stretch}
+ body.hg-emerald #ai .hga-glossy-controls button{flex:1}
+}
+@media(prefers-reduced-motion:reduce){
+ body.hg-emerald #ai .hga-glossy-orb,
+ body.hg-emerald #ai .hga-glossy-panel[data-state="listening"] .hga-glossy-orb,
+ body.hg-emerald #ai .hga-glossy-panel[data-state="speaking"] .hga-glossy-orb{animation:none}
+}
