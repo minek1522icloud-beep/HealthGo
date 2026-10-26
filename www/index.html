@@ -1557,7 +1557,7 @@ async function checkHealthGoMobileUpdate(force=false){
    }
    healthGoUpdateStatus('Wykryto nową wersję HealthGo — aktualizuję…');
   }
-  await healthGoActivateNewVersion(remote,true);
+  await healthGoActivateNewVersion(remote,force);
  }catch(error){
   console.warn('HealthGo update check:',error);
   healthGoUpdateStatus('Nie udało się sprawdzić aktualizacji. Sprawdź internet.');
