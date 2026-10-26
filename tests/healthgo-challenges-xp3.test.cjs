@@ -76,7 +76,7 @@ test('3 real story stages and one verified season are rendered without minting c
  assert.equal(h.byClass('hg4-season-card').length,1);
  assert.match(script,/Engine\.viewChallenges\(e,new Date\(\)\.toISOString\(\)\)/);
  assert.doesNotMatch(script,/Engine\.applyEvent\(|grantXP\(|awardXP\(/);
- assert.match(script,/FAMILY_CHALLENGE_COMPLETED/);
+ assert.match(script,/metrics\?\.familyChallenges/);
 });
 test('personal mission pinning is voluntary, capped at 3 and account scoped',()=>{
  const h=boot(),list=h.find('hg4MissionPeriods').children.find(x=>x.className==='hg4-mission-list');
