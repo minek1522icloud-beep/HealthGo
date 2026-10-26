@@ -94,9 +94,9 @@ test('invalid Google callback does not erase previously saved account',async()=>
  await assert.rejects(h.auth.restore(),/google_expired/);
  assert.equal(JSON.parse(h.data.get(KEY)).user.id,'user-a');
 });
-test('version-checking does not force sign-out or automatic app reload on resume',()=>{
+test('version-checking applies published updates only when safe and preserves auth callbacks',()=>{
  const html=fs.readFileSync('www/index.html','utf8');
- assert.match(html,/if\(!force\)\{\s*healthGoUpdateStatus\('Nowa wersja/);
+ assert.match(html,/healthGoUpdateStatus\('Wykryto nową wersję HealthGo/);\n assert.match(html,/healthGoActivateNewVersion\(remote,force\)/);
  assert.match(html,/HealthGoMapPro\?\.isNavigating\?\.\(\)/);
  assert.match(html,/if\(auth\.currentUser\)\{showApp\(\)/);
  assert.match(html,/resumeAuthIfNeeded/);
