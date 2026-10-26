@@ -60,6 +60,96 @@
  if(name && name.textContent.trim()==='HealthGo AI')name.textContent='HealthGo AI';
  if(subtitle && !subtitle.textContent.trim())subtitle.textContent='Twój inteligentny asystent';
 
+ // Glossy voice companion: browser-native speech only; existing AI requests remain unchanged.
+ const topicBar=page.querySelector('.ai-topic-bar');
+ const voicePanel=document.createElement('section');
+ voicePanel.className='hga-glossy-panel';
+ voicePanel.dataset.state='idle';
+ voicePanel.setAttribute('aria-label','Głosowy asystent HealthGo AI');
+ const orb=document.createElement('span');
+ orb.className='hga-glossy-orb';orb.setAttribute('aria-hidden','true');
+ orb.appendChild(document.createElement('span'));
+ const voiceCopy=document.createElement('div');voiceCopy.className='hga-glossy-copy';
+ const voiceTitle=document.createElement('b');voiceTitle.textContent='Glossy · HealthGo AI';
+ const voiceStatus=document.createElement('span');voiceStatus.id='hgaVoiceStatus';voiceStatus.textContent='Asystent tekstowy i głosowy';
+ voiceCopy.append(voiceTitle,voiceStatus);
+ const voiceControls=document.createElement('div');voiceControls.className='hga-glossy-controls';
+ const micButton=document.createElement('button');micButton.type='button';micButton.id='hgaMicButton';micButton.textContent='🎙️ Mów do AI';micButton.setAttribute('aria-pressed','false');
+ const speakButton=document.createElement('button');speakButton.type='button';speakButton.id='hgaSpeakButton';speakButton.textContent='🔊 Czytaj odpowiedzi';speakButton.setAttribute('aria-pressed','false');
+ voiceControls.append(micButton,speakButton);voicePanel.append(orb,voiceCopy,voiceControls);
+ if(topicBar)topicBar.insertAdjacentElement('afterend',voicePanel);
+ else chatTop.insertAdjacentElement('afterend',voicePanel);
+
+ const speechStoreKey='healthgo.ai.voiceOutput';
+ let speakReplies=false,recognition=null,listening=false,speechTimer=null;
+ try{speakReplies=localStorage.getItem(speechStoreKey)==='true'}catch(_){}
+ function setVoiceState(state,message){
+  voicePanel.dataset.state=state;
+  if(message)voiceStatus.textContent=message;
+ }
+ function setSpeakReplies(enabled){
+  speakReplies=!!enabled;
+  speakButton.setAttribute('aria-pressed',String(speakReplies));
+  speakButton.textContent=speakReplies?'🔊 Głos włączony':'🔊 Czytaj odpowiedzi';
+  try{localStorage.setItem(speechStoreKey,String(speakReplies))}catch(_){}
+  if(!speakReplies){
+   if('speechSynthesis' in window)window.speechSynthesis.cancel();
+   setVoiceState('idle','Odpowiedzi głosowe wyłączone');
+  }else setVoiceState('idle','Odpowiedzi będą czytane na głos');
+ }
+ speakButton.addEventListener('click',()=>setSpeakReplies(!speakReplies));
+ setSpeakReplies(speakReplies);
+ const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(SpeechRecognition){
+  recognition=new SpeechRecognition();
+  recognition.lang='pl-PL';recognition.interimResults=false;recognition.continuous=false;recognition.maxAlternatives=1;
+  recognition.onstart=()=>{listening=true;micButton.setAttribute('aria-pressed','true');micButton.textContent='■ Zatrzymaj';setVoiceState('listening','Słucham… Powiedz, co chcesz napisać.')};
+  recognition.onresult=(event)=>{
+   const transcript=String(event.results?.[0]?.[0]?.transcript||'').trim();
+   const input=document.getElementById('aiInput');
+   if(input&&transcript){
+    input.value=(input.value.trim()?input.value.trim()+' ':'')+transcript;
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+    input.focus();setVoiceState('idle','Rozpoznano mowę. Sprawdź tekst i naciśnij Wyślij.');
+   }else setVoiceState('idle','Nie rozpoznano wypowiedzi. Spróbuj ponownie.');
+  };
+  recognition.onerror=(event)=>{
+   listening=false;micButton.setAttribute('aria-pressed','false');micButton.textContent='🎙️ Mów do AI';
+   setVoiceState('idle',event.error==='not-allowed'?'Brak zgody na mikrofon. Włącz ją w ustawieniach przeglądarki.':'Nie udało się rozpoznać mowy. Możesz napisać wiadomość.');
+  };
+  recognition.onend=()=>{listening=false;micButton.setAttribute('aria-pressed','false');micButton.textContent='🎙️ Mów do AI';if(voicePanel.dataset.state==='listening')setVoiceState('idle','Gotowe. Możesz mówić ponownie albo pisać.')};
+  micButton.addEventListener('click',()=>{
+   if(listening){recognition.stop();return}
+   try{recognition.start()}catch(_){setVoiceState('idle','Mikrofon jest już uruchamiany. Spróbuj za chwilę.')}
+  });
+ }else{
+  micButton.disabled=true;micButton.title='Ta przeglądarka nie obsługuje rozpoznawania mowy.';
+  setVoiceState('idle','Ta przeglądarka nie obsługuje mikrofonu. Możesz nadal pisać.');
+ }
+ function speakLatestReply(){
+  if(!speakReplies||!('speechSynthesis' in window)||window.healthGoAIRequestBusy)return;
+  const rows=[...messages.querySelectorAll('.ai-msg.assistant')].filter(row=>!row.classList.contains('ai-system-message')&&!row.querySelector('.ai-typing'));
+  const row=rows[rows.length-1],bubble=row?.querySelector('.ai-bubble');
+  const text=String(bubble?.innerText||bubble?.textContent||'').trim();
+  if(!text||row.dataset.hgaSpoken==='1')return;
+  row.dataset.hgaSpoken='1';
+  window.speechSynthesis.cancel();
+  const utterance=new SpeechSynthesisUtterance(text.slice(0,6000));
+  utterance.lang='pl-PL';utterance.rate=1;utterance.pitch=1.02;
+  const polishVoice=window.speechSynthesis.getVoices().find(v=>/^pl(-|_)/i.test(v.lang));
+  if(polishVoice)utterance.voice=polishVoice;
+  utterance.onstart=()=>setVoiceState('speaking','Glossy mówi…');
+  utterance.onend=()=>setVoiceState('idle','Odpowiedź przeczytana. Możesz zadać kolejne pytanie.');
+  utterance.onerror=()=>setVoiceState('idle','Nie udało się odczytać odpowiedzi. Możesz przeczytać ją na ekranie.');
+  window.speechSynthesis.speak(utterance);
+ }
+ function queueVoiceReply(){
+  if(!speakReplies)return;
+  if(speechTimer)window.clearTimeout(speechTimer);
+  speechTimer=window.setTimeout(speakLatestReply,650);
+ }
+
+
  // Search is applied to the real per-user conversation history created by
  // the existing persistence module; no extra copy of private messages.
  const heading=document.createElement('div');
@@ -167,6 +257,7 @@
  const messageObserver=new MutationObserver(()=>{
   decorateReplies();
   ensureWelcomeIfEmpty();
+  queueVoiceReply();
  });
  messageObserver.observe(messages,{childList:true,subtree:true});
  decorateReplies();

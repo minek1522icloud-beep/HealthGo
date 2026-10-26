@@ -12,7 +12,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="HealthGo">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="./manifest.webmanifest">
+<link rel="manifest" href="./manifest.webmanifest?v=2">
+<link rel="icon" type="image/svg+xml" href="./icon-halloween.svg">
 <link rel="apple-touch-icon" href="./icon.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -349,7 +350,7 @@ html.hg-session-known #authScreen{display:none!important}
 <link rel="stylesheet" href="./healthgo-route-3d-overlay.css?v=1">
 <link rel="stylesheet" href="./healthgo-emerald-2.css?v=1">
 <link rel="stylesheet" href="./healthgo-start-v3.css?v=1">
-<link rel="stylesheet" href="./healthgo-ai-emerald-v3.css?v=2">
+<link rel="stylesheet" href="./healthgo-ai-emerald-v3.css?v=3">
 <link rel="stylesheet" href="./healthgo-map-emerald-v5.css?v=1">
 <link rel="stylesheet" href="./healthgo-weather-emerald-v5.css?v=1">
 <link rel="stylesheet" href="./healthgo-navigation-follow-v1.css?v=2">
@@ -1544,12 +1545,19 @@ async function checkHealthGoMobileUpdate(force=false){
   }catch(_){}
   // A deployed page always contains its build SHA. Local/dev HTML is never
   // accepted as proof that the latest version is actually running.
-  // Background polling must NEVER unload an open map, an AI chat or a session.
+  // Auto-apply published updates when the app is idle. Never interrupt text entry,
+  // an AI request/download, active GPS navigation, a hidden tab, or auth callbacks.
   if(!force){
-   healthGoUpdateStatus('Nowa wersja '+remote.slice(0,8)+' jest dostępna. Przejdź do Ustawień → Aktualizacje, aby ją pobrać.');
-   return;
+   const active=document.activeElement;
+   const typing=active&&(/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)||active.isContentEditable);
+   if(typing||window.HealthGoOfflineAI?.busy||window.healthGoAIRequestBusy||
+      window.HealthGoMapPro?.isNavigating?.()||document.hidden){
+    healthGoUpdateStatus('Aktualizacja pobierze się automatycznie, gdy HealthGo będzie bezczynny.');
+    return;
+   }
+   healthGoUpdateStatus('Wykryto nową wersję HealthGo — aktualizuję…');
   }
-  await healthGoActivateNewVersion(remote,true);
+  await healthGoActivateNewVersion(remote,force);
  }catch(error){
   console.warn('HealthGo update check:',error);
   healthGoUpdateStatus('Nie udało się sprawdzić aktualizacji. Sprawdź internet.');
@@ -3431,7 +3439,7 @@ window.addEventListener('beforeunload',save);
 <script src="./healthgo-map-extras.js?v=2"></script>
 <script src="./healthgo-map-photos.js?v=1"></script>
 <script src="./healthgo-emerald-dashboard.js?v=3"></script>
-<script src="./healthgo-ai-emerald-v3.js?v=2"></script>
+<script src="./healthgo-ai-emerald-v3.js?v=3"></script>
 <script src="./healthgo-plan-v4.js?v=2"></script>
 <script src="./healthgo-collectible-art.js?v=2"></script>
 <script src="./healthgo-medals.js?v=2"></script>

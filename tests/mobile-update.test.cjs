@@ -46,20 +46,21 @@ test('deployed build is not refreshed unnecessarily',async()=>{
  assert.match(x.status.textContent,/Aktualna wersja/);
 });
 
-test('new build is announced and never reloads an actively used iPhone PWA',async()=>{
+test('new build is automatically activated when the app is idle',async()=>{
  const x=harness(V2,V1);
  await x.context.window.healthGoCheckMobileUpdate();
- assert.equal(x.history.length,0);
- assert.equal(x.updates.length,0);
- assert.match(x.status.textContent,/Nowa wersja/);
+ assert.equal(x.history.length,1);
+ assert.match(x.history[0],/hg_build=bbbbbbbbbbbb/);
+ assert.deepEqual(x.updates,['update']);
+ assert.equal(x.messages[0].type,'SKIP_WAITING');
 });
-test('repeated automatic checks never trigger reload loops or extra worker activation',async()=>{
+test('repeated automatic checks do not trigger a reload loop',async()=>{
  const x=harness(V2,V1);
  await x.context.window.healthGoCheckMobileUpdate();
  await x.context.window.healthGoCheckMobileUpdate();
- assert.equal(x.history.length,0);
- assert.equal(x.messages.length,0);
- assert.match(x.status.textContent,/Ustawień/);
+ assert.equal(x.history.length,1);
+ assert.equal(x.messages.length,1);
+ assert.match(x.status.textContent,/Zamknij HealthGo|Nowa wersja/);
 });
 test('login callbacks cannot lose auth code during automatic update',async()=>{
  const x=harness(V2,V1,'?code=example');
