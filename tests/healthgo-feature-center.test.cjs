@@ -19,8 +19,8 @@ test('all seven feature panels are installed in existing HealthGo sections witho
  const ids=['hfcChallenges','hfcActivity','hfcDevices','hfcFamily','hfcTreasure','hfcPoint','hfcSettings'];
  const pages=['challenges','activity','devices','family','explore','points','settings'];
  for(let i=0;i<ids.length;i++)assert.match(script,new RegExp("mount\\('"+pages[i]+"','"+ids[i]+"'"));
- assert.match(html,/healthgo-feature-center\\.js\\?v=4/);
- assert.match(html,/healthgo-feature-center\\.css\\?v=3/);
+ assert.match(html,/healthgo-feature-center\.js\?v=4/);
+ assert.match(html,/healthgo-feature-center\.css\?v=3/);
  assert.match(html,/healthgo-point\.js\?v=3/);
  assert.match(html,/healthgo-v2-ui\.js/);
 });
