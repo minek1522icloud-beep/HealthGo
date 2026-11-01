@@ -110,7 +110,7 @@ function watchVerifiedLevel(){
 }
 function xpDashboard(){
  const root=section($('challenges'),'hg4XpDashboard','⚡ XP 3.0 · Twoja droga',
-  'Poziomy są obliczane tylko z XP zapisanych na Twoim koncie. Samo oglądanie ekranów nie przyznaje punktów.');
+  'Poziomy są obliczane tylko z XP zapisanych na Twoim koncie. Samo oglądanie ekranów nie przyznaje punktów. Nie tworzymy drugiego źródła XP — pokazujemy wyłącznie wynik silnika konta.');
  if(!root)return;
  const e=engine(),l=e?Engine.getLevel(safeNumber(e.totalXp)):null;
  const hero=node('div','hg4-xp-hero'),ring=node('div','hg4-xp-ring');
@@ -280,7 +280,9 @@ function teamChallenges(root){
  panel.append(node('span','hg4-kicker','WSPÓLNE CELE'),
   node('h4','','🤝 Wyzwania znajomych i rodziny'));
  const saved=S.state?.engine?.metrics?.familyChallenges;
- const confirmed=saved&&typeof saved==='object'?Object.keys(saved).filter(key=>saved[key]?.completedAt):[];
+ const confirmedFromMetrics=saved&&typeof saved==='object'?Object.keys(saved).filter(key=>saved[key]?.completedAt):[];
+  const confirmedFromHistory=history().filter(event=>event.type==='FAMILY_CHALLENGE_COMPLETED');
+  const confirmed=[...new Set([...confirmedFromMetrics,...confirmedFromHistory.map(event=>String(event.payload?.challengeId||event.payload?.definitionId||event.id||''))].filter(Boolean))];
  const family=S.state?.family,linked=Array.isArray(family?.members)?family.members.length:0;
  panel.appendChild(node('p','',linked
   ?'Połączone konta rodzinne: '+linked+'. Wyzwania wspólne są dostępne wyłącznie za zgodą uczestników.'
@@ -292,7 +294,7 @@ function teamChallenges(root){
 function missionHistory(root){
  const panel=node('section','hg4-completed-history');
  panel.appendChild(node('h4','','📜 Historia ukończonych misji'));
- const completed=history().filter(x=>x.type==='CHALLENGE_COMPLETED').slice(-8).reverse();
+ const completed=history().filter(x=>x.type==='CHALLENGE_COMPLETED'||x.type==='FAMILY_CHALLENGE_COMPLETED').slice(-8).reverse();
  if(!completed.length)empty(panel,'Nie ma jeszcze potwierdzonych ukończeń w historii zdarzeń.');
  else for(const event of completed){
   const name=String(event.payload?.name||event.payload?.challengeId||event.payload?.definitionId||'Wyzwanie').slice(0,90);
@@ -392,7 +394,7 @@ function healthDays(){
 let statsRange=7,statsMetric='steps';
 function stats(){
  const root=section($('activity'),'hg4Stats','📊 Statystyki PRO',
-  'Rzeczywiste dane urządzeń. Nieudostępniony pomiar oznaczamy kreską, nigdy zerem.');
+  'Rzeczywiste dane urządzeń. Nieudostępniony pomiar oznaczamy kreską, nigdy zerem. Bez sztucznych danych i dopisywania brakujących pomiarów.');
  if(!root)return;
  const arr=healthDays(),byId=new Map(arr.map(x=>[x.id,x])),today=new Date(),items=[];
  for(let offset=statsRange-1;offset>=0;offset--){
@@ -480,7 +482,7 @@ function devices(){
 }
 function family(){
  const root=section($('family'),'hg4FamilyExtras','👥 Rodzina i znajomi',
-  'Wspólne funkcje wymagają zaakceptowanego zaproszenia. Dane zdrowotne i lokalizacja nigdy nie stają się automatycznie publiczne.');
+  'Wspólne funkcje wymagają zaakceptowanego zaproszenia. Dane zdrowotne i lokalizacja nigdy nie stają się automatycznie publiczne. Dane zdrowotne pozostają prywatne, dopóki właściciel konta nie udzieli zgody.');
  if(!root)return;
  const f=S.state?.family,friend=w.HealthGoFriends?.getState?.(),existing=Array.isArray(f?.members)?f.members.length:0;
  stat(root,[['Rodzina',f?.id?String(existing):'—','Tylko powiązane konta'],
@@ -490,7 +492,7 @@ function family(){
   ['Wyzwania',()=>go('challenges'),true]]);
 }
 const allowedEvents={XP_GAINED:['xp','Zdobyto XP'],LEVEL_UP:['xp','Nowy poziom'],REWARD_GRANTED:['missions','Nowa nagroda'],
- CHALLENGE_COMPLETED:['missions','Ukończono misję'],ACHIEVEMENT_UNLOCKED:['missions','Zdobyto osiągnięcie']};
+ CHALLENGE_COMPLETED:['missions','Ukończono misję'],FAMILY_CHALLENGE_COMPLETED:['missions','Ukończono wyzwanie rodzinne'],ACHIEVEMENT_UNLOCKED:['missions','Zdobyto osiągnięcie']};
 function notices(){
  const opts=preferences();
  return history().filter(x=>allowedEvents[x.type]&&opts[allowedEvents[x.type][0]]!==false)
