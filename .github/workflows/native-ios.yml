@@ -157,7 +157,7 @@ jobs:
             > "$RUNNER_TEMP/HealthGo-iPhone-TEST-unsigned.ipa.sha256"
 
       - name: Udostepnij IPA do samodzielnego podpisania
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: HealthGo-iPhone-TEST-unsigned
           path: |
@@ -176,7 +176,7 @@ jobs:
           test -s "$RUNNER_TEMP/HealthGo-iPhone-Xcode-project.zip"
 
       - name: Udostepnij projekt iOS do pobrania
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: HealthGo-iPhone-Xcode-project
           path: ${{ runner.temp }}/HealthGo-iPhone-Xcode-project.zip
