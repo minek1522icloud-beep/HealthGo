@@ -3,7 +3,7 @@ name: HealthGo Native iOS (Xcode build)
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/ios-device-ipa-20261014]
+    branches: [main, feature/ios-device-ipa-20261014, feature/family-2.0-light-ui]
     paths:
       - "native-shell/**"
       - "scripts/patch-capacitor-ios-healthkit.py"
