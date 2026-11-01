@@ -20,9 +20,9 @@ function harness(){
 test('HealthGo More 4.0 compiles and is loaded after existing real-data systems',()=>{
  new vm.Script(code);
  assert.match(html,/healthgo-feature-center\.js\?v=3(?:&[^"]*)?\"><\/script>/);
- assert.match(html,/healthgo-more4\.css\?v=1/);
- assert.match(html,/healthgo-more4\.js\?v=1/);
- assert.ok(html.indexOf('healthgo-feature-center.js?v=3')<html.indexOf('healthgo-more4.js?v=1'));
+ assert.match(html,/healthgo-more4\.css\?v=4/);
+ assert.match(html,/healthgo-more4\.js\?v=6/);
+ assert.ok(html.indexOf('healthgo-feature-center.js?v=3')<html.indexOf('healthgo-more4.js?v=6'));
  assert.match(css,/@media\(max-width:700px\)/);
  assert.match(css, /prefers-reduced-motion/);
 });
