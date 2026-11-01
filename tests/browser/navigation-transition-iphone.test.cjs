@@ -64,7 +64,7 @@ for(const width of [360,390,430]){
   // actual visible navigation planner, the same interface as the user.
   await page.evaluate(()=>HealthGoMapV2.toggle('route'));
   await page.locator('#mapV2RouteTo').fill('Park, Częstochowa');
-  await page.getByRole('button',{name:/Wyznacz trasę i prowadź/}).click();
+  await page.getByRole('button',{name:/Rozpocznij nawigację/}).click();
   await page.waitForFunction(()=>document.querySelector('#map')?.dataset.hgNavigationPhase==='active',null,{timeout:7000});
   const state=await page.evaluate(()=>{
    const hud=document.getElementById('hgProNavigation'),css=getComputedStyle(hud);
@@ -99,7 +99,7 @@ test('One OSRM geometry-only variant is skipped when another has real maneuvers'
  const {page,errors}=await init(390,[geometryOnly,validRoute]);
  await page.evaluate(()=>HealthGoMapV2.toggle('route'));
  await page.locator('#mapV2RouteTo').fill('Park');
- await page.getByRole('button',{name:/Wyznacz trasę i prowadź/}).click();
+ await page.getByRole('button',{name:/Rozpocznij nawigację/}).click();
  await page.waitForFunction(()=>document.querySelector('#map')?.dataset.hgNavigationPhase==='active',null,{timeout:7000});
  assert.equal(await page.locator('#hgProNavigation').isVisible(),true);
  assert.equal(await page.locator('#hg4RouteAlternatives button').count(),1);
@@ -109,7 +109,7 @@ test('All routes missing OSRM maneuvers produce visible error, not a fake live d
  const {page,errors}=await init(390,[geometryOnly]);
  await page.evaluate(()=>HealthGoMapV2.toggle('route'));
  await page.locator('#mapV2RouteTo').fill('Park');
- await page.getByRole('button',{name:/Wyznacz trasę i prowadź/}).click();
+ await page.getByRole('button',{name:/Rozpocznij nawigację/}).click();
  await page.waitForFunction(()=>document.querySelector('#map')?.dataset.hgNavigationPhase==='error',null,{timeout:7000});
  const result=await page.evaluate(()=>({
   status:document.getElementById('mapSearchStatus').textContent,
