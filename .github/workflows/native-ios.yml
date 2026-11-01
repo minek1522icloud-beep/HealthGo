@@ -20,6 +20,7 @@ on:
       - "www/healthgo-devices-pro45.js"
       - "www/healthgo-apple-health53.css"
       - "tests/healthgo-apple-health53.test.cjs"
+      - "tests/emerald-theme.test.cjs"
       - ".github/workflows/native-ios.yml"
 
 permissions:
