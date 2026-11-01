@@ -1,0 +1,58 @@
+/* HealthGo seasonal Halloween skin — visual-only overrides.
+   Keeps existing navigation, health data, forms and application logic unchanged. */
+:root{
+  color-scheme:dark;
+  --bg:#100d19;--card:#1b1526;--text:#f8f2ff;--muted:#b9a9c9;
+  --primary:#f07824;--primary2:#ff9b36;--border:#382846;--green:#f07824;
+  --shadow:0 12px 32px rgba(0,0,0,.28);--soft:#2a1b35;--hover:#30203e;
+}
+html,body{background:#100d19!important;color:#f8f2ff!important}
+body{background-image:radial-gradient(ellipse at 8% 0%,rgba(115,49,151,.19),transparent 34%),radial-gradient(ellipse at 92% 8%,rgba(240,120,36,.12),transparent 30%)!important}
+body:before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.12;background-image:radial-gradient(circle at 14% 22%,#ff9b36 0 1px,transparent 2px),radial-gradient(circle at 78% 34%,#a879d1 0 1px,transparent 2px),radial-gradient(circle at 42% 76%,#ff9b36 0 1px,transparent 2px);background-size:190px 190px,240px 240px,280px 280px}
+.app,.main,.page,.top,.sidebar,.mobile-nav{position:relative}
+.app,.main,.page{color:#f8f2ff}
+.sidebar{background:linear-gradient(180deg,#171020,#100d19)!important;color:#f8f2ff!important;border-right:1px solid #382846!important;box-shadow:8px 0 30px rgba(0,0,0,.2)}
+.logo{color:#fff0df!important}.logo span{color:#ff9638!important}
+.nav button,.mobile-nav button{color:#c9bad8!important}
+.nav button:hover,.nav button.active,.mobile-nav button.active{background:#34213f!important;color:#ffad59!important}
+.mobile-nav{background:rgba(22,15,31,.96)!important;border-top:1px solid #493151!important;backdrop-filter:blur(18px)}
+.top h1,.card h2,.card h3,.stat-value{color:#fff5e9!important}
+.profile-mini,.card,.stat,.modalbox,.settings-section,.ai-workspace{background:#1b1526!important;border-color:#3a2948!important;color:#f8f2ff!important;box-shadow:0 12px 30px rgba(0,0,0,.22)!important}
+.hero,.dashboard-hero,.ai-hero{background:radial-gradient(circle at 92% 4%,rgba(255,153,54,.24),transparent 34%),linear-gradient(125deg,#382044,#21172f 58%,#24182a)!important;color:#fff5e9!important;border:1px solid #684052!important;box-shadow:0 16px 36px rgba(0,0,0,.25)!important}
+.hero p,.dashboard-hero p,.ai-hero p,.muted,.stat-label{color:#c6b6d3!important;opacity:1!important}
+.date-pill,.ai-hero-badge{background:#281b34!important;border:1px solid #65405a!important;color:#ffb46d!important}
+.btn,.auth-main-btn,.ai-new{background:linear-gradient(135deg,#f07824,#ff9b36)!important;color:#241326!important;border:1px solid #ffb46d!important;font-weight:800}
+.btn.green{background:linear-gradient(135deg,#f07824,#ff9b36)!important;color:#241326!important}
+.btn.secondary,.btn.gray{background:#30203c!important;color:#f5dfca!important;border:1px solid #503752!important}
+input,select,textarea{background:#21182d!important;color:#fff5e9!important;border-color:#493451!important}
+input::placeholder,textarea::placeholder{color:#a997b8!important}
+.tag,.quick,.food,.game,.restaurant,.challenge,.stat-icon,.plan-item,.activity-metric{background:#281d34!important;border-color:#44304f!important;color:#f7e9dc!important}
+.progress{background:#392a45!important}.progress>div{background:linear-gradient(90deg,#ef7624,#ffb04f)!important}
+.health-note,.ai-safety,.device-health-note{background:#242b25!important;border:1px solid #465b3d!important;color:#d5efc8!important}
+.ai-orb{background:linear-gradient(135deg,#f07824,#8e45a9)!important}
+.ai-mode,.ai-shortcuts button{color:#ead8f1!important}
+.ai-mode.active{background:#3b2546!important;color:#ffb46d!important}
+.ai-chat-panel{background:#1b1526!important}.ai-chat-top{border-color:#3a2948!important}
+.ai-msg:not(.user) .ai-bubble{background:#2a2035!important;color:#f8f2ff!important}
+.ai-msg.user .ai-bubble{background:#a64f22!important;color:#fff!important}
+.modal{background:rgba(5,3,9,.78)!important}
+.splash-screen{background:radial-gradient(circle at 50% 30%,#482451 0,#21142d 48%,#0b0911 100%)!important;color:#fff5e9!important}
+.splash-glow{background:rgba(240,120,36,.2)!important}
+.splash-mark{background:linear-gradient(145deg,#3c2548,#21182c)!important;border-color:#71445a!important;box-shadow:0 20px 55px rgba(0,0,0,.4)!important}
+.splash-title span{color:#ff9638!important}.splash-sub{color:#d0bfd9!important}
+.splash-loader{background:#45314e!important}.splash-loader:after{background:#ff9638!important}
+.auth-screen{background:radial-gradient(circle at 20% 10%,rgba(139,65,157,.2),transparent 35%),linear-gradient(145deg,#100d19,#24152d 60%,#351d2c)!important;color:#fff5e9!important}
+.auth-shell{background:#1b1526!important;border-color:#493451!important}
+.auth-brand{background:linear-gradient(145deg,#382044,#21172f)!important;color:#fff5e9!important}
+.auth-brand h2,.auth-logo{color:#fff5e9!important}.auth-logo span{color:#ff9638!important}
+.auth-brand p,.auth-note{color:#c6b6d3!important}
+.auth-panel{background:#1b1526!important;color:#fff5e9!important}
+.auth-create-btn{background:#30203c!important;color:#ffbd7b!important}
+.pwa-install-hint,.mobile-more-sheet{background:rgba(27,21,38,.98)!important;color:#fff5e9!important;border-color:#493451!important}
+.mobile-more-sheet button{color:#ead8f1!important}
+body[data-dark="0"]{background:#100d19!important;color:#f8f2ff!important;color-scheme:dark!important}
+body[data-dark="0"] .card,body[data-dark="0"] .stat,body[data-dark="0"] .profile-mini{background:#1b1526!important;color:#f8f2ff!important}
+@media(prefers-reduced-motion:no-preference){
+ .hero,.dashboard-hero{background-size:150% 150%!important;animation:hgHalloweenGlow 16s ease-in-out infinite alternate}
+}
+@keyframes hgHalloweenGlow{to{background-position:100% 100%}}
