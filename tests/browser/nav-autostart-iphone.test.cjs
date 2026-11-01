@@ -77,7 +77,7 @@ for(const width of [360,390,430]){
    planner:document.body.classList.contains('hg-route-planner-open'),
    navVisible:!document.getElementById('hgProNavigation').hidden,
    address:document.getElementById('mapV2RouteTo').value,
-   manual:document.getElementById('mapV2RouteFrom').value,
+   manual:document.getElementById('mapV2RouteFrom')?.value||'',
    directions:document.getElementById('hgProNavDirection').textContent,
    street:document.getElementById('hgProNavStreet').textContent,
    distance:document.getElementById('hgProNavDistance').textContent,
