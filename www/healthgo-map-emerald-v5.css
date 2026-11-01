@@ -379,3 +379,14 @@ body.hg-emerald.hg-navigation-active #map #hgProNavigation .hg-drive-speed,
 body.hg-emerald.hg-navigation-active #map #hgProNavigation #hgLiveWeather {
  display:none!important;
 }
+/* Preserve the native hidden contract: component display rules must not reveal inactive HUD panels. */
+#map #hgProNavigation[hidden],
+#map #hgLiveWeather[hidden],
+#map #hgLiveMapStatus[hidden],
+#map #hgNavGpsStatus[hidden],
+#map #hgNavLaneAssistant[hidden],
+#map #hgNavAdvancedTools[hidden],
+#map #hgNavWeatherRisk[hidden],
+#map #hgFollowRecenter[hidden] {
+  display: none !important;
+}

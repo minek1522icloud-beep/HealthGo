@@ -68,9 +68,9 @@ for(const [width,height] of [[360,740],[390,844],[430,932],[768,700]]){
     active:document.querySelector('.mobile-nav .active')?.dataset.mobilePage
    };
   });
-  assert.equal(layout.cards,7);
-  assert.equal(layout.svg,7,'Every item must have a vector icon');
-  assert.equal(layout.chevrons,7,'Every item must show the navigation chevron');
+  assert.equal(layout.cards,10);
+  assert.equal(layout.svg,10,'Every item must have a vector icon');
+  assert.equal(layout.chevrons,10,'Every item must show the navigation chevron');
   assert.equal(layout.groups,2,'Function and account groups should be labeled');
   assert.equal(layout.oneColumn,'column','Items must be a single-column list');
   assert.match(layout.bottomOffset,/px$/,'Sheet must follow measured iPhone nav height');
@@ -95,9 +95,9 @@ for(const [width,height] of [[360,740],[390,844],[430,932],[768,700]]){
   await page.close();
  });
 }
-test('All seven cards link to real app pages',async()=>{
+test('All seven page links lead to real app pages',async()=>{
  const {page,errors}=await ready(390,844);
- for(const id of ['backpack','challenges','activity','devices','family','games','settings']){
+ for(const id of ['backpack','challenges','activity','devices','explore','points','settings']){
   await page.locator('[data-mobile-page="more"]').click();
   await page.locator('#mobileMoreSheet .hg-more-action[onclick="mobileGo(\''+id+'\')"]').click();
   assert.equal(await page.locator('#mobileMoreSheet').isVisible(),false,'Sheet did not close '+id);
@@ -158,8 +158,9 @@ test('Resizing while More is open recalculates sheet offset and keeps all rows a
  });
  assert.ok(state.bottom<=state.navTop+1,'iPhone rotation/resize overlapped navigation');
  assert.match(state.offset,/px$/);
- await page.locator('#mobileMoreSheet button[onclick="mobileGo(\'family\')"]').click();
- assert.equal(await page.locator('#family.page.active').count(),1);
+ await page.locator('#mobileMoreSheet [data-hg2-family="1"]').click();
+ assert.equal(await page.locator('#settings.page.active').count(),1);
+ assert.equal(await page.locator('#settingsPrivacy').count(),1);
  assert.deepEqual(errors,[]);
  await page.close();
 });

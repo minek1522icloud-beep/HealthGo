@@ -331,6 +331,10 @@
   panels?.forEach?.(panel=>{panel.hidden=true;});
   document.body?.classList?.add('hg-navigation-active');
   node('mapWorkspace')?.classList?.add('map-pro-navigating');
+  // The legacy speed dial must stay hidden during minimal turn-by-turn guidance.
+  // Set the native hidden state as well as CSS so older !important display rules cannot reveal it.
+  const speedPanel=node('hgNavSpeedGauge')?.closest?.('.hg-drive-speed');
+  if(speedPanel){speedPanel.hidden=true;speedPanel.style.setProperty('display','none','important');}
   show('hgProNavigation',true);
   gpsAlert('');
   loadOptions();
@@ -377,6 +381,8 @@
   if(watchId!==null)try{navigator.geolocation?.clearWatch?.(watchId)}catch(_){}
   watchId=null;position=null;removeArrow();
   show('hgProNavigation',false);
+  const speedPanel=node('hgNavSpeedGauge')?.closest?.('.hg-drive-speed');
+  if(speedPanel){speedPanel.hidden=false;speedPanel.style.removeProperty('display');}
   gpsAlert('');
   node('mapWorkspace')?.classList?.remove('map-pro-navigating');
   node('mapWorkspace')?.classList?.remove('hg-nav-dark');

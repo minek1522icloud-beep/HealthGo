@@ -3,10 +3,13 @@ name: HealthGo Native iOS (Xcode build)
 on:
   workflow_dispatch:
   push:
-    branches: [main, feature/ios-device-ipa-20261014]
+    branches: [main, feature/ios-device-ipa-20261014, feature/family-2.0-light-ui]
     paths:
       - "native-shell/**"
       - "scripts/patch-capacitor-ios-healthkit.py"
+      - "scripts/generate-ios-seasonal-icons.py"
+      - "native-shell/ios-healthkit/HealthGoSeasonalIconPlugin.swift"
+      - "native-shell/ios-seasonal/**"
       - "scripts/verify-ios-ipa.py"
       - "www/healthgo-apple-health53.js"
       - "www/healthgo-services.js"
@@ -17,6 +20,7 @@ on:
       - "www/healthgo-devices-pro45.js"
       - "www/healthgo-apple-health53.css"
       - "tests/healthgo-apple-health53.test.cjs"
+      - "tests/emerald-theme.test.cjs"
       - ".github/workflows/native-ios.yml"
 
 permissions:
@@ -93,6 +97,15 @@ jobs:
           plutil -lint native-shell/ios/App/App/HealthGo.entitlements
           grep -q 'HealthGoBridgeViewController' native-shell/ios/App/App/Base.lproj/Main.storyboard
           grep -q 'HealthGoHealthPlugin.swift in Sources' native-shell/ios/App/App.xcodeproj/project.pbxproj
+          grep -q 'HealthGoSeasonalIconPlugin.swift in Sources' native-shell/ios/App/App.xcodeproj/project.pbxproj
+
+      - name: Generuj ikony sezonowe iOS
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/healthgo-icon-venv"
+          "$RUNNER_TEMP/healthgo-icon-venv/bin/python" -m pip install --disable-pip-version-check pillow cairosvg
+          "$RUNNER_TEMP/healthgo-icon-venv/bin/python" scripts/generate-ios-seasonal-icons.py --project native-shell/ios/App
 
       - name: Sprawdz natywny most JavaScript
         run: |

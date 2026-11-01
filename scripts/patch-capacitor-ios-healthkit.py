@@ -28,7 +28,7 @@ def apply(project: Path, templates: Path) -> None:
         if not path.is_file():
             raise FileNotFoundError(path)
 
-    files = ["HealthGoHealthPlugin.swift", "HealthGoBridgeViewController.swift"]
+    files = ["HealthGoHealthPlugin.swift", "HealthGoBridgeViewController.swift", "HealthGoSeasonalIconPlugin.swift"]
     for filename in files:
         shutil.copyfile(templates / filename, app / filename)
 
@@ -36,8 +36,8 @@ def apply(project: Path, templates: Path) -> None:
     if "HealthGoHealthPlugin.swift" in pbx:
         raise RuntimeError("HealthKit plugin was already added")
 
-    refs = ["F0A100000000000000000001", "F0A100000000000000000002"]
-    builds = ["F0A200000000000000000001", "F0A200000000000000000002"]
+    refs = ["F0A100000000000000000001", "F0A100000000000000000002", "F0A100000000000000000003"]
+    builds = ["F0A200000000000000000001", "F0A200000000000000000002", "F0A200000000000000000003"]
 
     for filename, ref, build in zip(files, refs, builds):
         pbx = once(
@@ -89,7 +89,7 @@ def apply(project: Path, templates: Path) -> None:
     for filename in files:
         if f"/* {filename} in Sources */" not in pbx:
             raise RuntimeError(f"{filename} not in Xcode Sources phase")
-    print("HealthGo HealthKit plugin registered in Capacitor iOS project.")
+    print("HealthGo HealthKit and seasonal icon plugins registered in Capacitor iOS project.")
 
 
 if __name__ == "__main__":

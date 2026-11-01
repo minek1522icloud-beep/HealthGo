@@ -68,15 +68,16 @@ test('login callbacks cannot lose auth code during automatic update',async()=>{
  assert.equal(x.history.length,0);
 });
 
-test('the Settings update button explicitly installs a new build',async()=>{
+test('automatic idle update and explicit Settings check install the published build',async()=>{
  const x=harness(V2,V1);
  await x.context.window.healthGoCheckMobileUpdate();
- assert.equal(x.history.length,0);
+ assert.equal(x.history.length,1,'Idle app should automatically apply a published build');
  await x.context.window.healthGoCheckMobileUpdate(true);
- assert.equal(x.history.length,1);
+ assert.equal(x.history.length,2,'Explicit Settings check forces an update check');
  assert.match(x.history[0],/hg_build=bbbbbbbbbbbb/);
- assert.deepEqual(x.updates,['update']);
+ assert.deepEqual(x.updates,['update','update']);
  assert.equal(x.messages[0].type,'SKIP_WAITING');
+ assert.equal(x.messages[1].type,'SKIP_WAITING');
 });
 test('deployment stamps real commit into HTML and publishes matching version',()=>{
  const workflow=fs.readFileSync('.github/workflows/mobile-pages.yml','utf8');

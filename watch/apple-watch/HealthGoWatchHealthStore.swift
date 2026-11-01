@@ -33,7 +33,7 @@ final class HealthGoWatchHealthStore: ObservableObject {
                 guard let self else { return }
                 self.isLoading = false
                 if success {
-                    self.statusText = "Połączono z danymi Zdrowie."
+                    self.statusText = "Prośba o dostęp zakończona. HealthKit nie ujawnia, czy odczyt został zaakceptowany; sprawdzam dostępne dane."
                     self.refresh()
                 } else {
                     self.statusText = error == nil ? "Brak zgody na odczyt danych." : "Nie udało się uzyskać dostępu do danych Zdrowie."
@@ -59,6 +59,11 @@ final class HealthGoWatchHealthStore: ObservableObject {
             Task { @MainActor [weak self] in
                 self?.heartRateBpm = value
                 self?.isLoading = false
+                if value == nil && self?.steps == nil && self?.distanceKm == nil && self?.activeEnergyKcal == nil {
+                    self?.statusText = "Brak dostępnych pomiarów z dzisiaj. Sprawdź uprawnienia w aplikacji Zdrowie."
+                } else {
+                    self?.statusText = "Odczyt zakończony. Wyświetlam wyłącznie dostępne pomiary z HealthKit."
+                }
             }
         }
     }
@@ -91,10 +96,13 @@ final class HealthGoWatchHealthStore: ObservableObject {
             return
         }
 
+        let now = Date()
+        let start = Calendar.current.startOfDay(for: now)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: now)
         let sort = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
         let query = HKSampleQuery(
             sampleType: type,
-            predicate: nil,
+            predicate: predicate,
             limit: 1,
             sortDescriptors: [sort]
         ) { _, samples, _ in

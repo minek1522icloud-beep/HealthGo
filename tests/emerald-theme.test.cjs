@@ -41,8 +41,8 @@ test('Theme is accessible and respects reduced motion',()=>{
 
 test('PWA branding uses the new background and new static assets exist',()=>{
  const manifest=JSON.parse(read('manifest.webmanifest'));
- assert.equal(manifest.background_color,'#061a14');
- assert.equal(manifest.theme_color,'#061a14');
+ assert.equal(manifest.background_color,'#100d19');
+ assert.equal(manifest.theme_color,'#100d19');
  assert.ok(fs.existsSync(path.join(base,'healthgo-emerald-2.css')));
  assert.ok(fs.existsSync(path.join(base,'healthgo-emerald-dashboard.js')));
 });
