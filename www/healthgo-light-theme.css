@@ -67,3 +67,20 @@ body[data-dark="1"] .card,body[data-dark="1"] .stat,body[data-dark="1"] .mobile-
  .mobile-nav button.active{background:#eaf7f1!important;color:#087a53!important}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+/* Navigation uses the native hidden attribute even when component skins set display. */
+#map #hgProNavigation[hidden],
+#map #hgLiveWeather[hidden],
+#map #hgLiveMapStatus[hidden],
+#map #hgNavGpsStatus[hidden],
+#map #hgNavLaneAssistant[hidden],
+#map #hgNavAdvancedTools[hidden],
+#map #hgNavWeatherRisk[hidden],
+#map #hgFollowRecenter[hidden]{
+  display:none!important;
+}
+/* Keep live driving HUD minimal: turn card and footer only, never a fake speed reading. */
+body.hg-navigation-active #map #hgProNavigation .hg-drive-speed,
+body.hg-navigation-active #map #hgProNavigation #hgLiveWeather{
+  display:none!important;
+}
