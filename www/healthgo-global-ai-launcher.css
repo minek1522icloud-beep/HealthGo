@@ -1,0 +1,20 @@
+.hg-global-ai-launcher{
+ position:fixed;right:max(18px,env(safe-area-inset-right));bottom:calc(82px + env(safe-area-inset-bottom));
+ z-index:9000;display:flex;align-items:center;gap:10px;min-height:54px;padding:7px 17px 7px 8px;
+ border:1px solid rgba(22,190,164,.34);border-radius:999px;
+ color:#083f39;background:rgba(255,255,255,.94);
+ box-shadow:0 12px 34px rgba(8,80,69,.18),inset 0 1px 0 rgba(255,255,255,.95);
+ backdrop-filter:blur(16px);font:750 13px/1 system-ui,sans-serif;cursor:pointer;
+ transition:transform .2s ease,box-shadow .2s ease,opacity .2s ease;
+}
+.hg-global-ai-launcher:hover{transform:translateY(-2px);box-shadow:0 16px 38px rgba(8,80,69,.23)}
+.hg-global-ai-launcher:focus-visible{outline:3px solid #0f9f87;outline-offset:4px}
+.hg-global-ai-orb{
+ width:38px;height:38px;display:grid;place-items:center;border-radius:50%;
+ color:#fff;font-size:21px;background:radial-gradient(circle at 32% 24%,#b9fff1 0,#38d8bd 34%,#078b83 72%,#075e62 100%);
+ box-shadow:inset 0 2px 4px rgba(255,255,255,.7),0 4px 13px rgba(8,150,130,.28);
+}
+.hg-global-ai-label{white-space:nowrap}
+.hg-global-ai-launcher.is-ai-page{display:none}
+@media(max-width:900px){.hg-global-ai-launcher{right:12px;bottom:calc(76px + env(safe-area-inset-bottom));min-height:48px;padding:5px 13px 5px 6px}.hg-global-ai-orb{width:36px;height:36px}}
+@media(prefers-reduced-motion:reduce){.hg-global-ai-launcher{transition:none}.hg-global-ai-launcher:hover{transform:none}}
