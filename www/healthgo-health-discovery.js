@@ -8,6 +8,7 @@
 const d=w.document, S=w.HealthGoServices;
 if(!d||!S)return;
 const STORAGE='healthgo.health-discovery.prompt.v1';
+const css='.hg-health-discovery{margin:14px 0;padding:18px;border-radius:18px;background:linear-gradient(135deg,#071d19,#103b30);color:#effff8;border:1px solid rgba(110,231,183,.22);box-shadow:0 12px 32px rgba(0,0,0,.16)}.hg-health-discovery-head{display:flex;align-items:center;gap:10px}.hg-health-discovery-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:rgba(52,211,153,.16);color:#6ee7b7;font-size:22px}.hg-health-discovery h3{margin:0;font-size:18px}.hg-health-discovery p{color:#c6e7dc;line-height:1.5}.hg-health-discovery-actions{display:flex;gap:9px;flex-wrap:wrap}.hg-health-discovery-actions button{border:0;border-radius:11px;padding:11px 14px;font-weight:800;cursor:pointer}.hg-health-discovery-primary{background:#34d399;color:#052e25}.hg-health-discovery-secondary{background:rgba(255,255,255,.1);color:#effff8}.hg-health-discovery-note{padding:12px;border-radius:12px;background:#103b30;color:#effff8}';
 let activeUid='',shown=false;
 const platform=()=>/iPhone|iPad|iPod/i.test(w.navigator?.userAgent||'')?'ios':
  /Android/i.test(w.navigator?.userAgent||'')?'android':'other';
@@ -16,8 +17,9 @@ function node(tag,cls,text){
  if(text!==undefined)x.textContent=String(text);return x;
 }
 function remove(){d.getElementById('hgHealthDiscoveryPrompt')?.remove();}
+function markSeen(){shown=true;try{w.localStorage?.setItem(STORAGE+':'+encodeURIComponent(activeUid),'1');}catch(_){}}
 function openDevices(){
- remove();
+ markSeen();remove();
  const wizard=d.getElementById('hg50Wizard');
  if(wizard){wizard.scrollIntoView({behavior:'smooth',block:'center'});return;}
  const buttons=Array.from(d.querySelectorAll('button,[role="button"]'));
@@ -28,12 +30,13 @@ function openDevices(){
  (d.querySelector('main')||d.querySelector('.main')||d.body).prepend(note);
 }
 function connectApple(){
- remove();
+ markSeen();remove();
  const api=w.HealthGoAppleHealth53;
  if(typeof api?.connect==='function'){void api.connect();return;}
  openDevices();
 }
 function render(){
+ if(!d.getElementById('hgHealthDiscoveryStyles')){const style=node('style','',css);style.id='hgHealthDiscoveryStyles';d.head.appendChild(style);}
  remove();
  if(!activeUid||shown||platform()==='other')return;
  let seen=false;
@@ -57,7 +60,7 @@ function render(){
  const yes=node('button','hg-health-discovery-primary',ios?'Połącz Apple Zdrowie':'Sprawdź integracje');
  yes.type='button';yes.addEventListener('click',ios?connectApple:openDevices);
  const later=node('button','hg-health-discovery-secondary','Nie teraz');
- later.type='button';later.addEventListener('click',()=>{remove();shown=true;try{w.localStorage?.setItem(STORAGE+':'+encodeURIComponent(activeUid),'1');}catch(_){}});
+ later.type='button';later.addEventListener('click',()=>{markSeen();remove();});
  actions.append(yes,later);box.append(actions);
  const host=d.querySelector('main')||d.querySelector('.main')||d.body;
  host.prepend(box);shown=true;
