@@ -7,6 +7,9 @@ on:
     paths:
       - "native-shell/**"
       - "scripts/patch-capacitor-ios-healthkit.py"
+      - "scripts/generate-ios-seasonal-icons.py"
+      - "native-shell/ios-healthkit/HealthGoSeasonalIconPlugin.swift"
+      - "native-shell/ios-seasonal/**"
       - "scripts/verify-ios-ipa.py"
       - "www/healthgo-apple-health53.js"
       - "www/healthgo-services.js"
@@ -93,6 +96,12 @@ jobs:
           plutil -lint native-shell/ios/App/App/HealthGo.entitlements
           grep -q 'HealthGoBridgeViewController' native-shell/ios/App/App/Base.lproj/Main.storyboard
           grep -q 'HealthGoHealthPlugin.swift in Sources' native-shell/ios/App/App.xcodeproj/project.pbxproj
+          grep -q 'HealthGoSeasonalIconPlugin.swift in Sources' native-shell/ios/App/App.xcodeproj/project.pbxproj
+
+      - name: Generuj ikony sezonowe iOS
+        run: |
+          python3 -m pip install --disable-pip-version-check pillow cairosvg
+          python3 scripts/generate-ios-seasonal-icons.py --project native-shell/ios/App
 
       - name: Sprawdz natywny most JavaScript
         run: |

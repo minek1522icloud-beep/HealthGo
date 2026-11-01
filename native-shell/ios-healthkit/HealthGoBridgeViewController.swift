@@ -4,5 +4,6 @@ import Capacitor
 class HealthGoBridgeViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(HealthGoHealthPlugin())
+        bridge?.registerPluginInstance(HealthGoSeasonalIconPlugin())
     }
 }
