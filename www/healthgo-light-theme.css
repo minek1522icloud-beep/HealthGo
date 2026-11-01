@@ -1,0 +1,69 @@
+/* HealthGo global light theme — Family 2.0 visual foundation */
+:root{
+  color-scheme:light;
+  --bg:#f7faf8;--card:#ffffff;--text:#172b25;--muted:#687b73;
+  --primary:#15966b;--primary2:#20b98a;--border:#e2ebe6;--green:#18a875;
+  --shadow:0 8px 28px rgba(25,70,51,.07);--soft:#eaf7f1;--hover:#edf7f2;
+}
+html,body{background:#f7faf8!important;color:#172b25!important}
+body{color-scheme:light}
+.app,.main,.page{color:#172b25}
+.sidebar{background:#fff!important;color:#172b25!important;border-right:1px solid #e2ebe6!important;box-shadow:8px 0 28px rgba(25,70,51,.035)}
+.logo{color:#173b2e!important}.logo span{color:#15966b!important}
+.nav button,.mobile-nav button{color:#52675e!important}
+.nav button:hover,.nav button.active,.mobile-nav button.active{background:#eaf7f1!important;color:#087a53!important}
+.mobile-nav{background:rgba(255,255,255,.97)!important;border-top:1px solid #e2ebe6!important;backdrop-filter:blur(18px)}
+.top h1,.card h2,.card h3,.stat-value{color:#172b25}
+.profile-mini,.card,.stat,.modalbox{background:#fff!important;border-color:#e2ebe6!important;box-shadow:0 8px 28px rgba(25,70,51,.06)!important}
+.hero,.dashboard-hero,.ai-hero{background:linear-gradient(135deg,#e8f8f0,#f5fbf8 68%,#e8f7f2)!important;color:#173b2e!important;border:1px solid #d8eee3!important;box-shadow:0 12px 32px rgba(25,100,68,.07)!important}
+.hero p,.dashboard-hero p,.ai-hero p,.ai-kicker{color:#58766a!important;opacity:1!important}
+.date-pill,.ai-hero-badge{background:#fff!important;border:1px solid #dceee4!important;color:#247a58!important}
+.btn,.auth-main-btn{background:#15966b!important;color:#fff!important}
+.btn.green{background:#15966b!important}
+.btn.secondary,.btn.gray{background:#eaf7f1!important;color:#176b4e!important}
+button{transition:background-color .16s ease,border-color .16s ease,transform .16s ease}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(21,150,107,.25);outline-offset:2px}
+input,select,textarea{background:#fff!important;color:#172b25!important;border-color:#dce8e2!important}
+.tag,.quick,.food,.game,.restaurant,.challenge{background:#f5faf7!important;border-color:#e2ebe6!important;color:#25473a}
+.progress{background:#e7f0eb!important}.progress>div{background:linear-gradient(90deg,#15966b,#54c79a)!important}
+.health-note,.ai-safety{background:#eaf7f1!important;border-color:#d5eee1!important;color:#176b4e!important}
+.device-health-note{background:#eef8f4!important;border-color:#d7eee3!important;color:#236b50!important}
+.ai-workspace{background:#fff!important;border-color:#e2ebe6!important}
+.ai-tools{background:#f5faf7!important;border-color:#e2ebe6!important}
+.ai-orb{background:linear-gradient(135deg,#15966b,#54c79a)!important}
+.ai-new{background:#15966b!important;color:#fff!important}
+.ai-mode,.ai-shortcuts button{color:#315849!important}
+.ai-mode.active{background:#e3f5ec!important;color:#087a53!important}
+.ai-chat-panel{background:#fff!important}
+.ai-chat-top{border-color:#e8f0eb!important}
+.ai-msg:not(.user) .ai-bubble{background:#f0f7f3!important;color:#1c3c2e!important}
+.ai-msg.user .ai-bubble{background:#15966b!important;color:#fff!important}
+.splash-screen{background:linear-gradient(145deg,#f8fffb,#e6f7ee 60%,#d9f1e5)!important;color:#173b2e!important}
+.splash-glow{background:rgba(40,180,120,.15)!important}
+.splash-mark{background:linear-gradient(145deg,#fff,#e8f7ef)!important;border-color:#d7eee1!important;box-shadow:0 18px 45px rgba(20,100,65,.12)!important}
+.splash-title span{color:#15966b!important}.splash-sub{color:#58766a!important}
+.splash-loader{background:#d9ebe1!important}.splash-loader:after{background:#15966b!important}
+.auth-screen{background:#f4faf6!important;color:#172b25!important}
+.auth-shell{background:#fff!important;border-color:#e2ebe6!important;box-shadow:0 24px 70px rgba(25,70,51,.12)!important}
+.auth-brand{background:linear-gradient(145deg,#e8f8f0,#f7fcf9)!important;color:#173b2e!important}
+.auth-brand h2,.auth-logo{color:#173b2e!important}.auth-logo span{color:#15966b!important}
+.auth-brand p{color:#58766a!important}
+.auth-panel{background:#fff!important;color:#172b25!important}
+.auth-create-btn{background:#eaf7f1!important;color:#176b4e!important}
+.auth-note{color:#73877d!important}
+.auth-mfa-backdrop{background:rgba(20,45,34,.32)!important}
+.pwa-install-hint,.mobile-more-sheet{background:rgba(255,255,255,.98)!important;color:#172b25!important;border-color:#e2ebe6!important}
+.pwa-install-hint .pwa-icon{background:#15966b!important}
+.pwa-install-actions .install-primary{background:#15966b!important}
+.mobile-more-sheet button{color:#315849!important}
+.modal{background:rgba(20,45,34,.35)!important}
+.healthgo-profile-marker{background:#15966b!important}
+.healthgo-profile-marker.me{background:#087a53!important}
+body[data-dark="1"]{background:#f7faf8!important;color:#172b25!important}
+body[data-dark="1"] .card,body[data-dark="1"] .stat,body[data-dark="1"] .mobile-more-sheet,body[data-dark="1"] .pwa-install-hint{background:#fff!important;color:#172b25!important}
+@media(max-width:900px){
+ .main{background:#f7faf8!important}
+ .mobile-nav button{color:#52675e!important}
+ .mobile-nav button.active{background:#eaf7f1!important;color:#087a53!important}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
