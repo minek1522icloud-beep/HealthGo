@@ -84,3 +84,9 @@ body.hg-navigation-active #map .hg-drive-speed,
 body.hg-navigation-active #map #hgLiveWeather{
   display:none!important;
 }
+
+/* The legacy drive card sets display:flex!important with two IDs; this later,
+   equally-specific rule wins while preserving the turn card and route footer. */
+body.hg-navigation-active #map #hgProNavigation .hg-drive-speed{
+  display:none!important;
+}
