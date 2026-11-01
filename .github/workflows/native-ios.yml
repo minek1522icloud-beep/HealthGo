@@ -100,9 +100,12 @@ jobs:
           grep -q 'HealthGoSeasonalIconPlugin.swift in Sources' native-shell/ios/App/App.xcodeproj/project.pbxproj
 
       - name: Generuj ikony sezonowe iOS
+        shell: bash
         run: |
-          python3 -m pip install --disable-pip-version-check pillow cairosvg
-          python3 scripts/generate-ios-seasonal-icons.py --project native-shell/ios/App
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/healthgo-icon-venv"
+          "$RUNNER_TEMP/healthgo-icon-venv/bin/python" -m pip install --disable-pip-version-check pillow cairosvg
+          "$RUNNER_TEMP/healthgo-icon-venv/bin/python" scripts/generate-ios-seasonal-icons.py --project native-shell/ios/App
 
       - name: Sprawdz natywny most JavaScript
         run: |
