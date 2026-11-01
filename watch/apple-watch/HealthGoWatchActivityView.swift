@@ -14,8 +14,13 @@ struct HealthGoWatchActivityView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Button(health.isLoading ? "Odczytuję…" : "Połącz / odśwież dane") {
+                Button(health.isLoading ? "Odczytuję…" : "Poproś o dostęp do Zdrowia") {
                     health.requestAuthorization()
+                }
+                .disabled(health.isLoading)
+
+                Button(health.isLoading ? "Odczytuję…" : "Odśwież dane") {
+                    health.refresh()
                 }
                 .disabled(health.isLoading)
             }
