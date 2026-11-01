@@ -80,7 +80,7 @@ body[data-dark="1"] .card,body[data-dark="1"] .stat,body[data-dark="1"] .mobile-
   display:none!important;
 }
 /* Keep live driving HUD minimal: turn card and footer only, never a fake speed reading. */
-body.hg-navigation-active #map #hgProNavigation .hg-drive-speed,
+body.hg-navigation-active #map .hg-drive-speed,
 body.hg-navigation-active #map #hgLiveWeather{
   display:none!important;
 }
