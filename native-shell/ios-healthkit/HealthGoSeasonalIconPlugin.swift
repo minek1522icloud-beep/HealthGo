@@ -31,7 +31,7 @@ public class HealthGoSeasonalIconPlugin: CAPPlugin, CAPBridgedPlugin {
     private static func iconName(for date: Date) -> String? {
         let cal = Calendar(identifier: .gregorian)
         let month = cal.component(.month, from: date)
-        if month == 10 { return "HalloweenIcon" }
+        if month == 10 || (month == 11 && cal.component(.day, from: date) <= 2) { return "HalloweenIcon" }
         if month == 12 { return "ChristmasIcon" }
         if (6...8).contains(month) { return "SummerIcon" }
         return isEasterSeason(date, calendar: cal) ? "EasterIcon" : nil
