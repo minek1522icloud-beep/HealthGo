@@ -158,8 +158,9 @@ test('Resizing while More is open recalculates sheet offset and keeps all rows a
  });
  assert.ok(state.bottom<=state.navTop+1,'iPhone rotation/resize overlapped navigation');
  assert.match(state.offset,/px$/);
- await page.locator('#mobileMoreSheet button[onclick="mobileGo(\'family\')"]').click();
- assert.equal(await page.locator('#family.page.active').count(),1);
+ await page.locator('#mobileMoreSheet [data-hg2-family="1"]').click();
+ assert.equal(await page.locator('#settings.page.active').count(),1);
+ assert.equal(await page.locator('#settingsPrivacy').count(),1);
  assert.deepEqual(errors,[]);
  await page.close();
 });
