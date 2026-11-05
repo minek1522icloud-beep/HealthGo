@@ -19,7 +19,7 @@ test('holiday theme replaces the permanent Halloween override without breaking n
  assert.match(html,/id="hgChristmasToggle"[^>]*onclick="HealthGoChristmas\.toggle\(\)"/);
  assert.match(html,/icon-christmas\.svg/);
  assert.match(read('manifest.webmanifest'),/icon-christmas\.svg/);
- assert.match(read('service-worker.js'),/healthgo-pwa-v63-christmas-all-pages-20261105/);
+ assert.match(read('service-worker.js'),/healthgo-pwa-v64-christmas-map-20261105/);
 });
 test('visible modern dashboard has three working quick-access targets',()=>{
  const src=read('healthgo-emerald-dashboard.js');
