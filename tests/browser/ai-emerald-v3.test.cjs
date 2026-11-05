@@ -49,8 +49,11 @@ for(const width of [360,390,768,1440]){
    const parse=color=>[...color.matchAll(/\d+/g)].slice(0,3).map(m=>Number(m[0]));
    return {chat:parse(cs.backgroundColor),response:parse(rs.backgroundColor)};
   });
+  const holiday=await page.evaluate(()=>document.body.classList.contains('hg-christmas'));
   for(const channels of [colors.chat,colors.response]){
-   assert.ok(channels.length===3&&channels.every(value=>value<110),'Dark screen unexpectedly white '+JSON.stringify(colors));
+   assert.ok(channels.length===3,'Missing RGB channels: '+JSON.stringify(colors));
+   if(holiday)assert.ok(channels.every(value=>value>180),'Holiday AI should have bright cards: '+JSON.stringify(colors));
+   else assert.ok(channels.every(value=>value<110),'Dark AI without holiday decorations should remain dark: '+JSON.stringify(colors));
   }
   const sizes=await page.evaluate(()=>({
    scroll:document.documentElement.scrollWidth,
