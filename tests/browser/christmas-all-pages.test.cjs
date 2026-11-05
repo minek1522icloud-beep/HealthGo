@@ -47,7 +47,13 @@ for(const width of [390,768,1440]){
    await page.waitForFunction(id=>!!document.querySelector('#'+id+' > .hgx-holiday-page'),id);
    assert.match(await page.locator('#'+id+' .hgx-holiday-greeting').innerText(),/Wesołych Świąt!/);
    assert.equal(await page.locator('#'+id+' .hgx-shortcut').count(),3);
-   assert.ok(await page.locator('#'+id+' .hgx-holiday-hero').isVisible(),id+' premium banner invisible');
+   if(id==='ai'&&width<=900){
+    // Compact version on iPhone/tablet: full banner must not push the composer under the bottom dock.
+    assert.ok(await page.locator('#ai .ai-chat-top').isVisible(),'AI Christmas chat header missing');
+    assert.equal(await page.locator('#ai .hgx-holiday-page').isVisible(),false);
+   }else{
+    assert.ok(await page.locator('#'+id+' .hgx-holiday-hero').isVisible(),id+' premium banner invisible');
+   }
    const viewport=await page.evaluate(()=>({
     scroll:document.documentElement.scrollWidth,
     client:document.documentElement.clientWidth
