@@ -1,255 +1,78 @@
-/* HealthGo: festive interactive Map 2026.
-   Retains OSM/Leaflet map, navigation planner, geolocation consent and real places.
-   All changes reversible with Settings > Appearance > Christmas decorations. */
-#hgXmasMapIntro{display:none}
-body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map #hgXmasMapIntro{
- display:block;max-width:1000px;margin:0 auto 13px;padding:0 1px;color:#123e2b;
+/* Christmas Map: native full-screen view, with one small tree in its corner.
+   No extra header, shortcuts or dashboard above the map. */
+#map > .hgx-holiday-page{display:none!important}
+#map .map-canvas-wrap{position:relative}
+#map #hgXmasMapTree{
+ display:none;position:absolute;z-index:590;
+ right:12px;bottom:164px;width:68px;height:74px;
+ border:1px solid rgba(236,204,129,.9);border-radius:22px;
+ background:rgba(255,255,255,.90);box-shadow:0 6px 23px rgba(21,65,44,.17);
+ padding:0;align-items:center;justify-content:center;cursor:pointer;
+ -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+ backdrop-filter:blur(7px);transition:transform .15s ease,box-shadow .15s ease;
 }
-body.hg-christmas #map > .hgx-holiday-page{display:none!important}
-body.hg-christmas #hgXmasMapIntro *,
-body.hg-christmas #hgXmasMapIntro *:before,
-body.hg-christmas #hgXmasMapIntro *:after{box-sizing:border-box}
-body.hg-christmas #map .hgxm-heading{
- display:flex;align-items:center;justify-content:space-between;gap:10px;
- padding:6px 4px 10px;font-size:14px;min-width:0;
+body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map #hgXmasMapTree{display:flex}
+#map .hgxm-mini-icon{font-size:43px;line-height:1;pointer-events:none;transform-origin:50% 90%}
+#map .hgxm-mini-spark{
+ position:absolute;top:4px;right:7px;font-size:20px;color:#d6a03d;
+ opacity:.65;text-shadow:0 0 6px #fff1bc;pointer-events:none;
 }
-body.hg-christmas #map .hgxm-logo{
- color:#14523b;font-size:21px;font-weight:900;letter-spacing:-.035em;
- display:inline-flex;align-items:center;gap:4px;min-width:0;white-space:nowrap;
+body.hg-christmas #map .hgxm-mini-lit{
+ box-shadow:0 0 0 2px rgba(240,207,122,.35),0 0 20px 5px rgba(255,207,104,.48);
 }
-body.hg-christmas #map .hgxm-logo strong{color:#249e72}
-body.hg-christmas #map .hgxm-logo small{
- color:#ab233c;font-weight:850;font-size:10px;letter-spacing:.17em;margin-left:7px;
+body.hg-christmas #map .hgxm-mini-lit .hgxm-mini-spark{
+ opacity:1;animation:hgxmMiniSpark 1.4s ease-in-out infinite;
 }
-body.hg-christmas #map .hgxm-tag{
- flex:0 0 auto;color:#ab2840;background:#ffedf0;border:1px solid #f4d0d6;
- border-radius:99px;padding:8px 11px;font-size:10px;font-weight:800;
+body.hg-christmas #map .hgxm-mini-lit .hgxm-mini-icon{
+ animation:hgxmMiniTree 2.6s ease-in-out infinite;
 }
-body.hg-christmas #map .hgxm-hero{
- --hgxm-gold:#ffd17d;
- position:relative;overflow:hidden;isolation:isolate;
- display:flex;align-items:center;min-height:226px;
- border:2px solid #ebc177;border-radius:27px;
- background:radial-gradient(circle at 83% 22%,#188e65 0%,transparent 42%),linear-gradient(122deg,#083e32,#075840 64%,#0b6448);
- box-shadow:0 12px 28px rgba(12,60,39,.20);
+body.hg-christmas #map #hgXmasMapTree:active{transform:scale(.94)}
+body.hg-christmas #map #hgXmasMapTree:focus-visible{
+ outline:3px solid #d49e30!important;outline-offset:3px!important;
 }
-body.hg-christmas #map .hgxm-hero:before{
- content:'';position:absolute;z-index:-1;inset:0;
- background:url('./assets/christmas-header-premium.svg') center top/100% auto no-repeat;
- opacity:.62;pointer-events:none;
+#map .hgxm-sr-only{
+ position:absolute!important;width:1px!important;height:1px!important;
+ overflow:hidden!important;clip:rect(0,0,0,0)!important;
+ clip-path:inset(50%)!important;white-space:nowrap!important;
 }
-body.hg-christmas #map .hgxm-hero:after{
- content:'';position:absolute;z-index:-1;left:-5%;right:-5%;height:41px;bottom:-29px;
- border-radius:50%;background:#edf9f3;transform:rotate(-1deg);pointer-events:none;
-}
-body.hg-christmas #map .hgxm-copy{
- position:relative;z-index:2;padding:26px clamp(17px,4vw,33px);
- width:min(72%,620px);
-}
-body.hg-christmas #map .hgxm-eyebrow{font-size:10px;color:#ffe4ac;letter-spacing:.14em;font-weight:900}
-body.hg-christmas #map .hgxm-copy h2{
- font-family:Georgia,'Times New Roman',serif;color:#fff6dd!important;
- font-size:clamp(24px,4.8vw,39px);line-height:1.12;margin:8px 0 8px;
- max-width:500px;letter-spacing:-.04em;text-shadow:0 2px 3px #083927;
-}
-body.hg-christmas #map .hgxm-copy p{
- color:#f0fff5;font-size:clamp(11px,2vw,14px);line-height:1.5;
- font-weight:550;margin:0 0 15px;max-width:410px;
-}
-body.hg-christmas #map .hgxm-actions{display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:4}
-body.hg-christmas #map .hgxm-action{
- display:inline-flex;align-items:center;justify-content:center;gap:5px;
- min-height:43px;padding:9px 12px;border-radius:14px;border:1px solid #e4fff0;
- background:linear-gradient(135deg,#fff,#edf9f2);color:#175e40;
- font-size:12px;font-weight:850;line-height:1.15;cursor:pointer;
- box-shadow:0 6px 13px rgba(0,22,11,.16);
- transition:transform .15s ease,filter .15s ease,box-shadow .15s ease;
- touch-action:manipulation;
-}
-body.hg-christmas #map .hgxm-action-red{
- color:#fff;background:linear-gradient(125deg,#da3952,#a31534);
- border-color:#f8d5b9;
-}
-body.hg-christmas #map .hgxm-action:hover{transform:translateY(-2px);filter:brightness(1.07)}
-body.hg-christmas #map .hgxm-action:active{transform:scale(.95);filter:brightness(1.08)}
-body.hg-christmas #map .hgxm-action:focus-visible,
-body.hg-christmas #map .hgxm-tree:focus-visible,
-body.hg-christmas #map .hgxm-map-link:focus-visible{
- outline:3px solid #f8d57b!important;outline-offset:3px!important;
-}
-body.hg-christmas #map .hgxm-tree{
- position:absolute;z-index:1;right:3%;bottom:15px;
- width:clamp(123px,22vw,205px);height:clamp(185px,26vw,227px);
- padding:0;border:0;background:transparent;overflow:visible;
- cursor:pointer;touch-action:manipulation;transform-origin:50% 90%;
- transition:filter .24s ease;
-}
-body.hg-christmas #map .hgxm-tree:hover{filter:drop-shadow(0 0 14px rgba(255,229,142,.22))}
-body.hg-christmas #map .hgxm-tree:active{transform:scale(.96) rotate(-2deg)}
-body.hg-christmas #map .hgxm-star{
- position:absolute;top:0;left:50%;transform:translateX(-50%);
- z-index:5;color:#ffdf7a;text-shadow:0 0 11px rgba(255,213,108,.75);
- font-size:36px;line-height:1;animation:hgxmStar 2.5s ease-in-out infinite;
-}
-body.hg-christmas #map .hgxm-tree-tier{
- position:absolute;left:50%;transform:translateX(-50%);
- width:0;height:0;border-left-style:solid;border-right-style:solid;
- border-bottom-style:solid;border-left-color:transparent;border-right-color:transparent;
- filter:drop-shadow(0 6px 3px rgba(3,34,19,.23));
-}
-body.hg-christmas #map .hgxm-tier-one{
- top:29px;border-left-width:39px;border-right-width:39px;border-bottom-width:72px;border-bottom-color:#2eb17d;z-index:3;
-}
-body.hg-christmas #map .hgxm-tier-two{
- top:65px;border-left-width:62px;border-right-width:62px;border-bottom-width:91px;border-bottom-color:#168c61;z-index:2;
-}
-body.hg-christmas #map .hgxm-tier-three{
- top:109px;border-left-width:78px;border-right-width:78px;border-bottom-width:97px;border-bottom-color:#116c4b;z-index:1;
-}
-body.hg-christmas #map .hgxm-tree-trunk{
- position:absolute;left:calc(50% - 10px);bottom:4px;width:20px;height:32px;
- background:#77513b;border-radius:4px;z-index:0;
-}
-body.hg-christmas #map .hgxm-tree-light{
- position:absolute;z-index:4;width:12px;height:12px;border-radius:50%;
- background:radial-gradient(circle at 29% 24%,#fff,#ffbc58 57%,#d67429);
- box-shadow:0 0 7px 2px #ffcf70,0 0 16px 3px rgba(249,217,131,.5);
- animation:hgxmTwinkle 2.7s ease-in-out infinite;
-}
-body.hg-christmas #map .hgxm-light-one{top:85px;left:34%;animation-delay:.3s}
-body.hg-christmas #map .hgxm-light-two{top:118px;left:60%;background:#e94d68;animation-delay:1s}
-body.hg-christmas #map .hgxm-light-three{top:145px;left:29%;animation-delay:1.7s}
-body.hg-christmas #map .hgxm-light-four{top:169px;left:65%;background:#f35672;animation-delay:2s}
-body.hg-christmas #map .hgxm-light-five{top:190px;left:45%;animation-delay:1.2s}
-body.hg-christmas #map .hgxm-tree:not(.hgxm-lit) .hgxm-tree-light{
- animation:none;opacity:.75;box-shadow:0 0 4px rgba(255,223,149,.3);
-}
-body.hg-christmas #map .hgxm-present{
- position:absolute;bottom:0;z-index:5;filter:drop-shadow(0 3px 4px #063f2a);
- font-size:28px;animation:hgxmGift 4s ease-in-out infinite;
-}
-body.hg-christmas #map .hgxm-present-red{left:3%;animation-delay:-1s}
-body.hg-christmas #map .hgxm-present-gold{right:3%;animation-delay:-2.5s}
-body.hg-christmas #map .hgxm-tree-caption{
- position:absolute;right:-10px;bottom:-20px;
- color:#e8fbe8;font-size:10px;font-weight:800;white-space:nowrap;
-}
-body.hg-christmas #map .hgxm-snow{position:absolute;pointer-events:none;color:#fff;opacity:.73;z-index:1}
-body.hg-christmas #map .hgxm-snow-one{top:33px;left:58%;font-size:20px;animation:hgxmSnow 6s linear infinite}
-body.hg-christmas #map .hgxm-snow-two{top:87px;left:9%;font-size:15px;animation:hgxmSnow 5s linear -2s infinite}
-body.hg-christmas #map .hgxm-snow-three{top:22px;right:8%;font-size:18px;animation:hgxmSnow 7s linear -4s infinite}
-body.hg-christmas #map .hgxm-map-label{
- display:flex;align-items:center;justify-content:space-between;
- gap:12px;padding:15px 6px 11px;color:#13492f;
-}
-body.hg-christmas #map .hgxm-map-label>span{display:grid;gap:3px;min-width:0}
-body.hg-christmas #map .hgxm-map-label b{font-size:19px;line-height:1.2}
-body.hg-christmas #map .hgxm-map-label small{font-size:11px;color:#5b7d69}
-body.hg-christmas #map .hgxm-map-link{
- background:#fff6e7;border:1px solid #eecb97;border-radius:12px;padding:10px 14px;
- color:#915321;font-weight:850;font-size:12px;min-height:43px;cursor:pointer;
- transition:transform .15s ease,background .15s ease;
-}
-body.hg-christmas #map .hgxm-map-link:active{transform:scale(.96)}
-body.hg-christmas #map .hgxm-status{
- margin:0;padding:0 6px;color:#527863;font-size:11px;line-height:1.45;
-}
-body.hg-christmas #map .hgxm-status:empty{display:none}
-body.hg-emerald.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map{
- --hgm-bg:#f7fbf8;--hgm-panel:#fff;--hgm-2:#eef8f2;
- --hgm-border:#dce8dd;--hgm-text:#17422f;--hgm-muted:#597366;
- --hgm-accent:#16865c;--hgm-accent-text:#fff;
- background:#f7fbf8!important;color:#17422f;
-}
-body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map #mapWorkspace{
- border:1px solid #dce9df!important;border-radius:24px!important;
- background:#fff!important;box-shadow:0 9px 30px rgba(15,71,43,.12)!important;
- overflow:hidden;
-}
-body.hg-emerald.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map .map-toolbar{
- background:linear-gradient(120deg,#fff,#f4faf5)!important;
- border-bottom:1px solid #d9e9df!important;
-}
-body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map .map-v2-banner{
- color:#a5223c!important;font-weight:900;
-}
-body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map .map-v2-tag{
- background:#fff0e5!important;border-color:#efd3b4!important;color:#a36728!important;
-}
-body.hg-emerald.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map :is(
- .map-address-wrap,.map-v2-input,.map-v2-panel,.map-v2-panel-content,.map-v2-panel-head,
- .map-v2-bottom,.map-results-panel,.map-results-head
-){background:#fff!important;color:#1c4b36!important;border-color:#d7e9dc!important}
-body.hg-emerald.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map :is(
- .map-bar-btn,.map-category,.map-v2-actions button,.map-v2-float button,.map-v2-tab
-){border:1px solid #d9e8dc!important;background:#f2faf5!important;color:#126443!important;
- box-shadow:0 5px 14px rgba(17,75,45,.07)!important}
-body.hg-emerald.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map :is(
- .map-category.active,.map-v2-tab.active,.map-v2-actions button.active,.map-bar-btn.primary
-){background:#176f51!important;color:#fff!important;border-color:#176f51!important}
-body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map #healthgoMap{
- background:#e5efe8!important;min-height:300px;
-}
-body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map .map-v2-bottom{
- background:rgba(255,255,255,.97)!important;border-color:#dbe9dd!important;
- box-shadow:0 7px 19px rgba(8,56,32,.14)!important;
-}
-body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map .map-v2-float button{
- border-radius:16px!important;
-}
-body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map #hgNavigationQuick .hgnu-top{
- border-color:#cba367!important;background:linear-gradient(120deg,#0b5b3e,#0b7751)!important;
-}
-body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map :is(.map-category,.map-v2-actions button,.map-v2-tab){
- transition:transform .16s ease,background .16s ease,box-shadow .16s ease;
-}
-body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map :is(.map-category,.map-v2-actions button,.map-v2-tab):active{
- transform:scale(.96);
-}
-/* The mobile map used to be a fixed-height overflow-hidden viewport.
-   Seasonal intro needs normal page scrolling with a usable real map below. */
 @media(max-width:900px){
+ /* Restore the map's original viewport-sized layout on iPhone/iPad. */
  body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map.page.active{
-  height:auto!important;min-height:0!important;max-width:100%!important;
-  overflow:visible!important;padding:0 9px 18px;
+  height:calc(100dvh - 128px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+  min-height:410px!important;max-width:none!important;
+  overflow:hidden!important;padding:0!important;
  }
  body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map #mapWorkspace{
-  height:clamp(440px,69dvh,700px)!important;min-height:440px!important;
-  margin:0!important;border-radius:20px!important;max-width:100%;
+  width:100%!important;height:100%!important;min-height:0!important;
+  max-width:100%!important;margin:0!important;padding:0!important;
+  border-radius:0!important;overflow:hidden!important;
  }
- body.hg-christmas:not(.hg-navigation-active):not(.hg-route-planner-open) #map #hgNavigationQuick{
-  max-width:100%;margin:7px 0 14px;
+ body.hg-christmas #map #hgXmasMapTree{
+  right:11px;bottom:160px;width:62px;height:68px;border-radius:19px;
  }
- body.hg-christmas #map .hgxm-hero{min-height:208px;border-radius:22px}
- body.hg-christmas #map .hgxm-copy{padding:19px 14px;width:72%}
- body.hg-christmas #map .hgxm-copy h2{font-size:clamp(22px,5vw,32px)}
- body.hg-christmas #map .hgxm-actions{gap:6px}
- body.hg-christmas #map .hgxm-action{min-height:42px;font-size:11px;padding:9px 10px}
- body.hg-christmas #map .hgxm-tree{right:1%;bottom:20px;transform:scale(.81);transform-origin:right bottom}
- body.hg-christmas #map .hgxm-tree:active{transform:scale(.76) rotate(-2deg)}
- body.hg-christmas #map .hgxm-tree-caption{display:none}
+ body.hg-christmas #map .hgxm-mini-icon{font-size:38px}
 }
-@media(max-width:460px){
- body.hg-christmas #map .hgxm-heading{padding:5px 2px 9px}
- body.hg-christmas #map .hgxm-logo{font-size:18px}
- body.hg-christmas #map .hgxm-tag{font-size:9px;padding:7px 9px}
- body.hg-christmas #map .hgxm-hero{min-height:215px;border-radius:19px}
- body.hg-christmas #map .hgxm-copy{padding:18px 11px 16px;width:76%}
- body.hg-christmas #map .hgxm-eyebrow{font-size:8px;letter-spacing:.02em}
- body.hg-christmas #map .hgxm-copy h2{font-size:21px;line-height:1.13}
- body.hg-christmas #map .hgxm-copy p{font-size:10px;line-height:1.45;margin-bottom:10px}
- body.hg-christmas #map .hgxm-action{min-height:39px;font-size:10px;padding:8px 9px}
- body.hg-christmas #map .hgxm-tree{right:-11px;bottom:16px;transform:scale(.62);transform-origin:right bottom}
- body.hg-christmas #map .hgxm-tree:active{transform:scale(.59) rotate(-2deg)}
- body.hg-christmas #map .hgxm-map-label b{font-size:17px}
- body.hg-christmas #map .hgxm-map-link{font-size:11px;padding:8px 11px}
+@media(max-width:390px){
+ body.hg-christmas #map #hgXmasMapTree{right:8px;bottom:157px;width:58px;height:64px}
+ body.hg-christmas #map .hgxm-mini-icon{font-size:36px}
 }
-@media(max-width:365px){
- body.hg-christmas #map .hgxm-copy{width:82%}
- body.hg-christmas #map .hgxm-copy h2{font-size:19px}
- body.hg-christmas #map .hgxm-tree{right:-27px;transform:scale(.49)}
- body.hg-christmas #map .hgxm-tree:active{transform:scale(.47)}
+@keyframes hgxmMiniSpark{
+ 0%,100%{opacity:.55;transform:scale(.86)}
+ 50%{opacity:1;transform:scale(1.2)}
 }
+@keyframes hgxmMiniTree{
+ 0%,100%{transform:rotate(0deg)}
+ 50%{transform:rotate(3deg)}
+}
+@media(prefers-reduced-motion:reduce){
+ body.hg-christmas #map .hgxm-mini-icon,
+ body.hg-christmas #map .hgxm-mini-spark,
+ body.hg-christmas #map #hgXmasMapTree,
+ body.hg-christmas #mobileMoreSheet .hg-more-action{
+  animation:none!important;transition:none!important;
+ }
+}
+
 /* Screenshot "Więcej": holiday pine, gold borders, gentle touch feedback,
    without changing what a menu item does. */
 body.hg-christmas #mobileMoreSheet{
@@ -297,36 +120,9 @@ body.hg-christmas #mobileMoreSheet .hg-more-close{color:#fff!important}
 body.hg-christmas #mobileNav button:active{
  transform:scale(.94);transition:transform .12s ease;
 }
-/* Other Christmas cards get subtle touch animations, without triggering
-   platform animations while live map navigation is active. */
+
+/* Subtle tap feedback in the rest of the Christmas UI. */
+body.hg-christmas #mobileNav button:active{transform:scale(.94);transition:transform .12s ease}
 body.hg-christmas:not(.hg-navigation-active) main.main > .page :is(.hgx-shortcut,.hgs-quick-link,.hgc-tile):active{
  transform:scale(.97)!important;
-}
-@keyframes hgxmStar{
- 0%,100%{filter:drop-shadow(0 0 4px #ffcc62);opacity:.88}
- 50%{filter:drop-shadow(0 0 11px #ffeaa3);opacity:1}
-}
-@keyframes hgxmTwinkle{
- 0%,100%{opacity:.55;filter:brightness(.85);transform:scale(.86)}
- 45%{opacity:1;filter:brightness(1.5);transform:scale(1.14)}
-}
-@keyframes hgxmGift{
- 0%,100%{transform:translateY(0)}
- 50%{transform:translateY(-4px)}
-}
-@keyframes hgxmSnow{
- 0%{transform:translateY(-6px) rotate(0);opacity:0}
- 25%{opacity:.7}
- 80%{opacity:.6}
- 100%{transform:translateY(29px) rotate(32deg);opacity:0}
-}
-@media(prefers-reduced-motion:reduce){
- body.hg-christmas #map .hgxm-hero *,
- body.hg-christmas #map .hgxm-tree *,
- body.hg-christmas #map .hgxm-action,
- body.hg-christmas #map .hgxm-map-link,
- body.hg-christmas #mobileMoreSheet .hg-more-action,
- body.hg-christmas #mobileNav button{
-  animation:none!important;transition:none!important;transform:none!important;
- }
 }
