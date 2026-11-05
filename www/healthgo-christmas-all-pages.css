@@ -1,0 +1,305 @@
+/* Christmas 2026: premium festive visual system across every HealthGo page.
+   Keep current feature renderers, health values, AI logic, maps, and privacy intact.
+   Christmas decorations disable completely when the user turns the season off. */
+.hgx-holiday-page{display:none}
+body.hg-christmas main.main > .page:not(#start){
+ --hgx-cream:#fff8e7;--hgx-red:#b31b31;--hgx-green:#0b6446;
+ --hgx-border:#e3e9df;--hgx-muted:#587367;min-width:0;
+}
+body.hg-christmas main.main > .page:not(#start) > .hgx-holiday-page{
+ display:grid;gap:14px;min-width:0;max-width:960px;margin:0 auto 22px;
+ color:#173b2e;isolation:isolate;
+}
+body.hg-christmas .hgx-holiday-page *{box-sizing:border-box}
+body.hg-christmas .hgx-holiday-head{
+ position:relative;isolation:isolate;min-height:172px;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:6px;overflow:hidden;text-align:center;padding:16px 21px 8px;
+ background-image:url('./assets/christmas-header-premium.svg');
+ background-size:100% auto;background-position:center top;background-repeat:no-repeat;
+}
+body.hg-christmas .hgx-holiday-head>*{position:relative;z-index:1}
+body.hg-christmas .hgx-holiday-logo{
+ display:flex;align-items:center;justify-content:center;gap:7px;
+ color:#104c38;font-size:clamp(24px,5vw,36px);font-weight:900;letter-spacing:-.045em;
+}
+body.hg-christmas .hgx-holiday-logo strong{color:#31a47a}
+body.hg-christmas .hgx-holiday-logo>span:first-child{font-size:29px;position:relative;line-height:1}
+body.hg-christmas .hgx-holiday-logo>span:first-child:before{
+ content:'🎅';position:absolute;top:-13px;left:-10px;font-size:17px;transform:rotate(-17deg);
+}
+body.hg-christmas .hgx-holiday-greeting{
+ color:#ae1930!important;font-family:Georgia,'Times New Roman',serif;
+ font-size:clamp(29px,6.4vw,48px)!important;letter-spacing:-.045em!important;
+ line-height:1.1!important;margin:8px 0 1px!important;font-weight:750!important;
+ text-shadow:0 1px #fff5f2;
+}
+body.hg-christmas .hgx-holiday-subtitle{
+ font-size:clamp(12px,2.2vw,18px);font-weight:550;color:#3c8066!important;
+ margin:0;line-height:1.5;
+}
+body.hg-christmas .hgx-gold-divider{color:#b78535;letter-spacing:.2em;font-size:17px}
+body.hg-christmas .hgx-holiday-hero{
+ min-height:207px;display:flex;align-items:center;position:relative;
+ border:2px solid #e8bd64;border-radius:25px;overflow:hidden;isolation:isolate;
+ background:#075239 url('./assets/christmas-hero-premium.svg') center center/cover no-repeat;
+ box-shadow:0 13px 31px rgba(12,76,51,.19);color:#fdfcf2;
+}
+body.hg-christmas .hgx-holiday-hero-copy{
+ width:min(64%,550px);min-width:0;padding:20px clamp(15px,4vw,34px);
+ display:flex;flex-direction:column;align-items:flex-start;gap:8px;
+ z-index:1;position:relative;
+}
+body.hg-christmas .hgx-holiday-kicker{
+ color:#ffe6a2;font-weight:850;letter-spacing:.12em;font-size:10px;
+}
+body.hg-christmas .hgx-holiday-title{
+ color:#fff4cd!important;font-family:Georgia,'Times New Roman',serif;
+ font-size:clamp(22px,3.7vw,35px)!important;line-height:1.14;
+ margin:0!important;letter-spacing:-.025em;text-shadow:0 2px 3px rgba(0,25,19,.33);
+ text-wrap:balance;
+}
+body.hg-christmas .hgx-holiday-message{
+ color:#fff!important;font-size:clamp(11px,1.9vw,15px);font-weight:550;
+ line-height:1.5;margin:0;max-width:430px;text-shadow:0 1px 3px #084a36;
+}
+body.hg-christmas .hgx-holiday-hero-tag{
+ max-width:100%;background:linear-gradient(110deg,#c62941,#a31931);
+ border:1px solid #ffdf92;box-shadow:0 4px 0 #7d1224;
+ border-radius:99px;padding:9px 14px;color:#fff;font-size:11px;font-weight:800;
+ overflow-wrap:anywhere;line-height:1.4;
+}
+body.hg-christmas .hgx-holiday-ribbon{
+ position:absolute;top:-9px;left:3px;z-index:2;font-size:45px;transform:rotate(-14deg);
+ filter:drop-shadow(0 3px 5px rgba(0,20,10,.3));pointer-events:none;
+}
+body.hg-christmas .hgx-holiday-shortcuts{
+ display:grid;gap:12px;padding:0 1px;min-width:0;
+}
+body.hg-christmas .hgx-shortcuts-title{
+ margin:3px 0 0!important;font-size:clamp(19px,3.5vw,25px)!important;
+ color:#105036!important;font-weight:850;line-height:1.2;
+}
+body.hg-christmas .hgx-shortcuts-row{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;
+}
+body.hg-christmas .hgx-shortcut{
+ min-height:89px;display:flex;align-items:center;justify-content:center;
+ flex-direction:column;gap:7px;position:relative;overflow:hidden;
+ padding:12px 6px;border:1px solid rgba(255,255,255,.86);
+ border-radius:20px;color:#fff;background:linear-gradient(145deg,#1d9a68,#0b6446);
+ box-shadow:0 9px 20px rgba(25,71,44,.15);
+ cursor:pointer;font-size:clamp(12px,2vw,17px);font-weight:800;
+ touch-action:manipulation;line-height:1.25;
+}
+body.hg-christmas .hgx-shortcut:nth-child(2){
+ background:linear-gradient(145deg,#ef4357,#ae1833);color:#fff;
+}
+body.hg-christmas .hgx-shortcut:nth-child(3){
+ background:linear-gradient(145deg,#fffdf8,#f2f5ee);color:#12523b;
+ border-color:#dfe9dc;
+}
+body.hg-christmas .hgx-shortcut:after{
+ content:'';position:absolute;left:-10px;right:-10px;bottom:-23px;height:38px;
+ background:radial-gradient(ellipse at 25% 0%,#fff 0 37%,transparent 38%),radial-gradient(ellipse at 74% 3%,#fff 0 39%,transparent 40%);
+ opacity:.7;pointer-events:none;
+}
+body.hg-christmas .hgx-shortcut-icon{font-size:27px;line-height:1}
+body.hg-christmas .hgx-shortcut-caption{position:relative;z-index:1}
+body.hg-christmas .hgx-shortcut:hover{filter:brightness(1.055);transform:translateY(-1px)}
+body.hg-christmas .hgx-shortcut:focus-visible{
+ outline:3px solid #f0ad3a!important;outline-offset:3px;
+}
+body.hg-christmas .mobile-nav button.active{
+ background:linear-gradient(145deg,#fff4f4,#ffe0e5)!important;
+ color:#a91b34!important;position:relative;
+}
+body.hg-christmas .mobile-nav button:not([data-mobile-page="start"]).active:after{
+ content:'❄';position:absolute;right:6px;top:2px;font-size:10px;
+ color:#c93548;pointer-events:none;
+}
+body.hg-christmas .sidebar .nav button.active{
+ background:linear-gradient(100deg,#fff0ef,#eaf8ef)!important;
+ color:#9f2038!important;border-left:3px solid #b62541;
+}
+body.hg-christmas main.main > .page:not(#start) > .hero{
+ background:linear-gradient(125deg,#fffaf5,#fff 65%,#effaf3)!important;
+ border:1px solid #e5d8cf!important;box-shadow:0 8px 20px rgba(35,75,48,.065)!important;
+ border-radius:21px!important;color:#173b2e!important;position:relative;
+}
+body.hg-christmas main.main > .page:not(#start) > .hero:before{
+ content:'❄';position:absolute;top:9px;right:16px;font-size:27px;color:#d2a656;
+ opacity:.72;pointer-events:none;
+}
+body.hg-christmas main.main > .page:not(#start) > .hero h2{
+ color:#a52236!important;
+}
+body.hg-christmas main.main > .page:not(#start) > .hero p{
+ color:#526f60!important;
+}
+/* Family, games, challenges, account, and activity cards keep their data and handlers. */
+body.hg-christmas main.main > .page:not(#start) :is(
+ .hg2-card,.hg2-family-member-card,.hg-family-home,.hg-family-card,
+ .challenge-panel,.level-panel,.pack-summary,.badge-panel,.activity-ring-card,
+ .activity-data-card,.card,.hgp-stat,.hg4-panel,.hg4-stat,.hg4-settings-card,
+ .settings-content,.settings-section,.plan-board,.plan-editor,.hgp-fullcalendar-section
+){
+ border-color:#dce8df!important;
+ background:linear-gradient(145deg,#fff,#f8fcf8)!important;
+ box-shadow:0 8px 23px rgba(25,67,46,.075)!important;
+ border-radius:20px;
+ color:#24372c;
+}
+body.hg-christmas main.main > .page:not(#start) :is(
+ .hg2-card,.challenge-panel,.level-panel,.badge-panel,.activity-data-card,
+ .hgp-stat,.hg4-panel,.hg-family-card,.settings-section,.hgp-fullcalendar-section
+) :is(h2,h3,h4,.hg4-title,.hgp-stat-value){
+ color:#164b36!important;
+}
+body.hg-christmas main.main > .page:not(#start) :is(
+ .hg4-description,.hg4-stat small,.hg4-stat span,.hg4-panel p,.hg-family-muted,
+ .hg2-meta,.hgp-stat-label,.hgp-stat-note
+){color:#5b7368!important}
+body.hg-christmas main.main > .page:not(#start) .hg4-panel{
+ --hg4-accent:#1d8860;--hg4-accent-dark:#e4f6eb;color:#243f32!important;
+}
+body.hg-christmas main.main > .page:not(#start) :is(
+ .hg4-stat,.hg4-mission,.hg4-event,.hg4-device-row,.hg4-journey-step,.hg4-season-card
+){background:#f4fbf6!important;border-color:#d6eadf!important;color:#1f513b!important}
+body.hg-christmas main.main > .page:not(#start) .hg4-button.subtle{
+ background:#edf8f1!important;color:#176443!important;border-color:#c7e4d3!important;
+}
+body.hg-christmas #plan{
+ --hgp-bg:#f7faf8!important;--hgp-panel:#fff!important;--hgp-panel-2:#f3faf6!important;
+ --hgp-soft:#eef7f1!important;--hgp-text:#173c2b!important;
+ --hgp-muted:#61776c!important;--hgp-border:#d8e7de!important;
+ --hgp-accent:#16875c!important;--hgp-on-accent:#fff!important;color:#173b2e!important;
+}
+body.hg-emerald.hg-christmas #plan .plan-board-head{
+ background:linear-gradient(130deg,#fff,#f0faf3)!important;
+ color:#173b2e!important;
+}
+body.hg-christmas #plan .hgp-stat-value{color:#11513a!important}
+body.hg-christmas #plan .hgp-stat-value.highlight{color:#b3263b!important}
+body.hg-emerald.hg-christmas #ai{
+ --hga-bg:#f8fcfa!important;--hga-panel:#fff!important;--hga-panel-2:#f1f8f3!important;
+ --hga-ink:#172d24!important;--hga-muted:#60796a!important;
+ --hga-accent:#188b62!important;--hga-border:#dae9df!important;
+ --hga-soft:#e9f7ee!important;--hga-shadow:0 12px 28px rgba(21,78,47,.09)!important;
+ --emerald-accent-ink:#fff!important;
+ background:transparent!important;color:#172d24!important;
+}
+body.hg-emerald.hg-christmas #ai .ai-workspace{
+ background:#fff!important;border:1px solid #d9e9df!important;
+ box-shadow:0 12px 30px rgba(26,78,47,.1)!important;
+ height:min(710px,76dvh);max-height:none!important;min-height:485px;
+}
+body.hg-emerald.hg-christmas #ai .ai-chat-top{
+ background:linear-gradient(115deg,#fff6f1,#fff 60%,#eef9f2)!important;
+ border-bottom-color:#e9dcd4!important;
+}
+body.hg-christmas #ai .hga-chat-avatar{box-shadow:0 4px 15px rgba(163,37,50,.15)}
+body.hg-christmas #ai .hga-chat-brand-copy b{color:#8e2135!important}
+body.hg-christmas #ai .ai-msg.user .ai-bubble{background:#147c58!important;color:#fff!important}
+body.hg-christmas #ai .ai-welcome-mark{
+ background:linear-gradient(135deg,#f4e6dc,#ecf9ef)!important;color:#b32740!important;
+}
+body.hg-christmas #map .map-workspace{
+ border-radius:22px;border:1px solid #d7e9df!important;overflow:hidden;
+ box-shadow:0 10px 24px rgba(24,72,45,.08);
+}
+body.hg-christmas #map :is(.map-v2-banner,.map-toolbar){
+ background:#f2faf5!important;color:#15523a!important;
+}
+body.hg-christmas:not(.hg-navigation-active) #map #hgNavigationQuick .hgnu-top{
+ background:linear-gradient(115deg,#135b42,#0b744b)!important;
+ border-color:#d5b26b!important;
+}
+body.hg-navigation-active .hgx-holiday-page{display:none!important}
+/* Bring HealthGo Point and Treasure from dark internal surfaces into Start's white cards. */
+body.hg-christmas #points :is(#hgPointCenter),
+body.hg-christmas #explore :is(#hgTreasureCenter){
+ --hgbg:#f8fbf9;--hgborder:#dfebe3;--hgmint:#18845e;
+ color:#244632!important;
+}
+body.hg-christmas :is(#points,#explore) :is(.hpt-hero,.hpt-explore-hero){
+ background:linear-gradient(120deg,#0d6145,#0a3b2b)!important;
+ border:1px solid #e7c17e!important;box-shadow:0 10px 24px rgba(22,80,51,.14)!important;
+}
+body.hg-christmas :is(#points,#explore) :is(
+ .hpt-item,.hpt-gift,.hpt-wait,.hpt-empty,.hpt-treasure-empty,
+ .hpt-event,.hpt-site,.hpt-disclaimer,.hpt-notice
+){
+ background:linear-gradient(135deg,#fff,#f5faf6)!important;
+ border:1px solid #d9e7dd!important;
+ color:#224932!important;box-shadow:0 6px 18px rgba(30,80,50,.07)!important;
+}
+body.hg-christmas :is(#points,#explore) :is(
+ .hpt-item b,.hpt-item strong,.hpt-event b,.hpt-site strong,.hpt-site small,
+ .hpt-empty h3,.hpt-wait b,#hgPointCenter h3
+){color:#155a3e!important}
+body.hg-christmas :is(#points,#explore) :is(
+ .hpt-item p,.hpt-site p,.hpt-gift p,.hpt-empty,.hpt-treasure-empty p,
+ .hpt-disclaimer,.hpt-event
+){color:#5b7668!important}
+body.hg-christmas :is(#points,#explore) .hpt-tabs button{
+ background:#fff!important;border:1px solid #cfe5d8!important;color:#1f6548!important;
+}
+body.hg-christmas :is(#points,#explore) .hpt-tabs button.active{
+ background:#ffe9df!important;border-color:#e4b8b5!important;color:#af243b!important;
+}
+body.hg-christmas :is(#points,#explore) .hpt-mini span{
+ background:#fff4e8!important;border-color:#efdbbf!important;color:#81572d!important;
+}
+body.hg-christmas :is(#points,#explore) .hpt-start-links>button{
+ background:linear-gradient(145deg,#fff,#edf8f1)!important;
+ border-color:#dbebe1!important;color:#224f39!important;
+}
+body.hg-christmas :is(#points,#explore) .hpt-start-links :is(strong,small,b){color:#256a4d!important}
+body.hg-christmas :is(#points,#explore) .hpt-gift :is(label,select){
+ color:#195239!important;background:#fff!important;border-color:#d2e5d9!important;
+}
+body.hg-christmas :is(#points,#explore) .hpt-treasure-dialog{
+ background:#fff!important;color:#203a2b!important;border-color:#e3c782!important;
+}
+body.hg-christmas :is(#points,#explore) .hpt-treasure-dialog :is(h2,p,li){color:#234a37!important}
+body.hg-christmas #family .hg2-family-shell .hg2-card,
+body.hg-christmas #settings .hg-family-home{border:1px solid #d9e9df!important}
+body.hg-christmas #settings .settings-menu{
+ background:linear-gradient(135deg,#fff,#f5faf6)!important;
+ border:1px solid #dfece2!important;border-radius:18px;
+}
+/* Optional seasonal decorations on native navigation without interfering with touch. */
+@media(max-width:900px){
+ body.hg-christmas main.main > .page:not(#start) > .hgx-holiday-page{margin-bottom:16px;gap:12px}
+ body.hg-christmas .hgx-holiday-head{min-height:152px}
+ body.hg-christmas .hgx-holiday-hero{min-height:190px}
+ body.hg-christmas .hgx-holiday-shortcuts{gap:9px}
+ body.hg-christmas .hgx-shortcut{min-height:90px}
+}
+@media(max-width:520px){
+ body.hg-christmas .hgx-holiday-head{min-height:137px;padding:9px 3px 3px}
+ body.hg-christmas .hgx-holiday-logo{font-size:25px}
+ body.hg-christmas .hgx-holiday-greeting{font-size:clamp(27px,7.5vw,39px)!important;margin:6px 0 0!important}
+ body.hg-christmas .hgx-holiday-subtitle{font-size:12px}
+ body.hg-christmas .hgx-holiday-hero{min-height:180px;border-radius:20px;background-position:57% center}
+ body.hg-christmas .hgx-holiday-hero-copy{width:69%;padding:13px}
+ body.hg-christmas .hgx-holiday-kicker{font-size:8px;letter-spacing:.04em}
+ body.hg-christmas .hgx-holiday-title{font-size:clamp(18px,5vw,24px)!important}
+ body.hg-christmas .hgx-holiday-message{font-size:11px;line-height:1.3}
+ body.hg-christmas .hgx-holiday-hero-tag{font-size:9px;padding:7px 10px}
+ body.hg-christmas .hgx-holiday-ribbon{font-size:34px}
+ body.hg-christmas .hgx-shortcuts-row{gap:7px}
+ body.hg-christmas .hgx-shortcut{min-height:85px;border-radius:17px;padding:7px 4px;font-size:11px}
+ body.hg-christmas .hgx-shortcut-icon{font-size:24px}
+ body.hg-christmas .hgx-shortcut-caption{overflow-wrap:anywhere}
+ body.hg-christmas #ai .ai-workspace{min-height:480px;height:72dvh;max-height:none!important}
+}
+@media(max-width:360px){
+ body.hg-christmas .hgx-holiday-hero-copy{width:73%}
+ body.hg-christmas .hgx-holiday-title{font-size:17px!important}
+ body.hg-christmas .hgx-shortcut{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.hg-christmas .hgx-shortcut{transition:none!important;transform:none!important}
+}
