@@ -90,7 +90,7 @@ test('deployment stamps real commit into HTML and publishes matching version',()
  assert.match(workflow,/test -s www\/healthgo-ai-bundle\.js/);
  assert.match(suite,/Sprawdź i pobierz aktualizację/);
  assert.match(sw,/SKIP_WAITING/);
- assert.match(sw,/healthgo-pwa-v62-christmas-premium-20261105/);
+ assert.match(sw,/healthgo-pwa-v63-christmas-all-pages-20261105/);
 });
 
 test('the installed PWA never interrupts AI downloads, GPS driving or a hidden tab',async()=>{
