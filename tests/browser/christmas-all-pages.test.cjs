@@ -47,7 +47,11 @@ for(const width of [390,768,1440]){
    await page.waitForFunction(id=>!!document.querySelector('#'+id+' > .hgx-holiday-page'),id);
    assert.match(await page.locator('#'+id+' .hgx-holiday-greeting').innerText(),/Wesołych Świąt!/);
    assert.equal(await page.locator('#'+id+' .hgx-shortcut').count(),3);
-   if(id==='ai'&&width<=900){
+   if(id==='map'){
+    assert.ok(await page.locator('#map #hgXmasMapIntro .hgxm-hero').isVisible(),'Christmas Map has its own interactive premium hero');
+    assert.equal(await page.locator('#map .hgxm-action').count(),3);
+    assert.equal(await page.locator('#map .hgx-holiday-page').isVisible(),false,'Generic hero must not duplicate Map');
+   }else if(id==='ai'&&width<=900){
     // Compact version on iPhone/tablet: full banner must not push the composer under the bottom dock.
     assert.ok(await page.locator('#ai .ai-chat-top').isVisible(),'AI Christmas chat header missing');
     assert.equal(await page.locator('#ai .hgx-holiday-page').isVisible(),false);
