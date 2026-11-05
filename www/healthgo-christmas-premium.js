@@ -125,6 +125,9 @@
    action.innerHTML=visible?'Ukryj dodatkowe statystyki <span aria-hidden="true">⌃</span>':'Pokaż więcej statystyk, pogodę i wyzwania <span aria-hidden="true">⌄</span>';
   }
  });
+ el('hgsGoalForm')?.addEventListener('submit',()=>queueMicrotask(render));
+ el('hgsGoalClear')?.addEventListener('click',()=>queueMicrotask(render));
+ window.addEventListener('storage',event=>{if(event.key?.startsWith('healthgo_start_steps_goal_v1_'))render();});
  if(typeof Services.subscribe==='function')Services.subscribe(render);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});
  render();
