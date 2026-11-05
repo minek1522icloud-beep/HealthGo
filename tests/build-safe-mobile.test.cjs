@@ -19,7 +19,7 @@ function generate(inputHtml) {
     fs.writeFileSync(source, inputHtml, 'utf8');
     const command = spawnSync('python3', [builder, source, target], {
       encoding: 'utf8',
-      timeout: 10000
+      timeout: process.platform === 'win32' ? 45000 : 10000
     });
     return {
       status: command.status,

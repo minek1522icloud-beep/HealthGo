@@ -41,6 +41,14 @@ for(const width of [360,390,768,1440]){
   await page.waitForTimeout(110);
   // Decline first-login map location permissions before interacting with START controls.
   await page.evaluate(()=>window.HealthGoMapV2?.chooseWelcomeLocation(false));
+  const christmasOn=await page.evaluate(()=>document.body.classList.contains('hg-christmas'));
+  if(christmasOn){
+   assert.equal(await page.locator('.hgc-overview .hgc-tile').count(),4);
+   assert.match(await page.locator('.hgc-heading h1').innerText(),/Wesołych Świąt/);
+   assert.equal(await page.locator('#hgcHeart').innerText(),'Brak danych');
+   // Existing advanced readings and the step-goal editor remain available.
+   await page.locator('[data-hgc-toggle="details"]').click();
+  }
   assert.equal(await page.locator('#hgStartV3 .hgs-metric').count(),3);
   assert.equal(await page.locator('#hgsBars .hgs-bar-col').count(),7);
   assert.match(await page.locator('#hgsSteps').innerText(),/Brak danych/);
@@ -61,6 +69,7 @@ for(const width of [360,390,768,1440]){
   });
   await page.waitForFunction(()=>document.getElementById('hgsSteps')?.textContent.includes('7'));
   assert.match(await page.locator('#hgsSteps').innerText(),/7[\s\u00a0]?235/);
+  if(christmasOn)assert.match((await page.locator('#hgcSteps').innerText()).replace(/\s/g,''),/7235/);
   assert.match(await page.locator('#hgsDistance').innerText(),/5,2/);
   await page.locator('#hgsChartRange').selectOption('month');
   assert.equal(await page.locator('#hgsBars .hgs-bar-col').count(),4);

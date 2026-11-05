@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="240" viewBox="0 0 1000 240" aria-hidden="true">
+<defs>
+ <linearGradient id="needle"><stop stop-color="#063f2f"/><stop offset=".5" stop-color="#218963"/><stop offset="1" stop-color="#0b523d"/></linearGradient>
+ <radialGradient id="light"><stop stop-color="#fff5b3"/><stop offset=".24" stop-color="#ffbc4e" stop-opacity=".8"/><stop offset="1" stop-color="#ffbc4e" stop-opacity="0"/></radialGradient>
+ <linearGradient id="ball" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fd8d8d"/><stop offset=".55" stop-color="#c42037"/><stop offset="1" stop-color="#78162b"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff4bc"/><stop offset=".4" stop-color="#f4bd58"/><stop offset="1" stop-color="#bb7f27"/></linearGradient>
+ <g id="branch" stroke-linecap="round"><path d="M0 0 Q92 43 206 98" fill="none" stroke="#704b29" stroke-width="8"/>
+ <g stroke="url(#needle)" stroke-width="6"><path d="M16 9 2 47M16 9 56 -9M36 17 21 64M36 17 80 -8M56 29 45 78M56 29 104 -2M78 40 68 86M78 40 124 11M97 52 91 97M97 52 151 25M121 61 109 106M121 61 170 36M148 74 132 118M148 74 185 48M175 87 155 121M175 87 210 73"/></g>
+ <g fill="#d11d36" stroke="#971e32" stroke-width="2"><circle cx="52" cy="63" r="10"/><circle cx="65" cy="64" r="10"/><circle cx="57" cy="77" r="10"/></g>
+ <g><circle cx="40" cy="18" r="17" fill="url(#light)"/><circle cx="111" cy="56" r="15" fill="url(#light)"/><circle cx="176" cy="88" r="15" fill="url(#light)"/><circle cx="40" cy="18" r="4" fill="#fff9c9"/><circle cx="111" cy="56" r="4" fill="#fff9c9"/><circle cx="176" cy="88" r="4" fill="#fff9c9"/></g>
+ </g>
+</defs>
+<g transform="translate(-7 -11) scale(1.14)"><use href="#branch"/><use href="#branch" transform="rotate(32 0 0) scale(.7)"/></g>
+<g transform="translate(1006 -10) scale(-1.12 1.12)"><use href="#branch"/><use href="#branch" transform="rotate(35 0 0) scale(.65)"/></g>
+<path d="M922 9v60M956 30v70" stroke="#a17f50" stroke-width="3"/>
+<circle cx="922" cy="94" r="26" fill="url(#ball)" stroke="#f8d28c" stroke-width="2"/>
+<path d="M922 76v36m-18-18h36m-30-14 24 27m0-27-24 27" stroke="#fff3df" stroke-width="2" opacity=".8"/>
+<circle cx="956" cy="111" r="21" fill="url(#gold)" stroke="#fff0c0" stroke-width="2"/>
+<path d="M917 52q-33-21-20-34 16-4 24 34m0 0q32-40 46-18-2 20-46 18" fill="none" stroke="#f1be56" stroke-width="9" stroke-linecap="round"/>
+<g fill="none" stroke="#e0b36b" stroke-width="3" stroke-linecap="round" opacity=".85">
+ <path d="M277 70v33m-17-17h34m-26-13 20 26m0-26-20 26"/>
+ <path d="M733 150v30m-16-15h32m-24-12 18 25m0-25-18 25"/>
+</g>
+</svg>
