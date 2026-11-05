@@ -1,0 +1,34 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
+const read=name=>fs.readFileSync(path.join(__dirname,'..','www',name),'utf8');
+test('Christmas map composes on top of real map without replacing OSM/navigation',()=>{
+ const html=read('index.html'),script=read('healthgo-christmas-map-interactive.js');
+ const css=read('healthgo-christmas-map-interactive.css');
+ assert.match(html,/id="healthgoMap"/);
+ assert.match(html,/id="mapAddressInput"/);
+ assert.match(html,/onclick="useMyLocation\(\)"/);
+ assert.match(html,/onclick="HealthGoMapV2\.toggle\('route'\)"/);
+ assert.match(html,/healthgo-christmas-map-interactive\.css\?v=1/);
+ assert.match(html,/healthgo-christmas-map-interactive\.js\?v=1/);
+ assert.ok(html.indexOf('healthgo-christmas-map-interactive.css')>html.indexOf('healthgo-christmas-all-pages.css'));
+ assert.ok(html.indexOf('healthgo-christmas-map-interactive.js')>html.indexOf('healthgo-christmas-all-pages.js'));
+ for(const action of ['locate','search','route','tree','explore'])assert.ok(script.includes('data-hgxm-action="'+action+'"'));
+ assert.match(script,/existing\.click\(\)/,'Location should reuse existing consent-aware control');
+ assert.match(script,/HealthGoMapV2\.toggle\('route'\)/,'Route planner should use real map engine');
+ assert.match(script,/search\.focus\(\{preventScroll:true\}\)/);
+ assert.match(script,/aria-pressed/);
+ assert.match(css,/\.hgxm-tree-light/);
+ assert.match(css,/hgxmTwinkle/);
+ assert.match(css,/hgxmSnow/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(css,/body\.hg-christmas/);
+ assert.match(css,/hg-navigation-active/);
+ assert.match(css,/hg-route-planner-open/);
+ assert.match(css,/#mobileMoreSheet/);
+ assert.match(read('service-worker.js'),/healthgo-pwa-v64-christmas-map-20261105/);
+});
+test('No synthetic GPS coordinates, location requests, XP awards or fake map content in Christmas UI',()=>{
+ const script=read('healthgo-christmas-map-interactive.js');
+ for(const prohibited of [/getCurrentPosition/,/watchPosition/,/fake/i,/setView\(/,/healthDays/,/totalXp/,/grantXP/,/https?:\/\//])assert.doesNotMatch(script,prohibited);
+});
