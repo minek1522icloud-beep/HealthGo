@@ -45,7 +45,7 @@ function harness(state){
  for(const id of ['activity','devices','challenges'])node(id);
  const routes=[];
  const services={state,subscribe(fn){subscriber=fn;}};
- const window={HealthGoServices:services,HealthGoEngine:{getLevel(){return {level:12,xp:250,needed:500,percent:50};}},go(page){routes.push(page);}};
+ const window={HealthGoServices:services,HealthGoEngine:{getLevel(){return {level:12,xp:250,needed:500,percent:50};}},go(page){routes.push(page);},addEventListener(){}};
  const context={window,Intl,Date,localStorage:{getItem(k){return k==='healthgo_start_steps_goal_v1_user1'?'10000':null;}},document:{
   getElementById(id){return map.get(id)||null;},
   createElement(){return {id:'',className:'',innerHTML:''};},
