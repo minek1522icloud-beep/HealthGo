@@ -7,12 +7,12 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#100d19",
-  "theme_color": "#100d19",
+  "background_color": "#f7faf8",
+  "theme_color": "#f7faf8",
   "lang": "pl",
   "icons": [
     {
-      "src": "./icon-halloween.svg",
+      "src": "./icon-christmas.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
