@@ -23,7 +23,7 @@ test('all HealthGo tabs share the approved Christmas visual system without dupli
  assert.ok(index.includes('healthgo-christmas-all-pages.js?v=1'));
  assert.ok(index.indexOf('healthgo-christmas-all-pages.css')>index.indexOf('healthgo-christmas-premium.css'));
  assert.ok(index.indexOf('healthgo-christmas-all-pages.js')>index.indexOf('healthgo-christmas-premium.js'));
- assert.match(read('service-worker.js'),/healthgo-pwa-v63-christmas-all-pages-20261105/);
+ assert.match(read('service-worker.js'),/healthgo-pwa-v64-christmas-map-20261105/);
 });
 
 test('holiday visuals reuse the original licensed HealthGo drawings rather than embedding dummy stats',()=>{
