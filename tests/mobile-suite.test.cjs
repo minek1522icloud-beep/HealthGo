@@ -49,5 +49,5 @@ test('PWA keeps a minimal first-launch cache on iPhone',()=>{
   const sw=fs.readFileSync('www/service-worker.js','utf8');
   assert.match(sw,/const CORE=\['\.\/index\.html','\.\/manifest\.webmanifest'\]/);
   assert.match(sw,/const isShell=req\.mode==='navigate'/);
-  assert.match(sw,/activity44-updates-20261013/);
+  assert.match(sw,/christmas-gui-20261105/);
 });

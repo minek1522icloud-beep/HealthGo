@@ -47,6 +47,10 @@
     icon('bell'),'<span class="hgs-unread" id="hgsUnread" hidden></span>',
    '</button>',
   '</div>',
+  '<div class="hgs-holiday-message" aria-label="Świąteczny motyw HealthGo">',
+   '<div><strong>🎄 Świąteczny czas w HealthGo</strong><small>Zdrowe nawyki, spokojny rytm i trochę zimowej magii.</small></div>',
+   '<span class="hgs-holiday-symbol" aria-hidden="true">❄️</span>',
+  '</div>',
   '<div class="hgs-brandrow">',
    '<div><h1 class="hgs-wordmark">Health<span>Go</span></h1><p class="hgs-tagline">Twój dzień</p><div class="hgs-underline"></div></div>',
    '<button type="button" id="hgsDateButton" class="hgs-date" aria-label="Przejdź do planu dnia">',icon('calendar','mint'),'<span id="hgsDate">Dzisiaj</span>',icon('arrow'),'</button>',
@@ -96,6 +100,14 @@
     '<button type="button" id="hgsXpAction" class="hgs-xp-cta">Otwórz XP i nagrody ',icon('arrow'),'</button>',
    '</article>',
   '</div>',
+  '<section class="hgs-quick-access" aria-labelledby="hgsQuickHeading">',
+   '<div class="hgs-quick-heading"><h2 id="hgsQuickHeading">⚡ Szybki dostęp</h2><span>Najważniejsze funkcje</span></div>',
+   '<div class="hgs-quick-row">',
+    '<button type="button" class="hgs-quick-link" data-hgs-quick="activity"><span class="hgs-quick-icon" aria-hidden="true">👣</span>Aktywność</button>',
+    '<button type="button" class="hgs-quick-link" data-hgs-quick="plan"><span class="hgs-quick-icon" aria-hidden="true">📅</span>Plan dnia</button>',
+    '<button type="button" class="hgs-quick-link" data-hgs-quick="map"><span class="hgs-quick-icon" aria-hidden="true">🗺️</span>Mapa</button>',
+   '</div>',
+  '</section>',
   '<section class="hgs-panel hgs-chart-panel" aria-labelledby="hgsChartTitle">',
    '<div class="hgs-chart-heading"><h2 id="hgsChartTitle">',icon('chart','mint'),'Twoja aktywność</h2>',
     '<select id="hgsChartRange" class="hgs-range" aria-label="Zakres wykresu kroków"><option value="week">Tydzień</option><option value="month">4 tygodnie</option></select>',
@@ -127,6 +139,12 @@
  root.innerHTML=html;
  start.prepend(root);
  start.classList.add('hg-start-v3');
+ root.addEventListener('click',event=>{
+  const action=event.target.closest('[data-hgs-quick]');
+  if(!action)return;
+  const page=action.dataset.hgsQuick;
+  if(['activity','plan','map'].includes(page)&&typeof window.go==='function')window.go(page);
+ });
 
  function localDate(value){
   const d=value||new Date();
