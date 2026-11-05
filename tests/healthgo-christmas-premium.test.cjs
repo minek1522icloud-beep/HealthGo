@@ -67,7 +67,7 @@ test('holiday cards render only health readings associated with the active accou
  assert.equal(app.node('hgcStepsPct').textContent,'79%');
  assert.equal(app.node('hgcLevel').textContent,'♛ Poziom 12');
  assert.equal(app.node('hgcXpTrack').attrs['aria-valuenow'],'50');
- assert.equal(app.node('hgcXp').textContent.replace(/\s/g,''),'1250 XP');
+ assert.equal(app.node('hgcXp').textContent.replace(/\s/g,''),'1250XP');
  app.services.state={uid:null,healthDays:[],engine:null};
  app.subscriber();
  assert.equal(app.node('hgcSteps').textContent,'Brak danych');
