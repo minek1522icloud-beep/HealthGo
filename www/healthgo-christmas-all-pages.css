@@ -303,3 +303,87 @@ body.hg-christmas #settings .settings-menu{
 @media(prefers-reduced-motion:reduce){
  body.hg-christmas .hgx-shortcut{transition:none!important;transform:none!important}
 }
+
+
+/* Plecak 2.0 intentionally hides its legacy children; keep our holiday banner
+   visible next to the active #hgPackProRoot, not in place of it. */
+body.hg-christmas #backpack.hgpack-ready > .hgx-holiday-page:not(#hgPackProRoot){
+ display:grid!important;
+}
+body.hg-christmas #hgPackProRoot{
+ --hgpack-bg:#f7faf8;--hgpack-card:#fff;--hgpack-border:#d9e8dd;
+ --hgpack-mint:#167e59;--hgpack-muted:#5e7566;
+ color:#244131!important;
+}
+body.hg-christmas #hgPackProRoot :is(
+ .hgp-card,.hgp-listcard,.hgp-stat,.hgp-info,.hgp-empty,.hgp-tabs,.hgp-control
+){
+ background:linear-gradient(145deg,#fff,#f3faf5)!important;
+ border-color:#dce9df!important;color:#234b36!important;
+ box-shadow:0 6px 18px rgba(35,82,52,.07);
+}
+body.hg-christmas #hgPackProRoot :is(.hgp-card,.hgp-listcard) :is(b,small),
+body.hg-christmas #hgPackProRoot .hgp-tabs button{
+ color:#245a40!important;
+}
+body.hg-christmas #hgPackProRoot .hgp-tabs button[aria-selected="true"]{
+ background:#fce9e5!important;color:#a9293e!important;
+}
+body.hg-christmas #hgPackProRoot .hgp-hero{
+ background:linear-gradient(125deg,#115b40,#08412e)!important;
+ border-color:#e1be72!important;color:#fff!important;
+}
+body.hg-christmas #hgPackProRoot .hgp-hero :is(b,small,strong){
+ color:#fff!important;
+}
+body.hg-christmas #hgPackProRoot :is(.hgp-secondary,.hgp-pill,.hgp-iconbtn){
+ background:#f1faf4!important;color:#206c4c!important;border-color:#cae6d4!important;
+}
+body.hg-christmas #hgPackProRoot .hgp-pill[aria-pressed="true"]{
+ background:#fbe8e6!important;color:#a72b42!important;
+}
+body.hg-christmas #hgPackProRoot .hgp-art{background:#e6f4eb!important}
+body.hg-emerald.hg-christmas #ai .ai-response-bar{
+ color:#173f2c!important;
+ background:#fff!important;
+ border-top-color:#dceae0!important;
+}
+body.hg-emerald.hg-christmas #ai .ai-composer{
+ background:#fff!important;color:#173f2c!important;
+ border-color:#d6e7dc!important;box-shadow:0 5px 15px rgba(25,70,40,.09)!important;
+}
+body.hg-emerald.hg-christmas #ai .ai-footnote{background:#fff!important;color:#567563!important}
+body.hg-emerald.hg-christmas #ai .ai-chat-top{
+ background:#fff url('./assets/christmas-header-premium.svg') center top/100% auto no-repeat!important;
+}
+body.hg-christmas #ai .ai-welcome{
+ position:relative;isolation:isolate;
+ background:linear-gradient(145deg,rgba(255,247,245,.75),rgba(244,251,245,.8));
+}
+body.hg-christmas #ai .ai-welcome:before{
+ content:'❄';position:absolute;top:12px;right:15px;
+ font-size:26px;color:#d6a54e;pointer-events:none;opacity:.8;
+}
+body.hg-christmas #ai .ai-welcome h2{color:#a9243b!important}
+@media(max-width:900px){
+ /* The mobile AI chat must remain usable in one viewport; a full-sized
+    hero above its composer would push Send behind the iPhone bottom dock.
+    Put pine and ornaments on the existing chat header instead. */
+ body.hg-emerald.hg-christmas main.main > #ai > .hgx-holiday-page{
+  display:none!important;
+ }
+ body.hg-emerald.hg-christmas #ai{
+  height:calc(100dvh - 89px - env(safe-area-inset-bottom))!important;
+  overflow:hidden!important;
+ }
+ body.hg-emerald.hg-christmas #ai .ai-workspace{
+  height:100%!important;max-height:100%!important;min-height:0!important;
+ }
+ body.hg-emerald.hg-christmas #ai .ai-chat-panel{
+  height:100%!important;min-height:0!important;
+ }
+ body.hg-emerald.hg-christmas #ai .ai-chat-top{
+  background:#fff url('./assets/christmas-header-premium.svg') center top/100% auto no-repeat!important;
+  border-bottom:1px solid #e7ddcf!important;
+ }
+}
