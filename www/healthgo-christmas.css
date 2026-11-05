@@ -1,0 +1,44 @@
+/* HealthGo Christmas 2026. Only decorative overrides: health data and navigation remain unchanged. */
+body.hg-christmas{
+ --primary:#137a55;--primary2:#229c72;--green:#16875e;
+ --hgs-green:#147c59;--hgs-green-bright:#16875e;
+ --hgs-panel:#fff;--hgs-panel-deep:#f5fbf7;--hgs-border:#d7e8de;
+ --hgs-muted:#5e7668;--hgs-track:#dcefe4;
+ background-color:#f7fbf8!important;
+ background-image:radial-gradient(circle at 12% 8%,rgba(215,46,66,.045) 0,transparent 30%),radial-gradient(circle at 85% 20%,rgba(13,121,81,.06) 0,transparent 33%)!important;
+}
+body.hg-christmas .sidebar{background:linear-gradient(180deg,#fff 0%,#f1f9f5 100%)!important;border-right:1px solid #d8e6dc!important}
+body.hg-christmas .logo span{color:#ac233a!important}
+body.hg-christmas .nav button.active{background:#e9f6ef!important;color:#0d704b!important}
+body.hg-christmas .hero,
+body.hg-christmas .dashboard-hero{background:linear-gradient(115deg,#e9f6ee 0%,#fff 60%,#fdf1f1 100%)!important;border-color:#dce9de!important}
+body.hg-christmas .date-pill{border-color:#e4d5d3!important;color:#9e2637!important}
+body.hg-christmas .btn:not(.secondary):not(.gray){background:#167b57!important;color:#fff!important}
+body.hg-christmas #hgStartV3 .hgs-panel,
+body.hg-christmas #hgStartV3 .hgs-metric,
+body.hg-christmas #hgStartV3 .hgs-notification{border-color:#d9e9df;box-shadow:0 9px 26px rgba(24,84,57,.055)}
+body.hg-christmas #hgStartV3 .hgs-quick-access{border-color:#d9e9df;background:linear-gradient(145deg,#fff,#fbfdfb)}
+body.hg-christmas #hgStartV3 .hgs-quick-link{background:#f1f9f4;border-color:#d4eadc}
+body.hg-christmas #hgStartV3 .hgs-quick-link:hover{background:#e9f5ed}
+body.hg-christmas #hgStartV3 .hgs-wordmark span{color:#aa2339}
+body.hg-christmas #hgStartV3 .hgs-underline{background:#aa2339}
+#hgStartV3 .hgs-holiday-message{display:none}
+body.hg-christmas #hgStartV3 .hgs-holiday-message{
+ display:flex;align-items:center;justify-content:space-between;gap:12px;
+ padding:13px 17px;border:1px solid #e9d4d5;border-radius:18px;
+ background:linear-gradient(105deg,#fff9f7,#fff 55%,#edf8f0);
+ box-shadow:0 8px 24px rgba(164,42,58,.045);color:#7e2234;
+}
+body.hg-christmas #hgStartV3 .hgs-holiday-message strong{display:block;font-size:14px;line-height:1.35}
+body.hg-christmas #hgStartV3 .hgs-holiday-message small{display:block;color:#6a756a;margin-top:3px;font-size:12px}
+body.hg-christmas #hgStartV3 .hgs-holiday-message .hgs-holiday-symbol{font-size:24px;flex:0 0 auto}
+body.hg-christmas .mobile-nav{background:rgba(255,255,255,.98)!important;border-top:1px solid #e2e9e3!important}
+body.hg-christmas .mobile-nav button.active{background:#fcedef!important;color:#a42239!important}
+body.hg-christmas .mobile-more-sheet{background:#fff!important;border-color:#e3e9e3!important}
+body.hg-christmas .splash-screen{background:linear-gradient(145deg,#fff,#edf8f1 65%,#fceff0)!important}
+body.hg-christmas .splash-title span{color:#a42239!important}
+body.hg-christmas #hgChristmasToggle{border:1px solid #e4c9cf!important}
+@media(max-width:600px){
+ body.hg-christmas #hgStartV3 .hgs-holiday-message{padding:12px 14px}
+ body.hg-christmas #hgStartV3 .hgs-holiday-message strong{font-size:13px}
+}
