@@ -1,0 +1,34 @@
+/* HealthGo 2026: responsive fixes shared by normal and seasonal modes. */
+html,body{max-width:100%;overflow-x:clip}
+.main,.page,.app,.card{min-width:0}
+button{touch-action:manipulation}
+#hgStartV3 .hgs-quick-access{background:#fff;border:1px solid #dcebe4;border-radius:22px;padding:17px 19px;box-shadow:0 8px 24px rgba(23,75,52,.055)}
+#hgStartV3 .hgs-quick-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 13px}
+#hgStartV3 .hgs-quick-heading h2{margin:0;color:#173b2e;font-size:17px;font-weight:800}
+#hgStartV3 .hgs-quick-heading span{color:#668376;font-size:12px}
+#hgStartV3 .hgs-quick-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#hgStartV3 .hgs-quick-link{display:flex;align-items:center;justify-content:center;gap:9px;min-width:0;min-height:60px;padding:12px 9px;border-radius:15px;background:#f2faf5;border:1px solid #dcefe5;color:#155e46;font-size:13px;font-weight:750;line-height:1.25;transition:background-color .16s ease,border-color .16s ease,transform .16s ease}
+#hgStartV3 .hgs-quick-link:hover{background:#e8f7ee;border-color:#9ed1b8}
+#hgStartV3 .hgs-quick-link:active{transform:scale(.98)}
+#hgStartV3 .hgs-quick-link:focus-visible{outline:3px solid #38b988;outline-offset:3px}
+#hgStartV3 .hgs-quick-icon{font-size:22px;line-height:1}
+@media(max-width:900px){
+ .main{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
+ body:not(.hg-navigation-active) .mobile-nav:not(.auth-hidden){
+  bottom:0;z-index:90;max-width:100%;gap:3px;
+  padding:8px max(6px,env(safe-area-inset-right)) calc(9px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));
+  box-shadow:0 -10px 28px rgba(18,68,45,.09)!important;
+ }
+ .mobile-nav button{min-width:0;flex:1;min-height:56px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;padding:5px 2px!important;border-radius:12px}
+ .mobile-nav .mobile-nav-label{font-size:11px;line-height:1.15;white-space:nowrap}
+ .mobile-nav .mobile-nav-icon{width:23px;height:23px;flex:0 0 23px}
+ #mobileMoreSheet{max-height:min(72dvh,690px);overflow-y:auto;overscroll-behavior:contain}
+ #hgStartV3 .hgs-quick-link{min-height:64px;flex-direction:column;gap:5px;text-align:center;font-size:12px;padding:10px 5px}
+ #hgStartV3 .hgs-quick-row{gap:8px}
+}
+@media(max-width:360px){
+ #hgStartV3 .hgs-quick-access{padding:13px 11px}
+ #hgStartV3 .hgs-quick-link{font-size:11px}
+ .mobile-nav .mobile-nav-label{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){#hgStartV3 .hgs-quick-link{transition:none}}
